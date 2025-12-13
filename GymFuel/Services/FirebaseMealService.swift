@@ -2,124 +2,136 @@
 //  FirebaseMealService.swift
 //  GymFuel
 //
-//  Created by Ahmad Ali Tariq on 07/12/2025.
+//  Created by Ahmad Ali Tariq on 12/12/2025.
 //
 
 import Foundation
-import FirebaseAuth
 import FirebaseFirestore
 
-final class FirebaseMealService {
-    static let shared = FirebaseMealService() // self
+final class FirebaseMealService: MealService {
+    private let db: Firestore
     
-    private let db = Firestore.firestore()
-    private init() {}
-    
-    private func daysCollection(for uid: String) -> CollectionReference {
-        db.collection("users").document(uid).collection("days")
+    init(db: Firestore = Firestore.firestore()) {
+        self.db = db
     }
     
-    private func mealsCollection(for uid: String, dayId: String) -> CollectionReference {
-        daysCollection(for: uid).document(dayId).collection("meals")
-    }
-    
-    func addManualMeal(for log: DayLog, description: String, calories: Double, protein: Double, carbs: Double, fat: Double, completion: @escaping(Result<(Meal,DayLog),Error>) -> Void) {
+    func fetchMeals(for userId: String, dayLogId: String) async throws -> [Meal] {
         
-        guard let user = Auth.auth().currentUser else {
-            completion(.failure(NSError(domain: "auth", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authenticated user"])))
-                        return
+        let collection = mealsCollection(for: userId, dayLogId: dayLogId)
+        
+        let snapshot: QuerySnapshot = try await withCheckedThrowingContinuation { continuation in
+                collection
+                .order(by: "loggedAt", descending: false)
+                .getDocuments { snapshot, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else if let snapshot = snapshot {
+                        continuation.resume(returning: snapshot)
+                    } else {
+                        let error = NSError(
+                            domain: "FirebaseMealService",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "Missing meals snapshot."]
+                        )
+                        continuation.resume(throwing: error)
+                    }
+                }
         }
         
-        let uid = user.uid
-        let dayId = log.id
+        // map each doc to Meal type
+        var result: [Meal] = []
         
-        let mealCol = mealsCollection(for: uid, dayId: dayId)
-        let mealRef = mealCol.document()
-        
-        let now = Date()
-        
-        let mealData: [String: Any] = [
-            "description": description,
-            "calories": calories,
-            "protein": protein,
-            "carbs": carbs,
-            "fat": fat,
-            "createdAt": FieldValue.serverTimestamp()
-        ]
-        
-        // create new DayLog for total macros / consumed now
-        let newTotalCalories = log.totalCalories + calories
-        let newTotalProtein = log.totalProtein + protein
-        let newTotalCarbs = log.totalCarbs + carbs
-        let newTotalFat = log.totalFat + fat
-        
-        let dayDocRef = daysCollection(for: uid).document(dayId)
-        
-        mealRef.setData(mealData) { error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
+        for doc in snapshot.documents {
+            let data = doc.data()
             
-            let dayUpdate: [String: Any] = [
-                "totalCalories": newTotalCalories,
-                "totalProtein": newTotalProtein,
-                "totalCarbs": newTotalCarbs,
-                "totalFat": newTotalFat,
-                "updatedAt": FieldValue.serverTimestamp()
-            ]
+            let storedUserId = data["userId"] as? String ?? userId
+            let storedDayLogId = data["dayLogId"] as? String ?? dayLogId
             
-            dayDocRef.setData(dayUpdate) { error in
-                if let error = error {
-                    completion(.failure(error))
+            let loggedAt = ( data["loggedAt"] as? Timestamp)?.dateValue() ?? Date()
+            let description = data["description"] as? String ?? ""
+            
+            let macroDict = data["macros"] as? [String: Any] ?? [:]
+                   let macros = Macros(
+                       calories: Self.double(from: macroDict["calories"]),
+                       protein:  Self.double(from: macroDict["protein"]),
+                       carbs:    Self.double(from: macroDict["carbs"]),
+                       fat:      Self.double(from: macroDict["fat"])
+                   )
+                   
+                   let meal = Meal(
+                       id: doc.documentID,
+                       userId: storedUserId,
+                       dayLogId: storedDayLogId,
+                       loggedAt: loggedAt,
+                       description: description,
+                       macros: macros
+                   )
+                   
+                   result.append(meal)
+        }
+        return result.sorted { $0.loggedAt < $1.loggedAt }
+    }
+    
+    func saveMeal(_ meal: Meal) async throws {
+        
+        let docRef = mealDocument(for: meal)
+        
+        let data: [String: Any] = [
+               "userId": meal.userId,
+               "dayLogId": meal.dayLogId,
+               "loggedAt": meal.loggedAt,
+               "description": meal.description,
+               "macros": [
+                   "calories": meal.macros.calories,
+                   "protein":  meal.macros.protein,
+                   "carbs":    meal.macros.carbs,
+                   "fat":      meal.macros.fat
+               ],
+               "updatedAt": FieldValue.serverTimestamp()
+           ]
+        
+        try await withCheckedThrowingContinuation{ (continuation: CheckedContinuation<Void,Error>) in
+            docRef.setData(data) { err in
+                if let err = err {
+                    continuation.resume(throwing: err)
+                } else {
+                    continuation.resume(returning: ())
                 }
-                let meal = Meal(id: mealRef.documentID, description: description, calories: calories, protein: protein, carbs: carbs, fat: fat, createdAt: now)
-                
-                let updatedLog = DayLog(id: log.id, dateString: log.dateString, dayType: log.dayType, targetCalories: log.targetCalories, targetProtein: log.targetProtein, targetCarbs: log.targetCarbs, targetFat: log.targetFat, totalCalories: newTotalCalories, totalProtein: newTotalProtein, totalCarbs: newTotalCarbs, totalFat: newTotalFat)
-                
-                completion(.success((meal, updatedLog)))
             }
         }
         
     }
     
-    func fetchMeals(for log: DayLog, completion: @escaping(Result<[Meal],Error>) -> Void) {
-        guard let currentUser = Auth.auth().currentUser else {
-            completion(.failure(NSError(domain: "auth", code: 401, userInfo: [NSLocalizedDescriptionKey : "No user logged in"])))
-            return
-        }
+    func deleteMeal(_ meal: Meal) async throws {
+        let docRef = mealDocument(for: meal)
         
-        let uid = currentUser.uid
-        let dayId = log.id
-        
-        mealsCollection(for: uid, dayId: dayId)
-            .order(by: "createdAt", descending: false)
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    completion(.failure(error))
-                    return
-                }
-                guard let snapshot = snapshot else {
-                    completion(.success([]))
-                    return
-                }
-                
-                let meals: [Meal] = snapshot.documents.compactMap { doc in
-                    let data = doc.data()
-                    let description = data["description"] as? String ?? ""
-                    let calories = data["calories"] as? Double ?? 0
-                    let protein = data["protein"] as? Double ?? 0
-                    let carbs = data["carbs"] as? Double ?? 0
-                    let fat = data["fat"] as? Double ?? 0
-                    
-                    let ts = data["createdAt"] as? Timestamp
-                    let date = ts?.dateValue()
-                    
-                    return Meal(id: doc.documentID, description: description, calories: calories, protein: protein, carbs: carbs, fat: fat, createdAt: date)
-                    
-                }
-                
-                completion(.success(meals))
-            }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+             docRef.delete { error in
+                 if let error = error {
+                     continuation.resume(throwing: error)
+                 } else {
+                     continuation.resume(returning: ())
+                 }
+             }
+         }    }
+    
+    // /users/{userId}/dayLogs/{dayLogId}/meals
+    private func mealsCollection(for userId: String, dayLogId: String) -> CollectionReference {
+        db.collection("users").document(userId).collection("dayLogs").document(dayLogId).collection("meals")
     }
+    
+    // /users/{userId}/dayLogs/{dayLogId}/meals/{mealId}
+    private func mealDocument(for meal: Meal) -> DocumentReference {
+        mealsCollection(for: meal.userId, dayLogId: meal.dayLogId).document(meal.id)
+    }
+    
+    /// Safely convert Firestore numeric fields (Int/Double/NSNumber) to Double.
+    private static func double(from any: Any?, default defaultValue: Double = 0) -> Double {
+        if let d = any as? Double { return d }
+        if let i = any as? Int { return Double(i) }
+        if let n = any as? NSNumber { return n.doubleValue }
+        return defaultValue
+    }
+
 }
+

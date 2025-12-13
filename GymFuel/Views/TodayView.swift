@@ -5,298 +5,428 @@
 //  Created by Ahmad Ali Tariq on 06/12/2025.
 //
 
+// TodayView.swift
+// GymFuel
+
 import SwiftUI
 
 struct TodayView: View {
-    @StateObject private var viewModel = TodayViewModel()
-    
-       @State private var showingAddMeal = false
-       @State private var mealDescription = ""
-       @State private var caloriesText = ""
-       @State private var proteinText = ""
-       @State private var carbsText = ""
-       @State private var fatText = ""
-    
-       @State private var isEstimatingWithAI = false
-       @State private var aiErrorMessage: String?
+    @ObservedObject var viewModel: DayLogViewModel
     
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading today…")
-                } else if let error = viewModel.errorMessage {
-                    VStack(spacing: 8) {
-                        Text("Error")
-                            .font(.headline)
-                        Text(error)
-                            .font(.footnote)
-                            .foregroundColor(.red)
-                        Button("Retry") {
-                            viewModel.loadToday()
-                        }
-                        .buttonStyle(.bordered)
-                    }
-                    .padding()
-                } else if let log = viewModel.dayLog {
-                    VStack(alignment: .leading, spacing: 16) {
-                        
-                        // Day type selector
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Day type")
-                                .font(.headline)
-                            
-                            HStack {
-                                dayTypeChip(label: "Rest", type: "rest", current: log.dayType)
-                                dayTypeChip(label: "Normal", type: "normal", current: log.dayType)
-                                dayTypeChip(label: "Hard", type: "hard", current: log.dayType)
-                            }
-                        }
-                        
-                        // Date
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(log.dateString)
-                                .font(.headline)
-                            Text(log.dayType.capitalized + " day")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Divider()
-                        
-                        // Targets
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Target macros")
-                                .font(.headline)
-                            macroRow(label: "Calories", value: log.targetCalories)
-                            macroRow(label: "Protein",  value: log.targetProtein, suffix: "g")
-                            macroRow(label: "Carbs",    value: log.targetCarbs,   suffix: "g")
-                            macroRow(label: "Fat",      value: log.targetFat,     suffix: "g")
-                        }
-                        
-                        Divider()
-                        
-                        // Totals
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Logged so far")
-                                .font(.headline)
-                            macroRow(label: "Calories", value: log.totalCalories)
-                            macroRow(label: "Protein",  value: log.totalProtein,  suffix: "g")
-                            macroRow(label: "Carbs",    value: log.totalCarbs,    suffix: "g")
-                            macroRow(label: "Fat",      value: log.totalFat,      suffix: "g")
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                              Text("Meals today")
-                                  .font(.headline)
-                              
-                              if viewModel.meals.isEmpty {
-                                  Text("No meals logged yet")
-                                      .font(.subheadline)
-                                      .foregroundColor(.secondary)
-                              } else {
-                                  ForEach(viewModel.meals, id: \.id) { meal in
-                                      mealRow(meal)
-                                  }
-                              }
-                            
-                            Button {
-                                       // open sheet
-                                       mealDescription = ""
-                                       caloriesText = ""
-                                       proteinText = ""
-                                       carbsText = ""
-                                       fatText = ""
-                                       showingAddMeal = true
-                                   } label: {
-                                       Label("Add meal", systemImage: "plus")
-                                           .font(.subheadline)
-                                   }
-                                   .buttonStyle(.borderedProminent)
-                                   .padding(.top, 4)
-                          }
-                        
-                        Spacer()
-                    }
-                    .padding()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    
+                    if let dayLog = viewModel.dayLog {
+                        fuelScoreCard(dayLog: dayLog)
+                        trainingSettingsCard(dayLog: dayLog)   // ← NEW
 
-                } else {
-                    Text("No data for today")
-                        .foregroundColor(.secondary)
+                        targetsCard(dayLog: dayLog)
+                        timingCard(dayLog: dayLog)
+                        mealsSection(dayLog: dayLog)
+                        
+                        debugButtons(dayLog: dayLog)
+                    } else {
+                        Text("Loading today’s log…")
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .padding()
             }
             .navigationTitle("Today")
-            .onAppear {
-                if viewModel.dayLog == nil && !viewModel.isLoading {
-                    viewModel.loadToday()
-                }
+            .task {
+                await viewModel.createOrLoadTodayLog()
             }
-            .sheet(isPresented: $showingAddMeal) {
-                NavigationStack {
-                    Form {
-                        Section(header: Text("Meal")) {
-                            TextField("Description", text: $mealDescription)
-                                .textInputAutocapitalization(.sentences)
-                        }
-                        
-                        Section(header: Text("Macros")) {
-                            if let aiErrorMessage {
-                                Text(aiErrorMessage)
-                                    .font(.footnote)
-                                    .foregroundColor(.red)
-                            }
-                            
-                            TextField("Calories", text: $caloriesText)
-                                .keyboardType(.numberPad)
-                            TextField("Protein (g)", text: $proteinText)
-                                .keyboardType(.numberPad)
-                            TextField("Carbs (g)", text: $carbsText)
-                                .keyboardType(.numberPad)
-                            TextField("Fat (g)", text: $fatText)
-                                .keyboardType(.numberPad)
-                            
-                            Button {
-                                estimateMacrosWithAi()
-                            } label: {
-                                if isEstimatingWithAI {
-                                    HStack {
-                                        ProgressView()
-                                        Text("Estimating…")
-                                    }
-                                } else {
-                                    Label("Use AI to estimate macros", systemImage: "wand.and.stars")
-                                }
-                            }
-                            .disabled(isEstimatingWithAI)
-                        }
-                    }
-                    .navigationTitle("Add meal")
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
-                                showingAddMeal = false
-                            }
-                        }
-                        
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Save") {
-                                saveMeal()
-                            }
-                            .disabled(isEstimatingWithAI) // optional: prevent save while AI running
-                        }
-                    }
-                }
-            }
-
         }
     }
+    fileprivate let timeFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.timeStyle = .short
+        return df
+    }()
+
+}
+
+private extension TodayView {
     
-    private func saveMeal() {
-        // Convert text fields to numbers (Double). If conversion fails, treat as 0.
-        let calories = Double(caloriesText) ?? 0
-        let protein  = Double(proteinText)  ?? 0
-        let carbs    = Double(carbsText)    ?? 0
-        let fat      = Double(fatText)      ?? 0
+    @ViewBuilder
+    func fuelScoreCard(dayLog: DayLog) -> some View {
+        let score = dayLog.fuelScore
         
-        viewModel.addMeal(
-            description: mealDescription,
-            calories: calories,
-            protein: protein,
-            carbs: carbs,
-            fat: fat
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Fuel Score")
+                .font(.headline)
+            
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("\(score?.total ?? 0)")
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                
+                Text("/ 100")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            
+            if let score = score {
+                HStack {
+                    Text("Macros: \(score.macroAdherence)")
+                    Spacer()
+                    Text("Timing: \(score.timingAdherence)")
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            } else {
+                Text("No score yet. Log a meal to get started.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+private extension TodayView {
+    
+    @ViewBuilder
+    func targetsCard(dayLog: DayLog) -> some View {
+        let targets = dayLog.macroTargets
+        let consumed = viewModel.consumedMacros
+        let remaining = viewModel.remainingMacros ?? .zero
+        
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Daily Macros")
+                .font(.headline)
+            
+            macroRow(label: "Calories",
+                     target: targets.calories,
+                     consumed: consumed.calories,
+                     remaining: remaining.calories,
+                     unit: "kcal")
+            
+            macroRow(label: "Protein",
+                     target: targets.protein,
+                     consumed: consumed.protein,
+                     remaining: remaining.protein,
+                     unit: "g")
+            
+            macroRow(label: "Carbs",
+                     target: targets.carbs,
+                     consumed: consumed.carbs,
+                     remaining: remaining.carbs,
+                     unit: "g")
+            
+            macroRow(label: "Fat",
+                     target: targets.fat,
+                     consumed: consumed.fat,
+                     remaining: remaining.fat,
+                     unit: "g")
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+    
+    func macroRow(
+        label: String,
+        target: Double,
+        consumed: Double,
+        remaining: Double,
+        unit: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(label)
+                    .font(.subheadline.weight(.medium))
+                Spacer()
+                Text("\(Int(consumed))/\(Int(target)) \(unit)")
+                    .font(.subheadline)
+            }
+            
+            ProgressView(
+                value: min(consumed, target),
+                total: max(target, 1)
+            )
+            .tint(.accentColor)
+            
+            Text("Remaining: \(Int(remaining)) \(unit)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+private extension TodayView {
+    
+    @ViewBuilder
+    func timingCard(dayLog: DayLog) -> some View {
+        let pre = viewModel.preWorkoutMacros
+        let post = viewModel.postWorkoutMacros
+        
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Workout Fuel Windows")
+                .font(.headline)
+            
+            if dayLog.isTrainingDay, let sessionStart = dayLog.sessionStart {
+                
+                Text("Session at \(timeFormatter.string(from: sessionStart))")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Rest day – timing less critical.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Pre-workout")
+                    .font(.subheadline.weight(.medium))
+                Text("Carbs: \(Int(pre.carbs)) g • Protein: \(Int(pre.protein)) g")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Post-workout")
+                    .font(.subheadline.weight(.medium))
+                Text("Carbs: \(Int(post.carbs)) g • Protein: \(Int(post.protein)) g")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+private extension TodayView {
+    
+    @ViewBuilder
+    func mealsSection(dayLog: DayLog) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Meals")
+                .font(.headline)
+            
+            if viewModel.meals.isEmpty {
+                Text("No meals logged yet.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(viewModel.meals) { meal in
+                    mealRow(meal: meal, dayLog: dayLog)
+                    Divider()
+                }
+            }
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+    
+    @ViewBuilder
+    func mealRow(meal: Meal, dayLog: DayLog) -> some View {
+        let tag = meal.timingTag(
+            relativeTo: dayLog.sessionStart,
+            isTrainingDay: dayLog.isTrainingDay
         )
         
-        showingAddMeal = false
-    }
-
-    private func estimateMacrosWithAi() {
-        guard !mealDescription.trimmingCharacters(in: .whitespacesAndNewlines) .isEmpty else {
-            aiErrorMessage = "Please enter valid meal description"
-            return
-        }
+   
         
-        aiErrorMessage = nil
-        isEstimatingWithAI = true
-        
-        let dayType = viewModel.dayLog?.dayType
-        let goal: String? = nil
-        
-        Task {
-            do {
-                let response = try await MealAiClient.shared.estimateMacros(description: mealDescription, goal: goal, dayType: dayType)
-                await MainActor.run {
-                    caloriesText = String(Int(response.calories))
-                    proteinText = String(Int(response.protein))
-                    carbsText = String(Int(response.carbs))
-                    fatText = String(Int(response.fat))
-                    
-                    isEstimatingWithAI = false
-                }
-            } catch {
-                await MainActor.run {
-                    aiErrorMessage = error.localizedDescription
-                    isEstimatingWithAI = false
-                }
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(timeFormatter.string(from: meal.loggedAt))
+                    .font(.subheadline.weight(.medium))
+                Spacer()
+                Text(timingLabel(for: tag))
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(tagBackground(for: tag))
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
             }
+            
+            Text(meal.description)
+                .font(.subheadline)
+            
+            Text("\(Int(meal.macros.calories)) kcal • P \(Int(meal.macros.protein)) • C \(Int(meal.macros.carbs)) • F \(Int(meal.macros.fat))")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
-        
     }
     
-    private func mealRow(_ meal: Meal) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(meal.description.isEmpty ? "Meal" : meal.description)
-                .font(.subheadline)
-                .fontWeight(.medium)
+    func timingLabel(for tag: MealTimingTag) -> String {
+        switch tag {
+        case .preWorkout: return "Pre-workout"
+        case .postWorkout: return "Post-workout"
+        case .otherOnTrainingDay: return "Other"
+        case .restDay: return "Rest day"
+        }
+    }
+    
+    func tagBackground(for tag: MealTimingTag) -> Color {
+        switch tag {
+        case .preWorkout: return .blue
+        case .postWorkout: return .green
+        case .otherOnTrainingDay: return .gray
+        case .restDay: return .orange
+        }
+    }
+}
+
+private extension TodayView {
+    
+    @ViewBuilder
+    func debugButtons(dayLog: DayLog) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Debug")
+                .font(.headline)
             
-            HStack(spacing: 12) {
-                Text("\(Int(meal.calories)) kcal")
-                Text("P \(Int(meal.protein))g")
-                Text("C \(Int(meal.carbs))g")
-                Text("F \(Int(meal.fat))g")
+            HStack {
+                Button("Add pre-workout test meal") {
+                    Task {
+                        let date = Calendar.current.date(
+                            byAdding: .hour,
+                            value: -2,
+                            to: dayLog.sessionStart ?? Date()
+                        ) ?? Date()
+                        
+                        await viewModel.addMeal(
+                            description: "Test pre-workout meal",
+                            macros: Macros(calories: 400, protein: 25, carbs: 60, fat: 10),
+                            loggedAt: date
+                        )
+                    }
+                }
+                
+                Button("Add post-workout test meal") {
+                    Task {
+                        let date = Calendar.current.date(
+                            byAdding: .hour,
+                            value: 1,
+                            to: dayLog.sessionStart ?? Date()
+                        ) ?? Date()
+                        
+                        await viewModel.addMeal(
+                            description: "Test post-workout meal",
+                            macros: Macros(calories: 300, protein: 30, carbs: 30, fat: 5),
+                            loggedAt: date
+                        )
+                    }
+                }
             }
             .font(.caption)
-            .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding()
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
-
-    
-    // MARK: - Small helper view
-    
-    private func macroRow(label: String, value: Double, suffix: String = "") -> some View {
-        HStack {
-            Text(label)
-            Spacer()
-            Text("\(Int(value))\(suffix)")
-                .foregroundColor(.secondary)
-        }
-        .font(.subheadline)
-    }
-    
-    private func dayTypeChip(label: String, type: String, current: String) -> some View {
-         let isSelected = (type == current)
-         
-         return Button {
-             viewModel.setDayType(type)
-         } label: {
-             Text(label)
-                 .font(.subheadline)
-                 .padding(.vertical, 6)
-                 .padding(.horizontal, 12)
-                 .background(
-                     RoundedRectangle(cornerRadius: 12)
-                         .fill(isSelected ? Color.accentColor.opacity(0.2) : Color.gray.opacity(0.1))
-                 )
-                 .overlay(
-                     RoundedRectangle(cornerRadius: 12)
-                         .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1)
-                 )
-         }
-         .buttonStyle(.plain)
-     }
 }
 
-#Preview {
-    TodayView()
+private extension TodayView {
+    
+    @ViewBuilder
+    func trainingSettingsCard(dayLog: DayLog) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Training Settings")
+                .font(.headline)
+            
+            // 1) Training day toggle
+            // 1) Training day toggle
+            Toggle("Today is a training day",
+                   isOn: Binding<Bool>(
+                       get: {
+                           viewModel.dayLog?.isTrainingDay ?? dayLog.isTrainingDay
+                       },
+                       set: { newValue in
+                           viewModel.setIsTrainingDay(newValue)
+                       }
+                   )
+            )
+
+           
+
+            
+            // 2) Training intensity picker (segmented)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Intensity")
+                    .font(.subheadline.weight(.medium))
+                
+                let currentIntensity = viewModel.dayLog?.trainingIntensity
+                    ?? dayLog.trainingIntensity
+                    ?? .normal
+                
+                Picker("Intensity", selection: Binding(
+                    get: { currentIntensity },
+                    set: { newValue in
+                        viewModel.setTrainingIntensity(newValue)
+                    }
+                )) {
+                    Text("Recovery").tag(TrainingIntensity.recovery)
+                    Text("Normal").tag(TrainingIntensity.normal)
+                    Text("Hard").tag(TrainingIntensity.hard)
+                    Text("All-out").tag(TrainingIntensity.allOut)
+                }
+                .pickerStyle(.segmented)
+            }
+            
+            // 3) Session type picker (segmented)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Session type")
+                    .font(.subheadline.weight(.medium))
+                
+                let currentType = viewModel.dayLog?.sessionType
+                    ?? dayLog.sessionType
+                    ?? .strength   // fallback
+                
+                Picker("Session type", selection: Binding(
+                    get: { currentType },
+                    set: { newValue in
+                        viewModel.setSessionType(newValue)
+                    }
+                )) {
+                    Text("Strength").tag(SessionType.strength)
+                    Text("Hypertrophy").tag(SessionType.hypertrophy)
+                    Text("Mixed").tag(SessionType.mixed)
+                    Text("Endurance").tag(SessionType.endurance)
+                }
+                .pickerStyle(.segmented)
+            }
+            
+            // 4) Session time picker
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Session time")
+                    .font(.subheadline.weight(.medium))
+                
+                let currentTime = viewModel.dayLog?.sessionStart
+                    ?? dayLog.sessionStart
+                    ?? Date()
+                
+                DatePicker(
+                    "Start",
+                    selection: Binding(
+                        get: { currentTime },
+                        set: { newValue in
+                            viewModel.setSessionStart(newValue)
+                        }
+                    ),
+                    displayedComponents: [.hourAndMinute]
+                )
+                .datePickerStyle(.compact)
+            }
+        }
+        .padding()
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
 }
+
+
+
+
+//#Preview {
+//    TodayView(viewModel: DayLogViewModel())
+//}
 

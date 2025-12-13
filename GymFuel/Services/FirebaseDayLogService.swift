@@ -2,154 +2,171 @@
 //  FirebaseDayLogService.swift
 //  GymFuel
 //
-//  Created by Ahmad Ali Tariq on 07/12/2025.
+//  Created by Ahmad Ali Tariq on 12/12/2025.
 //
 
 import Foundation
-import FirebaseAuth
 import FirebaseFirestore
 
-final class FirebaseDayLogService {
-    static let shared = FirebaseDayLogService()
+final class FirebaseDayLogService: DayLogService {
     
-    private let db = Firestore.firestore()
     
-    private init() {}
     
-    private func dateString(for date: Date = Date()) -> String {
+    private let db: Firestore
+    
+    init(db: Firestore = Firestore.firestore()) {
+        self.db = db
+    }
+    
+    func fetchDayLog(for userId: String, date: Date) async throws -> DayLog? {
+        
+        let dayId = Self.dayId(for: date, userId: userId)
+        let docRef = dayLogsCollection(for: userId).document(dayId) // doc ref from firestore
+        
+        // where doc actually exists
+        let snapshot: DocumentSnapshot = try await withCheckedThrowingContinuation { continuation in
+            docRef.getDocument { snapshot, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let snapshot = snapshot {
+                        continuation.resume(returning: snapshot)
+                } else {
+                    let error = NSError(
+                                       domain: "FirebaseDayLogService",
+                                       code: -1,
+                                       userInfo: [NSLocalizedDescriptionKey: "Missing document snapshot."]
+                                   )
+                                   continuation.resume(throwing: error)
+                }
+                
+            }
+        }
+        guard snapshot.exists, let data = snapshot.data() else {
+            return nil
+            // We will ask DayLogViewModel to create  a new DayLog
+        }
+        
+        let storedDate = (data["date"] as? Timestamp)?.dateValue() ?? date
+        let isTrainingDay = data["isTrainingDay"] as? Bool ?? true
+        let sessionStart = (data["sessionStart"] as? Timestamp)?.dateValue()
+        let intensityRaw = data["trainingIntensity"] as? String
+        let trainingIntensity = intensityRaw.flatMap { TrainingIntensity(rawValue: $0) }
+           
+        let sessionTypeRaw = data["sessionType"] as? String
+        let sessionType = sessionTypeRaw.flatMap { SessionType(rawValue: $0) }
+        
+        // Macro targets
+        let macroDict = data["macroTargets"] as? [String: Any] ?? [:]
+        let macroTargets = Macros(
+            calories: Self.double(from: macroDict["calories"]),
+            protein:  Self.double(from: macroDict["protein"]),
+            carbs:    Self.double(from: macroDict["carbs"]),
+            fat:      Self.double(from: macroDict["fat"])
+        )
+        
+        // Fuel score (optional)
+        var fuelScore: FuelScore? = nil
+        if let fuelDict = data["fuelScore"] as? [String: Any] {
+            let total = fuelDict["total"] as? Int
+                ?? Int(Self.double(from: fuelDict["total"]))
+            let macroAdherence = fuelDict["macroAdherence"] as? Int
+                ?? Int(Self.double(from: fuelDict["macroAdherence"]))
+            let timingAdherence = fuelDict["timingAdherence"] as? Int
+                ?? Int(Self.double(from: fuelDict["timingAdherence"]))
+            
+            fuelScore = FuelScore(
+                total: total,
+                macroAdherence: macroAdherence,
+                timingAdherence: timingAdherence
+            )
+        }
+        
+        // 5) Build and return the DayLog
+        return DayLog(
+            id: snapshot.documentID,
+            userId: userId,
+            date: storedDate,
+            isTrainingDay: isTrainingDay,
+            sessionStart: sessionStart,
+            trainingIntensity: trainingIntensity,
+            sessionType: sessionType,
+            macroTargets: macroTargets,
+            fuelScore: fuelScore
+        )
+    }
+    
+    func saveDayLog(_ dayLog: DayLog) async throws {
+        let docRef = dayLogDocument(for: dayLog)
+        
+        // Prepare firestore data
+        var data: [String: Any] = [
+            "userId" : dayLog.userId,
+            "date" : dayLog.date,
+            "isTrainingDay": dayLog.isTrainingDay,
+            "macroTargets": [
+                "calories": dayLog.macroTargets.calories,
+                "protein": dayLog.macroTargets.protein,
+                "carbs": dayLog.macroTargets.carbs,
+                "fat": dayLog.macroTargets.fat
+            ],
+            "updatedAt": FieldValue.serverTimestamp()
+            
+        ]
+        
+        if let sessionStart = dayLog.sessionStart {
+            data["sessionStart"] = sessionStart
+        }
+        if let trainingIntensity = dayLog.trainingIntensity {
+            data["trainingIntensity"] = trainingIntensity.rawValue
+        }
+        
+        if let sessionType = dayLog.sessionType {
+            data["sessionType"] = sessionType.rawValue
+        }
+        
+        if let fuelScore = dayLog.fuelScore {
+              data["fuelScore"] = [
+                  "total":           fuelScore.total,
+                  "macroAdherence":  fuelScore.macroAdherence,
+                  "timingAdherence": fuelScore.timingAdherence
+              ]
+          }
+        
+        try await withCheckedThrowingContinuation{ (continuation: CheckedContinuation<Void,Error>) in
+            docRef.setData(data, merge: true) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        
+    }
+    
+    private func dayLogsCollection(for userId: String) -> CollectionReference {
+        db.collection("users").document(userId).collection("dayLogs")
+    }
+    
+    private func dayLogDocument(for dayLog: DayLog) -> DocumentReference {
+        dayLogsCollection(for: dayLog.userId).document(dayLog.id)
+    }
+    
+    // helpers
+    // Same dayId logic as in DayLogViewModel
+    private static func dayId(for date: Date, userId: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = .current
-        return formatter.string(from: date)
+        let dayString = formatter.string(from: date)
+        return "\(userId)_\(dayString)"
     }
-    
-    private func daysCollection(for uid: String) -> CollectionReference {
-        db.collection("users").document(uid).collection("days")
+
+    /// Safely convert Firestore numeric fields (Int/Double/NSNumber) to Double.
+    private static func double(from any: Any?, default defaultValue: Double = 0) -> Double {
+        if let d = any as? Double { return d }
+        if let i = any as? Int { return Double(i) }
+        if let n = any as? NSNumber { return n.doubleValue }
+        return defaultValue
     }
-    
-    private func defaultTargets(for dayType: String) -> (cal: Double, p: Double, c: Double, f: Double) {
-        switch dayType {
-        case "hard":
-            return (2500, 180, 260, 70)
-        case "normal":
-            return (2000, 140, 170, 50)
-        case "rest":
-                   fallthrough
-        default:
-            return (2000, 160, 180, 60)
-      
-        }
-    }
-    
-    func loadOrCreateToday(completion: @escaping(Result<DayLog,Error>) -> Void) {
-        guard let user = Auth.auth().currentUser else {
-            completion(.failure(NSError(domain: "auth", code: 401, userInfo: [NSLocalizedDescriptionKey : "No user signed in"])))
-            return
-        }
-        
-        let uid = user.uid
-        let todayId = dateString()
-        let docRef = daysCollection(for: uid).document(todayId)
-        
-        docRef.getDocument{ snapshot, error in
-            if let error = error {
-                completion(.failure(error))
-            }
-            
-            if let snapshot = snapshot, snapshot.exists, let data = snapshot.data() {
-                let log = Self.mapDocument(id: snapshot.documentID, data: data)
-                completion(.success(log))
-            } else {
-                self.createDefaultToday(docRef: docRef, dayId: todayId, completion: completion)
-            }
-        }
-    }
-    
-    private func createDefaultToday(docRef: DocumentReference, dayId: String, dayType: String = "normal", completion: @escaping(Result<DayLog,Error>) -> Void) {
-        
-        let targets = defaultTargets(for: dayType)
-        
-        let data: [String: Any] = [
-            "date": dayId,
-            "dayType": dayType,
-            "targetCalories": targets.cal,
-            "targetProtein": targets.p,
-                      "targetCarbs": targets.c,
-                      "targetFat": targets.f,
-                      "totalCalories": 0,
-                      "totalProtein": 0,
-                      "totalCarbs": 0,
-                      "totalFat": 0,
-                      "createdAt": FieldValue.serverTimestamp(),
-                      "updatedAt": FieldValue.serverTimestamp()
-        ]
-        
-        docRef.setData(data) { err in
-            if let err = err {
-                completion(.failure(err))
-                return
-            }
-            
-            let log = DayLog(id: dayId, dateString: dayId, dayType: dayType, targetCalories: targets.cal, targetProtein: targets.p, targetCarbs: targets.c, targetFat: targets.f, totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0)
-            completion(.success(log))
-        }
-    }
-    
-    private static func mapDocument(id: String, data: [String: Any]) -> DayLog {
-        let dateString = data["date"] as? String ?? id
-        let dayType = data["dayType"] as? String ?? "normal"
-        
-        let targetCalories = data["targetCalories"] as? Double ?? 0
-               let targetProtein  = data["targetProtein"]  as? Double ?? 0
-               let targetCarbs    = data["targetCarbs"]    as? Double ?? 0
-               let targetFat      = data["targetFat"]      as? Double ?? 0
-               
-               let totalCalories = data["totalCalories"] as? Double ?? 0
-               let totalProtein  = data["totalProtein"]  as? Double ?? 0
-               let totalCarbs    = data["totalCarbs"]    as? Double ?? 0
-               let totalFat      = data["totalFat"]      as? Double ?? 0
-        
-        return DayLog(
-                 id: id,
-                 dateString: dateString,
-                 dayType: dayType,
-                 targetCalories: targetCalories,
-                 targetProtein: targetProtein,
-                 targetCarbs: targetCarbs,
-                 targetFat: targetFat,
-                 totalCalories: totalCalories,
-                 totalProtein: totalProtein,
-                 totalCarbs: totalCarbs,
-                 totalFat: totalFat
-             )
-    }
-    
-    func updateDayType(for log: DayLog, to newDayType: String, completion: @escaping(Result<DayLog,Error>) -> Void) {
-        guard let user = Auth.auth().currentUser else {
-            completion(.failure(NSError(domain: "auth", code: 401, userInfo: [NSLocalizedDescriptionKey : "No user signed in"])))
-            return
-        }
-        let uid = user.uid
-        let docRef = daysCollection(for: uid).document(log.id)
-        
-        let targets = defaultTargets(for: newDayType)
-        
-        let updateData: [String : Any] = [
-            "dayType": newDayType,
-            "targetCalories": targets.cal,
-            "targetProtein": targets.p,
-            "targetCarbs": targets.c,
-            "targetFat": targets.f,
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
-        
-        docRef.updateData(updateData) { error in
-                if let error = error {
-                completion(.failure(error))
-            }
-            let updateLog = DayLog(id: log.id, dateString: log.dateString, dayType: newDayType, targetCalories: targets.cal, targetProtein: targets.p, targetCarbs: targets.c, targetFat: targets.f, totalCalories: log.totalCalories, totalProtein: log.totalProtein, totalCarbs: log.totalCarbs, totalFat: log.totalFat)
-            completion(.success(updateLog))
-        }
-        
-    }
+
 }

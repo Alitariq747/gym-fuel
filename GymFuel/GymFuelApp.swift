@@ -10,6 +10,8 @@ import FirebaseCore
 
 @main
 struct GymFuelApp: App {
+    @StateObject private var authManager = FirebaseAuthManager()
+    @StateObject private var profileViewModel = UserProfileViewModel()
     
     init() {
         FirebaseApp.configure()
@@ -17,6 +19,8 @@ struct GymFuelApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environmentObject(authManager)
+                .environmentObject(profileViewModel)
         }
     }
 }

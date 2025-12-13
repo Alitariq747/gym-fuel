@@ -8,9 +8,15 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @StateObject private var dayLogViewModel: DayLogViewModel
+    
+    init(profile: UserProfile) {
+        _dayLogViewModel = StateObject(wrappedValue: DayLogViewModel(profile: profile))
+    }
+    
     var body: some View {
         TabView {
-            TodayView()
+            TodayView(viewModel: dayLogViewModel)
                 .tabItem {
                     Label("Today", systemImage: "flame.fill")
                 }
@@ -31,5 +37,5 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
+    MainTabView(profile: UserProfile(id: "hello", name: "Ali", isOnboardingComplete: false, gender: "male"))
 }
