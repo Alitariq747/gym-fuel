@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OnboardingNameStepView: View {
+    @Environment(\.colorScheme) private var colorScheme
     
     let onNext: () -> Void
     @Binding var name: String
@@ -15,45 +16,52 @@ struct OnboardingNameStepView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-                   Text("Welcome to GymFuel")
-                       .font(.largeTitle.bold())
-                       .multilineTextAlignment(.center)
-                   
-                   Text("Let’s start with your name.")
-                       .font(.body)
-                       .foregroundStyle(.secondary)
-                       .multilineTextAlignment(.center)
-                   
-                   VStack(alignment: .leading, spacing: 8) {
-                       Text("Name")
-                           .font(.headline)
-                       TextField("Your name", text: $name)
-                           .textInputAutocapitalization(.words)
-                           .textFieldStyle(.roundedBorder)
-                   }
-                   
-                   if let errorMessage {
-                       Text(errorMessage)
-                           .font(.footnote)
-                           .foregroundStyle(.red)
-                           .frame(maxWidth: .infinity, alignment: .leading)
-                   }
-                   
-                   Button {
-                       handleNext()
-                   } label: {
-                       Text("Next")
-                           .frame(maxWidth: .infinity)
-                   }
-                   .buttonStyle(.borderedProminent)
-                   .padding(.top, 8)
-                   
-                   Spacer()
-               }
-               .padding()
-               .navigationTitle("Your Name")
-               .navigationBarTitleDisplayMode(.inline)    }
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Welcome to LiftEats")
+                .font(.title.bold())
+                .multilineTextAlignment(.center)
+            
+            Text("What should we call you ?")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Enter Name")
+                    .font(.subheadline)
+                TextField("", text: $name)
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                    .padding(.leading, 12)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            }
+            
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Spacer()
+            
+            Button {
+                handleNext()
+            } label: {
+                Text("Confirm")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            
+           
+        }
+        .padding()
+    }
     
     private func handleNext() {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -70,5 +78,5 @@ struct OnboardingNameStepView: View {
 }
 
 #Preview {
-    OnboardingNameStepView(onNext: { print("next")}, name: .constant("Ali"))
+    OnboardingNameStepView(onNext: { print("next")}, name: .constant(""))
 }

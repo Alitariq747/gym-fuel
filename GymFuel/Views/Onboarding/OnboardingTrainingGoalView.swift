@@ -9,23 +9,25 @@ import SwiftUI
 
 struct OnboardingTrainingGoalStepView: View {
     @Binding var selectedGoal: TrainingGoal?
-    
-    let onBack: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+ 
     let onFinish: () -> Void
     
     @State private var tempSelection: TrainingGoal = .performance
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("How should we fuel you?")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+        VStack(spacing: 20) {
+            Image(systemName: "dot.scope")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Color.primary)
             
             Text("Pick the goal that best matches what you want over the next few months.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            
+            Spacer()
             
             VStack(spacing: 12) {
                 ForEach(TrainingGoal.allCases, id: \.self) { goal in
@@ -33,10 +35,8 @@ struct OnboardingTrainingGoalStepView: View {
                         tempSelection = goal
                         errorMessage = nil
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
-                            Circle()
-                                .stroke(lineWidth: tempSelection == goal ? 6 : 2)
-                                .frame(width: 22, height: 22)
+                        HStack(alignment: .center, spacing: 12) {
+                          
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(goal.displayName)
@@ -47,11 +47,18 @@ struct OnboardingTrainingGoalStepView: View {
                             }
                             
                             Spacer()
+                            if tempSelection == goal {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.primary)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(Color.gray.opacity(0.3))
+                            }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(tempSelection == goal ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: 1)
+                                .stroke(tempSelection == goal ? Color.primary : Color.gray.opacity(0.3), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -65,34 +72,20 @@ struct OnboardingTrainingGoalStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleFinish()
-                } label: {
-                    Text("Finish")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
-            
             Spacer()
+            Button {
+                handleFinish()
+            } label: {
+                Text("Finish")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
         }
         .padding()
-        .navigationTitle("Training Goal")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             if let existing = selectedGoal {
                 tempSelection = existing
@@ -110,5 +103,5 @@ struct OnboardingTrainingGoalStepView: View {
 
 
 #Preview {
-    OnboardingTrainingGoalStepView(selectedGoal: .constant(.fatLoss), onBack: { print("")}, onFinish: { print("")})
+    OnboardingTrainingGoalStepView(selectedGoal: .constant(.fatLoss), onFinish: { print("")})
 }

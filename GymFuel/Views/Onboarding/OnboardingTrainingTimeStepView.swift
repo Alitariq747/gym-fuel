@@ -10,23 +10,26 @@ import SwiftUI
 /// Step: What time of day do you *usually* train?
 struct OnboardingTrainingTimeStepView: View {
     @Binding var selectedTime: TrainingTimeOfDay?
-    
-    let onBack: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+
     let onNext: () -> Void
     
     @State private var tempSelection: TrainingTimeOfDay = .evening
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("When do you usually train?")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+        VStack(spacing: 20) {
+            
+            Image(systemName: "clock.circle")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Color.primary)
             
             Text("We’ll use this to time your carbs and key meals around your workouts.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            
+            Spacer()
             
             VStack(spacing: 12) {
                 ForEach(TrainingTimeOfDay.allCases, id: \.self) { time in
@@ -34,10 +37,8 @@ struct OnboardingTrainingTimeStepView: View {
                         tempSelection = time
                         errorMessage = nil
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
-                            Circle()
-                                .stroke(lineWidth: tempSelection == time ? 6 : 2)
-                                .frame(width: 22, height: 22)
+                        HStack(alignment: .center, spacing: 12) {
+                           
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(time.displayName)
@@ -48,13 +49,20 @@ struct OnboardingTrainingTimeStepView: View {
                             }
                             
                             Spacer()
+                            if tempSelection == time {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.primary)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(Color.gray.opacity(0.3))
+                            }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(
                                     tempSelection == time
-                                    ? Color.accentColor
+                                    ? Color.primary
                                     : Color.gray.opacity(0.3),
                                     lineWidth: 1
                                 )
@@ -71,34 +79,23 @@ struct OnboardingTrainingTimeStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleNext()
-                } label: {
-                    Text("Next")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
+           Spacer()
             
-            Spacer()
+            Button {
+                handleNext()
+            } label: {
+                Text("Next")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            
+           
         }
         .padding()
-        .navigationTitle("Training Time")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             if let existing = selectedTime {
                 tempSelection = existing
@@ -115,5 +112,5 @@ struct OnboardingTrainingTimeStepView: View {
 
 
 #Preview {
-    OnboardingTrainingTimeStepView(selectedTime: .constant(.evening), onBack: { print("")}, onNext: { print("")})
+    OnboardingTrainingTimeStepView(selectedTime: .constant(.evening), onNext: { print("")})
 }

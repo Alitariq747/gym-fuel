@@ -10,32 +10,26 @@ import SwiftUI
 struct MainTabView: View {
     @StateObject private var dayLogViewModel: DayLogViewModel
     
+   
+    @State private var selectedDate: Date = Date()
+    
     init(profile: UserProfile) {
         _dayLogViewModel = StateObject(wrappedValue: DayLogViewModel(profile: profile))
     }
     
     var body: some View {
-        TabView {
-            TodayView(viewModel: dayLogViewModel)
-                .tabItem {
-                    Label("Today", systemImage: "flame.fill")
-                }
-            LogView()
-                .tabItem {
-                    Label("Log", systemImage: "square.and.pencil")
-                }
-            FuelView()
-                .tabItem {
-                    Label("Fuel", systemImage: "gauge")
-                }
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.fill")
-                }
+        NavigationStack {
+            ZStack {
+                AppBackground()
+                TodayView(viewModel: dayLogViewModel, selectedDate: $selectedDate)
+                    
+            }
         }
+           
+        
     }
 }
 
 #Preview {
-    MainTabView(profile: UserProfile(id: "hello", name: "Ali", isOnboardingComplete: false, gender: "male"))
+    MainTabView(profile: dummyProfile)
 }

@@ -11,23 +11,28 @@ import SwiftUI
 /// 
 struct OnboardingTrainingStyleStepView: View {
     @Binding var selectedStyle: TrainingStyle?
+    @Environment(\.colorScheme) private var colorScheme
     
-    let onBack: () -> Void
+    
     let onNext: () -> Void
     
     @State private var tempSelection: TrainingStyle = .strength
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Your training style")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+        VStack(spacing: 20) {
+            Image(systemName: "figure.mixed.cardio")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Color.primary)
+            
+            
             
             Text("This helps us bias your fueling. Endurance and mixed training often need more carbs, for example.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            
+            Spacer()
             
             VStack(spacing: 12) {
                 ForEach(TrainingStyle.allCases, id: \.self) { style in
@@ -35,11 +40,8 @@ struct OnboardingTrainingStyleStepView: View {
                         tempSelection = style
                         errorMessage = nil
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
-                            Circle()
-                                .stroke(lineWidth: tempSelection == style ? 6 : 2)
-                                .frame(width: 22, height: 22)
-                            
+                        HStack(alignment: .center, spacing: 12) {
+  
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(style.displayName)
                                     .font(.headline)
@@ -49,13 +51,20 @@ struct OnboardingTrainingStyleStepView: View {
                             }
                             
                             Spacer()
+                            if tempSelection == style {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.primary)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(Color.gray.opacity(0.3))
+                            }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(
                                     tempSelection == style
-                                    ? Color.accentColor
+                                    ? Color.primary
                                     : Color.gray.opacity(0.3),
                                     lineWidth: 1
                                 )
@@ -72,34 +81,20 @@ struct OnboardingTrainingStyleStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleNext()
-                } label: {
-                    Text("Next")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
-            
             Spacer()
+            Button {
+                handleNext()
+            } label: {
+                Text("Next")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
         }
         .padding()
-        .navigationTitle("Training Style")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             if let existing = selectedStyle {
                 tempSelection = existing
@@ -116,5 +111,5 @@ struct OnboardingTrainingStyleStepView: View {
 
 
 #Preview {
-    OnboardingTrainingStyleStepView(selectedStyle: .constant(.mixed), onBack: { print("")}, onNext: { print("")})
+    OnboardingTrainingStyleStepView(selectedStyle: .constant(.mixed), onNext: { print("")})
 }

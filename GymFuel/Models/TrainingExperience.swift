@@ -31,7 +31,7 @@ enum TrainingExperience: String, CaseIterable, Codable {
     var detail: String {
         switch self {
         case .beginner:
-            return "You’re still new to training and progress quickly."
+            return "You’re still new to training and need progress."
         case .intermediate:
             return "You’ve been training consistently for a while."
         case .advanced:

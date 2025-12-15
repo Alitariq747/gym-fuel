@@ -9,8 +9,9 @@ import SwiftUI
 
 struct OnboardingTrainingExperienceStepView: View {
     @Binding var selectedExperience: TrainingExperience?
+    @Environment(\.colorScheme) private var colorScheme
     
-    let onBack: () -> Void
+ 
     let onNext: () -> Void
     
     @State private var tempSelection: TrainingExperience = .beginner
@@ -18,9 +19,11 @@ struct OnboardingTrainingExperienceStepView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            Text("Your training experience")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+            Spacer()
+            Image(systemName: "figure.stairs")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Color.primary)
+              
             
             Text("This helps us decide how aggressive we can be with deficits and surpluses without hurting your performance.")
                 .font(.body)
@@ -33,10 +36,8 @@ struct OnboardingTrainingExperienceStepView: View {
                         tempSelection = level
                         errorMessage = nil
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
-                            Circle()
-                                .stroke(lineWidth: tempSelection == level ? 6 : 2)
-                                .frame(width: 22, height: 22)
+                        HStack(alignment: .center, spacing: 12) {
+                           
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(level.displayName)
@@ -47,13 +48,21 @@ struct OnboardingTrainingExperienceStepView: View {
                             }
                             
                             Spacer()
+                            
+                            if tempSelection == level {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.primary)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(Color.gray.opacity(0.3))
+                            }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(
                                     tempSelection == level
-                                    ? Color.accentColor
+                                    ? Color.primary
                                     : Color.gray.opacity(0.3),
                                     lineWidth: 1
                                 )
@@ -70,34 +79,21 @@ struct OnboardingTrainingExperienceStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleNext()
-                } label: {
-                    Text("Next")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
-            
             Spacer()
+            
+            Button {
+                handleNext()
+            } label: {
+                Text("Next")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
         }
         .padding()
-        .navigationTitle("Experience Level")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             if let existing = selectedExperience {
                 tempSelection = existing
@@ -114,5 +110,5 @@ struct OnboardingTrainingExperienceStepView: View {
 
 
 #Preview {
-    OnboardingTrainingExperienceStepView(selectedExperience: .constant(.beginner), onBack: { print("")}, onNext: { print("")})
+    OnboardingTrainingExperienceStepView(selectedExperience: .constant(.beginner), onNext: { print("")})
 }

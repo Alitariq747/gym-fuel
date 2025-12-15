@@ -10,8 +10,8 @@ import SwiftUI
 /// Step: How many days per week do you *usually* train?
 struct OnboardingTrainingDaysStepView: View {
     @Binding var trainingDaysPerWeek: Int?
-    
-    let onBack: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+ 
     let onNext: () -> Void
     
     @State private var selectedDays: Int = 3
@@ -20,10 +20,12 @@ struct OnboardingTrainingDaysStepView: View {
     private let daysRange = Array(1...7)
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Your weekly training plan")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+        VStack(spacing: 12) {
+            Spacer()
+            Image(systemName: "calendar")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Color.primary)
+                
             
             Text("How many days per week do you usually train? This helps us balance training and rest day fueling.")
                 .font(.body)
@@ -42,6 +44,7 @@ struct OnboardingTrainingDaysStepView: View {
                 }
                 .pickerStyle(.wheel) // or .navigationLink / .menu if you prefer
                 .frame(maxHeight: 150)
+                .background(Color(.systemGray6).opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
             }
             
             if let errorMessage {
@@ -51,34 +54,22 @@ struct OnboardingTrainingDaysStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleNext()
-                } label: {
-                    Text("Next")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
+           
             
             Spacer()
+            Button {
+                handleNext()
+            } label: {
+                Text("Next")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
         }
         .padding()
-        .navigationTitle("Training Days")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             if let existing = trainingDaysPerWeek, daysRange.contains(existing) {
                 selectedDays = existing
@@ -100,5 +91,5 @@ struct OnboardingTrainingDaysStepView: View {
 
 
 #Preview {
-    OnboardingTrainingDaysStepView(trainingDaysPerWeek: .constant(2), onBack: { print("")}, onNext: { print("")})
+    OnboardingTrainingDaysStepView(trainingDaysPerWeek: .constant(2), onNext: { print("")})
 }

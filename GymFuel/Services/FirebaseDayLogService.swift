@@ -115,13 +115,20 @@ final class FirebaseDayLogService: DayLogService {
         
         if let sessionStart = dayLog.sessionStart {
             data["sessionStart"] = sessionStart
+        } else {
+            data["sessionStart"] = FieldValue.delete()
         }
+        
         if let trainingIntensity = dayLog.trainingIntensity {
             data["trainingIntensity"] = trainingIntensity.rawValue
+        } else {
+            data["trainingIntensity"] = FieldValue.delete()
         }
         
         if let sessionType = dayLog.sessionType {
             data["sessionType"] = sessionType.rawValue
+        } else {
+            data["sessionType"] = FieldValue.delete()
         }
         
         if let fuelScore = dayLog.fuelScore {
@@ -130,6 +137,8 @@ final class FirebaseDayLogService: DayLogService {
                   "macroAdherence":  fuelScore.macroAdherence,
                   "timingAdherence": fuelScore.timingAdherence
               ]
+          } else {
+              data["fuelScore"] = FieldValue.delete()
           }
         
         try await withCheckedThrowingContinuation{ (continuation: CheckedContinuation<Void,Error>) in

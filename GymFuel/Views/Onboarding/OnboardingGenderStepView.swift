@@ -8,35 +8,77 @@
 import SwiftUI
 
 struct OnboardingGenderStepView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    
     let name: String
     @Binding var gender: String
     
     let onNext: () -> Void
-    let onBack: () -> Void
+  
     
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-                  Text("Great.\(name)")
-                      .font(.title.bold())
-                      .multilineTextAlignment(.center)
+        VStack(alignment: .leading, spacing: 4) {
+                 
                   
-                  Text("Now select your gender.")
-                      .font(.body)
-                      .foregroundStyle(.secondary)
-                      .multilineTextAlignment(.center)
+                  Text("Whats your gender ?")
+                        .font(.title).bold()
+                      .foregroundStyle(.primary)
+            
+                Text("This lets us calculate your target macros more precisely")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.leading)
+                    Spacer()
                   
-                  VStack(alignment: .leading, spacing: 8) {
-                      Text("Gender")
-                          .font(.headline)
-                      
-                      Picker("Gender", selection: $gender) {
-                          Text("Male").tag("Male")
-                          Text("Female").tag("Female")
-                      }
-                      .pickerStyle(.segmented)
-                  }
+                 // Vstack for gender
+                
+            // male button
+            VStack(spacing: 18) {
+                Button {
+                    gender = "male"
+                } label: {
+                    HStack(spacing: 8) {
+                        Text("♂")
+                            .font(.title2)
+                            .foregroundStyle(.primary)
+                        Text("Male")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(
+                        gender == "male" ?
+                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == "male" ? 2 : 1))
+                }
+                .buttonStyle(.plain)
+                
+                // female button
+                Button {
+                    gender = "female"
+                } label: {
+                    HStack {
+                        Text("♀")
+                            .font(.title2)
+                            .foregroundStyle(.primary)
+                        Text("Female")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(
+                        gender == "female" ?
+                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == "female" ? 2 : 1))
+                }
+                .buttonStyle(.plain)
+            }
+            
+           
                   
                   if let errorMessage {
                       Text(errorMessage)
@@ -45,35 +87,23 @@ struct OnboardingGenderStepView: View {
                           .frame(maxWidth: .infinity, alignment: .leading)
                   }
                   
-                  HStack {
-                      Button("Back") {
-                          onBack()
-                      }
-                      .buttonStyle(.bordered)
-                      
-                      Button {
-                          handleNext()
-                      } label: {
-                          Text("Next")
-                              .frame(maxWidth: .infinity)
-                      }
-                      .buttonStyle(.borderedProminent)
-                  }
-                  .padding(.top, 8)
-                  
-                  Spacer()
+            Spacer()
+                 
+            Button {
+                handleNext()
+            } label: {
+                Text("Confirm")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+                
               }
               .padding()
-              .navigationTitle("Your Gender")
-              .navigationBarTitleDisplayMode(.inline)
-              .toolbar {
-                  // Optional: back button in the nav bar as well
-                  ToolbarItem(placement: .topBarLeading) {
-                      Button("Back") {
-                          onBack()
-                      }
-                  }
-              }    }
+    }
     
     private func handleNext() {
         guard !gender.isEmpty else {
@@ -85,3 +115,6 @@ struct OnboardingGenderStepView: View {
     }
 }
 
+#Preview {
+    OnboardingGenderStepView(name: "Ali", gender: .constant("female"), onNext: { print("")})
+}

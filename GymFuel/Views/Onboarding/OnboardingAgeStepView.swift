@@ -8,31 +8,35 @@
 import SwiftUI
 
 struct OnboardingAgeStepView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var age: Int?
     
-    let onBack: () -> Void
+
     let onNext: () -> Void
     
     @State private var ageText: String = ""
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Just a bit more")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Please enter your age")
                 .font(.title.bold())
                 .multilineTextAlignment(.center)
             
-            Text("Your age helps us estimate your calorie needs more accurately.")
+            Text("Your age helps us estimate your macros more accurately.")
                 .font(.body)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+//                .multilineTextAlignment(.center)
             
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Age")
-                    .font(.headline)
-                TextField("e.g. 25", text: $ageText)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Enter Age")
+                    .font(.subheadline)
+                TextField("", text: $ageText)
+                    .keyboardType(.decimalPad)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                    .padding(.leading, 12)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
             }
             
             if let errorMessage {
@@ -42,34 +46,21 @@ struct OnboardingAgeStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleNext()
-                } label: {
-                    Text("Next")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
             
             Spacer()
+            Button {
+                handleNext()
+            } label: {
+                Text("Confirm")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
         }
         .padding()
-        .navigationTitle("Your Age")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             // Pre-fill if we already have an age
             if let currentAge = age, ageText.isEmpty {
@@ -92,5 +83,5 @@ struct OnboardingAgeStepView: View {
 
 
 #Preview {
-    OnboardingAgeStepView(age: .constant(38), onBack: {print("")}, onNext: {print("")})
+    OnboardingAgeStepView(age: .constant(38), onNext: {print("")})
 }

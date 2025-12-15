@@ -23,3 +23,5 @@ struct UserProfile: Identifiable, Equatable {
     var isOnboardingComplete: Bool
     var gender: String
 }
+
+var dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, trainingGoal: .muscleGain, trainingDaysPerWeek: 0, trainingExperience: .intermediate, trainingStyle: .hypertrophy,  trainingTimeOfDay: .morning, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: "male")

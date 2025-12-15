@@ -10,23 +10,27 @@ import SwiftUI
 /// Step: What is your general activity level outside of workouts?
 struct OnboardingActivityLevelStepView: View {
     @Binding var selectedLevel: NonTrainingActivityLevel?
+    @Environment(\.colorScheme) private var colorScheme
     
-    let onBack: () -> Void
+    
     let onNext: () -> Void
     
     @State private var tempSelection: NonTrainingActivityLevel = .mostlySitting
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Your daily activity")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
+        VStack(spacing: 20) {
+            Image(systemName: "bed.double")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(Color.primary)
+            
             
             Text("This tells us how active you are outside the gym so we can set your baseline calories, especially on rest days.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            
+            Spacer()
             
             VStack(spacing: 12) {
                 ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
@@ -34,10 +38,8 @@ struct OnboardingActivityLevelStepView: View {
                         tempSelection = level
                         errorMessage = nil
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
-                            Circle()
-                                .stroke(lineWidth: tempSelection == level ? 6 : 2)
-                                .frame(width: 22, height: 22)
+                        HStack(alignment: .center, spacing: 12) {
+                           
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(level.displayName)
@@ -46,15 +48,21 @@ struct OnboardingActivityLevelStepView: View {
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
-                            
                             Spacer()
+                            if tempSelection == level {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.primary)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(Color.gray.opacity(0.3))
+                            }
                         }
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(
                                     tempSelection == level
-                                    ? Color.accentColor
+                                    ? Color.primary
                                     : Color.gray.opacity(0.3),
                                     lineWidth: 1
                                 )
@@ -70,35 +78,22 @@ struct OnboardingActivityLevelStepView: View {
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            
-            HStack {
-                Button("Back") {
-                    onBack()
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    handleNext()
-                } label: {
-                    Text("Next")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding(.top, 8)
-            
+   
             Spacer()
+            Button {
+                handleNext()
+            } label: {
+                Text("Next")
+                    .font(.headline).bold()
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            
         }
         .padding()
-        .navigationTitle("Activity Level")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Back") {
-                    onBack()
-                }
-            }
-        }
         .onAppear {
             if let existing = selectedLevel {
                 tempSelection = existing
@@ -114,6 +109,6 @@ struct OnboardingActivityLevelStepView: View {
 }
 
 
-//#Preview {
-//    OnboardingActivityLevelStepView()
-//}
+#Preview {
+    OnboardingActivityLevelStepView(selectedLevel: .constant(.physicallyDemanding), onNext: { print("") })
+}

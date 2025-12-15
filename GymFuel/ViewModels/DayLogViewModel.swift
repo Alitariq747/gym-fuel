@@ -14,8 +14,8 @@ final class DayLogViewModel: ObservableObject {
     
     @Published private(set) var meals: [Meal] = [] // meals logged for today
     
-    @Published private var isLoading: Bool = false
-    @Published private var errorMessage: String?
+    @Published private(set) var isLoading: Bool = false
+    @Published private(set) var errorMessage: String?
     
     // Dependencies
     private let planner: MacrosPlanner
@@ -54,6 +54,49 @@ final class DayLogViewModel: ObservableObject {
         return calendar.date(from: components)
         
     }
+    
+    // Helpers for setting isTrainingDay
+    private func stableSeed(from s: String) -> Int {
+        // Deterministic across app launches (unlike Swift's hashValue).
+        var result = 0
+        for u in s.unicodeScalars {
+            result = (result &* 31 &+ Int(u.value)) & 0x7fffffff
+        }
+        return result
+    }
+
+    private func defaultIsTrainingDay(for date: Date) -> Bool {
+        // 1) Pull training days/week from profile (adjust property name if needed)
+        let trainingDaysPerWeek = profile.trainingDaysPerWeek ?? 3 // <-- rename if your model differs
+        let n = max(0, min(7, trainingDaysPerWeek ))
+
+        if n == 0 { return false }
+        if n == 7 { return true }
+
+        // 2) Convert date -> weekdayIndex (Mon=0 ... Sun=6)
+        let cal = Calendar.current
+        let weekday = cal.component(.weekday, from: date) // Sun=1 ... Sat=7
+        let weekdayIndex = (weekday + 5) % 7
+
+        // 3) Create a deterministic set of training weekdays spread across the week
+        let offset = stableSeed(from: profile.id) % 7
+        var chosen = Set<Int>()
+
+        let step = 7.0 / Double(n)
+        var x = 0.0
+
+        for _ in 0..<n {
+            var idx = (Int(round(x)) + offset) % 7
+            while chosen.contains(idx) {
+                idx = (idx + 1) % 7
+            }
+            chosen.insert(idx)
+            x += step
+        }
+
+        return chosen.contains(weekdayIndex)
+    }
+
     
     func createOrLoadTodayLog(date: Date = Date()) async {
             isLoading = true
@@ -100,15 +143,19 @@ final class DayLogViewModel: ObservableObject {
             
             // 2) No DayLog exists for today (or fetch failed) → create a new one locally.
             let newId = Self.dayId(for: startOfDay, userId: userId)
-            let defaultSessionStart = defaultSessionStart(for: startOfDay)
+
+        
+            let isTraining = defaultIsTrainingDay(for: startOfDay)
+            let sessionStart = isTraining ? defaultSessionStart(for: startOfDay) : nil
+            let intensity: TrainingIntensity? = isTraining ? .normal : nil
             
             var newDayLog = DayLog(
                 id: newId,
                 userId: userId,
                 date: startOfDay,
-                isTrainingDay: true,
-                sessionStart: defaultSessionStart,
-                trainingIntensity: .normal,
+                isTrainingDay: isTraining,
+                sessionStart: sessionStart,
+                trainingIntensity: intensity,
                 sessionType: nil,
                 macroTargets: .zero,
                 fuelScore: nil
@@ -142,6 +189,17 @@ final class DayLogViewModel: ObservableObject {
             
             isLoading = false
         }
+    
+    // to call save when changing session / training data
+    func saveCurrentDayLog() async {
+        guard let log = dayLog else { return }
+        do {
+            try await dayLogService.saveDayLog(log)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     
     func setIsTrainingDay(_ isTrainingDay: Bool) {
         guard var current = dayLog else { return }
