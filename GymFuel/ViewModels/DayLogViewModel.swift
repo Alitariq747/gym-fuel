@@ -16,6 +16,8 @@ final class DayLogViewModel: ObservableObject {
     
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var isSavingMeal: Bool = false
+
     
     // Dependencies
     private let planner: MacrosPlanner
@@ -300,6 +302,37 @@ final class DayLogViewModel: ObservableObject {
         } catch {
             // If the write fails, we keep the local state (offline-friendly)
             // but record the error so UI can show something if needed.
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func addMealAi(originalDescription: String, parsedMeal: ParsedMeal, loggedAt: Date = Date()) async {
+        isSavingMeal = true
+        defer {
+            isSavingMeal = false
+        }
+        if dayLog == nil {
+            await createOrLoadTodayLog(date: loggedAt)
+        }
+        guard let currentDayLog = dayLog else {
+            errorMessage = "Could not load a log for today. Please try again later."
+            return
+        }
+        
+        let macros = Macros(calories: parsedMeal.calories,
+                            protein: parsedMeal.protein,
+                            carbs: parsedMeal.carbs,
+                            fat: parsedMeal.fat)
+        let newMeal = Meal(id: UUID().uuidString, userId: profile.id, dayLogId: currentDayLog.id, loggedAt: loggedAt, description: originalDescription, macros: macros, aiName: parsedMeal.name, aiConfidence: parsedMeal.confidence, aiWarnings: parsedMeal.warnings, aiNotes: parsedMeal.notes, aiAssumptions: parsedMeal.assumptions)
+        meals.append(newMeal)
+        refreshFuelScore()
+        
+        do {
+            try await mealService.saveMeal(newMeal)
+                if let updatedDayLog = dayLog {
+                    try await dayLogService.saveDayLog(updatedDayLog)
+            }
+        } catch {
             errorMessage = error.localizedDescription
         }
     }

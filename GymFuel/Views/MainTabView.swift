@@ -19,14 +19,9 @@ struct MainTabView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                AppBackground()
                 TodayView(viewModel: dayLogViewModel, selectedDate: $selectedDate)
-                    
-            }
         }
-           
-        
+ 
     }
 }
 

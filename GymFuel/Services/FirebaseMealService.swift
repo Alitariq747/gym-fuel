@@ -57,6 +57,15 @@ final class FirebaseMealService: MealService {
                        carbs:    Self.double(from: macroDict["carbs"]),
                        fat:      Self.double(from: macroDict["fat"])
                    )
+            let aiDict = data["ai"] as? [String: Any] ?? [:]
+
+            let aiName = aiDict["name"] as? String
+            let aiNotes = aiDict["notes"] as? String
+            let aiConfidence = Self.doubleOpt(from: aiDict["confidence"])
+
+            let aiWarnings = (aiDict["warnings"] as? [Any])?.compactMap { $0 as? String } ?? []
+            let aiAssumptions = (aiDict["assumptions"] as? [Any])?.compactMap { $0 as? String } ?? []
+
                    
                    let meal = Meal(
                        id: doc.documentID,
@@ -64,7 +73,12 @@ final class FirebaseMealService: MealService {
                        dayLogId: storedDayLogId,
                        loggedAt: loggedAt,
                        description: description,
-                       macros: macros
+                       macros: macros,
+                       aiName: aiName,
+                       aiConfidence: aiConfidence,
+                       aiWarnings: aiWarnings,
+                       aiNotes: aiNotes,
+                       aiAssumptions: aiAssumptions
                    )
                    
                    result.append(meal)
@@ -76,7 +90,7 @@ final class FirebaseMealService: MealService {
         
         let docRef = mealDocument(for: meal)
         
-        let data: [String: Any] = [
+        var data: [String: Any] = [
                "userId": meal.userId,
                "dayLogId": meal.dayLogId,
                "loggedAt": meal.loggedAt,
@@ -90,8 +104,18 @@ final class FirebaseMealService: MealService {
                "updatedAt": FieldValue.serverTimestamp()
            ]
         
+        // AI subdocument
+        var ai: [String: Any] = [:]
+        if let v = meal.aiName { ai["name"] = v }
+        if let v = meal.aiConfidence { ai["confidence"] = v }
+        if let v = meal.aiNotes { ai["notes"] = v }
+        if !(meal.aiWarnings.isEmpty ) { ai["warnings"] = meal.aiWarnings }
+        if !(meal.aiAssumptions.isEmpty) { ai["assumptions"] = meal.aiAssumptions }
+
+        data["ai"] = ai.isEmpty ? FieldValue.delete() : ai
+        
         try await withCheckedThrowingContinuation{ (continuation: CheckedContinuation<Void,Error>) in
-            docRef.setData(data) { err in
+            docRef.setData(data, merge: true) { err in
                 if let err = err {
                     continuation.resume(throwing: err)
                 } else {
@@ -132,6 +156,15 @@ final class FirebaseMealService: MealService {
         if let n = any as? NSNumber { return n.doubleValue }
         return defaultValue
     }
+    
+    private static func doubleOpt(from any: Any?) -> Double? {
+        if any == nil { return nil }
+        if let d = any as? Double { return d }
+        if let i = any as? Int { return Double(i) }
+        if let n = any as? NSNumber { return n.doubleValue }
+        return nil
+    }
+
 
 }
 

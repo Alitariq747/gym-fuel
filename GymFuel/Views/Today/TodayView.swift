@@ -16,10 +16,11 @@ struct TodayView: View {
     @Binding var selectedDate: Date
     
     @State private var showDatePicker: Bool = false
-    @State private var showEditSessionSheet: Bool = false
     
     @State private var showSettings = false
     @State private var showHistory = false
+    
+   @State private var showAddMealFlow = false
     
     struct DaySessionDraft {
         var isTrainingDay: Bool
@@ -30,13 +31,14 @@ struct TodayView: View {
     
     @State private var draft = DaySessionDraft(isTrainingDay: false, intensity: nil, sessionType: nil, sessionStart: Date())
     
-    private func openEditSheet(from log: DayLog) {
+    private func syncDraft(from log: DayLog) {
         draft.isTrainingDay = log.isTrainingDay
         draft.intensity = log.trainingIntensity
         draft.sessionType = log.sessionType
-        draft.sessionStart = log.sessionStart ?? (viewModel.defaultSessionStart(for: log.date) ?? Date())
-        showEditSessionSheet = true
+        draft.sessionStart = log.sessionStart
+            ?? (viewModel.defaultSessionStart(for: log.date) ?? Date())
     }
+
     
     private func formattedDate(_ date: Date) -> String {
         let f = DateFormatter()
@@ -46,10 +48,14 @@ struct TodayView: View {
 
     
     var body: some View {
+      
         ZStack {
             // HStack for top row
+            AppBackground()
+            
             ScrollView {
-                HStack {
+                VStack(spacing: 18) {
+                    HStack {
                     Image("LiftEatsWelcomeIcon")
                         .resizable()
                         .scaledToFit()
@@ -88,25 +94,82 @@ struct TodayView: View {
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
                 }
-
+                
                 if let log = viewModel.dayLog {
-                    if log.isTrainingDay {
-                        TrainingCard(sessionStart: log.sessionStart, intensity: log.trainingIntensity, sessionType: log.sessionType, onEdit: { openEditSheet(from: log) })
-                            .padding(.top, 8)
-                    } else {
-                        RestDayCard(onEdit: { openEditSheet(from: log) })
-                            .padding(.top, 8)
+                    
+                   
+                    SessionCard(
+                        draft: $draft
+                    ) {
+                        // onSave from inside the card → push changes into viewModel
+                        Task {
+                            viewModel.setIsTrainingDay(draft.isTrainingDay)
+                            
+                            if draft.isTrainingDay {
+                                viewModel.setSessionType(draft.sessionType)
+                                viewModel.setSessionStart(draft.sessionStart)
+                                viewModel.setTrainingIntensity(draft.intensity)
+                            }
+                            await viewModel.saveCurrentDayLog()
+                        }
+                    }
+                    .padding(.top, 8)
+                    .onAppear {
+                       
+                        syncDraft(from: log)
                     }
                     MacroCardsSection(targets: log.macroTargets, consumed: viewModel.consumedMacros)
+                    
+                    HStack {
+                        Text("Logged Nutrition")
+                            .font(.headline).bold()
+                            .foregroundStyle(.black.opacity(0.8))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Text("\(viewModel.meals.count)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .padding(10)
+                            .background(Color.white.opacity(0.85), in: Circle())
+                            .shadow(
+                                color: Color.black.opacity(0.15),
+                                radius: 8,
+                                x: 0, y: 4
+                            )
+                    }
+                    
+                    
+                    MealsListSection(dayLog: log, meals: viewModel.meals)
                 } else {
-                    CardSkeleton()
-                    MacroCardsSection(targets: .zero, consumed: .zero)
+                    ProgressView()
                 }
+                Button {
+                    showAddMealFlow = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Log meal with AI")
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.white)
+                            .shadow(radius: 4, y: 2)
+                    )
+                }
+                .padding(.top, 16)
             }
+        }
             .padding()
             // We'll  later add the HStack for button to open sheet and my fuel card
         }
+        .sheet(isPresented: $showAddMealFlow, content: {
+            AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+        })
         .onAppear {
             Task { await viewModel.createOrLoadTodayLog(date: selectedDate) }
         }
@@ -144,25 +207,7 @@ struct TodayView: View {
                     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
             }
         }
-        .sheet(isPresented: $showEditSessionSheet) {
-            EditSessionSheet(draft: $draft) {
-                Task {
-                    viewModel.setIsTrainingDay(draft.isTrainingDay)
-                    
-                    if draft.isTrainingDay {
-                        viewModel.setSessionType(draft.sessionType)
-                        viewModel.setSessionStart(draft.sessionStart)
-                        viewModel.setTrainingIntensity(draft.intensity)
-                    }
-                    await viewModel.saveCurrentDayLog()
-                    showEditSessionSheet = false
-                }
-            }
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
-            .presentationCornerRadius(24)
-        }
-
+ 
     }
 
 }
@@ -172,9 +217,9 @@ struct TodayView: View {
 
 
 #Preview {
-    ZStack {
-        AppBackground()
+  
+       
         TodayView(viewModel: DayLogViewModel(profile: dummyProfile), selectedDate: .constant(Date()))
-    }
+    
 }
 

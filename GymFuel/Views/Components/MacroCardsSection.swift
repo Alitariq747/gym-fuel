@@ -10,75 +10,39 @@ struct MacroCardsSection: View {
     let targets: Macros
     let consumed: Macros
     
-    private var caloriesProgress: Double {
-        let target = targets.calories
-        guard target > 0 else { return 0 }
-        return min(max(consumed.calories / target, 0), 1) // 0...1
-    }
-
-    private var caloriesBar: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Color(.secondarySystemBackground))
-                Capsule()
-                    .fill(caloriesTint)
-                    .frame(width: geo.size.width * caloriesProgress)
-                    .animation(.spring(response: 0.45, dampingFraction: 0.9), value: caloriesProgress)
-                    .animation(.easeInOut(duration: 0.20), value: caloriesIsOver)
-            }
-        }
-        .frame(height: 10)
-    }
-    
-    private var proteinProgress: Double {
-        let targetProtein = targets.protein
-        guard targetProtein > 0 else { return 0 }
-        return min(max(consumed.protein / targetProtein, 0), 1)
-    }
-    
-    private var caloriesIsOver: Bool {
-        targets.calories > 0 && consumed.calories > targets.calories
-    }
-
-    private var caloriesTint: Color {
-        caloriesIsOver ? .red : .liftEatsCoral
-    }
-
-
 
     var body: some View {
         
         
         
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
           
-            Text("Macros")
-                .font(.headline).bold()
-        
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Image(systemName: "flame.fill")
-                        .foregroundStyle(caloriesTint)
-                        .animation(.easeInOut(duration: 0.20), value: caloriesIsOver)
-                    Text("Calories")
-                    Spacer()
-                    Text("\(Int(consumed.calories)) / \(Int(targets.calories))")
+        // Calories Text
+            VStack(alignment: .center) {
+                Text("Calories")
+                    .font(.headline)
+                HStack(spacing: 0) {
+                    Text("\(Int(consumed.calories)) / ")
+                        .font(.title).bold()
+                    
+                    Text("\(Int(targets.calories))")
+                        .font(.title).bold()
                         .foregroundStyle(.secondary)
                 }
-                .font(.subheadline.weight(.semibold))
-
-                caloriesBar
+ 
             }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 2)
 
-
-            HStack(alignment: .center, spacing: 24) {
+            HStack(alignment: .center, spacing: 12) {
+                
                 MacroRingView(
                     title: "Protein",
                     unit: "g",
                     target: targets.protein,
                     consumed: consumed.protein,
                     image: "fish.fill",
-                    color: Color.indigo.opacity(0.8)
+                    color: Color.green.opacity(0.8)
                 )
 
                 MacroRingView(
@@ -99,18 +63,16 @@ struct MacroCardsSection: View {
                     color: Color.cyan
                 )
             }
-            .padding(.top, 18)
             .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding()
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
-        
+
     }
 }
 
 #Preview {
     ZStack {
         AppBackground()
-        MacroCardsSection(targets: Macros(calories: 2000, protein: 150, carbs: 100, fat: 50), consumed: Macros(calories: 100, protein: 160, carbs: 65, fat: 115))
+        MacroCardsSection(targets: Macros(calories: 2000, protein: 150, carbs: 100, fat: 50), consumed: Macros(calories: 1000, protein: 130, carbs: 65, fat: 45))
     }
 }

@@ -22,6 +22,7 @@ struct GymFuelApp: App {
                 .environmentObject(authManager)
                 .environmentObject(profileViewModel)
                 .preferredColorScheme(.light)
+            
         }
     }
 }
