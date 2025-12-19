@@ -16,7 +16,7 @@ struct WelcomeView: View {
         VStack(spacing: 16) {
             Spacer(minLength: 24)
 
-            Image("LiftEatsWelcomeIcon") // your asset
+            Image("LiftEatsWelcomeIcon")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 220, height: 220)
@@ -52,9 +52,7 @@ struct WelcomeView: View {
                 }
                 .buttonStyle(.plain)
 
-//                Button("I already have an account", action: onSignIn)
-//                    .buttonStyle(.bordered)
-//                    .controlSize(.large)
+
                 Button {
                     onSignIn()
                 } label: {

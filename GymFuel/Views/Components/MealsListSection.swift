@@ -36,8 +36,9 @@ struct MealsListSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             if meals.isEmpty {
-                Text("No meals logged for the day...")
+                Text("No meals logged for the day...Start logging some to track the fuel for your workouts. 😀")
                     .font(.subheadline)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .padding()
                     .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
@@ -48,7 +49,7 @@ struct MealsListSection: View {
                     if !items.isEmpty {
                         TimingSectionHeader(tag: tag, count: items.count)
 
-                        VStack(spacing: 10) {
+                        VStack(spacing: 14) {
                             ForEach(items) { meal in
                                 MealRow(dayLog: dayLog, meal: meal)
                             }
@@ -131,7 +132,9 @@ struct MealRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-     
+        .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 8)
+        .shadow(color: .black.opacity(0.03), radius: 2,  x: 0, y: 1)
     }
 }
 
@@ -152,17 +155,19 @@ private struct TimingSectionHeader: View {
                 Text("\(count) meal\(count == 1 ? "" : "s")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                
+             
             }
 
             Spacer()
 
-            // Small chip on the right
-            Text(tag.chipText)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(tag.color)
-                .padding(.vertical, 4)
-                .padding(.horizontal, 10)
-                .background(tag.color.opacity(0.12), in: Capsule())
+//            // Small chip on the right
+//            Text(tag.chipText)
+//                .font(.system(size: 12, weight: .medium))
+//                .foregroundStyle(tag.color)
+//                .padding(.vertical, 4)
+//                .padding(.horizontal, 10)
+//                .background(tag.color.opacity(0.12), in: Capsule())
         }
         .padding(.top, 6)
         .padding(.horizontal, 4)

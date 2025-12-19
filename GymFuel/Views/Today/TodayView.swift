@@ -42,9 +42,16 @@ struct TodayView: View {
     
     private func formattedDate(_ date: Date) -> String {
         let f = DateFormatter()
-        f.dateFormat = "EEE, MMM d"
+        f.dateFormat = "MMM d"
         return f.string(from: date)
     }
+    
+    private var fuelScore: FuelScore? {
+        viewModel.dayLog?.fuelScore
+    }
+    @State private var showFuelDetailSheet: Bool = false
+    @State private var showFuelOverlay: Bool = false
+
 
     
     var body: some View {
@@ -56,10 +63,35 @@ struct TodayView: View {
             ScrollView {
                 VStack(spacing: 18) {
                     HStack {
-                    Image("LiftEatsWelcomeIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 38, height: 38)
+                        Button {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                                showFuelOverlay.toggle()
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "flame.fill")
+                                    .font(.subheadline).fontWeight(.semibold)
+                                    .foregroundStyle(Color.orange.opacity(0.8))
+                                    
+                                
+                                Text("\(Int(fuelScore?.total ?? 0))")
+                                    .font(.headline).fontWeight(.semibold)
+                               
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .fill(Color(.white))
+                            )
+                            .shadow(
+                                color: Color.black.opacity(0.15),
+                                radius: 8,
+                                x: 0, y: 4
+                            )
+                        }
+                        .buttonStyle(.plain)
+                   
                     
                     Spacer()
                     Button {
@@ -72,6 +104,11 @@ struct TodayView: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                                     .fill(Color(.white))
+                            )
+                            .shadow(
+                                color: Color.black.opacity(0.15),
+                                radius: 8,
+                                x: 0, y: 4
                             )
                     }
                     .buttonStyle(.plain)
@@ -127,6 +164,11 @@ struct TodayView: View {
                             .font(.headline).bold()
                             .foregroundStyle(.black.opacity(0.8))
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .shadow(
+                                color: Color.black.opacity(0.15),
+                                radius: 8,
+                                x: 0, y: 4
+                            )
                         
                         Text("\(viewModel.meals.count)")
                             .font(.system(size: 12, weight: .medium))
@@ -145,27 +187,53 @@ struct TodayView: View {
                 } else {
                     ProgressView()
                 }
-                Button {
-                    showAddMealFlow = true
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "plus.circle.fill")
-                        Text("Log meal with AI")
-                            .font(.headline)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.white)
-                            .shadow(radius: 4, y: 2)
-                    )
-                }
-                .padding(.top, 16)
             }
+                
         }
             .padding()
-            // We'll  later add the HStack for button to open sheet and my fuel card
+            
+            VStack {
+                Spacer()
+                HStack {
+                  
+                    Spacer()
+                    Button {
+                        showAddMealFlow = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.title).bold()
+                            .foregroundStyle(.white)
+                            .padding()
+                            .background(Color.black, in: Circle())
+                            .shadow(
+                                color: Color.black.opacity(0.15),
+                                radius: 8,
+                                x: 0, y: 4
+                            )
+                    }
+                   
+                }
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity)
+            }
+            
+            if showFuelOverlay, let score = fuelScore {
+                FuelScoreOverlay(
+                    score: score,
+                    onLearnMore: {
+                        showFuelOverlay = false
+                        showFuelDetailSheet = true
+                    },
+                    onDismiss: {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                            showFuelOverlay = false
+                        }
+                    }
+                )
+                .padding(.top, 10)    // roughly under the flame chip; tweak as needed
+                .padding(.horizontal, 12)
+            }
+            
         }
         .sheet(isPresented: $showAddMealFlow, content: {
             AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
@@ -207,7 +275,15 @@ struct TodayView: View {
                     .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
             }
         }
- 
+        .sheet(isPresented: $showFuelDetailSheet) {
+            if let score = fuelScore {
+                FuelScoreDetailSheet(score: score)
+            } else {
+                Text("No fuel score for this day yet.")
+                    .padding()
+            }
+        }
+
     }
 
 }
