@@ -38,7 +38,7 @@ struct SignInView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Enter Password")
                         .font(.subheadline)
-                    SecureField("", text: $email)
+                    SecureField("", text: $password)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .frame(maxWidth: .infinity, alignment: .leading)

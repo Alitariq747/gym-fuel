@@ -91,13 +91,7 @@ struct EditMacrosSheet: View {
                         MacroRow(title: "fat", systemImage: "drop.fill", value: $fatText, color: Color.cyan)
                     }
                     .frame(maxWidth: .infinity)
-                    // HStack for protein
-                    
-                    
-                    // HStack for Carbs
-                    
-                    
-                    // HStack for fat
+   
                     
                     // VSTack for time
                     VStack(alignment: .leading, spacing: 8) {
@@ -114,7 +108,7 @@ struct EditMacrosSheet: View {
                             Spacer()
                             
                             // small text preview of selected time
-                            Text(mealTime, style: .time)
+                            Text(localMealTime, style: .time)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }

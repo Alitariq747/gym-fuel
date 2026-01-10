@@ -33,7 +33,7 @@ extension MealTimingTag {
         switch self {
         case .preWorkout:         return "Pre-workout"
         case .postWorkout:        return "Post-workout"
-        case .otherOnTrainingDay: return "Other meals"
+        case .otherOnTrainingDay: return "Support meals"
         case .restDay:            return "Rest day"
         }
     }
@@ -42,7 +42,7 @@ extension MealTimingTag {
         switch self {
         case .preWorkout:         return "Pre"
         case .postWorkout:        return "Post"
-        case .otherOnTrainingDay: return "Other"
+        case .otherOnTrainingDay: return "Support"
         case .restDay:            return "Rest"
         }
     }

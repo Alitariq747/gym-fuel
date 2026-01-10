@@ -65,7 +65,6 @@ struct MacroCardsSection: View {
             }
             .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding()
 
     }
 }
@@ -73,6 +72,6 @@ struct MacroCardsSection: View {
 #Preview {
     ZStack {
         AppBackground()
-        MacroCardsSection(targets: Macros(calories: 2000, protein: 150, carbs: 100, fat: 50), consumed: Macros(calories: 1000, protein: 130, carbs: 65, fat: 45))
+        MacroCardsSection(targets: Macros(calories: 2000, protein: 150, carbs: 300, fat: 50), consumed: Macros(calories: 1000, protein: 130, carbs: 165, fat: 45))
     }
 }

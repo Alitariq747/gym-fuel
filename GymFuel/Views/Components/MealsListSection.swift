@@ -16,6 +16,7 @@ fileprivate let mealTimeFormatter: DateFormatter = {
 struct MealsListSection: View {
     let dayLog: DayLog
     let meals: [Meal]
+    let onSelectMeal: (Meal) -> Void
 
  
     private var sectionOrder: [MealTimingTag] {
@@ -51,7 +52,12 @@ struct MealsListSection: View {
 
                         VStack(spacing: 14) {
                             ForEach(items) { meal in
-                                MealRow(dayLog: dayLog, meal: meal)
+                                Button {
+                                    onSelectMeal(meal)
+                                } label: {
+                                    MealRow(dayLog: dayLog, meal: meal)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -181,6 +187,6 @@ private struct TimingSectionHeader: View {
     
     ZStack {
         AppBackground()
-        MealsListSection(dayLog: log, meals: meals)
+        MealsListSection(dayLog: log, meals: meals, onSelectMeal: { _ in print("")})
     }
 }

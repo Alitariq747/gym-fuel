@@ -103,8 +103,5 @@ struct AIDetailsSection: View {
 
 
 #Preview {
-    ZStack {
-        AppBackground()
         AIDetailsSection(parsed: demo)
-    }
 }

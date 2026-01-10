@@ -73,7 +73,7 @@ extension DayLog {
                 carbs: 260,
                 fat: 70
             ),
-            fuelScore: nil
+            fuelScore: FuelScore(total: 89, macroAdherence: 93, timingAdherence: 77)
         )
     }()
     
