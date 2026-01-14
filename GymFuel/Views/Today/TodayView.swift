@@ -15,8 +15,24 @@ struct TodayView: View {
     @ObservedObject var viewModel: DayLogViewModel
     @Binding var selectedDate: Date
     
-   @State private var showAddMealFlow = false
     @State private var selectedMeal: Meal?
+    
+    enum AddMealMode: Identifiable {
+        case manual
+        case ai
+        
+        var id: String {
+            switch self {
+            case .manual:
+                return "manual"
+            case .ai:
+                return "ai"
+            }
+        }
+    }
+    
+    @State private var showAddMealOptions = false
+    @State private var activeAddMealMode: AddMealMode?
     
     struct DaySessionDraft {
         var isTrainingDay: Bool
@@ -93,8 +109,9 @@ struct TodayView: View {
                     
                     MetricsPagerSection(dayLog: log, consumed: viewModel.consumedMacros)
                     
-                   Text("Fuel TimeLine")
-                    
+                    FuelTimelineSection(dayLog: log, preMeals: viewModel.preWorkoutMeals, postMeals: viewModel.postWorkoutMeals, supportMeals: viewModel.otherTrainingDayMeals, restMeals: viewModel.restDayMeals, fuelImpactByMealId: viewModel.fuelImpactByMealId) { meal in
+                        selectedMeal = meal
+                    }
                     
 //                    MealsListSection(dayLog: log, meals: viewModel.meals) { meal in
 //                        selectedMeal = meal
@@ -113,7 +130,7 @@ struct TodayView: View {
                   
                     Spacer()
                     Button {
-                        showAddMealFlow = true
+                        showAddMealOptions = true
                     } label: {
                         Image(systemName: "plus")
                             .font(.title).bold()
@@ -147,8 +164,25 @@ struct TodayView: View {
 
         }
 
-        .sheet(isPresented: $showAddMealFlow, content: {
-            AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+        .confirmationDialog("How do you want to add this meal ?", isPresented: $showAddMealOptions, titleVisibility: .visible, actions: {
+            Button("Add manually") {
+                activeAddMealMode = .manual
+            }
+            Button("Use Ai") {
+                activeAddMealMode = .ai
+            }
+            Button("Cancel", role: .cancel) {
+                
+            }
+        })
+        // sheet for add meal flow
+        .sheet(item: $activeAddMealMode, content: { mode in
+            switch mode {
+            case .manual:
+                AddManualMealSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+            case .ai:
+                AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+            }
         })
         .onAppear {
             Task { await viewModel.createOrLoadTodayLog(date: selectedDate) }

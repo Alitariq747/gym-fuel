@@ -13,7 +13,6 @@ struct AppBackground: View {
     var body: some View {
         LinearGradient(
             colors: [
-                Color(.systemGray6),
                 Color(.secondarySystemBackground),
                 Color(.systemBackground)
             ],
