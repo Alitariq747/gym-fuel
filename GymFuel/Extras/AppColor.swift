@@ -11,4 +11,9 @@ import SwiftUI
 
 extension Color {
     static let liftEatsCoral = Color(red: 217/255, green: 76/255, blue: 69/255) // #E85A4F
+    
 }
+
+
+
+

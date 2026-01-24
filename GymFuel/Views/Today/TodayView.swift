@@ -33,6 +33,8 @@ struct TodayView: View {
     
     @State private var showAddMealOptions = false
     @State private var activeAddMealMode: AddMealMode?
+    @State private var showFuelScoreDetail = false
+
     
     struct DaySessionDraft {
         var isTrainingDay: Bool
@@ -76,16 +78,55 @@ struct TodayView: View {
             ScrollView {
                 VStack(spacing: 14) {
                     
-                    // HStack for title and icon
+
                     HStack(alignment: .center) {
-                        Image("LiftEatsWelcomeIcon")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                        Text("Lift Eats")
-                            .font(.system(size: 28, weight: .bold))
+
+           
+                        HStack(alignment: .center, spacing: 8) {
+                            Image("LiftEatsWelcomeIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 40, height: 40)
+
+                            Text("Lift Eats")
+                                .font(.system(size: 28, weight: .bold))
+                        }
+
+                        Spacer()
+
+                        // RIGHT: small pill with stats + settings
+                        HStack(spacing: 10) {
+                            // Stats / Insights icon
+                            NavigationLink {
+                           
+                                InsightsView(profile: viewModel.userProfile)
+                            } label: {
+                                Image(systemName: "chart.bar")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                
+                            }
+                            .buttonStyle(.plain)
+                            // Settings / Profile icon
+                            NavigationLink {
+                          
+                                ProfileView()
+                            } label: {
+                                Image(systemName: "gearshape.fill")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(Color(.systemBackground))
+                        )
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity)
+
                     
                 DateStripView(selectedDate: $selectedDate)
                 if let msg = viewModel.errorMessage {
@@ -107,15 +148,16 @@ struct TodayView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    MetricsPagerSection(dayLog: log, consumed: viewModel.consumedMacros)
-                    
+                    Button {
+                        showFuelScoreDetail = true
+                    } label: {
+                        MetricsPagerSection(dayLog: log, consumed: viewModel.consumedMacros)
+                    }
+                    .buttonStyle(.plain)
                     FuelTimelineSection(dayLog: log, preMeals: viewModel.preWorkoutMeals, postMeals: viewModel.postWorkoutMeals, supportMeals: viewModel.otherTrainingDayMeals, restMeals: viewModel.restDayMeals, fuelImpactByMealId: viewModel.fuelImpactByMealId) { meal in
                         selectedMeal = meal
                     }
                     
-//                    MealsListSection(dayLog: log, meals: viewModel.meals) { meal in
-//                        selectedMeal = meal
-//                    }
                 } else {
                     ProgressView()
                 }
@@ -184,6 +226,24 @@ struct TodayView: View {
                 AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
             }
         })
+        // sheet for FuelScore detail Sheet
+        .sheet(isPresented: $showFuelScoreDetail) {
+            if let log = viewModel.dayLog,
+               let score = log.fuelScore {
+                FuelScoreDetailSheet(
+                    dayLog: log,
+                    fuelScore: score,
+                    targets: log.macroTargets,
+                    consumed: viewModel.consumedMacros,
+                    preMacros: viewModel.preWorkoutMacros,
+                    postMacros: viewModel.postWorkoutMacros
+                )
+            } else {
+                Text("No Fuel Score for today yet.")
+                    .padding()
+            }
+        }
+
         .onAppear {
             Task { await viewModel.createOrLoadTodayLog(date: selectedDate) }
         }

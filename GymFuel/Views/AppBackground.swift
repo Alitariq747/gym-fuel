@@ -14,7 +14,7 @@ struct AppBackground: View {
         LinearGradient(
             colors: [
                 Color(.secondarySystemBackground),
-                Color(.systemBackground)
+
             ],
             startPoint: .top,
             endPoint: .bottom

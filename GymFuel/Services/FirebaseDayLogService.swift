@@ -41,58 +41,48 @@ final class FirebaseDayLogService: DayLogService {
                 
             }
         }
-        guard snapshot.exists, let data = snapshot.data() else {
+        guard snapshot.exists else {
             return nil
-            // We will ask DayLogViewModel to create  a new DayLog
+           
         }
         
-        let storedDate = (data["date"] as? Timestamp)?.dateValue() ?? date
-        let isTrainingDay = data["isTrainingDay"] as? Bool ?? true
-        let sessionStart = (data["sessionStart"] as? Timestamp)?.dateValue()
-        let intensityRaw = data["trainingIntensity"] as? String
-        let trainingIntensity = intensityRaw.flatMap { TrainingIntensity(rawValue: $0) }
-           
-        let sessionTypeRaw = data["sessionType"] as? String
-        let sessionType = sessionTypeRaw.flatMap { SessionType(rawValue: $0) }
+     return try decodeDayLog(from: snapshot, userId: userId, defaultDate: date)
         
-        // Macro targets
-        let macroDict = data["macroTargets"] as? [String: Any] ?? [:]
-        let macroTargets = Macros(
-            calories: Self.double(from: macroDict["calories"]),
-            protein:  Self.double(from: macroDict["protein"]),
-            carbs:    Self.double(from: macroDict["carbs"]),
-            fat:      Self.double(from: macroDict["fat"])
-        )
         
-        // Fuel score (optional)
-        var fuelScore: FuelScore? = nil
-        if let fuelDict = data["fuelScore"] as? [String: Any] {
-            let total = fuelDict["total"] as? Int
-                ?? Int(Self.double(from: fuelDict["total"]))
-            let macroAdherence = fuelDict["macroAdherence"] as? Int
-                ?? Int(Self.double(from: fuelDict["macroAdherence"]))
-            let timingAdherence = fuelDict["timingAdherence"] as? Int
-                ?? Int(Self.double(from: fuelDict["timingAdherence"]))
-            
-            fuelScore = FuelScore(
-                total: total,
-                macroAdherence: macroAdherence,
-                timingAdherence: timingAdherence
+    }
+    
+    func fetchDayLogs(for userId: String, from startDate: Date, to endDate: Date) async throws -> [DayLog] {
+        let collection = dayLogsCollection(for: userId)
+        
+        let query = collection.whereField("date", isGreaterThanOrEqualTo: startDate)
+            .whereField("date",isLessThanOrEqualTo: endDate)
+            .order(by: "date", descending: false)
+        
+        let snapshot: QuerySnapshot = try await withCheckedThrowingContinuation { continuation in
+            query.getDocuments { snapshot, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let snapshot = snapshot {
+                    continuation.resume(returning: snapshot)
+                } else {
+                    let error = NSError(
+                                            domain: "FirebaseDayLogService",
+                                            code: -1,
+                                            userInfo: [NSLocalizedDescriptionKey: "Missing query snapshot."]
+                                        )
+                                        continuation.resume(throwing: error)
+                }
+            }
+        }
+        let logs: [DayLog] = try snapshot.documents.map { doc in
+            try decodeDayLog(
+                from: doc,
+                userId: userId,
+                defaultDate: startDate
             )
         }
-        
-        // 5) Build and return the DayLog
-        return DayLog(
-            id: snapshot.documentID,
-            userId: userId,
-            date: storedDate,
-            isTrainingDay: isTrainingDay,
-            sessionStart: sessionStart,
-            trainingIntensity: trainingIntensity,
-            sessionType: sessionType,
-            macroTargets: macroTargets,
-            fuelScore: fuelScore
-        )
+
+        return logs
     }
     
     func saveDayLog(_ dayLog: DayLog) async throws {
@@ -161,8 +151,7 @@ final class FirebaseDayLogService: DayLogService {
         dayLogsCollection(for: dayLog.userId).document(dayLog.id)
     }
     
-    // helpers
-    // Same dayId logic as in DayLogViewModel
+ 
     private static func dayId(for date: Date, userId: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -178,4 +167,61 @@ final class FirebaseDayLogService: DayLogService {
         return defaultValue
     }
 
+    private func decodeDayLog(from snapshot: DocumentSnapshot, userId: String, defaultDate: Date) throws -> DayLog {
+        guard let data = snapshot.data() else {
+            throw NSError(domain: "FirebaseDayLogService", code: 1, userInfo: [NSLocalizedDescriptionKey: "DayLog document missing data."])
+        }
+        
+     
+            let storedDate = (data["date"] as? Timestamp)?.dateValue() ?? defaultDate
+            let isTrainingDay = data["isTrainingDay"] as? Bool ?? true
+            let sessionStart = (data["sessionStart"] as? Timestamp)?.dateValue()
+
+        
+            let intensityRaw = data["trainingIntensity"] as? String
+            let trainingIntensity = intensityRaw.flatMap { TrainingIntensity(rawValue: $0) }
+
+        
+            let sessionTypeRaw = data["sessionType"] as? String
+            let sessionType = sessionTypeRaw.flatMap { SessionType(rawValue: $0) }
+
+         
+            let macroDict = data["macroTargets"] as? [String: Any] ?? [:]
+            let macroTargets = Macros(
+                calories: Self.double(from: macroDict["calories"]),
+                protein:  Self.double(from: macroDict["protein"]),
+                carbs:    Self.double(from: macroDict["carbs"]),
+                fat:      Self.double(from: macroDict["fat"])
+            )
+
+          
+            var fuelScore: FuelScore? = nil
+            if let fuelDict = data["fuelScore"] as? [String: Any] {
+                let total = fuelDict["total"] as? Int
+                    ?? Int(Self.double(from: fuelDict["total"]))
+                let macroAdherence = fuelDict["macroAdherence"] as? Int
+                    ?? Int(Self.double(from: fuelDict["macroAdherence"]))
+                let timingAdherence = fuelDict["timingAdherence"] as? Int
+                    ?? Int(Self.double(from: fuelDict["timingAdherence"]))
+
+                fuelScore = FuelScore(
+                    total: total,
+                    macroAdherence: macroAdherence,
+                    timingAdherence: timingAdherence
+                )
+            }
+
+        
+            return DayLog(
+                id: snapshot.documentID,
+                userId: userId,
+                date: storedDate,
+                isTrainingDay: isTrainingDay,
+                sessionStart: sessionStart,
+                trainingIntensity: trainingIntensity,
+                sessionType: sessionType,
+                macroTargets: macroTargets,
+                fuelScore: fuelScore
+            )
+    }
 }

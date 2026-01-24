@@ -8,20 +8,24 @@
 import SwiftUI
 
 struct MainTabView: View {
+    let profile: UserProfile
     @StateObject private var dayLogViewModel: DayLogViewModel
-    
-   
     @State private var selectedDate: Date = Date()
     
+  
+    
     init(profile: UserProfile) {
+        self.profile = profile
         _dayLogViewModel = StateObject(wrappedValue: DayLogViewModel(profile: profile))
     }
     
     var body: some View {
         NavigationStack {
-                TodayView(viewModel: dayLogViewModel, selectedDate: $selectedDate)
+            TodayView(
+                viewModel: dayLogViewModel,
+                selectedDate: $selectedDate
+            )
         }
- 
     }
 }
 

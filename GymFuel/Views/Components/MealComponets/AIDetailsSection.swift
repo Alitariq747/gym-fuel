@@ -17,7 +17,7 @@ struct AIDetailsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
 
-            // HEADER ROW: confidence + chevron
+           
             Button {
                 withAnimation(expandAnimation) {
                     isExpanded.toggle()

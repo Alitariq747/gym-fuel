@@ -9,6 +9,12 @@ import Foundation
 protocol DayLogService {
     
     func fetchDayLog(for userId: String, date: Date) async throws -> DayLog?
-        
+    
+    func fetchDayLogs(
+         for userId: String,
+         from startDate: Date,
+         to endDate: Date
+     ) async throws -> [DayLog]
+    
     func saveDayLog(_ dayLog: DayLog) async throws
 }

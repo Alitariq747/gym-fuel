@@ -18,6 +18,7 @@ struct DayLog: Codable, Identifiable, Equatable {
     var sessionType: SessionType?
     var macroTargets: Macros
     var fuelScore: FuelScore?
+    var consumedMacros: Macros?
     
     init(
         id: String,
@@ -28,7 +29,8 @@ struct DayLog: Codable, Identifiable, Equatable {
         trainingIntensity: TrainingIntensity? = .normal,
         sessionType: SessionType? = nil,
         macroTargets: Macros = .zero,
-        fuelScore: FuelScore? = nil
+        fuelScore: FuelScore? = nil,
+        consumedMacros: Macros? = .zero
     ) {
         self.id = id
         self.userId = userId
@@ -39,6 +41,7 @@ struct DayLog: Codable, Identifiable, Equatable {
         self.sessionType = sessionType
         self.macroTargets = macroTargets
         self.fuelScore = fuelScore
+        self.consumedMacros = consumedMacros
     }
 
  

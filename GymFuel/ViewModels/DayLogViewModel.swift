@@ -31,6 +31,9 @@ final class DayLogViewModel: ObservableObject {
         self.dayLogService = dayLogService
         self.mealService = mealService
     }
+    var userProfile: UserProfile {
+        profile
+    }
     
     func defaultSessionStart(for date: Date) -> Date? {
         guard let timeOfDay = profile.trainingTimeOfDay else { return nil }
@@ -168,8 +171,7 @@ final class DayLogViewModel: ObservableObject {
                 newDayLog.macroTargets = macros
                 self.dayLog = newDayLog
                 
-                // Compute initial fuel score (will mostly reflect targets, meals likely empty).
-                //2a)
+                
                 do {
                     let loadedMeals = try await mealService.fetchMeals(
                         for: userId,
