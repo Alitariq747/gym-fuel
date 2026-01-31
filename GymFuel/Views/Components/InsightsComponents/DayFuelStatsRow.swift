@@ -32,16 +32,12 @@ struct DayFuelStatsRow: View {
         }
     }
 
-    private var scoreLabel: String {
-        if let score = row.fuelScore {
-            "🔥 \(score)"
-        } else {
-            "0"
-        }
+    private var scoreValue: Int {
+        row.fuelScore ?? 0
     }
 
-    private var scoreColor: Color {
-        let total = row.fuelScore ?? 0
+    private var scoreTextColor: Color {
+        let total = scoreValue
         return total >= 75 ? .fuelGreen : .fuelRed
     }
 
@@ -72,12 +68,20 @@ struct DayFuelStatsRow: View {
 
             Spacer()
 
-            // Column 4: score
-            Text(scoreLabel)
-                .font(.subheadline.weight(.semibold))
+            // Column 4: fuel label + value, nicely aligned
+            HStack(spacing: 4) {
+                Text("Fuel")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text("\(scoreValue)")
+                    .font(.system(.subheadline, design: .monospaced))
+                    .foregroundStyle(scoreTextColor)
+                    .frame(width: 25, alignment: .trailing)
+            }
+            .frame(width: 60, alignment: .trailing)
         }
         .padding(.vertical, 6)
-
     }
 }
 

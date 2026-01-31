@@ -21,7 +21,7 @@ final class DayLogViewModel: ObservableObject {
     
     // Dependencies
     private let planner: MacrosPlanner
-    private let profile: UserProfile
+    private var profile: UserProfile
     private let dayLogService: DayLogService
     private let mealService: MealService
     
@@ -33,6 +33,15 @@ final class DayLogViewModel: ObservableObject {
     }
     var userProfile: UserProfile {
         profile
+    }
+    
+    func updateProfile(_ newProfile: UserProfile) {
+        self.profile = newProfile
+        
+        if var current = self.dayLog {
+            recalculateTargets(for: &current)
+            self.dayLog = current
+        }
     }
     
     func defaultSessionStart(for date: Date) -> Date? {
@@ -652,6 +661,9 @@ final class DayLogViewModel: ObservableObject {
     
     func refreshFuelScore() {
         guard var current = dayLog else { return }
+        
+        let consumed = macros(for: meals)
+        current.consumedMacros = consumed
         
         if let score = computeFuelScore(for: current, using: meals) {
             current.fuelScore = score

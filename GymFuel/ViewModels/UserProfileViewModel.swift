@@ -56,4 +56,16 @@ final class UserProfileViewModel: ObservableObject {
         isLoading = false
         errorMessage = nil
     }
+    
+    
 }
+
+#if DEBUG
+extension UserProfileViewModel {
+    func _setProfileForPreview(_ profile: UserProfile) {
+        self.profile = profile
+        self.isLoading = false
+        self.errorMessage = nil
+    }
+}
+#endif

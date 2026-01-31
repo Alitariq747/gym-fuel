@@ -26,6 +26,9 @@ struct MainTabView: View {
                 selectedDate: $selectedDate
             )
         }
+        .onChange(of: profile) { _, newProfile in
+            dayLogViewModel.updateProfile(newProfile)
+        }
     }
 }
 

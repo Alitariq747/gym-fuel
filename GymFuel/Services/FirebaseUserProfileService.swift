@@ -76,7 +76,7 @@ final class FirebaseUserProfileService {
             
             let data: [String: Any] = [
                 "name": "",
-                "onboardingComplete": false,
+                "isOnboardingComplete": false,
                 "gender": "",
                 "createdAt": FieldValue.serverTimestamp(),
                 "updatedAt": FieldValue.serverTimestamp()

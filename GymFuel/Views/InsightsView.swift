@@ -27,7 +27,6 @@ struct InsightsView: View {
                             get: { viewModel.selectedWeekStart },
                             set: { newWeekStart in
                                 viewModel.updateWeekStart(to: newWeekStart)
-                                Task { await viewModel.loadCurrentWeek() }
                             }
                         )
                     )
@@ -72,6 +71,8 @@ struct InsightsView: View {
                             .fill(Color(.systemBackground))
                     )
                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                    
+                    WeeklyMacroOverviewCard(overview: viewModel.weeklyMacroOverview)
                 }
                 .padding()
             }

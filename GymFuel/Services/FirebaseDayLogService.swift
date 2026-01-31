@@ -131,6 +131,17 @@ final class FirebaseDayLogService: DayLogService {
               data["fuelScore"] = FieldValue.delete()
           }
         
+        if let consumed = dayLog.consumedMacros {
+            data["consumedMacros"] = [
+                "calories": consumed.calories,
+                "protein": consumed.protein,
+                "carbs": consumed.carbs,
+                "fat": consumed.fat
+            ]
+        } else {
+            data["consumedMacros"] = FieldValue.delete()
+        }
+        
         try await withCheckedThrowingContinuation{ (continuation: CheckedContinuation<Void,Error>) in
             docRef.setData(data, merge: true) { error in
                 if let error = error {
@@ -193,6 +204,16 @@ final class FirebaseDayLogService: DayLogService {
                 carbs:    Self.double(from: macroDict["carbs"]),
                 fat:      Self.double(from: macroDict["fat"])
             )
+        
+            let consumedDict = data["consumedMacros"] as? [String: Any]
+            let consumedMacros: Macros? = consumedDict.map { dict in
+            Macros(
+                calories: Self.double(from: dict["calories"]),
+                protein:  Self.double(from: dict["protein"]),
+                carbs:    Self.double(from: dict["carbs"]),
+                fat:      Self.double(from: dict["fat"])
+            )
+        }
 
           
             var fuelScore: FuelScore? = nil
@@ -221,7 +242,8 @@ final class FirebaseDayLogService: DayLogService {
                 trainingIntensity: trainingIntensity,
                 sessionType: sessionType,
                 macroTargets: macroTargets,
-                fuelScore: fuelScore
+                fuelScore: fuelScore,
+                consumedMacros: consumedMacros
             )
     }
 }

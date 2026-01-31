@@ -24,6 +24,13 @@ struct DailyFuelScorePoint: Identifiable {
     var id: Date { date }
 }
 
+struct MacroPercentages {
+    let caloriesPct: Double
+    let proteinPct: Double
+    let carbsPct: Double
+    let fatPct: Double
+}
+
 @MainActor
 final class WeeklyInsightsViewModel: ObservableObject {
     
@@ -165,4 +172,57 @@ final class WeeklyInsightsViewModel: ObservableObject {
             return DailyFuelScorePoint(date: dayStart, score: score)
         }
     }
+    
+    // helper to compute percentages
+    private func macroPercentages(for dayLog: DayLog) -> MacroPercentages? {
+        guard let consumedMacros = dayLog.consumedMacros else { return nil }
+        
+        let targets = dayLog.macroTargets
+        
+        func pct(actual: Double, target: Double) -> Double? {
+            guard target > 0 else { return nil }
+            return (actual / target) * 100
+        }
+        
+        guard
+            let caloriesPct = pct(actual: consumedMacros.calories, target: targets.calories),
+            let proteinPct = pct(actual: consumedMacros.protein, target: targets.protein),
+            let carbsPct = pct(actual: consumedMacros.carbs, target: targets.carbs),
+            let fatPct = pct(actual: consumedMacros.fat, target: targets.fat)
+        else { return nil }
+        
+        return MacroPercentages(caloriesPct: caloriesPct, proteinPct: proteinPct, carbsPct: carbsPct, fatPct: fatPct)
+    }
+    
+    // for every date we have % of macros consumed per macro
+    var weeklyMacroPercentages: [(date: Date, macros: MacroPercentages)] {
+        weekDates.compactMap { date in
+            let dayStart = calendar.startOfDay(for: date)
+            guard let log = weekDayLogs[dayStart],
+                  let percentages = macroPercentages(for: log)
+            else { return nil }
+          
+            return (date: dayStart, macros: percentages)
+        }
+    }
+    
+    var weeklyMacroOverview: MacroPercentages? {
+        let entries = weeklyMacroPercentages
+        guard !entries.isEmpty else { return nil }
+        
+        let count = Double(entries.count)
+        
+        let totalCalories = entries.reduce(0.0) { $0 + $1.macros.caloriesPct }
+        let totalProtein = entries.reduce(0.0) { $0 + $1.macros.proteinPct }
+        let totalCarbs = entries.reduce(0.0) { $0 + $1.macros.carbsPct }
+        let totalFat = entries.reduce(0.0) { $0 + $1.macros.fatPct }
+        
+        return MacroPercentages(
+            caloriesPct: totalCalories / count,
+            proteinPct: totalProtein / count,
+            carbsPct: totalCarbs / count,
+            fatPct: totalFat / count
+        )
+    }
+    
 }
