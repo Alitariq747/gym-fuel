@@ -37,7 +37,7 @@ final class UserProfileViewModel: ObservableObject {
         isLoading = false
     }
     
-    func completeOnboarding(for uid: String, name: String, gender: String, heightCm: Double, age: Int, weightKg: Double, trainingGoal: TrainingGoal, trainingDaysPerWeek: Int, trainingExperience: TrainingExperience, trainingStyle: TrainingStyle, trainingTimeOfDay: TrainingTimeOfDay, nonTrainingActivityLevel: NonTrainingActivityLevel) async {
+    func completeOnboarding(for uid: String, name: String, gender: Gender, heightCm: Double, age: Int, weightKg: Double, trainingGoal: TrainingGoal, trainingDaysPerWeek: Int, trainingExperience: TrainingExperience, trainingStyle: TrainingStyle, trainingTimeOfDay: TrainingTimeOfDay, nonTrainingActivityLevel: NonTrainingActivityLevel) async {
         
         isLoading = true
         errorMessage = nil

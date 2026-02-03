@@ -22,7 +22,8 @@ final class FirebaseUserProfileService {
     private func mapDocument(id: String, data: [String : Any]) -> UserProfile {
         let name = data["name"] as? String ?? ""
         let isOnboardingComplete = data["isOnboardingComplete"] as? Bool ?? false
-        let gender = data["gender"] as? String ?? ""
+        let genderString = data["gender"] as? String ?? ""
+        let gender = Gender(rawValue: genderString) ?? .preferNotToSay
         let heightCm = data["heightCm"] as? Double
         let age = data["age"] as? Int
         let weightKg = data["weightKg"] as? Double
@@ -72,12 +73,12 @@ final class FirebaseUserProfileService {
             return mapDocument(id: snapshot.documentID, data: data)
         } else {
             // create a default profile
-            let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil , age: nil, weightKg: nil, trainingGoal: nil, trainingDaysPerWeek: nil , trainingExperience: nil, trainingStyle: nil, trainingTimeOfDay: nil, nonTrainingActivityLevel: nil, isOnboardingComplete: false, gender: "")
+            let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil , age: nil, weightKg: nil, trainingGoal: nil, trainingDaysPerWeek: nil , trainingExperience: nil, trainingStyle: nil, trainingTimeOfDay: nil, nonTrainingActivityLevel: nil, isOnboardingComplete: false, gender: .preferNotToSay)
             
             let data: [String: Any] = [
                 "name": "",
                 "isOnboardingComplete": false,
-                "gender": "",
+                "gender": Gender.preferNotToSay.rawValue,
                 "createdAt": FieldValue.serverTimestamp(),
                 "updatedAt": FieldValue.serverTimestamp()
             ]
@@ -98,15 +99,14 @@ final class FirebaseUserProfileService {
           
        }
     
-    func updateProfile(for uid: String, name: String, heightCm: Double? , age: Int?, weightKg: Double?, trainingGoal: TrainingGoal?, trainingDaysPerWeek: Int?, trainingExperience: TrainingExperience?, trainingStyle: TrainingStyle?, trainingTimeOfDay: TrainingTimeOfDay?, nonTrainingActivityLevel: NonTrainingActivityLevel?, isOnboardingComplete: Bool, gender: String) async throws -> UserProfile {
+    func updateProfile(for uid: String, name: String, heightCm: Double? , age: Int?, weightKg: Double?, trainingGoal: TrainingGoal?, trainingDaysPerWeek: Int?, trainingExperience: TrainingExperience?, trainingStyle: TrainingStyle?, trainingTimeOfDay: TrainingTimeOfDay?, nonTrainingActivityLevel: NonTrainingActivityLevel?, isOnboardingComplete: Bool, gender: Gender) async throws -> UserProfile {
         let docRef = profileDocument(for: uid)
         
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedGender = gender.trimmingCharacters(in: .whitespacesAndNewlines)
         
         var data: [String: Any] = [
             "name": trimmedName,
-            "gender": trimmedGender,
+            "gender": gender.rawValue,
             "isOnboardingComplete": isOnboardingComplete,
             "updatedAt": FieldValue.serverTimestamp()
         ]
@@ -155,10 +155,9 @@ final class FirebaseUserProfileService {
                     }
             }
         }
-        return UserProfile(id: uid, name: trimmedName, heightCm: heightCm, age: age , weightKg: weightKg, trainingGoal: trainingGoal, trainingDaysPerWeek: trainingDaysPerWeek, trainingExperience: trainingExperience, trainingStyle: trainingStyle, trainingTimeOfDay: trainingTimeOfDay, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: isOnboardingComplete, gender: trimmedGender)
+        return UserProfile(id: uid, name: trimmedName, heightCm: heightCm, age: age , weightKg: weightKg, trainingGoal: trainingGoal, trainingDaysPerWeek: trainingDaysPerWeek, trainingExperience: trainingExperience, trainingStyle: trainingStyle, trainingTimeOfDay: trainingTimeOfDay, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: isOnboardingComplete, gender: gender)
     }
     
   
         
 }
-

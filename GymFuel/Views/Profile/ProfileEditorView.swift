@@ -36,17 +36,9 @@ struct ProfileEditorView: View {
     
     // gender
     @State private var showGenderDialog = false
-    private let genderOptions: [(value: String, title: String, symbol: String)] = [
-        ("male", "Male", "♂"),
-        ("female", "Female", "♀")
-    ]
 
     private var genderTitle: String {
-        switch draft.gender {
-        case "male": return "Male"
-        case "female": return "Female"
-        default: return "Select"
-        }
+        draft.gender.displayName
     }
 
     // Height
@@ -170,9 +162,10 @@ struct ProfileEditorView: View {
                         }
                         .buttonStyle(.plain)
                         .confirmationDialog("Pick Gender", isPresented: $showGenderDialog, titleVisibility: .visible) {
-                            Button("♂ Male") { draft.gender = "male" }
-                             Button("♀ Female") { draft.gender = "female" }
-                             Button("Cancel", role: .cancel) {}
+                            Button("\(Gender.male.symbol) \(Gender.male.displayName)") { draft.gender = .male }
+                            Button("\(Gender.female.symbol) \(Gender.female.displayName)") { draft.gender = .female }
+                            Button(Gender.preferNotToSay.displayName) { draft.gender = .preferNotToSay }
+                            Button("Cancel", role: .cancel) {}
                         }
                         Divider()
                         // Height Row
@@ -399,5 +392,4 @@ private struct ProfileEditorPreviewWrapper: View {
         ProfileEditorView(draft: $draft, email: "ahmad@example.com")
     }
 }
-
 

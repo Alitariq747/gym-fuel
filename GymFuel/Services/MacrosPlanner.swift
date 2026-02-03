@@ -13,6 +13,7 @@ import Foundation
 /// Errors that can occur when planning daily macros.
 enum MacrosPlannerError: Error {
     case missingBodyMetrics   // missing age/height/weight
+    case invalidBodyMetrics   // non-positive or unrealistic inputs
 }
 
 /// Responsible for turning a UserProfile + DayLog (today's training context)
@@ -36,8 +37,20 @@ struct MacrosPlanner {
             // In a real app you might want to handle this more gracefully.
             throw MacrosPlannerError.missingBodyMetrics
         }
+
+        guard weightKg > 0, heightCm > 0, ageYears > 0 else {
+            throw MacrosPlannerError.invalidBodyMetrics
+        }
         
-        let isMale = profile.gender.lowercased().hasPrefix("m")
+        let sexOffset: Double
+        switch profile.gender {
+        case .male:
+            sexOffset = 5.0
+        case .female:
+            sexOffset = -161.0
+        case .preferNotToSay:
+            sexOffset = -78.0
+        }
         
         let goal = profile.trainingGoal ?? .performance
         let experience = profile.trainingExperience ?? .intermediate
@@ -50,7 +63,7 @@ struct MacrosPlanner {
             weightKg: weightKg,
             heightCm: heightCm,
             ageYears: ageYears,
-            isMale: isMale
+            sexOffset: sexOffset
         )
         
         // 3. Estimate non-training TDEE from BMR and lifestyle activity.
@@ -68,6 +81,8 @@ struct MacrosPlanner {
         // 6. Adjust calories for goal (cut / maintain / gain / crush workouts).
         let goalAdjustedCalories = goalAdjustedCalorieTarget(
             neutralCalories: neutralCalories,
+            bmr: bmr,
+            weightKg: weightKg,
             goal: goal,
             experience: experience,
             intensity: dayLog.trainingIntensity,
@@ -95,15 +110,16 @@ private extension MacrosPlanner {
     /// Mifflin-St Jeor BMR equation.
     /// - For men:    BMR = 10W + 6.25H - 5A + 5
     /// - For women:  BMR = 10W + 6.25H - 5A - 161
+    /// - For prefer-not-to-say: use midpoint offset (-78)
     /// Where W = weight (kg), H = height (cm), A = age (years).
     func estimateBMR(
         weightKg: Double,
         heightCm: Double,
         ageYears: Int,
-        isMale: Bool
+        sexOffset: Double
     ) -> Double {
         let base = 10.0 * weightKg + 6.25 * heightCm - 5.0 * Double(ageYears)
-        return base + (isMale ? 5.0 : -161.0)
+        return base + sexOffset
     }
     
     /// Activity multiplier based on non-training activity level.
@@ -148,6 +164,8 @@ private extension MacrosPlanner {
     /// Adjust neutral calories up/down based on training goal and experience.
     func goalAdjustedCalorieTarget(
         neutralCalories: Double,
+        bmr: Double,
+        weightKg: Double,
         goal: TrainingGoal,
         experience: TrainingExperience,
         intensity: TrainingIntensity?,
@@ -216,7 +234,8 @@ private extension MacrosPlanner {
         let adjusted = neutralCalories * multiplier
         
         // Clamp to a reasonable range to avoid extreme outputs.
-        let minCalories = max(1400, neutralCalories * 0.7)
+        // Weight-scaled floor + BMR-based floor to avoid underfueling.
+        let minCalories = max(22.0 * weightKg, max(bmr * 1.1, neutralCalories * 0.7))
         let maxCalories = neutralCalories * 1.4
         
         return adjusted.clamped(to: minCalories...maxCalories)
@@ -255,20 +274,16 @@ private extension MacrosPlanner {
             goal: goal,
             sessionType: sessionType
         )
-        let fatGrams = fatPerKg * weightKg
-        let fatCalories = fatGrams * 9.0
+        let recommendedFatGrams = fatPerKg * weightKg
+        let recommendedFatCalories = recommendedFatGrams * 9.0
         
-        // 3. Carbs take remaining calories.
-        var remainingCalories = totalCalories - proteinCalories - fatCalories
-        
-        // Ensure we don't go negative; if the target is very low,
-        // sacrifice some carbs but keep protein & fat minima.
-        let minimumCarbCalories = totalCalories * 0.10   // at least 10% from carbs
-        if remainingCalories < minimumCarbCalories {
-            remainingCalories = minimumCarbCalories
-        }
-        
-        let carbGrams = remainingCalories / 4.0
+        // 3. Carbs take remaining calories after protein and fat.
+        // Keep protein fixed; cap fat if total calories are too low.
+        let remainingAfterProtein = max(0, totalCalories - proteinCalories)
+        let fatCalories = min(recommendedFatCalories, remainingAfterProtein)
+        let fatGrams = fatCalories / 9.0
+        let remainingAfterFat = max(0, remainingAfterProtein - fatCalories)
+        let carbGrams = remainingAfterFat / 4.0
         
         return Macros(
             calories: totalCalories.rounded(),

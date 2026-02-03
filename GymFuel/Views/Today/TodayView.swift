@@ -317,9 +317,6 @@ struct TodayView: View {
 }
 
 
-
-
-
 #Preview {
   
        

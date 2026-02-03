@@ -78,43 +78,43 @@ import SwiftUI
              
          // PRE-WORKOUT
          case (.preWorkout, .timing, true):
-             return "PERFECT PRE TIMING"
+             return "PRE LOCKED"
          case (.preWorkout, .timing, false):
-             return "PRE MEAL RAN LATE"
+             return "PRE LATE"
          case (.preWorkout, .macros, true):
-             return "PRE MACROS HITTING HARD"
+             return "PRE FUELED"
          case (.preWorkout, .macros, false):
-             return "PRE MACROS UNDERPOWERED"
+             return "PRE LIGHT"
              
          // POST-WORKOUT
          case (.postWorkout, .timing, true):
-             return "ON-TIME RECOVERY"
+             return "RECOVERY ON"
          case (.postWorkout, .timing, false):
-             return "LATE RECOVERY MEAL"
+             return "RECOVERY LATE"
          case (.postWorkout, .macros, true):
-             return "RECOVERY MACROS ON POINT"
+             return "RECOVERY HIT"
          case (.postWorkout, .macros, false):
-             return "RECOVERY MACROS LIGHT"
+             return "RECOVERY LIGHT"
              
          // SUPPORT MEALS (otherOnTrainingDay)
          case (.otherOnTrainingDay, .timing, true):
-             return "DAY FLOW WELL SPACED"
+             return "DAY FLOW"
          case (.otherOnTrainingDay, .timing, false):
-             return "MEALS BUNCHED TOGETHER"
+             return "DAY CLUMPED"
          case (.otherOnTrainingDay, .macros, true):
-             return "DAY MACROS STAYING SHARP"
+             return "DAY STEADY"
          case (.otherOnTrainingDay, .macros, false):
-             return "DAY MACROS FALLING BEHIND"
+             return "DAY LAGGING"
              
          // REST DAY
          case (.restDay, .timing, true):
-             return "RECOVERY MEALS WELL SPACED"
+             return "REST IN SYNC"
          case (.restDay, .timing, false):
-             return "RECOVERY MEALS OFF RHYTHM"
+             return "REST OFF BEAT"
          case (.restDay, .macros, true):
-             return "RECOVERY MACROS LOCKED IN"
+             return "REST ON"
          case (.restDay, .macros, false):
-             return "RECOVERY MACROS OFF"
+             return "REST OFF"
          }
      }
 

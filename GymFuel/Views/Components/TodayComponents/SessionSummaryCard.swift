@@ -16,9 +16,8 @@ struct SessionSummaryCard: View {
             // if rest day
             if dayLog.isTrainingDay {
                 HStack(alignment: .top, spacing: 16) {
-                     Image(systemName: "dumbbell")
+                    Text("🏋️")
                          .font(.headline)
-                         .foregroundStyle(.primary)
                          .padding(10)
                          .background(Color(.systemGray5), in: Circle())
 

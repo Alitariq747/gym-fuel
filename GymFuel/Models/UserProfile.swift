@@ -7,6 +7,33 @@
 
 import Foundation
 
+enum Gender: String, CaseIterable, Codable, Equatable {
+    case male = "male"
+    case female = "female"
+    case preferNotToSay = "prefer_not_to_say"
+
+    var displayName: String {
+        switch self {
+        case .male:
+            return "Male"
+        case .female:
+            return "Female"
+        case .preferNotToSay:
+            return "Prefer not to say"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .male:
+            return "♂"
+        case .female:
+            return "♀"
+        case .preferNotToSay:
+            return "–"
+        }
+    }
+}
 
 struct UserProfile: Identifiable, Equatable {
     let id: String         
@@ -21,10 +48,10 @@ struct UserProfile: Identifiable, Equatable {
     var trainingTimeOfDay: TrainingTimeOfDay?
     var nonTrainingActivityLevel: NonTrainingActivityLevel?
     var isOnboardingComplete: Bool
-    var gender: String
+    var gender: Gender
 }
 
-var dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, trainingGoal: .muscleGain, trainingDaysPerWeek: 0, trainingExperience: .intermediate, trainingStyle: .hypertrophy,  trainingTimeOfDay: .morning, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: "male")
+var dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, trainingGoal: .muscleGain, trainingDaysPerWeek: 0, trainingExperience: .intermediate, trainingStyle: .hypertrophy,  trainingTimeOfDay: .morning, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: .male)
 
 struct UserProfileDraft: Equatable {
     let id: String
@@ -39,7 +66,7 @@ struct UserProfileDraft: Equatable {
     var trainingTimeOfDay: TrainingTimeOfDay?
     var nonTrainingActivityLevel: NonTrainingActivityLevel?
     var isOnboardingComplete: Bool
-    var gender: String
+    var gender: Gender
     
     init(from profile: UserProfile) {
         self.id = profile.id
@@ -59,7 +86,6 @@ struct UserProfileDraft: Equatable {
     
     mutating func normalize() {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        gender = gender.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if let days = trainingDaysPerWeek {
             trainingDaysPerWeek = max(0, min(7, days))

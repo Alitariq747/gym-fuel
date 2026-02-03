@@ -11,13 +11,10 @@ struct OnboardingGenderStepView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     let name: String
-    @Binding var gender: String
+    @Binding var gender: Gender
     
     let onNext: () -> Void
   
-    
-    @State private var errorMessage: String?
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
                  
@@ -34,16 +31,16 @@ struct OnboardingGenderStepView: View {
                   
                  // Vstack for gender
                 
-            // male button
+            // gender buttons
             VStack(spacing: 18) {
                 Button {
-                    gender = "male"
+                    gender = .male
                 } label: {
                     HStack(spacing: 8) {
-                        Text("♂")
+                        Text(Gender.male.symbol)
                             .font(.title2)
                             .foregroundStyle(.primary)
-                        Text("Male")
+                        Text(Gender.male.displayName)
                             .font(.headline)
                             .foregroundStyle(.primary)
                     }
@@ -51,20 +48,20 @@ struct OnboardingGenderStepView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(
-                        gender == "male" ?
-                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == "male" ? 2 : 1))
+                        gender == .male ?
+                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == .male ? 2 : 1))
                 }
                 .buttonStyle(.plain)
                 
                 // female button
                 Button {
-                    gender = "female"
+                    gender = .female
                 } label: {
                     HStack {
-                        Text("♀")
+                        Text(Gender.female.symbol)
                             .font(.title2)
                             .foregroundStyle(.primary)
-                        Text("Female")
+                        Text(Gender.female.displayName)
                             .font(.headline)
                             .foregroundStyle(.primary)
                     }
@@ -72,21 +69,33 @@ struct OnboardingGenderStepView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(
-                        gender == "female" ?
-                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == "female" ? 2 : 1))
+                        gender == .female ?
+                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == .female ? 2 : 1))
+                }
+                .buttonStyle(.plain)
+                
+                // prefer not to say button
+                Button {
+                    gender = .preferNotToSay
+                } label: {
+                    HStack {
+                        Text(Gender.preferNotToSay.symbol)
+                            .font(.title2)
+                            .foregroundStyle(.primary)
+                        Text(Gender.preferNotToSay.displayName)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(
+                        gender == .preferNotToSay ?
+                        (Color.primary) : Color(.secondarySystemBackground), lineWidth: gender == .preferNotToSay ? 2 : 1))
                 }
                 .buttonStyle(.plain)
             }
             
-           
-                  
-                  if let errorMessage {
-                      Text(errorMessage)
-                          .font(.footnote)
-                          .foregroundStyle(.red)
-                          .frame(maxWidth: .infinity, alignment: .leading)
-                  }
-                  
             Spacer()
                  
             Button {
@@ -106,15 +115,10 @@ struct OnboardingGenderStepView: View {
     }
     
     private func handleNext() {
-        guard !gender.isEmpty else {
-            errorMessage = "Please select a gender."
-            return
-        }
-        errorMessage = nil
         onNext()
     }
 }
 
 #Preview {
-    OnboardingGenderStepView(name: "Ali", gender: .constant("female"), onNext: { print("")})
+    OnboardingGenderStepView(name: "Ali", gender: .constant(.female), onNext: { print("")})
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 private struct OnboardingData {
     var name: String = ""
-    var gender: String = ""
+    var gender: Gender = .preferNotToSay
     var age: Int? = nil
     var heightCm: Double? = nil
     var weightKg: Double? = nil
@@ -37,7 +37,7 @@ private enum OnboardingStep: Hashable {
 
 struct OnboardingFlowView: View {
     /// Called when the last step finishes successfully.
-    let onFinished: (String, String, Int, Double, Double, TrainingGoal, Int, TrainingExperience, TrainingStyle, TrainingTimeOfDay, NonTrainingActivityLevel) -> Void
+    let onFinished: (String, Gender, Int, Double, Double, TrainingGoal, Int, TrainingExperience, TrainingStyle, TrainingTimeOfDay, NonTrainingActivityLevel) -> Void
 
     @State private var data = OnboardingData()
     @State private var step: OnboardingStep = .name
@@ -244,4 +244,3 @@ struct OnboardingFlowView: View {
         print("Finished onboarding with:", name, gender, age, height, weight, trainingGoal, trainingDays, trainingExperience, trainingStyle, trainingTime, activityLevel)
     }
 }
-

@@ -59,7 +59,9 @@ struct FuelScoreDetailSheet: View {
     // MARK: – Subviews
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let tone = scoreTone(for: fuelScore.total)
+
+        return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Today’s Fuel Score")
@@ -73,6 +75,7 @@ struct FuelScoreDetailSheet: View {
 
                 VStack(alignment: .trailing, spacing: 6) {
                     scoreBadge(for: fuelScore.total)
+                    scoreRing(score: fuelScore.total, color: tone.color)
 
                     Text(isTrainingDay ? "Training day" : "Rest day")
                         .font(.subheadline)
@@ -91,37 +94,21 @@ struct FuelScoreDetailSheet: View {
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 16).fill(.ultraThinMaterial))
+        .background(cardBackground(tint: tone.color))
     }
 
     private func scoreBadge(for score: Int) -> some View {
-        let label: String
-        let color: Color
+        let tone = scoreTone(for: score)
 
-        switch score {
-        case 85...:
-            label = "Dialed in"
-            color = .green
-        case 70..<85:
-            label = "Solid"
-            color = .blue
-        case 50..<70:
-            label = "Needs refinement"
-            color = .orange
-        default:
-            label = "Big opportunity"
-            color = .red
-        }
-
-        return Text(label)
+        return Text(tone.label)
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(
                 Capsule()
-                    .fill(color.opacity(0.15))
+                    .fill(tone.color.opacity(0.15))
             )
-            .foregroundStyle(color)
+            .foregroundStyle(tone.color)
     }
 
     private var formulaSection: some View {
@@ -157,6 +144,8 @@ struct FuelScoreDetailSheet: View {
                 }
             }
         }
+        .padding()
+        .background(cardBackground())
     }
 
     private func formulaRow(step: String, title: String, body: String) -> some View {
@@ -225,7 +214,7 @@ struct FuelScoreDetailSheet: View {
             }
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 16).fill(.ultraThinMaterial))
+        .background(cardBackground())
     }
 
     private func metricCard(title: String, value: Int, subtitle: String) -> some View {
@@ -244,11 +233,21 @@ struct FuelScoreDetailSheet: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 14).fill(.background))
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(.background)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(.primary.opacity(0.06), lineWidth: 1)
+                )
+        )
     }
 
     private func macroRow(label: String, actual: Double, target: Double, unit: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        let isOver = target > 0 && actual > target
+        let accent = isOver ? Color.red : Color.accentColor
+
+        return VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(label)
                     .font(.caption.weight(.semibold))
@@ -266,7 +265,7 @@ struct FuelScoreDetailSheet: View {
                         .frame(height: 6)
 
                     Capsule()
-                        .fill(Color.accentColor.opacity(0.8))
+                        .fill(accent.opacity(0.85))
                         .frame(width: geo.size.width * CGFloat(min(ratio, 1.0)),
                                height: 6)
                 }
@@ -287,10 +286,7 @@ struct FuelScoreDetailSheet: View {
             bullet("Using the right training intensity for the day.")
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.green.opacity(0.06))
-        )
+        .background(cardBackground(tint: .green))
     }
 
     private var negativeDriversSection: some View {
@@ -305,10 +301,7 @@ struct FuelScoreDetailSheet: View {
             bullet("Marking every day as ‘all-out’ but fueling like a rest day.")
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.red.opacity(0.04))
-        )
+        .background(cardBackground(tint: .red))
     }
 
     private var whyItMattersSection: some View {
@@ -359,12 +352,67 @@ struct FuelScoreDetailSheet: View {
         .font(.footnote)
         .foregroundStyle(.secondary)
     }
+
+    private func scoreTone(for score: Int) -> (label: String, color: Color) {
+        switch score {
+        case 85...:
+            return ("Dialed in", .green)
+        case 70..<85:
+            return ("Solid", .blue)
+        case 50..<70:
+            return ("Needs refinement", .orange)
+        default:
+            return ("Big opportunity", .red)
+        }
+    }
+
+    private func scoreRing(score: Int, color: Color) -> some View {
+        let progress = max(0, min(Double(score) / 100.0, 1.0))
+
+        return ZStack {
+            Circle()
+                .stroke(color.opacity(0.15), lineWidth: 8)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 2) {
+                Text("\(score)")
+                    .font(.subheadline.weight(.bold))
+                Text("score")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: 64, height: 64)
+    }
+
+    @ViewBuilder
+    private func cardBackground(tint: Color? = nil) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 16)
+
+        shape
+            .fill(.ultraThinMaterial)
+            .overlay(
+                shape.stroke(.primary.opacity(0.06), lineWidth: 1)
+            )
+            .overlay {
+                if let tint {
+                    LinearGradient(
+                        colors: [tint.opacity(0.16), tint.opacity(0.0)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .clipShape(shape)
+                }
+            }
+    }
 }
 
 
 #Preview {
     ZStack {
         AppBackground()
-        FuelScoreDetailSheet(dayLog: DayLog.demoTrainingDay, fuelScore: FuelScore(total: 89, macroAdherence: 78, timingAdherence: 98), targets: Macros(calories: 3000, protein: 175, carbs: 250, fat: 50), consumed: Macros(calories: 2000, protein: 120, carbs: 180, fat: 32), preMacros: Macros(calories: 1500, protein: 55, carbs: 82, fat: 15), postMacros: Macros(calories: 1000, protein: 55, carbs: 70, fat: 35))
+        FuelScoreDetailSheet(dayLog: DayLog.demoTrainingDay, fuelScore: FuelScore(total: 89, macroAdherence: 78, timingAdherence: 98), targets: Macros(calories: 3000, protein: 175, carbs: 250, fat: 50), consumed: Macros(calories: 3100, protein: 120, carbs: 180, fat: 32), preMacros: Macros(calories: 1500, protein: 55, carbs: 82, fat: 15), postMacros: Macros(calories: 1000, protein: 55, carbs: 70, fat: 35))
     }
 }
