@@ -33,5 +33,13 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView(profile: dummyProfile)
+    let auth = FirebaseAuthManager()
+    let profileVM = UserProfileViewModel()
+    profileVM._setProfileForPreview(dummyProfile)
+
+    return MainTabView(profile: dummyProfile)
+        .environmentObject(auth)
+        .environmentObject(profileVM)
 }
+
+

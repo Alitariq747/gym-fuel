@@ -10,6 +10,7 @@ import SwiftUI
 struct InsightsView: View {
     @StateObject private var viewModel: WeeklyInsightsViewModel
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
 
     init(profile: UserProfile) {
         _viewModel = StateObject(
@@ -22,6 +23,19 @@ struct InsightsView: View {
             AppBackground()
             ScrollView {
                 VStack(spacing: 16) {
+                    HStack {
+                        Spacer()
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                                .padding(10)
+                                .background(Color(.systemBackground), in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                    }
                     WeekPickerView(
                         selectedWeekStart: Binding(
                             get: { viewModel.selectedWeekStart },

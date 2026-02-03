@@ -147,7 +147,7 @@ final class FirebaseUserProfileService {
         }
         
         try await withCheckedThrowingContinuation {( continuation: CheckedContinuation<Void,Error>) in
-            docRef.setData(data) { error in
+            docRef.setData(data, merge: true) { error in
                     if let error = error {
                         continuation.resume(throwing: error)
                     } else {

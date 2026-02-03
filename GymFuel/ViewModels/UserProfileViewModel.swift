@@ -15,6 +15,7 @@ final class UserProfileViewModel: ObservableObject {
        @Published private(set) var profile: UserProfile?
        @Published private(set) var isLoading: Bool = false
        @Published var errorMessage: String?
+       @Published private(set) var isSaving: Bool = false
        
        private let service: FirebaseUserProfileService
        
@@ -55,6 +56,23 @@ final class UserProfileViewModel: ObservableObject {
         profile = nil
         isLoading = false
         errorMessage = nil
+    }
+    
+    func saveProfileEdits(for uid: String, draft: UserProfileDraft) async {
+        isSaving = true
+        errorMessage = nil
+        
+        do {
+            guard let currentProfile = self.profile else { return }
+            let onboarding = currentProfile.isOnboardingComplete
+            
+            let updatedProfile = try await service.updateProfile(for: uid, name: draft.name, heightCm: draft.heightCm, age: draft.age, weightKg: draft.weightKg, trainingGoal: draft.trainingGoal, trainingDaysPerWeek: draft.trainingDaysPerWeek, trainingExperience: draft.trainingExperience, trainingStyle: draft.trainingStyle, trainingTimeOfDay: draft.trainingTimeOfDay, nonTrainingActivityLevel: draft.nonTrainingActivityLevel, isOnboardingComplete: onboarding, gender: draft.gender)
+            
+            self.profile = updatedProfile
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+        isSaving = false
     }
     
     

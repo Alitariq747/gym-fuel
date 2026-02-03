@@ -68,6 +68,22 @@ struct TodayView: View {
         return f.string(from: date)
     }
     
+    // Profile / insights sheet
+    private enum TodaySheet: Identifiable {
+        case profile
+        case insights
+
+        var id: Int {
+            switch self {
+            case .profile: return 1
+            case .insights: return 2
+            }
+        }
+    }
+
+    @State private var activeSheet: TodaySheet?
+
+    
    
     var body: some View {
       
@@ -97,9 +113,8 @@ struct TodayView: View {
                         // RIGHT: small pill with stats + settings
                         HStack(spacing: 10) {
                             // Stats / Insights icon
-                            NavigationLink {
-                           
-                                InsightsView(profile: viewModel.userProfile)
+                            Button {
+                           activeSheet = .insights
                             } label: {
                                 Image(systemName: "chart.bar")
                                     .font(.subheadline.weight(.semibold))
@@ -108,9 +123,8 @@ struct TodayView: View {
                             }
                             .buttonStyle(.plain)
                             // Settings / Profile icon
-                            NavigationLink {
-                          
-                                ProfileView()
+                            Button {
+                                activeSheet = .profile
                             } label: {
                                 Image(systemName: "gearshape.fill")
                                     .font(.subheadline.weight(.semibold))
@@ -241,6 +255,20 @@ struct TodayView: View {
             } else {
                 Text("No Fuel Score for today yet.")
                     .padding()
+            }
+        }
+        // sheets for profile and insights
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .profile:
+                NavigationStack {
+                    ProfileView()
+                }
+
+            case .insights:
+                NavigationStack {
+                    InsightsView(profile: viewModel.userProfile)
+                }
             }
         }
 

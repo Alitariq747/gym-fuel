@@ -219,8 +219,8 @@ import SwiftUI
             }
         }
         .padding()
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
-        .overlay(RoundedRectangle(cornerRadius: 26).stroke(Color(.secondarySystemBackground), lineWidth: 1))
+        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 26))
+        .overlay(RoundedRectangle(cornerRadius: 26).stroke(Color(.systemBackground), lineWidth: 1))
     }
 }
 
@@ -228,6 +228,6 @@ import SwiftUI
 #Preview {
     ZStack {
         AppBackground()
-        TimelineMealRow(meal: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay)[0], tag: .postWorkout, impact: DayLogViewModel.MealFuelImpact(totalDelta: 17, macroDelta: 0, timingDelta: 12))
+        TimelineMealRow(meal: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay)[0], tag: .postWorkout, impact: DayLogViewModel.MealFuelImpact(totalDelta: 17, macroDelta: 20, timingDelta: 12))
     }
 }

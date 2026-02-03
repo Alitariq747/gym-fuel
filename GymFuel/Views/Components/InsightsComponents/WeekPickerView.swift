@@ -69,17 +69,18 @@ struct WeekPickerView: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.headline)
+                    .foregroundStyle(.primary)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 10)
+                    .background(Color(.systemBackground), in: Circle())
             }
-
+            .buttonStyle(.plain)
          
             Text(weekRangeText)
-                .font(.subheadline.weight(.semibold))
+                .font(.headline.weight(.semibold))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(
-                    Capsule()
-                        .fill(Color(.systemBackground).opacity(0.7))
-                )
+
 
       
             Button {
@@ -87,7 +88,12 @@ struct WeekPickerView: View {
             } label: {
                 Image(systemName: "chevron.right")
                     .font(.headline)
+                    .foregroundStyle(.primary)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 10)
+                    .background(Color(.systemBackground), in: Circle())
             }
+            .buttonStyle(.plain)
             .disabled(!canGoToNextWeek)
             .opacity(canGoToNextWeek ? 1.0 : 0.3)
         }
@@ -112,5 +118,8 @@ struct WeekPickerView: View {
 }
 
 #Preview {
-    WeekPickerView(selectedWeekStart: .constant(Date()))
+    ZStack {
+        AppBackground()
+        WeekPickerView(selectedWeekStart: .constant(Date()))
+    }
 }
