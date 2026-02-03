@@ -12,71 +12,31 @@ struct SessionSummaryCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            
-            // if rest day
-            if dayLog.isTrainingDay {
-                HStack(alignment: .top, spacing: 16) {
-                    Text("🏋️")
-                         .font(.headline)
-                         .padding(10)
-                         .background(Color(.systemGray5), in: Circle())
+            HStack(alignment: .top, spacing: 16) {
+                Text(dayLog.isTrainingDay ? "🏋️" : "😴")
+                     .font(.headline)
+                     .padding(10)
+                     .background(Color(.systemGray5), in: Circle())
 
-                     VStack(alignment: .leading, spacing: 8) {
-                         VStack(alignment: .leading, spacing: 0) {
-                             Text("TODAY'S SESSION")
-                                 .font(.caption2.weight(.medium))
-                                 .foregroundStyle(.secondary)
-                             Text("\(dayLog.trainingIntensity?.displayName ?? "Normal") day - \(dayLog.sessionType?.displayName ?? "Hypertrophy")")
-                                 .font(.headline.bold())
-                         }
-
-                         HStack(spacing: 8) {
-                             Image(systemName: "clock.fill")
-                                 .font(.callout)
-                                 .foregroundStyle(.secondary)
-
-                             if let timeText = timeLabel {
-                                 Text(timeText)
-                                     .font(.subheadline.weight(.semibold))
-                                     .foregroundStyle(.secondary)
-                             }
-
-                             Spacer()
-
-                             HStack(spacing: 4) {
-                                 Text("Intensity: ")
-                                     .font(.system(size: 12, weight: .medium))
-                                     .foregroundStyle(.primary)
-                                 intensityBars
-                             }
-                             .padding(.horizontal, 8)
-                             .padding(.vertical, 6)
-
-                         }
-                     }
-                 }
-                
-            } else {
-                HStack(alignment: .center, spacing: 20) {
-                    Text("😴")
-                        .font(.system(size: 28, weight: .regular))
-                        .padding(8)
-                        .background(Color(.systemGray5), in: Circle())
-                    
-                    VStack(alignment: .leading) {
-                        Text("Rest Day - Recovery")
+                VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(dayLog.isTrainingDay ? "TODAY'S SESSION" : "TODAY'S RECOVERY")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        Text(sessionTitle)
                             .font(.headline.bold())
-                        Text("Prioritize sleep and rest today.")
-                            .font(.callout.weight(.regular))
                     }
+
+                    Text(sessionSubtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+
+                    timingRow
+                        .opacity(dayLog.isTrainingDay ? 1 : 0)
+                        .accessibilityHidden(!dayLog.isTrainingDay)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 8)
             }
-           
-          
-
-
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 12)
@@ -89,6 +49,21 @@ struct SessionSummaryCard: View {
             radius: 8,
             x: 0, y: 4
         )
+    }
+
+    private var sessionTitle: String {
+        if dayLog.isTrainingDay {
+            let intensity = dayLog.trainingIntensity?.displayName ?? "Normal"
+            let session = dayLog.sessionType?.displayName ?? "Hypertrophy"
+            return "\(intensity) day - \(session)"
+        }
+        return "Rest day - Recovery"
+    }
+
+    private var sessionSubtitle: String {
+        dayLog.isTrainingDay
+        ? "Fuel around your session today."
+        : "Prioritize sleep and rest today."
     }
 
     private var intensityColor: Color {
@@ -116,6 +91,29 @@ struct SessionSummaryCard: View {
         .foregroundStyle(intensityColor)
     }
 
+    private var timingRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "clock.fill")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            Text(timeLabel ?? "—")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            HStack(spacing: 4) {
+                Text("Intensity: ")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.primary)
+                intensityBars
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+
+        }
+    }
 
     private var timeLabel: String? {
         guard let start = dayLog.sessionStart else { return nil }

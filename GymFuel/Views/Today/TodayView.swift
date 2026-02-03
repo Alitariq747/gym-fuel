@@ -165,7 +165,7 @@ struct TodayView: View {
                     Button {
                         showFuelScoreDetail = true
                     } label: {
-                        MetricsPagerSection(dayLog: log, consumed: viewModel.consumedMacros)
+                        MetricsPagerSection(dayLog: log, consumed: viewModel.consumedMacros, isLoading: viewModel.isLoading)
                     }
                     .buttonStyle(.plain)
                     FuelTimelineSection(dayLog: log, preMeals: viewModel.preWorkoutMeals, postMeals: viewModel.postWorkoutMeals, supportMeals: viewModel.otherTrainingDayMeals, restMeals: viewModel.restDayMeals, fuelImpactByMealId: viewModel.fuelImpactByMealId) { meal in
@@ -323,4 +323,3 @@ struct TodayView: View {
         TodayView(viewModel: DayLogViewModel(profile: dummyProfile), selectedDate: .constant(Date()))
     
 }
-

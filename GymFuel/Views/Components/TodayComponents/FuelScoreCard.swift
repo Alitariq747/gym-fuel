@@ -185,6 +185,7 @@ struct FuelScoreCard: View {
                             style: StrokeStyle(lineWidth: 10, lineCap: .round)
                         )
                         .rotationEffect(.degrees(-90))
+                        .animation(.easeInOut(duration: 0.35), value: progress)
 
                     // Center text
                     VStack(spacing: 2) {
@@ -283,4 +284,3 @@ struct FuelScoreCard: View {
             .padding()
     }
 }
-
