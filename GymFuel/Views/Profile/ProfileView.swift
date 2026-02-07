@@ -13,13 +13,24 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var draft: UserProfileDraft? = nil
+    @State private var signOutError: String?
+    @State private var isSigningOut: Bool = false
     
     var body: some View {
+        let isBusy = profileVm.isSaving || isSigningOut
+        let isSignedOut = authManager.user == nil
         ZStack {
              AppBackground()
 
             Group {
-                if profileVm.profile != nil {
+                if isSigningOut || isSignedOut {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                        Text("Signing out…")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } else if profileVm.profile != nil {
                     if let draftBinding = Binding($draft) {
                         VStack(spacing: 16) {
                             HStack {
@@ -45,7 +56,7 @@ struct ProfileView: View {
                                             .background(Color(.systemBackground), in: Circle())
                                     }
                                     .buttonStyle(.plain)
-                                    .disabled(!canSave)
+                                    .disabled(!canSave || isBusy)
                                 }
                                 Spacer()
                                 Text("Settings")
@@ -63,22 +74,56 @@ struct ProfileView: View {
                                         .background(Color(.systemBackground), in: Circle())
                                 }
                                 .buttonStyle(.plain)
+                                .disabled(isBusy)
                             }
                             .padding(.horizontal)
                             .padding(.top)
 
                             ProfileEditorView(draft: draftBinding, email: authManager.user?.email)
+                                .disabled(isBusy)
+                                .opacity(isBusy ? 0.6 : 1)
+                            
+                            if let signOutError {
+                                Text(signOutError)
+                                    .font(.footnote)
+                                    .foregroundStyle(.red)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                            }
+                            
+                            Button(role: .destructive) {
+                                Task { await handleSignOut() }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    if isSigningOut {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    }
+
+                                    Text(isSigningOut ? "Signing out…" : "Sign out")
+                                        .font(.headline)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isBusy)
+                            .padding(.horizontal)
+                            .padding(.bottom)
                         }
                     } else {
                         ProgressView("Getting Editor")
                     }
                 } else if profileVm.isLoading {
                     ProgressView("Loading Profile")
-                } else {
-                    Text(profileVm.errorMessage ?? "No profile available")
+                } else if let message = profileVm.errorMessage {
+                    Text(message)
                         .padding()
                         .font(.subheadline)
                         .foregroundStyle(.red.opacity(0.7))
+                } else {
+                    ProgressView("Preparing your profile…")
                 }
             }
 
@@ -116,6 +161,21 @@ struct ProfileView: View {
         return false
     }
 
+    @MainActor
+    private func handleSignOut() async {
+        guard !isSigningOut else { return }
+        isSigningOut = true
+        defer { isSigningOut = false }
+
+        do {
+            profileVm.clear()
+            try authManager.signOut()
+            signOutError = nil
+            dismiss()
+        } catch {
+            signOutError = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+        }
+    }
     
 }
 
@@ -128,5 +188,3 @@ struct ProfileView: View {
         .environmentObject(auth)
         .environmentObject(profileVM)
 }
-
-

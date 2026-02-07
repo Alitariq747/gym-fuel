@@ -14,6 +14,7 @@ struct SignUpView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var errorMessage: String?
+    @State private var isLoading = false
 
     var body: some View {
 
@@ -48,20 +49,34 @@ struct SignUpView: View {
                         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
                 }
             }
+            
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             Spacer()
             Button {
                 Task {
                     await signUp()
                 }
             } label: {
-                Text("Confirm")
-                    .font(.headline).bold()
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
+                HStack(spacing: 10) {
+                    if isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(isLoading ? "Creating account…" : "Confirm")
+                        .font(.headline).bold()
+                }
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .foregroundStyle(.white)
+                .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
+            .disabled(isLoading)
         }
         .padding()
         .navigationTitle("Sign up to LiftEats")
@@ -85,10 +100,14 @@ struct SignUpView: View {
     }
 
     private func signUp() async {
+        guard !isLoading else { return }
+        errorMessage = nil
         guard !email.isEmpty, !password.isEmpty else {
             errorMessage = "Please enter both email and password."
             return
         }
+        isLoading = true
+        defer { isLoading = false }
         do {
             try await authManager.signUp(email: email, password: password)
             errorMessage = nil

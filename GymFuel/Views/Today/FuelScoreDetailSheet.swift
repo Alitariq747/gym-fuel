@@ -257,7 +257,13 @@ struct FuelScoreDetailSheet: View {
                     .foregroundStyle(.secondary)
             }
 
-            let ratio = target > 0 ? min(actual / target, 2.0) : 0
+            let ratio: Double
+            if target > 0, target.isFinite, actual.isFinite {
+                let raw = actual / target
+                ratio = raw.isFinite ? min(raw, 2.0) : 0
+            } else {
+                ratio = 0
+            }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()

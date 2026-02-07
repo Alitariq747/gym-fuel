@@ -19,9 +19,11 @@ struct MacroRingView: View {
     let color: Color
 
     private var progress: Double {
-        guard target > 0 else { return 0 }
+        guard target > 0, target.isFinite, consumed.isFinite else { return 0 }
+        let ratio = consumed / target
+        guard ratio.isFinite else { return 0 }
         // 0...1 progress, clamp so the bar is full when over target
-        return min(max(consumed / target, 0), 1)
+        return min(max(ratio, 0), 1)
     }
 
     private var isOverTarget: Bool {

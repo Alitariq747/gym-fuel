@@ -67,24 +67,40 @@ final class FirebaseAuthManager: ObservableObject {
     private func mapFirebaseAuthError(_ error: Error) -> AuthManagerError {
         let nsError = error as NSError
 
-        switch nsError.code {
-        case AuthErrorCode.invalidEmail.rawValue:
+        guard let code = AuthErrorCode(rawValue: nsError.code) else {
+            return .unknown
+        }
+
+        switch code {
+        case .invalidEmail:
             return .invalidEmail
 
-        case AuthErrorCode.emailAlreadyInUse.rawValue:
+        case .emailAlreadyInUse:
             return .emailAlreadyInUse
 
-        case AuthErrorCode.weakPassword.rawValue:
+        case .weakPassword:
             return .weakPassword
 
-        case AuthErrorCode.wrongPassword.rawValue:
+        case .wrongPassword:
             return .wrongPassword
 
-        case AuthErrorCode.userNotFound.rawValue:
+        case .userNotFound:
             return .userNotFound
 
-        case AuthErrorCode.userDisabled.rawValue:
+        case .userDisabled:
             return .userDisabled
+
+        case .invalidCredential:
+            return .invalidCredential
+
+        case .tooManyRequests:
+            return .tooManyRequests
+
+        case .networkError:
+            return .networkError
+
+        case .operationNotAllowed:
+            return .operationNotAllowed
 
         default:
             return .unknown
@@ -101,6 +117,12 @@ enum AuthManagerError: LocalizedError {
     case wrongPassword
     case userNotFound
     case userDisabled
+    case invalidCredential
+    case tooManyRequests
+    case networkError
+    case operationNotAllowed
+    case missingEmail
+    case missingPassword
     case unknown
     
     var errorDescription: String? {
@@ -117,6 +139,18 @@ enum AuthManagerError: LocalizedError {
             return "No account found with this email."
         case .userDisabled:
             return "This account has been disabled."
+        case .invalidCredential:
+            return "Incorrect email or password."
+        case .tooManyRequests:
+            return "Too many attempts. Please try again later."
+        case .networkError:
+            return "Network error. Check your connection and try again."
+        case .operationNotAllowed:
+            return "This sign-in method is not enabled."
+        case .missingEmail:
+            return "Please enter your email address."
+        case .missingPassword:
+            return "Please enter your password."
         case .unknown:
             return "Something went wrong. Please try again."
         }

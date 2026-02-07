@@ -116,7 +116,7 @@ private struct MacroLine: View {
             Image(systemName: iconName)
                 .foregroundStyle(statusColor)
 
-            Text("\(pctRounded)%")
+            Text("\(pctRoundedText)%")
                 .font(.system(.subheadline, design: .monospaced))
                 .foregroundStyle(statusColor)
                 .frame(width: 52, alignment: .trailing)
@@ -127,11 +127,14 @@ private struct MacroLine: View {
         }
     }
 
-
-    private var pctRounded: Int { Int(pct.rounded()) }
+    private var pctRoundedText: String {
+        guard pct.isFinite else { return "—" }
+        return String(Int(pct.rounded()))
+    }
 
 
     private var statusColor: Color {
+        guard pct.isFinite else { return .secondary }
         let p = pct
         if (95...105).contains(p) { return .fuelGreen }
         if (85...95).contains(p) { return .fuelBlue }
@@ -140,6 +143,7 @@ private struct MacroLine: View {
     }
 
     private var iconName: String {
+        guard pct.isFinite else { return "exclamationmark.triangle.fill" }
         let p = pct
         if (95...105).contains(p) { return "checkmark.circle.fill" }
         if p > 105 { return "arrow.up.circle.fill" }

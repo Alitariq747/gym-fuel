@@ -151,20 +151,25 @@ final class FirebaseMealService: MealService {
     
     /// Safely convert Firestore numeric fields (Int/Double/NSNumber) to Double.
     private static func double(from any: Any?, default defaultValue: Double = 0) -> Double {
-        if let d = any as? Double { return d }
+        if let d = any as? Double { return d.isFinite ? d : defaultValue }
         if let i = any as? Int { return Double(i) }
-        if let n = any as? NSNumber { return n.doubleValue }
+        if let n = any as? NSNumber {
+            let value = n.doubleValue
+            return value.isFinite ? value : defaultValue
+        }
         return defaultValue
     }
     
     private static func doubleOpt(from any: Any?) -> Double? {
         if any == nil { return nil }
-        if let d = any as? Double { return d }
+        if let d = any as? Double { return d.isFinite ? d : nil }
         if let i = any as? Int { return Double(i) }
-        if let n = any as? NSNumber { return n.doubleValue }
+        if let n = any as? NSNumber {
+            let value = n.doubleValue
+            return value.isFinite ? value : nil
+        }
         return nil
     }
 
 
 }
-
