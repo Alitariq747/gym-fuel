@@ -14,6 +14,7 @@ struct DayFuelRow: Identifiable {
     let isTrainingDay: Bool
     let intensity: TrainingIntensity?
     let sessionType: SessionType?
+    let hasLog: Bool
     
     var id: Date { date }
 }
@@ -44,6 +45,11 @@ final class WeeklyInsightsViewModel: ObservableObject {
     private let profile: UserProfile
     private let dayLogService: DayLogService
     private let calendar = Calendar.current
+    private let utcCalendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
+        return cal
+    }()
     
     init(profile: UserProfile, initialDate: Date = Date(), dayLogService: DayLogService = FirebaseDayLogService()) {
         self.profile = profile
@@ -62,7 +68,6 @@ final class WeeklyInsightsViewModel: ObservableObject {
                 calendar.date(byAdding: .day, value: offset, to: start)
         }
     }
-    
     func updateWeekStart(to newWeekStart: Date) {
      
         let normalizedWeekStart: Date
@@ -73,28 +78,28 @@ final class WeeklyInsightsViewModel: ObservableObject {
         }
         
       
+        guard normalizedWeekStart != selectedWeekStart else { return }
         selectedWeekStart = normalizedWeekStart
-        
       
-        Task {
-            await loadCurrentWeek()
-        }
+        
     }
 
     
-    func loadCurrentWeek() async {
+    func loadWeek(for weekStart: Date) async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
+
+        let weekDatesSnapshot = weekDates(for: weekStart)
         
-        guard let firstDay = weekDates.first,
-              let lastDay = weekDates.last else {
-            isLoading = false
+        guard let firstDay = weekDatesSnapshot.first,
+              let lastDay = weekDatesSnapshot.last else {
             return
         }
         
-        let startOfRange = calendar.startOfDay(for: firstDay)
-        guard let endOfRange = calendar.date(byAdding: .day, value: 1 ,to: calendar.startOfDay(for: lastDay)) else {
-            isLoading = false
+        // Query using UTC day boundaries for consistency with storage.
+        let startOfRange = utcCalendar.startOfDay(for: firstDay)
+        guard let endOfRange = utcCalendar.date(byAdding: .day, value: 1, to: utcCalendar.startOfDay(for: lastDay)) else {
             errorMessage = "Failed to compute week range."
             return
         }
@@ -104,6 +109,9 @@ final class WeeklyInsightsViewModel: ObservableObject {
         do {
             let logs = try await dayLogService.fetchDayLogs(for: userId, from: startOfRange, to: endOfRange)
             
+            if Task.isCancelled { return }
+
+            
             var byDate: [Date: DayLog] = [:]
             for log in logs {
                 let dayStart = calendar.startOfDay(for: log.date)
@@ -112,14 +120,18 @@ final class WeeklyInsightsViewModel: ObservableObject {
             
             self.weekDayLogs = byDate
         } catch {
+            
+            if Task.isCancelled { return }
+
             self.errorMessage = error.localizedDescription
-            self.weekDayLogs = [:]
         }
-        isLoading = false
     }
     
     var trainingDaysPlanned: Int {
-        weekDayLogs.values.filter { $0.isTrainingDay }.count
+        if let days = profile.trainingDaysPerWeek {
+            return max(0, min(7, days))
+        }
+        return weekDayLogs.values.filter { $0.isTrainingDay }.count
     }
     
     var trainingDaysLogged: Int {
@@ -131,7 +143,7 @@ final class WeeklyInsightsViewModel: ObservableObject {
     }
     
     var restDays: Int {
-        weekDayLogs.values.filter { !$0.isTrainingDay }.count
+        max(0, 7 - trainingDaysPlanned)
     }
     
     var averageFuelScore: Int? {
@@ -160,16 +172,31 @@ final class WeeklyInsightsViewModel: ObservableObject {
             let totalScore = log?.fuelScore?.total ?? 0
             let displayScore = totalScore > 0 ? totalScore : nil
             
-            return DayFuelRow(date: dayStart, fuelScore: displayScore, isTrainingDay: log?.isTrainingDay ?? false, intensity: log?.trainingIntensity, sessionType: log?.sessionType)
+            return DayFuelRow(
+                date: dayStart,
+                fuelScore: displayScore,
+                isTrainingDay: log?.isTrainingDay ?? false,
+                intensity: log?.trainingIntensity,
+                sessionType: log?.sessionType,
+                hasLog: log != nil
+            )
         }
     }
     
     var dailyFuelScores: [DailyFuelScorePoint] {
         weekDates.map { date in
             let dayStart = calendar.startOfDay(for: date)
-            let score = weekDayLogs[dayStart]?.fuelScore?.total ?? 0
+            let rawScore = weekDayLogs[dayStart]?.fuelScore?.total
+            let score = (rawScore ?? 0) > 0 ? rawScore : nil
             
             return DailyFuelScorePoint(date: dayStart, score: score)
+        }
+    }
+
+    private func weekDates(for weekStart: Date) -> [Date] {
+        let start = calendar.startOfDay(for: weekStart)
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: start)
         }
     }
     

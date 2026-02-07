@@ -18,12 +18,22 @@ struct InsightsView: View {
         )
     }
 
+    
     var body: some View {
+        let isRefreshing = viewModel.isLoading && !viewModel.weekDayLogs.isEmpty
+
         ZStack {
             AppBackground()
             ScrollView {
                 VStack(spacing: 16) {
                     HStack {
+                        if viewModel.isLoading {
+                            UpdatingPill()
+                                .transition(.opacity)
+                        }
+           
+
+
                         Spacer()
                         Button {
                             dismiss()
@@ -44,15 +54,27 @@ struct InsightsView: View {
                             }
                         )
                     )
-
-                    if viewModel.isLoading {
-                        ProgressView("Loading week…")
-                    }
+                    .animation(.easeInOut(duration: 0.15), value: isRefreshing)
+                    .disabled(viewModel.isLoading)
+                    
 
                     if let error = viewModel.errorMessage {
-                        Text(error)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                        HStack(alignment: .center, spacing: 12) {
+                            Text(error)
+                                .font(.footnote)
+                                .foregroundStyle(.red)
+                                .multilineTextAlignment(.leading)
+
+                            Spacer()
+
+                            Button("Retry") {
+                                Task {
+                                    await viewModel.loadWeek(for: viewModel.selectedWeekStart)
+                                }
+                            }
+                            .font(.footnote.weight(.semibold))
+                        }
+                        .padding(.vertical, 6)
                     }
                     
                     //Stats VStack
@@ -76,7 +98,6 @@ struct InsightsView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Fuel score trend")
                             .font(.headline)
-
                         WeeklyFuelScoreChart(points: viewModel.dailyFuelScores)
                     }
                     .padding(16)
@@ -90,11 +111,31 @@ struct InsightsView: View {
                 }
                 .padding()
             }
+            .opacity(isRefreshing ? 0.65 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: isRefreshing)
         }
-        .task {
-            await viewModel.loadCurrentWeek()
+        .task(id: viewModel.selectedWeekStart) {
+            await viewModel.loadWeek(for: viewModel.selectedWeekStart)
+        }
+        .refreshable {
+            await viewModel.loadWeek(for: viewModel.selectedWeekStart)
         }
     }
+    
+    private struct UpdatingPill: View {
+        var body: some View {
+            HStack(spacing: 8) {
+                ProgressView()
+                    .controlSize(.small)
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                    .padding(10)
+                    .background(Color(.systemBackground), in: Circle())
+            }
+
+        }
+    }
+
 }
 
 #Preview {

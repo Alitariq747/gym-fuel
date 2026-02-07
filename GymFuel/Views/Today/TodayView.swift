@@ -273,10 +273,10 @@ struct TodayView: View {
         }
 
         .onAppear {
-            Task { await viewModel.createOrLoadTodayLog(date: selectedDate) }
+            viewModel.loadDay(date: selectedDate)
         }
         .onChange(of: selectedDate) { _, newDate in
-            Task { await viewModel.createOrLoadTodayLog(date: newDate) }
+            viewModel.loadDay(date: newDate)
         }
         .overlay {
             if viewModel.isLoading && viewModel.dayLog == nil {

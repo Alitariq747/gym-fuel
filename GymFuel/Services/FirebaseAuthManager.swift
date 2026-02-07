@@ -14,14 +14,21 @@ import FirebaseAuth
 final class FirebaseAuthManager: ObservableObject {
     // UI can read this, but only this class can modify it
     @Published private(set) var user: User?
+    private var authListenerHandle: AuthStateDidChangeListenerHandle?
     
     init() {
        
         self.user = Auth.auth().currentUser
         
         // Listen for sign-in / sign-out changes from Firebase
-        Auth.auth().addStateDidChangeListener { [weak self] _, user in
+        authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             self?.user = user
+        }
+    }
+    
+    deinit {
+        if let handle = authListenerHandle {
+            Auth.auth().removeStateDidChangeListener(handle)
         }
     }
     

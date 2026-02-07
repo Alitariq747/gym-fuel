@@ -14,11 +14,16 @@ struct WeeklyFuelScoreChart: View {
     
     var body: some View {
         Chart(points) { point in
+            let score = point.score ?? 0
+            let hasScore = point.score != nil
+            
             BarMark(
                 x: .value("Day", point.date, unit: .day),
-                y: .value("Score", point.score ?? 0)
+                y: .value("Score", score)
             )
-            .foregroundStyle(point.score ?? 0 >= 70 ? .fuelGreen.opacity(0.8) : .fuelRed.opacity(0.8))
+            .foregroundStyle(score >= 70 ? .fuelGreen.opacity(0.8) : .fuelRed.opacity(0.8))
+            .opacity(hasScore ? 1 : 0)
+            .accessibilityHidden(!hasScore)
         }
         .chartYScale(domain: 0...100)
         .chartXAxis {

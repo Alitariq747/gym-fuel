@@ -55,7 +55,7 @@ final class FirebaseDayLogService: DayLogService {
         let collection = dayLogsCollection(for: userId)
         
         let query = collection.whereField("date", isGreaterThanOrEqualTo: startDate)
-            .whereField("date",isLessThanOrEqualTo: endDate)
+            .whereField("date", isLessThan: endDate)
             .order(by: "date", descending: false)
         
         let snapshot: QuerySnapshot = try await withCheckedThrowingContinuation { continuation in
@@ -165,6 +165,8 @@ final class FirebaseDayLogService: DayLogService {
  
     private static func dayId(for date: Date, userId: String) -> String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyy-MM-dd"
         let dayString = formatter.string(from: date)
         return "\(userId)_\(dayString)"

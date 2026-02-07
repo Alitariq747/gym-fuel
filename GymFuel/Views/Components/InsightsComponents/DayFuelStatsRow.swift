@@ -9,7 +9,6 @@ import SwiftUI
 
 struct DayFuelStatsRow: View {
     let row: DayFuelRow
-    private let calendar = Calendar.current
 
     // Display helpers
     private var dayLabel: String {
@@ -17,27 +16,29 @@ struct DayFuelStatsRow: View {
     }
 
     private var sessionLabel: String {
-        if row.isTrainingDay {
-            row.sessionType?.displayName ?? "Training"
-        } else {
-            "Rest Day"
+        if !row.hasLog {
+            return "No log"
         }
+        return row.isTrainingDay
+            ? (row.sessionType?.displayName ?? "Training")
+            : "Rest Day"
     }
 
     private var intensityLabel: String {
-        if row.isTrainingDay {
-            row.intensity?.displayName ?? "—"
-        } else {
-            "—"
+        if !row.hasLog {
+            return "—"
         }
+        return row.isTrainingDay
+            ? (row.intensity?.displayName ?? "—")
+            : "—"
     }
 
-    private var scoreValue: Int {
-        row.fuelScore ?? 0
+    private var scoreValue: Int? {
+        row.fuelScore
     }
 
     private var scoreTextColor: Color {
-        let total = scoreValue
+        guard let total = scoreValue else { return .secondary }
         return total >= 75 ? .fuelGreen : .fuelRed
     }
 
@@ -74,7 +75,7 @@ struct DayFuelStatsRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text("\(scoreValue)")
+                Text(scoreValue.map(String.init) ?? "—")
                     .font(.system(.subheadline, design: .monospaced))
                     .foregroundStyle(scoreTextColor)
                     .frame(width: 25, alignment: .trailing)
@@ -92,7 +93,8 @@ struct DayFuelStatsRow: View {
                 date: Date(),
                 fuelScore: 82, isTrainingDay: true,
                 intensity: .recovery,
-                sessionType: .hypertrophy
+                sessionType: .hypertrophy,
+                hasLog: true
             )
         )
         DayFuelStatsRow(
@@ -100,7 +102,8 @@ struct DayFuelStatsRow: View {
                 date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
                 fuelScore: nil, isTrainingDay: false,
                 intensity: nil,
-                sessionType: nil
+                sessionType: nil,
+                hasLog: false
             )
         )
     }

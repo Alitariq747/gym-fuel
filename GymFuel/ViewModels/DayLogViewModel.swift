@@ -18,7 +18,9 @@ final class DayLogViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var isSavingMeal: Bool = false
 
-    
+    private var loadTask: Task<Void, Never>?
+    private var activeLoadId: UUID?
+
     // Dependencies
     private let planner: MacrosPlanner
     private var profile: UserProfile
@@ -111,10 +113,30 @@ final class DayLogViewModel: ObservableObject {
         return chosen.contains(weekdayIndex)
     }
 
+    private func isCurrentLoad(_ loadId: UUID) -> Bool {
+        activeLoadId == loadId && !Task.isCancelled
+    }
+
+    func loadDay(date: Date = Date()) {
+        loadTask?.cancel()
+        let loadId = UUID()
+        activeLoadId = loadId
+        loadTask = Task { [weak self] in
+            await self?.createOrLoadTodayLog(date: date, loadId: loadId)
+        }
+    }
     
-    func createOrLoadTodayLog(date: Date = Date()) async {
+    func createOrLoadTodayLog(date: Date = Date(), loadId: UUID? = nil) async {
+            let loadId = loadId ?? UUID()
+            activeLoadId = loadId
             isLoading = true
             errorMessage = nil
+
+            defer {
+                if isCurrentLoad(loadId) {
+                    isLoading = false
+                }
+            }
             
             let calendar = Calendar.current
             let startOfDay = calendar.startOfDay(for: date)
@@ -123,6 +145,8 @@ final class DayLogViewModel: ObservableObject {
             do {
                 
                 if var existing = try await dayLogService.fetchDayLog(for: userId, date: startOfDay) {
+                    guard isCurrentLoad(loadId) else { return }
+                    let originalLog = existing
                     // Ensure date is normalized
                     existing.date = startOfDay
                     
@@ -134,26 +158,40 @@ final class DayLogViewModel: ObservableObject {
                     // 1b)
                     do {
                         let loadedMeals = try await mealService.fetchMeals(for: userId, dayLogId: existing.id)
+                        guard isCurrentLoad(loadId) else { return }
                         self.meals = loadedMeals
+                        
+                        // Recompute fuel score only when meals load successfully.
+                        refreshFuelScore()
+
+                        guard let updatedLog = self.dayLog else { return }
+                        let shouldSave =
+                            updatedLog.date != originalLog.date
+                            || updatedLog.macroTargets != originalLog.macroTargets
+                            || updatedLog.fuelScore != originalLog.fuelScore
+                            || updatedLog.consumedMacros != originalLog.consumedMacros
+
+                        if shouldSave {
+                            try await dayLogService.saveDayLog(updatedLog)
+                        }
                     } catch {
+                        guard isCurrentLoad(loadId) else { return }
                         self.meals = []
                         self.errorMessage = error.localizedDescription
+                        return
                     }
                     
-                    // Recompute fuel score based on current meals (if any).
-                    refreshFuelScore()
-                    
-                    // Save updated targets/score back to Firestore.
-                    try await dayLogService.saveDayLog(existing)
-                    
-                    isLoading = false
                     return
                 }
             } catch {
+                guard isCurrentLoad(loadId) else { return }
                 // If fetch fails (e.g. permission issue), record the error
                 // but still attempt to create a local DayLog below.
-                self.errorMessage = error.localizedDescription
+                if !(error is CancellationError) {
+                    self.errorMessage = error.localizedDescription
+                }
             }
+            guard isCurrentLoad(loadId) else { return }
             
             // 2) No DayLog exists for today (or fetch failed) → create a new one locally.
             let newId = Self.dayId(for: startOfDay, userId: userId)
@@ -186,21 +224,28 @@ final class DayLogViewModel: ObservableObject {
                         for: userId,
                         dayLogId: newDayLog.id
                     )
+                    guard isCurrentLoad(loadId) else { return }
                     self.meals = loadedMeals
+                    
+                    // Recompute fuel score only when meals load successfully.
+                    refreshFuelScore()
+
+                    if let updatedLog = self.dayLog {
+                        // Persist to Firestore (or queue offline).
+                        try await dayLogService.saveDayLog(updatedLog)
+                    }
                 } catch {
+                    guard isCurrentLoad(loadId) else { return }
                     self.meals = []
                     self.errorMessage = error.localizedDescription
+                    return
                 }
-                
-                refreshFuelScore()
-                
-                // Persist to Firestore (or queue offline).
-                try await dayLogService.saveDayLog(newDayLog)
             } catch {
-                self.errorMessage = error.localizedDescription
+                guard isCurrentLoad(loadId) else { return }
+                if !(error is CancellationError) {
+                    self.errorMessage = error.localizedDescription
+                }
             }
-            
-            isLoading = false
         }
     
     // to call save when changing session / training data
@@ -264,6 +309,8 @@ final class DayLogViewModel: ObservableObject {
     
     private static func dayId(for date: Date, userId: String) -> String {
            let formatter = DateFormatter()
+           formatter.locale = Locale(identifier: "en_US_POSIX")
+           formatter.timeZone = TimeZone(secondsFromGMT: 0)
            formatter.dateFormat = "yyyy-MM-dd"
            let dayString = formatter.string(from: date)
            return "\(userId)_\(dayString)"

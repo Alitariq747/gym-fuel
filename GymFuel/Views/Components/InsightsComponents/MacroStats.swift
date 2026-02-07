@@ -22,8 +22,9 @@ struct MacroStats: View {
             HStack(alignment: .center, spacing: 4) {
                 Text("Average Fuel Score: ")
                     .font(.subheadline.weight(.medium))
-                Text("\(averageFuelScore ?? 0) ")
+                Text(averageFuelScore.map(String.init) ?? "—")
                     .font(.title3.weight(.semibold))
+                    .foregroundStyle(averageFuelScore == nil ? .secondary : .primary)
                 Text("/ 100")
                     .font(.subheadline.weight(.regular))
             }
