@@ -205,7 +205,6 @@ struct OnboardingFlowView: View {
         NavigationStack {
             VStack(spacing: 12) {
 
-                // Top chrome: back + progress in one row
                 HStack(spacing: 12) {
                     if currentIndex > 0 {
                         Button(action: goBack) {

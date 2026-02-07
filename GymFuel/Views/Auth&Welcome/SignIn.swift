@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SignInView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @State private var email = ""
     @State private var password = ""
@@ -64,6 +65,22 @@ struct SignInView: View {
         }
         .padding()
         .navigationTitle("Welcome Back")
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.headline)
+                        .frame(width: 36, height: 36)
+                        .background(Color(.secondarySystemBackground), in: Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
+
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 
     private func signIn() async {

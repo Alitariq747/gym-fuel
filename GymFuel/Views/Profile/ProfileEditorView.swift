@@ -76,270 +76,22 @@ struct ProfileEditorView: View {
     // Training Experience
     @State private var isEditTrainingExperiencePresented = false
 
-
-    
     var body: some View {
         ScrollView {
-            // Parent VStack
-            VStack(alignment: .leading, spacing: 20) {
-                // VStack for name and email
-                VStack {
-                    // HStack for name
-                    HStack(alignment: .center) {
-                        Text("Name")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        TextField("Name", text: $draft.name)
-                        .font(.callout)
-                        .multilineTextAlignment(.trailing)
-                        .textInputAutocapitalization(.words)
-                        .disableAutocorrection(true)
-                        .foregroundStyle(.primary)
-                    }
-                    Divider()
-                    HStack(alignment: .center) {
-                        Text("Email")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text(email ?? "-")
-                            .font(.callout)
-                            .foregroundStyle(.primary)
-                    }
+            VStack(alignment: .leading, spacing: 18) {
+                profileHeader
+
+                VStack(spacing: 12) {
+                    sectionHeader(title: "Body Metrics", systemImage: "figure.stand")
+                    bodyMetricsCard
                 }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 14)
-                .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
-                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemBackground), lineWidth: 1))
-                .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.black.opacity(0.08), radius: colorScheme == .dark ? 18 : 12, x: 0, y: colorScheme == .dark ? 10 : 6)
-                
-                // VStack for our Body Metrcis i.e gender, weight, height, age
-                VStack(spacing: 14) {
-                    Text("Body Metrics")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    VStack(spacing: 10) {
-                        // age hStack
-                        HStack(alignment: .center) {
-                            Text("Age")
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
 
-                            Spacer()
-
-                            TextField("—", text: $ageText)
-                                .font(.callout)
-                                .multilineTextAlignment(.trailing)
-                                .keyboardType(.numberPad)
-                                .onChange(of: ageText) { _, newValue in
-                                    applyAgeTextToDraft(newValue)
-                                }
-                            EmptyView()
-                        }
-                        // Gender HStack
-                        Divider()
-                        Button {
-                            showGenderDialog = true
-                        } label: {
-                            HStack(alignment: .center) {
-                                Text("Gender")
-                                    .font(.callout)
-                                    .foregroundStyle(.secondary)
-
-                                Spacer()
-
-                                Text(genderTitle)
-                                    .font(.callout)
-                                    .foregroundStyle(.primary)
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(.tertiary)
-                                    .padding(.leading, 6)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .confirmationDialog("Pick Gender", isPresented: $showGenderDialog, titleVisibility: .visible) {
-                            Button("\(Gender.male.symbol) \(Gender.male.displayName)") { draft.gender = .male }
-                            Button("\(Gender.female.symbol) \(Gender.female.displayName)") { draft.gender = .female }
-                            Button(Gender.preferNotToSay.displayName) { draft.gender = .preferNotToSay }
-                            Button("Cancel", role: .cancel) {}
-                        }
-                        Divider()
-                        // Height Row
-                        Button {
-                            isEditHeightPresented = true
-                        } label: {
-                            HStack {
-                                Text("Height")
-                                    .font(.callout)
-                                    .foregroundStyle(.secondary)
-
-                                Spacer()
-
-                                    Text(heightPrimaryText)
-                                        .font(.callout)
-                                        .foregroundStyle(.primary)
-
-
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(.tertiary)
-                                    .padding(.leading, 6)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        
-                        Divider()
-                        // Weight row
-                        Button {
-                                isEditWeightPresented = true
-                            } label: {
-                                HStack {
-                                    Text("Weight")
-                                        .font(.callout)
-                                        .foregroundStyle(.secondary)
-
-                                    Spacer()
-
-                                        Text(weightPrimaryText)
-                                            .font(.callout)
-                                            .foregroundStyle(.primary)
-
-                                    Image(systemName: "chevron.right")
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(.tertiary)
-                                        .padding(.leading, 6)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        
-                        
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 14)
-                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemBackground), lineWidth: 1))
-                    .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.black.opacity(0.08), radius: colorScheme == .dark ? 18 : 12, x: 0, y: colorScheme == .dark ? 10 : 6)
-                }
-                
-                // VStack for training related fields
-                VStack(spacing: 14) {
-                    Text("Training")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    VStack(spacing: 10) {
-                        // Training Goal
-                        Button {
-                                isEditGoalPresented = true
-                            } label: {
-                                HStack {
-                                    Text("Training Goal")
-                                        .font(.callout)
-                                        .foregroundStyle(.secondary)
-
-                                    Spacer()
-
-                                    Text(trainingGoalPrimaryText.truncated(to: 15, addEllipsis: true))
-                                            .font(.callout)
-                                            .foregroundStyle(.primary)
-
-                                    
-                                    Image(systemName: "chevron.right")
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(.tertiary)
-                                        .padding(.leading, 6)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        Divider()
-                        
-                        // Training Style
-                        Button {
-                            isEditTrainingStylePresented = true
-                        } label: {
-                            HStack {
-                                Text("Training Style")
-                                    .font(.callout)
-                                    .foregroundStyle(.secondary)
-
-                                Spacer()
-
-                                Text(draft.trainingStyle?.displayName.truncated(to: 15, addEllipsis: true) ?? "Set")
-                                        .font(.callout)
-                                        .foregroundStyle(.primary)
-
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(.tertiary)
-                                    .padding(.leading, 6)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        Divider()
-                        
-                        // Training Time
-                        Button {
-                                isEditTrainingTimePresented = true
-                            } label: {
-                                HStack {
-                                    Text("Training Time")
-                                        .font(.callout)
-                                        .foregroundStyle(.secondary)
-
-                                    Spacer()
-
-                                        Text(trainingTimePrimaryText)
-                                            .font(.callout)
-                                            .foregroundStyle(.primary)
-
-
-                                    Image(systemName: "chevron.right")
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(.tertiary)
-                                        .padding(.leading, 6)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        Divider()
-                        // Training experience
-                        Button {
-                                isEditTrainingExperiencePresented = true
-                            } label: {
-                                HStack {
-                                    Text("Training Experience")
-                                        .font(.callout)
-                                        .foregroundStyle(.secondary)
-
-                                    Spacer()
-
-                                    Text(draft.trainingExperience?.displayName.truncated(to: 15, addEllipsis: true) ?? "Set")
-                                            .font(.callout)
-                                            .foregroundStyle(.primary)
-
- 
-
-                                    Image(systemName: "chevron.right")
-                                        .font(.footnote.weight(.semibold))
-                                        .foregroundStyle(.tertiary)
-                                        .padding(.leading, 6)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 14)
-                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemBackground), lineWidth: 1))
-                    .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.black.opacity(0.08), radius: colorScheme == .dark ? 18 : 12, x: 0, y: colorScheme == .dark ? 10 : 6)
+                VStack(spacing: 12) {
+                    sectionHeader(title: "Training", systemImage: "dumbbell.fill")
+                    trainingCard
                 }
             }
             .padding()
-
         }
         .onAppear {
             syncAgeTextFromDraft()
@@ -376,6 +128,214 @@ struct ProfileEditorView: View {
             }
         }
     }
+
+    private var profileHeader: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.accentColor.opacity(0.9),
+                                    Color.accentColor.opacity(0.5)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 52, height: 52)
+                    Text(initials)
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    TextField("Your name", text: $draft.name)
+                        .font(.title3.weight(.semibold))
+                        .textInputAutocapitalization(.words)
+                        .disableAutocorrection(true)
+                    Text(email ?? "—")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(Color.primary.opacity(0.3))
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+    }
+
+    private var bodyMetricsCard: some View {
+        VStack(spacing: 10) {
+            HStack(alignment: .center) {
+                rowLabel("Age", systemImage: "calendar")
+                Spacer()
+                TextField("—", text: $ageText)
+                    .font(.callout.weight(.semibold))
+                    .multilineTextAlignment(.trailing)
+                    .keyboardType(.numberPad)
+                    .onChange(of: ageText) { _, newValue in
+                        applyAgeTextToDraft(newValue)
+                    }
+            }
+            Divider()
+            rowButton(
+                title: "Gender",
+                systemImage: "person.fill",
+                value: genderTitle,
+                isPlaceholder: false
+            ) {
+                showGenderDialog = true
+            }
+            Divider()
+            rowButton(
+                title: "Height",
+                systemImage: "ruler",
+                value: heightPrimaryText,
+                isPlaceholder: heightPrimaryText == "Set"
+            ) {
+                isEditHeightPresented = true
+            }
+            Divider()
+            rowButton(
+                title: "Weight",
+                systemImage: "scalemass",
+                value: weightPrimaryText,
+                isPlaceholder: weightPrimaryText == "Set"
+            ) {
+                isEditWeightPresented = true
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+        .confirmationDialog("Pick Gender", isPresented: $showGenderDialog, titleVisibility: .visible) {
+            Button("\(Gender.male.symbol) \(Gender.male.displayName)") { draft.gender = .male }
+            Button("\(Gender.female.symbol) \(Gender.female.displayName)") { draft.gender = .female }
+            Button(Gender.preferNotToSay.displayName) { draft.gender = .preferNotToSay }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private var trainingCard: some View {
+        VStack(spacing: 10) {
+            rowButton(
+                title: "Training Goal",
+                systemImage: "target",
+                value: trainingGoalPrimaryText.truncated(to: 18, addEllipsis: true),
+                isPlaceholder: trainingGoalPrimaryText == "Set"
+            ) {
+                isEditGoalPresented = true
+            }
+            Divider()
+            rowButton(
+                title: "Training Style",
+                systemImage: "figure.run",
+                value: draft.trainingStyle?.displayName.truncated(to: 18, addEllipsis: true) ?? "Set",
+                isPlaceholder: draft.trainingStyle == nil
+            ) {
+                isEditTrainingStylePresented = true
+            }
+            Divider()
+            rowButton(
+                title: "Training Time",
+                systemImage: "clock",
+                value: trainingTimePrimaryText,
+                isPlaceholder: trainingTimePrimaryText == "Set"
+            ) {
+                isEditTrainingTimePresented = true
+            }
+            Divider()
+            rowButton(
+                title: "Training Experience",
+                systemImage: "rosette",
+                value: draft.trainingExperience?.displayName.truncated(to: 18, addEllipsis: true) ?? "Set",
+                isPlaceholder: draft.trainingExperience == nil
+            ) {
+                isEditTrainingExperiencePresented = true
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+    }
+
+    private var initials: String {
+        let trimmed = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "GF" }
+        let parts = trimmed.split(separator: " ")
+        if let first = parts.first, let last = parts.last, first != last {
+            return "\(first.prefix(1))\(last.prefix(1))".uppercased()
+        }
+        return String(trimmed.prefix(2)).uppercased()
+    }
+
+    private func sectionHeader(title: String, systemImage: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(title)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.primary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 2)
+    }
+
+    private func rowLabel(_ title: String, systemImage: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.fuelBlue)
+                .frame(width: 18)
+            Text(title)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func rowButton(
+        title: String,
+        systemImage: String,
+        value: String,
+        isPlaceholder: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack {
+                rowLabel(title, systemImage: systemImage)
+                Spacer()
+                Text(value)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(isPlaceholder ? .secondary : .primary)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .padding(.leading, 6)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .fill(.ultraThinMaterial)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(.primary.opacity(0.06), lineWidth: 1)
+            )
+            .shadow(
+                color: colorScheme == .dark ? Color.black.opacity(0.25) : Color.black.opacity(0.08),
+                radius: colorScheme == .dark ? 14 : 10,
+                x: 0,
+                y: colorScheme == .dark ? 8 : 6
+            )
+    }
 }
 
 #Preview {
@@ -392,4 +352,3 @@ private struct ProfileEditorPreviewWrapper: View {
         ProfileEditorView(draft: $draft, email: "ahmad@example.com")
     }
 }
-

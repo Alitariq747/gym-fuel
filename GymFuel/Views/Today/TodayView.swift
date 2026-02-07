@@ -280,9 +280,8 @@ struct TodayView: View {
         }
         .overlay {
             if viewModel.isLoading && viewModel.dayLog == nil {
-                ProgressView("Loading your day…")
-                    .padding()
-                    .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                DayLoadingOverlayView()
+                    .transition(.opacity)
             }
         }
       
