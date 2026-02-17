@@ -9,6 +9,11 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseCore
+import FirebaseFunctions
+import GoogleSignIn
+import UIKit
+import CryptoKit
 
 @MainActor
 final class FirebaseAuthManager: ObservableObject {
@@ -56,10 +61,119 @@ final class FirebaseAuthManager: ObservableObject {
     func signOut() throws {
         do {
             try Auth.auth().signOut()
+            GIDSignIn.sharedInstance.signOut()
             self.user = nil
         } catch {
             throw mapFirebaseAuthError(error)
         }
+    }
+
+    func signInWithGoogle() async throws {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            throw AuthManagerError.unknown
+        }
+
+        let config = GIDConfiguration(clientID: clientID)
+        guard let rootVC = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController else {
+            throw AuthManagerError.unknown
+        }
+
+        do {
+            GIDSignIn.sharedInstance.configuration = config
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootVC)
+
+            guard let idToken = result.user.idToken?.tokenString else {
+                throw AuthManagerError.unknown
+            }
+            let accessToken = result.user.accessToken.tokenString
+
+            let credential = GoogleAuthProvider.credential(
+                withIDToken: idToken,
+                accessToken: accessToken
+            )
+
+            let authResult = try await Auth.auth().signIn(with: credential)
+            self.user = authResult.user
+        } catch {
+            throw error
+        }
+    }
+
+    func signInWithApple(idTokenString: String, rawNonce: String) async throws {
+        let credential = OAuthProvider.credential(
+            providerID: .apple,
+            idToken: idTokenString,
+            rawNonce: rawNonce
+        )
+
+        let authResult = try await Auth.auth().signIn(with: credential)
+        self.user = authResult.user
+    }
+
+    func deleteAccount() async throws {
+        let deletionService = FirebaseAccountDeletionService()
+
+        do {
+            try await deletionService.deleteCurrentAccount()
+
+            // Keep client-side state consistent even if the backend already removed auth.
+            try? Auth.auth().signOut()
+            GIDSignIn.sharedInstance.signOut()
+            self.user = nil
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == FunctionsErrorDomain,
+               let code = FunctionsErrorCode(rawValue: nsError.code) {
+                switch code {
+                case .unauthenticated:
+                    throw AuthManagerError.invalidCredential
+                case .permissionDenied:
+                    throw AuthManagerError.operationNotAllowed
+                case .resourceExhausted:
+                    throw AuthManagerError.tooManyRequests
+                case .unavailable:
+                    throw AuthManagerError.networkError
+                default:
+                    throw AuthManagerError.unknown
+                }
+            }
+
+            throw mapFirebaseAuthError(error)
+        }
+    }
+
+    func generateNonce(length: Int = 32) -> String {
+        precondition(length > 0)
+        let charset: [Character] =
+            Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+
+        var result = ""
+        var remainingLength = length
+
+        while remainingLength > 0 {
+            var random: UInt8 = 0
+            let status = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+            if status != errSecSuccess {
+                continue
+            }
+
+            if random < charset.count {
+                result.append(charset[Int(random)])
+                remainingLength -= 1
+            }
+        }
+
+        return result
+    }
+
+    func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashed = SHA256.hash(data: inputData)
+        return hashed.map { String(format: "%02x", $0) }.joined()
     }
     
    

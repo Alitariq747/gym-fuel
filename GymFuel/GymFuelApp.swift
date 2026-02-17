@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import GoogleSignIn
 
 @main
 struct GymFuelApp: App {
@@ -21,7 +22,9 @@ struct GymFuelApp: App {
             RootView()
                 .environmentObject(authManager)
                 .environmentObject(profileViewModel)
-                .preferredColorScheme(.light)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
             
         }
     }

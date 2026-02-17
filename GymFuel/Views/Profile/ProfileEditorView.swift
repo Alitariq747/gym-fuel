@@ -77,22 +77,20 @@ struct ProfileEditorView: View {
     @State private var isEditTrainingExperiencePresented = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                profileHeader
+        VStack(alignment: .leading, spacing: 18) {
+            profileHeader
 
-                VStack(spacing: 12) {
-                    sectionHeader(title: "Body Metrics", systemImage: "figure.stand")
-                    bodyMetricsCard
-                }
-
-                VStack(spacing: 12) {
-                    sectionHeader(title: "Training", systemImage: "dumbbell.fill")
-                    trainingCard
-                }
+            VStack(spacing: 12) {
+                sectionHeader(title: "Body Metrics", systemImage: "figure.stand")
+                bodyMetricsCard
             }
-            .padding()
+
+            VStack(spacing: 12) {
+                sectionHeader(title: "Training", systemImage: "dumbbell.fill")
+                trainingCard
+            }
         }
+        .padding()
         .onAppear {
             syncAgeTextFromDraft()
         }

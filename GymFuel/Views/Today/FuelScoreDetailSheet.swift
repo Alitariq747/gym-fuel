@@ -246,6 +246,13 @@ struct FuelScoreDetailSheet: View {
     private func macroRow(label: String, actual: Double, target: Double, unit: String) -> some View {
         let isOver = target > 0 && actual > target
         let accent = isOver ? Color.red : Color.accentColor
+        let ratio: Double
+        if target > 0, target.isFinite, actual.isFinite {
+            let raw = actual / target
+            ratio = raw.isFinite ? min(raw, 2.0) : 0
+        } else {
+            ratio = 0
+        }
 
         return VStack(alignment: .leading, spacing: 4) {
             HStack {
@@ -257,13 +264,6 @@ struct FuelScoreDetailSheet: View {
                     .foregroundStyle(.secondary)
             }
 
-            let ratio: Double
-            if target > 0, target.isFinite, actual.isFinite {
-                let raw = actual / target
-                ratio = raw.isFinite ? min(raw, 2.0) : 0
-            } else {
-                ratio = 0
-            }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()

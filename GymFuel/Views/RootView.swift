@@ -32,13 +32,9 @@ struct RootView: View {
                         }
                     }
                 } else if profileViewModel.isLoading {
-                    VStack {
-                        ProgressView("Loading Profile...")
-                    }
+                    DayLoadingOverlayView()
                 } else {
-                    VStack {
-                        ProgressView("Preparing your account...")
-                    }
+                    DayLoadingOverlayView()
                 }
             }
             
