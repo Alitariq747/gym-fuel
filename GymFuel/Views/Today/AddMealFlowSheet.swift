@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct AddMealFlowSheet: View {
     @ObservedObject var dayLogViewModel: DayLogViewModel
     let dayDate: Date

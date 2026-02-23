@@ -15,5 +15,9 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We use your photo library to let you select meal photos for macro estimation.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We use the camera to let you capture meal photos for macro estimation.</string>
 </dict>
 </plist>

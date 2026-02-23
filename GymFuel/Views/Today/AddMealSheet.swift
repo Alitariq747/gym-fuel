@@ -27,9 +27,12 @@ struct AddMealSheet: View {
                     dismiss()
                     
                 } label: {
-                    Image(systemName: "x.circle.fill")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(Color(.systemGray3))
+                    Image(systemName: "xmark")
+                        .font(.headline).bold()
+                        .foregroundStyle(Color(.systemGray))
+                        .padding(10)
+                        .background(Color(.systemBackground), in: Circle())
+                        .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
                     
                 }
                 .padding()

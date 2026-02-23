@@ -304,6 +304,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GymFuel/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "LiftEats uses your camera so you can snap a meal photo and estimate macros.\n\nLiftEats uses your camera so you can snap a meal photo and estimate macros.\n\nLiftEats uses your camera so you can snap a meal photo and estimate macros.\n\nLiftEats uses your camera so you can snap a meal photo and estimate macros\nLiftEats uses camera so you can snap a meal and estimate macros.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "LiftEats save meal photos only when you chose to save them.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "LiftEats uses your photo library so you can choose meal photos and estimate macros";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -335,6 +338,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GymFuel/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "LiftEats uses your camera so you can snap a meal photo and estimate macros.\n\nLiftEats uses your camera so you can snap a meal photo and estimate macros.\n\nLiftEats uses your camera so you can snap a meal photo and estimate macros.\n\nLiftEats uses your camera so you can snap a meal photo and estimate macros\nLiftEats uses camera so you can snap a meal and estimate macros.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "LiftEats save meal photos only when you chose to save them.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "LiftEats uses your photo library so you can choose meal photos and estimate macros";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

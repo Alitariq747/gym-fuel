@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct ProfileView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
@@ -16,21 +17,27 @@ struct ProfileView: View {
     @State private var draft: UserProfileDraft? = nil
     @State private var signOutError: String?
     @State private var isSigningOut: Bool = false
+    @State private var isDeletingAccount: Bool = false
+    @State private var showDeleteAccountConfirmation: Bool = false
+    @State private var showEmailReauthPrompt: Bool = false
+    @State private var showAppleReauthSheet: Bool = false
+    @State private var deleteEmail: String = ""
+    @State private var deletePassword: String = ""
+    @State private var deleteAppleNonce: String?
 
     private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")!
     private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")!
     
     var body: some View {
-        let isBusy = profileVm.isSaving || isSigningOut
-        let isSignedOut = authManager.user == nil
+        let isBusy = profileVm.isSaving || isSigningOut || isDeletingAccount
         ZStack {
              AppBackground()
 
             Group {
-                if isSigningOut {
+                if isSigningOut || isDeletingAccount {
                     VStack(spacing: 12) {
                         ProgressView()
-                        Text("Signing out…")
+                        Text(isDeletingAccount ? "Deleting account…" : "Signing out…")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -117,6 +124,30 @@ struct ProfileView: View {
                                 .buttonStyle(.plain)
                                 .disabled(isBusy)
                                 .padding(.horizontal)
+
+                                Button(role: .destructive) {
+                                    showDeleteAccountConfirmation = true
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "trash.fill")
+                                        Text("Delete Account")
+                                            .font(.headline)
+                                    }
+                                    .foregroundStyle(.red)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(
+                                        Color.red.opacity(colorScheme == .dark ? 0.18 : 0.1),
+                                        in: RoundedRectangle(cornerRadius: 12)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.red.opacity(0.35), lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(isBusy)
+                                .padding(.horizontal)
                                 .padding(.bottom)
                             }
                         }
@@ -142,6 +173,32 @@ struct ProfileView: View {
             } else {
                 draft = nil
             }
+        }
+        .confirmationDialog("Delete Account?", isPresented: $showDeleteAccountConfirmation, titleVisibility: .visible) {
+            Button("Delete Account", role: .destructive) {
+                Task { await startDeleteFlow() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete your account and all associated data from GymFuel. This action cannot be undone.")
+        }
+        .alert("Confirm your password", isPresented: $showEmailReauthPrompt) {
+            TextField("Email", text: $deleteEmail)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            SecureField("Password", text: $deletePassword)
+            Button("Cancel", role: .cancel) {
+                deletePassword = ""
+                signOutError = verificationCancelledMessage
+            }
+            Button("Continue", role: .destructive) {
+                Task { await reauthenticateWithEmailAndDelete() }
+            }
+        } message: {
+            Text("For security, re-enter your email and password before deleting your account.")
+        }
+        .sheet(isPresented: $showAppleReauthSheet) {
+            appleReauthSheet
         }
     }
     private var canSave: Bool {
@@ -238,9 +295,44 @@ struct ProfileView: View {
             )
     }
 
+    private var appleReauthSheet: some View {
+        NavigationStack {
+            VStack(spacing: 18) {
+                Text("Verify with Apple")
+                    .font(.headline)
+
+                Text("To delete your account, confirm your Apple sign-in first.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                SignInWithAppleButton(.continue) { request in
+                    let nonce = authManager.generateNonce()
+                    deleteAppleNonce = nonce
+                    request.requestedScopes = []
+                    request.nonce = authManager.sha256(nonce)
+                } onCompletion: { result in
+                    Task { await handleAppleReauthForDelete(result) }
+                }
+                .frame(height: 48)
+
+                Button("Cancel", role: .cancel) {
+                    showAppleReauthSheet = false
+                    signOutError = verificationCancelledMessage
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(24)
+            .navigationTitle("Delete Account")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .presentationDetents([.medium])
+    }
+
     @MainActor
     private func handleSignOut() async {
         guard !isSigningOut else { return }
+        signOutError = nil
         isSigningOut = true
         defer { isSigningOut = false }
 
@@ -252,6 +344,174 @@ struct ProfileView: View {
         } catch {
             signOutError = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func startDeleteFlow() async {
+        guard let user = authManager.user else {
+            signOutError = AuthManagerError.invalidCredential.localizedDescription
+            return
+        }
+
+        signOutError = nil
+        deleteEmail = user.email ?? ""
+        deletePassword = ""
+
+        let providerIDs = Set(user.providerData.map(\.providerID))
+
+        if providerIDs.contains("password") {
+            showEmailReauthPrompt = true
+            return
+        }
+
+        if providerIDs.contains("google.com") {
+            await reauthenticateWithGoogleAndDelete()
+            return
+        }
+
+        if providerIDs.contains("apple.com") {
+            deleteAppleNonce = nil
+            showAppleReauthSheet = true
+            return
+        }
+
+        await performDeleteAccount()
+    }
+
+    @MainActor
+    private func reauthenticateWithEmailAndDelete() async {
+        guard !isDeletingAccount else { return }
+        signOutError = nil
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        do {
+            try await authManager.reauthenticateForDeleteWithEmail(email: deleteEmail, password: deletePassword)
+        } catch {
+            setVerificationError(error)
+            return
+        }
+
+        deletePassword = ""
+
+        do {
+            try await performDeleteAccountAfterReauth()
+        } catch {
+            setDeleteError(error)
+        }
+    }
+
+    @MainActor
+    private func reauthenticateWithGoogleAndDelete() async {
+        guard !isDeletingAccount else { return }
+        signOutError = nil
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        do {
+            try await authManager.reauthenticateForDeleteWithGoogle()
+        } catch {
+            setVerificationError(error)
+            return
+        }
+
+        do {
+            try await performDeleteAccountAfterReauth()
+        } catch {
+            setDeleteError(error)
+        }
+    }
+
+    @MainActor
+    private func handleAppleReauthForDelete(_ result: Result<ASAuthorization, Error>) async {
+        guard !isDeletingAccount else { return }
+        showAppleReauthSheet = false
+        signOutError = nil
+        defer { deleteAppleNonce = nil }
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        do {
+            let authorization = try result.get()
+            guard let rawNonce = deleteAppleNonce else {
+                throw AuthManagerError.unknown
+            }
+
+            try await authManager.reauthenticateForDeleteWithApple(
+                authorization: authorization,
+                rawNonce: rawNonce
+            )
+        } catch {
+            setVerificationError(error)
+            return
+        }
+
+        do {
+            try await performDeleteAccountAfterReauth()
+        } catch {
+            setDeleteError(error)
+        }
+    }
+
+    @MainActor
+    private func performDeleteAccount() async {
+        guard !isDeletingAccount else { return }
+        signOutError = nil
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        do {
+            try await performDeleteAccountAfterReauth()
+        } catch {
+            setDeleteError(error)
+        }
+    }
+
+    @MainActor
+    private func performDeleteAccountAfterReauth() async throws {
+        try await authManager.deleteAccount()
+        profileVm.clear()
+        dismiss()
+    }
+
+    private var verificationCancelledMessage: String {
+        "Verification cancelled. Your account was not deleted."
+    }
+
+    private func setVerificationError(_ error: Error) {
+        if isCancellation(error) {
+            signOutError = verificationCancelledMessage
+            return
+        }
+
+        let details = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+        signOutError = "Verification failed. \(details)"
+    }
+
+    private func setDeleteError(_ error: Error) {
+        let details = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+        signOutError = "Delete failed. \(details)"
+    }
+
+    private func isCancellation(_ error: Error) -> Bool {
+        if let authError = error as? AuthManagerError,
+           case .operationCancelled = authError {
+            return true
+        }
+
+        let nsError = error as NSError
+        if nsError.domain == ASAuthorizationError.errorDomain,
+           let code = ASAuthorizationError.Code(rawValue: nsError.code),
+           code == .canceled {
+            return true
+        }
+
+        if nsError.domain.localizedCaseInsensitiveContains("gidsignin"),
+           nsError.code == -5 {
+            return true
+        }
+
+        return false
     }
     
 }

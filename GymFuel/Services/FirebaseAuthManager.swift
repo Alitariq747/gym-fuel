@@ -12,6 +12,7 @@ import FirebaseAuth
 import FirebaseCore
 import FirebaseFunctions
 import GoogleSignIn
+import AuthenticationServices
 import UIKit
 import CryptoKit
 
@@ -146,6 +147,113 @@ final class FirebaseAuthManager: ObservableObject {
         }
     }
 
+    func reauthenticateForDeleteWithEmail(email: String, password: String) async throws {
+        guard let currentUser = Auth.auth().currentUser else {
+            throw AuthManagerError.invalidCredential
+        }
+
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedEmail.isEmpty else {
+            throw AuthManagerError.missingEmail
+        }
+
+        guard !password.isEmpty else {
+            throw AuthManagerError.missingPassword
+        }
+
+        let credential = EmailAuthProvider.credential(
+            withEmail: normalizedEmail,
+            password: password
+        )
+
+        do {
+            _ = try await currentUser.reauthenticate(with: credential)
+        } catch {
+            throw mapFirebaseAuthError(error)
+        }
+    }
+
+    func reauthenticateForDeleteWithGoogle() async throws {
+        guard let currentUser = Auth.auth().currentUser else {
+            throw AuthManagerError.invalidCredential
+        }
+
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            throw AuthManagerError.unknown
+        }
+
+        guard let rootVC = keyWindowRootViewController() else {
+            throw AuthManagerError.unknown
+        }
+
+        let config = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.configuration = config
+
+        do {
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootVC)
+
+            guard let idToken = result.user.idToken?.tokenString else {
+                throw AuthManagerError.unknown
+            }
+
+            let credential = GoogleAuthProvider.credential(
+                withIDToken: idToken,
+                accessToken: result.user.accessToken.tokenString
+            )
+
+            _ = try await currentUser.reauthenticate(with: credential)
+        } catch {
+            throw mapFirebaseAuthError(error)
+        }
+    }
+
+    func reauthenticateForDeleteWithApple(idTokenString: String, rawNonce: String) async throws {
+        guard let currentUser = Auth.auth().currentUser else {
+            throw AuthManagerError.invalidCredential
+        }
+
+        let credential = OAuthProvider.credential(
+            providerID: .apple,
+            idToken: idTokenString,
+            rawNonce: rawNonce
+        )
+
+        do {
+            _ = try await currentUser.reauthenticate(with: credential)
+        } catch {
+            throw mapFirebaseAuthError(error)
+        }
+    }
+
+    func reauthenticateForDeleteWithApple(
+        authorization: ASAuthorization,
+        rawNonce: String
+    ) async throws {
+        guard let appleCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let tokenData = appleCredential.identityToken,
+              let tokenString = String(data: tokenData, encoding: .utf8) else {
+            throw AuthManagerError.unknown
+        }
+
+        guard let authCodeData = appleCredential.authorizationCode,
+              let authCodeString = String(data: authCodeData, encoding: .utf8),
+              !authCodeString.isEmpty else {
+            throw AuthManagerError.missingAppleAuthorizationCode
+        }
+
+        try await reauthenticateForDeleteWithApple(
+            idTokenString: tokenString,
+            rawNonce: rawNonce
+        )
+
+        do {
+            // Required by Apple for in-app account deletion compliance.
+            try await Auth.auth().revokeToken(withAuthorizationCode: authCodeString)
+        } catch {
+            throw mapFirebaseAuthError(error)
+        }
+    }
+
     func generateNonce(length: Int = 32) -> String {
         precondition(length > 0)
         let charset: [Character] =
@@ -180,6 +288,18 @@ final class FirebaseAuthManager: ObservableObject {
     
     private func mapFirebaseAuthError(_ error: Error) -> AuthManagerError {
         let nsError = error as NSError
+
+        // Avoid relying on SDK enum availability across GoogleSignIn versions.
+        // In Google Sign-In, user-cancel is NSError code -5.
+        if nsError.domain.localizedCaseInsensitiveContains("gidsignin") {
+            return nsError.code == -5 ? .operationCancelled : .unknown
+        }
+
+        if nsError.domain == ASAuthorizationError.errorDomain,
+           let code = ASAuthorizationError.Code(rawValue: nsError.code),
+           code == .canceled {
+            return .operationCancelled
+        }
 
         guard let code = AuthErrorCode(rawValue: nsError.code) else {
             return .unknown
@@ -237,6 +357,8 @@ enum AuthManagerError: LocalizedError {
     case operationNotAllowed
     case missingEmail
     case missingPassword
+    case missingAppleAuthorizationCode
+    case operationCancelled
     case unknown
     
     var errorDescription: String? {
@@ -265,8 +387,22 @@ enum AuthManagerError: LocalizedError {
             return "Please enter your email address."
         case .missingPassword:
             return "Please enter your password."
+        case .missingAppleAuthorizationCode:
+            return "Couldn't verify your Apple session. Please try again."
+        case .operationCancelled:
+            return "Operation cancelled."
         case .unknown:
             return "Something went wrong. Please try again."
         }
+    }
+}
+
+private extension FirebaseAuthManager {
+    func keyWindowRootViewController() -> UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController
     }
 }

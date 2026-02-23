@@ -20,6 +20,8 @@ struct TodayView: View {
     enum AddMealMode: Identifiable {
         case manual
         case ai
+        case camera
+        case gallery
         
         var id: String {
             switch self {
@@ -27,12 +29,17 @@ struct TodayView: View {
                 return "manual"
             case .ai:
                 return "ai"
+            case .camera:
+                return "camera"
+            case .gallery:
+                return "gallery"
             }
         }
     }
     
     @State private var showAddMealOptions = false
     @State private var activeAddMealMode: AddMealMode?
+    
     @State private var showFuelScoreDetail = false
 
     
@@ -227,6 +234,12 @@ struct TodayView: View {
             Button("Use Ai") {
                 activeAddMealMode = .ai
             }
+            Button("Use camera") {
+                activeAddMealMode = .camera
+            }
+            Button("Pick from gallery") {
+                activeAddMealMode = .gallery
+            }
             Button("Cancel", role: .cancel) {
                 
             }
@@ -238,6 +251,10 @@ struct TodayView: View {
                 AddManualMealSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
             case .ai:
                 AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+            case .camera:
+                AddMealCameraFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+            case .gallery:
+                AddMealGalleryFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
             }
         })
         // sheet for FuelScore detail Sheet
@@ -318,7 +335,5 @@ struct TodayView: View {
 
 #Preview {
   
-       
         TodayView(viewModel: DayLogViewModel(profile: dummyProfile), selectedDate: .constant(Date()))
-    
 }
