@@ -15,9 +15,11 @@ import GoogleSignIn
 import AuthenticationServices
 import UIKit
 import CryptoKit
+import os.log
 
 @MainActor
 final class FirebaseAuthManager: ObservableObject {
+    private static let logger = Logger(subsystem: "com.gymfuel.app", category: "auth")
     // UI can read this, but only this class can modify it
     @Published private(set) var user: User?
     private var authListenerHandle: AuthStateDidChangeListenerHandle?
@@ -26,7 +28,6 @@ final class FirebaseAuthManager: ObservableObject {
        
         self.user = Auth.auth().currentUser
         
-        // Listen for sign-in / sign-out changes from Firebase
         authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             self?.user = user
         }
@@ -100,7 +101,7 @@ final class FirebaseAuthManager: ObservableObject {
             let authResult = try await Auth.auth().signIn(with: credential)
             self.user = authResult.user
         } catch {
-            throw error
+            throw mapFirebaseAuthError(error)
         }
     }
 
@@ -111,8 +112,12 @@ final class FirebaseAuthManager: ObservableObject {
             rawNonce: rawNonce
         )
 
-        let authResult = try await Auth.auth().signIn(with: credential)
-        self.user = authResult.user
+        do {
+            let authResult = try await Auth.auth().signIn(with: credential)
+            self.user = authResult.user
+        } catch {
+            throw mapFirebaseAuthError(error)
+        }
     }
 
     func deleteAccount() async throws {
@@ -250,7 +255,10 @@ final class FirebaseAuthManager: ObservableObject {
             // Required by Apple for in-app account deletion compliance.
             try await Auth.auth().revokeToken(withAuthorizationCode: authCodeString)
         } catch {
-            throw mapFirebaseAuthError(error)
+            // Don't block account deletion if token revocation fails.
+            // This can fail in some environments even when reauth succeeds.
+            Self.logger.warning("Apple token revocation failed during delete: \(String(describing: error))")
+            return
         }
     }
 
@@ -289,8 +297,6 @@ final class FirebaseAuthManager: ObservableObject {
     private func mapFirebaseAuthError(_ error: Error) -> AuthManagerError {
         let nsError = error as NSError
 
-        // Avoid relying on SDK enum availability across GoogleSignIn versions.
-        // In Google Sign-In, user-cancel is NSError code -5.
         if nsError.domain.localizedCaseInsensitiveContains("gidsignin") {
             return nsError.code == -5 ? .operationCancelled : .unknown
         }

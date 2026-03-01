@@ -9,15 +9,10 @@ import SwiftUI
 
 struct AddMealFlowSheet: View {
     @ObservedObject var dayLogViewModel: DayLogViewModel
+    @ObservedObject var addMealViewModel: AddMealViewModel
     let dayDate: Date
 
     @Environment(\.dismiss) private var dismissSheet
-
-    @StateObject private var addMealViewModel = AddMealViewModel(
-        service: BackendMealParsingService(
-            baseURL: URL(string: "http://localhost:5001")!
-        )
-    )
 
     @State private var pendingDescription: String = ""
     @State private var pendingParsed: ParsedMeal?
@@ -28,7 +23,7 @@ struct AddMealFlowSheet: View {
        
            
             NavigationStack {
-                // STEP 1: description screen
+              
                 AddMealSheet(
                     viewModel: addMealViewModel,
                     dayDate: dayDate
@@ -82,13 +77,26 @@ struct AddMealFlowSheet: View {
                         // Still parsing OR it failed
                         VStack(spacing: 16) {
                             if let error = addMealViewModel.errorMessage {
-                                MealParsingErrorView(message: error) {
+                                MealParsingErrorView(
+                                    message: error,
+                                    buttonTitle: "Back to description",
+                                    hint: "Try adjusting your description and run it again.",
+                                    retryTitle: addMealViewModel.canRetry ? "Retry" : nil,
+                                    isRetryDisabled: addMealViewModel.isLoading,
+                                    onRetry: addMealViewModel.canRetry ? {
+                                        pendingParsed = nil
+                                        Task {
+                                            await addMealViewModel.parse()
+                                            await MainActor.run {
+                                                pendingParsed = addMealViewModel.parsed
+                                            }
+                                        }
+                                    } : nil
+                                ) {
                                     showReview = false
                                     pendingParsed = nil
                                     addMealViewModel.errorMessage = nil
                                 }
-                                
-                                
                             } else {
                                 MealParsingLoadingView()
                             }
@@ -115,5 +123,13 @@ struct AddMealFlowSheet: View {
 }
 
 #Preview {
-    AddMealFlowSheet(dayLogViewModel: DayLogViewModel(profile: dummyProfile), dayDate: Date())
+    AddMealFlowSheet(
+        dayLogViewModel: DayLogViewModel(profile: dummyProfile),
+        addMealViewModel: AddMealViewModel(
+            service: BackendMealParsingService(
+                baseURL: URL(string: "http://localhost:5001")!
+            )
+        ),
+        dayDate: Date()
+    )
 }

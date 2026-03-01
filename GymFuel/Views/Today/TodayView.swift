@@ -16,6 +16,12 @@ struct TodayView: View {
     @Binding var selectedDate: Date
     
     @State private var selectedMeal: Meal?
+    @StateObject private var addMealViewModel = AddMealViewModel(
+        service: BackendMealParsingService(
+            baseURL: URL(string:
+                "https://organizer-issues-lancaster-flex.trycloudflare.com")!
+        )
+    )
     
     enum AddMealMode: Identifiable {
         case manual
@@ -39,6 +45,8 @@ struct TodayView: View {
     
     @State private var showAddMealOptions = false
     @State private var activeAddMealMode: AddMealMode?
+    @State private var showPhotoPermissionAlert = false
+    @State private var photoPermissionMessage = ""
     
     @State private var showFuelScoreDetail = false
 
@@ -227,36 +235,51 @@ struct TodayView: View {
 
         }
 
-        .confirmationDialog("How do you want to add this meal ?", isPresented: $showAddMealOptions, titleVisibility: .visible, actions: {
-            Button("Add manually") {
-                activeAddMealMode = .manual
+        .sheet(isPresented: $showAddMealOptions) {
+            AddMealOptionsSheet { mode in
+                if mode != .manual {
+                    addMealViewModel.reset()
+                }
+                activeAddMealMode = mode
+                showAddMealOptions = false
+            } onCancel: {
+                showAddMealOptions = false
             }
-            Button("Use Ai") {
-                activeAddMealMode = .ai
-            }
-            Button("Use camera") {
-                activeAddMealMode = .camera
-            }
-            Button("Pick from gallery") {
-                activeAddMealMode = .gallery
-            }
-            Button("Cancel", role: .cancel) {
-                
-            }
-        })
+        }
         // sheet for add meal flow
         .sheet(item: $activeAddMealMode, content: { mode in
             switch mode {
             case .manual:
                 AddManualMealSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
             case .ai:
-                AddMealFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+                AddMealFlowSheet(
+                    dayLogViewModel: viewModel,
+                    addMealViewModel: addMealViewModel,
+                    dayDate: selectedDate
+                )
             case .camera:
-                AddMealCameraFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+                AddMealCameraFlowSheet(
+                    dayLogViewModel: viewModel,
+                    addMealViewModel: addMealViewModel,
+                    dayDate: selectedDate,
+                    onPermissionDenied: { message in
+                        photoPermissionMessage = message
+                        showPhotoPermissionAlert = true
+                    }
+                )
             case .gallery:
-                AddMealGalleryFlowSheet(dayLogViewModel: viewModel, dayDate: selectedDate)
+                AddMealGalleryFlowSheet(
+                    dayLogViewModel: viewModel,
+                    addMealViewModel: addMealViewModel,
+                    dayDate: selectedDate
+                )
             }
         })
+        .alert("Camera Access Needed", isPresented: $showPhotoPermissionAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(photoPermissionMessage)
+        }
         // sheet for FuelScore detail Sheet
         .sheet(isPresented: $showFuelScoreDetail) {
             if let log = viewModel.dayLog,

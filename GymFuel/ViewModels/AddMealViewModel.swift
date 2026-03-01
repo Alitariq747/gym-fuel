@@ -11,6 +11,15 @@ import UIKit
 
 @MainActor
 final class AddMealViewModel: ObservableObject {
+    enum UserFacingError: String {
+        case offline = "You're offline. Check your connection and try again."
+        case timeout = "This is taking too long. Please try again."
+        case server = "We’re having trouble on our end. Please try again later."
+        case invalidResponse = "We couldn’t understand the response. Please try again."
+        case imageTooLarge = "This image is too large to upload. Try a different photo."
+        case unknown = "Something went wrong. Please try again."
+    }
+
     @Published var descriptionText: String = ""
     @Published var selectedPhotoData: Data? = nil
     @Published var selectedPhotoMimeType: String = "image/jpeg"
@@ -19,9 +28,19 @@ final class AddMealViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var parsed: ParsedMeal? = nil
     @Published var isPreparingImage: Bool = false
+    @Published private(set) var lastUserFacingError: UserFacingError? = nil
 
     var isPhotoReady: Bool {
         selectedPhotoData != nil && !isPreparingImage && errorMessage == nil
+    }
+
+    var canRetry: Bool {
+        switch lastUserFacingError {
+        case .offline, .timeout, .server:
+            return true
+        default:
+            return false
+        }
     }
 
     private let service: MealParsingService
@@ -38,6 +57,7 @@ final class AddMealViewModel: ObservableObject {
     func parse() async {
         errorMessage = nil
         parsed = nil
+        lastUserFacingError = nil
 
         let input = descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
         let hasPhoto = selectedPhotoData != nil
@@ -64,7 +84,9 @@ final class AddMealViewModel: ObservableObject {
             let result = try await service.parseMeal(request)
             parsed = result
         } catch {
-            errorMessage = error.localizedDescription
+            let friendlyError = mapToUserFacingError(error)
+            lastUserFacingError = friendlyError
+            errorMessage = friendlyError.rawValue
         }
     }
 
@@ -75,6 +97,7 @@ final class AddMealViewModel: ObservableObject {
         selectedPhotoFilename = "meal.jpg"
         parsed = nil
         errorMessage = nil
+        lastUserFacingError = nil
         isLoading = false
     }
 
@@ -97,7 +120,9 @@ final class AddMealViewModel: ObservableObject {
                     self.selectedPhotoData = nil
                     self.selectedPhotoMimeType = "image/jpeg"
                     self.selectedPhotoFilename = "meal.jpg"
-                    self.errorMessage = error.localizedDescription
+                    let friendlyError = self.mapToUserFacingError(error)
+                    self.lastUserFacingError = friendlyError
+                    self.errorMessage = friendlyError.rawValue
                     self.isPreparingImage = false
                 }
             }
@@ -109,5 +134,41 @@ final class AddMealViewModel: ObservableObject {
         selectedPhotoMimeType = "image/jpeg"
         selectedPhotoFilename = "meal.jpg"
         isPreparingImage = false
+        lastUserFacingError = nil
+    }
+
+    private func mapToUserFacingError(_ error: Error) -> UserFacingError {
+        if let preprocessorError = error as? MealImagePreprocessorError {
+            switch preprocessorError {
+            case .imageTooLargeAfterCompression:
+                return .imageTooLarge
+            case .encodingFailed:
+                return .unknown
+            }
+        }
+
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .offline
+            case .timedOut:
+                return .timeout
+            default:
+                return .unknown
+            }
+        }
+
+        if let backendError = error as? BackendMealParsingService.ServiceError {
+            switch backendError {
+            case .httpError:
+                return .server
+            case .decodingFailed:
+                return .invalidResponse
+            case .invalidURL:
+                return .unknown
+            }
+        }
+
+        return .unknown
     }
 }

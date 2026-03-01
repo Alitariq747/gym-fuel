@@ -180,7 +180,7 @@ struct ProfileView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This will permanently delete your account and all associated data from GymFuel. This action cannot be undone.")
+            Text("This will permanently delete your account and all associated data from LiftEats. This action cannot be undone.")
         }
         .alert("Confirm your password", isPresented: $showEmailReauthPrompt) {
             TextField("Email", text: $deleteEmail)

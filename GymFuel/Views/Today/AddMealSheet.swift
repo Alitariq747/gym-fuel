@@ -86,27 +86,35 @@ struct AddMealSheet: View {
                     
                     onNext(input)
                 } label: {
-                    Text("Estimate macros with AI")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(
-                                    viewModel.descriptionText
-                                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                                        .isEmpty
-                                    ? Color.gray.opacity(0.3)
-                                    : Color.liftEatsCoral
-                                )
-                        )
-                        .foregroundColor(.white)
+                    Group {
+                        if viewModel.isLoading {
+                            ProgressView()
+                        } else {
+                            Text("Estimate macros with AI")
+                                .fontWeight(.semibold)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(
+                                viewModel.descriptionText
+                                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                                    .isEmpty
+                                || viewModel.isLoading
+                                ? Color.gray.opacity(0.3)
+                                : Color.liftEatsCoral
+                            )
+                    )
+                    .foregroundColor(.white)
                 }
                 .padding(.horizontal)
                 .disabled(
                     viewModel.descriptionText
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                         .isEmpty
+                    || viewModel.isLoading
                 )
                 
                 Spacer()

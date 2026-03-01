@@ -13,8 +13,6 @@ struct ReviewMealImageSheet: View {
     @State var parsed: ParsedMeal
     @State var mealTime: Date
     let onSave: (String, ParsedMeal, Date) -> Void
-    let onReset: () -> Void
-
     @Environment(\.dismiss) private var dismiss
     @State private var showTimePicker: Bool = false
     private let timePickerAnimation = Animation.easeInOut(duration: 0.35)
@@ -34,17 +32,6 @@ struct ReviewMealImageSheet: View {
                             .font(.subheadline).bold()
                             .foregroundStyle(.primary)
                         Spacer()
-
-                        Button {
-                            onReset()
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.headline).bold()
-                                .foregroundStyle(Color(.systemGray))
-                                .padding(10)
-                                .background(Color(.systemBackground), in: Circle())
-                                .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-                        }
 
                         Button {
                             showDiscardAlert = true
@@ -234,15 +221,20 @@ struct ReviewMealImageSheet: View {
                     onSave(newDescription, newParsed, newMealTime)
                 }
             }
-            .alert("Skip logging this meal?", isPresented: $showDiscardAlert) {
-                Button("Skip meal", role: .destructive) {
-                    onDiscard()
-                }
-                Button("Cancel", role: .cancel) { }
-            } message: {
-                Text("If you skip, this meal will not be saved to your log.")
-            }
         }
+        .confirmationDialog(
+            "Skip logging this meal?",
+            isPresented: $showDiscardAlert,
+            titleVisibility: .visible
+        ) {
+            Button("Skip meal", role: .destructive) {
+                onDiscard()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("If you skip, this meal will not be saved to your log.")
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
@@ -253,7 +245,6 @@ struct ReviewMealImageSheet: View {
         parsed: demo,
         mealTime: Date(),
         onSave: { _, _, _ in print("save") },
-        onReset: { print("reset") },
         onDiscard: { print("") }
     )
 }

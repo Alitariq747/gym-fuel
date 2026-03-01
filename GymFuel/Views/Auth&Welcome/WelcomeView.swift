@@ -16,9 +16,8 @@ struct WelcomeView: View {
     let onSignUp: () -> Void
     
     @State private var isGoogleLoading = false
-    @State private var googleError: String?
     @State private var isAppleLoading = false
-    @State private var appleError: String?
+    @State private var authError: String?
     @State private var appleNonce: String?
 
     var body: some View {
@@ -68,13 +67,6 @@ struct WelcomeView: View {
                 )
                 .disabled(isAppleLoading)
 
-                if let appleError {
-                    Text(appleError)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
                 Button {
                     Task { await handleGoogleSignIn() }
                 } label: {
@@ -87,8 +79,8 @@ struct WelcomeView: View {
                 .buttonStyle(.plain)
                 .disabled(isGoogleLoading)
 
-                if let googleError {
-                    Text(googleError)
+                if let authError {
+                    Text(authError)
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -126,7 +118,7 @@ struct WelcomeView: View {
     @MainActor
     private func handleAppleSignIn(_ result: Result<ASAuthorization, Error>) async {
         guard !isAppleLoading else { return }
-        appleError = nil
+        authError = nil
         isAppleLoading = true
         defer { isAppleLoading = false }
 
@@ -144,21 +136,39 @@ struct WelcomeView: View {
             }
             try await authManager.signInWithApple(idTokenString: tokenString, rawNonce: rawNonce)
         } catch {
-            appleError = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+            if let authError = error as? AuthManagerError {
+                if authError == .operationCancelled { return }
+                self.authError = authError.localizedDescription
+                return
+            }
+
+            let nsError = error as NSError
+            if nsError.domain == ASAuthorizationError.errorDomain,
+               let code = ASAuthorizationError.Code(rawValue: nsError.code),
+               code == .canceled {
+                return
+            }
+
+            authError = error.localizedDescription
         }
     }
 
     @MainActor
     private func handleGoogleSignIn() async {
         guard !isGoogleLoading else { return }
-        googleError = nil
+        authError = nil
         isGoogleLoading = true
         defer { isGoogleLoading = false }
 
         do {
             try await authManager.signInWithGoogle()
         } catch {
-            googleError = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+            if let authError = error as? AuthManagerError {
+                if authError == .operationCancelled { return }
+                self.authError = authError.localizedDescription
+            } else {
+                authError = error.localizedDescription
+            }
         }
     }
 

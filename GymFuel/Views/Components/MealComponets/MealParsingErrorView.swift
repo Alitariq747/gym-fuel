@@ -9,7 +9,30 @@ import SwiftUI
 
 struct MealParsingErrorView: View {
     let message: String
+    let buttonTitle: String
+    let hint: String?
     let onBack: () -> Void
+    let retryTitle: String?
+    let isRetryDisabled: Bool
+    let onRetry: (() -> Void)?
+
+    init(
+        message: String,
+        buttonTitle: String = "Back",
+        hint: String? = "Try adjusting your description and run it again.",
+        retryTitle: String? = nil,
+        isRetryDisabled: Bool = false,
+        onRetry: (() -> Void)? = nil,
+        onBack: @escaping () -> Void
+    ) {
+        self.message = message
+        self.buttonTitle = buttonTitle
+        self.hint = hint
+        self.retryTitle = retryTitle
+        self.isRetryDisabled = isRetryDisabled
+        self.onRetry = onRetry
+        self.onBack = onBack
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -29,17 +52,35 @@ struct MealParsingErrorView: View {
                     .multilineTextAlignment(.center)
             }
 
-            // Helpful hint
-            Text("Try adjusting your description and run it again.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            if let hint {
+                Text(hint)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            if let onRetry, let retryTitle {
+                Button {
+                    onRetry()
+                } label: {
+                    Text(retryTitle)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(isRetryDisabled ? Color.liftEatsCoral.opacity(0.4) : Color.liftEatsCoral)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .stroke(Color.liftEatsCoral, lineWidth: 1)
+                        )
+                }
+                .disabled(isRetryDisabled)
+            }
 
             // Primary action
             Button {
                 onBack()
             } label: {
-                Text("Back to description")
+                Text(buttonTitle)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.white)
                     .padding(.vertical, 10)
@@ -62,5 +103,7 @@ struct MealParsingErrorView: View {
 
 
 #Preview {
-    MealParsingErrorView(message: "Could not connect to the server", onBack: { print("") })
+    MealParsingErrorView(message: "Could not connect to the server") {
+        print("")
+    }
 }

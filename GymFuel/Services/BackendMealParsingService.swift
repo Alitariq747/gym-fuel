@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 
 final class BackendMealParsingService: MealParsingService {
     struct RequestBody: Codable {
@@ -18,10 +19,12 @@ final class BackendMealParsingService: MealParsingService {
         case decodingFailed
     }
 
+    private static let logger = Logger(subsystem: "GymFuel", category: "MealParsing")
+
     private let baseURL: URL
     private let session: URLSession
 
-    init(baseURL: URL, session: URLSession = .shared) {
+    init(baseURL: URL, session: URLSession = BackendMealParsingService.makeSession()) {
         self.baseURL = baseURL
         self.session = session
     }
@@ -39,18 +42,41 @@ final class BackendMealParsingService: MealParsingService {
         }
     }
 
+    private static func makeSession() -> URLSession {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 20
+        config.timeoutIntervalForResource = 30
+        return URLSession(configuration: config)
+    }
+
+    private func logHTTPStatus(response: URLResponse) {
+        #if DEBUG
+        if let http = response as? HTTPURLResponse {
+            Self.logger.debug("Meal parsing response: \(http.statusCode)")
+        } else {
+            Self.logger.debug("Meal parsing response: non-HTTP response")
+        }
+        #endif
+    }
+
+    private func logDecodeFailure(_ reason: String) {
+        #if DEBUG
+        Self.logger.debug("Meal parsing decode failure: \(reason)")
+        #endif
+    }
+
     private func parseTextMeal(description: String) async throws -> ParsedMeal {
         let url = baseURL.appendingPathComponent("api/estimate-meal")
 
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 20
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         request.httpBody = try JSONEncoder().encode(RequestBody(description: description))
 
         let (data, response) = try await session.data(for: request)
+        logHTTPStatus(response: response)
         return try decodeParsedMeal(data: data, response: response)
     }
 
@@ -64,7 +90,6 @@ final class BackendMealParsingService: MealParsingService {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 30
         request.setValue(
             "multipart/form-data; boundary=\(boundary)",
             forHTTPHeaderField: "Content-Type"
@@ -78,15 +103,18 @@ final class BackendMealParsingService: MealParsingService {
         )
 
         let (data, response) = try await session.data(for: request)
+        logHTTPStatus(response: response)
         return try decodeParsedMeal(data: data, response: response)
     }
 
     private func decodeParsedMeal(data: Data, response: URLResponse) throws -> ParsedMeal {
         guard let http = response as? HTTPURLResponse else {
+            logDecodeFailure("Missing HTTP response")
             throw ServiceError.httpError(status: -1, message: "No HTTP response")
         }
 
         guard (200...299).contains(http.statusCode) else {
+            logDecodeFailure("HTTP \(http.statusCode)")
             let msg = String(data: data, encoding: .utf8)
             throw ServiceError.httpError(status: http.statusCode, message: msg)
         }
@@ -95,8 +123,10 @@ final class BackendMealParsingService: MealParsingService {
             let decoded = try JSONDecoder().decode(ParsedMeal.self, from: data)
             return try decoded.validated()
         } catch let validationError as MealParseValidationError {
+            logDecodeFailure("Validation error")
             throw validationError
         } catch {
+            logDecodeFailure("Decoding failed")
             throw ServiceError.decodingFailed
         }
     }
