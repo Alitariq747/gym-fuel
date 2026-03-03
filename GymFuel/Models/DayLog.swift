@@ -56,7 +56,7 @@ extension DayLog {
         
         // Session at 6:00 PM
         let sessionStart = calendar.date(
-            bySettingHour: 18,
+            bySettingHour: 5,
             minute: 0,
             second: 0,
             of: today
@@ -68,7 +68,7 @@ extension DayLog {
             date: today,
             isTrainingDay: true,
             sessionStart: sessionStart,
-            trainingIntensity: .normal,
+            trainingIntensity: .allOut,
             sessionType: .strength, // adjust to one of your SessionType cases
             macroTargets: Macros(
                 calories: 2400,

@@ -19,7 +19,7 @@ struct TodayView: View {
     @StateObject private var addMealViewModel = AddMealViewModel(
         service: BackendMealParsingService(
             baseURL: URL(string:
-                "https://organizer-issues-lancaster-flex.trycloudflare.com")!
+                "https://via-mailing-financial-placed.trycloudflare.com")!
         )
     )
     
@@ -47,6 +47,7 @@ struct TodayView: View {
     @State private var activeAddMealMode: AddMealMode?
     @State private var showPhotoPermissionAlert = false
     @State private var photoPermissionMessage = ""
+    @State private var showFutureMealToast = false
     
     @State private var showFuelScoreDetail = false
 
@@ -82,6 +83,10 @@ struct TodayView: View {
         f.dateFormat = "MMM d"
         return f.string(from: date)
     }
+
+    private var isFutureSelectedDate: Bool {
+        Calendar.current.startOfDay(for: selectedDate) > Calendar.current.startOfDay(for: Date())
+    }
     
     // Profile / insights sheet
     private enum TodaySheet: Identifiable {
@@ -107,7 +112,7 @@ struct TodayView: View {
             AppBackground()
             
             ScrollView {
-                VStack(spacing: 14) {
+                VStack(spacing: 10) {
                     
 
                     HStack(alignment: .center) {
@@ -200,21 +205,33 @@ struct TodayView: View {
                 HStack {
                   
                     Spacer()
-                    Button {
-                        showAddMealOptions = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.title).bold()
-                            .foregroundStyle(.white)
-                            .padding()
-                            .background(Color.black, in: Circle())
-                            .shadow(
-                                color: Color.black.opacity(0.15),
-                                radius: 8,
-                                x: 0, y: 4
-                            )
+                    ZStack {
+                        Button {
+                            showAddMealOptions = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title).bold()
+                                .foregroundStyle(.white)
+                                .padding()
+                                .background(Color.black, in: Circle())
+                                .shadow(
+                                    color: Color.black.opacity(0.15),
+                                    radius: 8,
+                                    x: 0, y: 4
+                                )
+                        }
+                        .disabled(isFutureSelectedDate)
+                        .opacity(isFutureSelectedDate ? 0.35 : 1)
                     }
-                   
+                    .onTapGesture {
+                        if isFutureSelectedDate {
+                            showFutureMealToast = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                showFutureMealToast = false
+                            }
+                        }
+                    }
+                    
                 }
                 .padding(.horizontal)
                 .frame(maxWidth: .infinity)
@@ -223,6 +240,26 @@ struct TodayView: View {
 
             
         }
+        .overlay(alignment: .bottom) {
+            if showFutureMealToast {
+                Text("Meals can’t be logged for future dates.")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color(.systemGray5), lineWidth: 1)
+                            )
+                    )
+                    .padding(.bottom, 24)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: showFutureMealToast)
         .sheet(isPresented: $isSessionSheetPresented) {
             SessionEditSheet(draft: $sessionDraft) {
                 Task {

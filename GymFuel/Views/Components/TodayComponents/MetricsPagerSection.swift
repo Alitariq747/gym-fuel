@@ -37,7 +37,7 @@ struct MetricsPagerSection: View {
                 .tag(1)
             }
             // Important so TabView knows its height and swipes nicely inside ScrollView
-            .frame(height: 290)
+            .frame(height: 250)
             .tabViewStyle(.page(indexDisplayMode: .never))
 
             // Custom page indicators

@@ -33,7 +33,7 @@ enum TrainingTimeOfDay: String, CaseIterable, Codable {
     var detail: String {
         switch self {
         case .morning:
-            return "You usually train in the morning, before starting your day."
+            return "You usually train in the morning, often fasted. We’ll weigh post‑workout fuel more."
         case .midday:
             return "You usually train around midday or early afternoon."
         case .evening:

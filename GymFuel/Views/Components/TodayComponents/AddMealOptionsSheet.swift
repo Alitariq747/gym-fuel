@@ -41,7 +41,8 @@ struct AddMealOptionsSheet: View {
                     OptionRow(
                         icon: "square.and.pencil",
                         title: "Add manually",
-                        subtitle: "Type your meal details"
+                        subtitle: "Type your meal details",
+                        tint: Color.fuelOrange
                     ) {
                         onSelect(.manual)
                     }
@@ -49,23 +50,26 @@ struct AddMealOptionsSheet: View {
                     OptionRow(
                         icon: "sparkles",
                         title: "Use AI (text)",
-                        subtitle: "Describe your meal in words"
+                        subtitle: "Describe your meal in words",
+                        tint: Color.fuelBlue
                     ) {
                         onSelect(.ai)
                     }
 
                     OptionRow(
                         icon: "camera",
-                        title: "Use camera",
-                        subtitle: "Snap a photo for estimation"
+                        title: "Use camera (AI)",
+                        subtitle: "Snap a photo for estimation",
+                        tint: Color.fuelGreen
                     ) {
                         onSelect(.camera)
                     }
 
                     OptionRow(
                         icon: "photo.on.rectangle",
-                        title: "Pick from gallery",
-                        subtitle: "Choose an existing meal photo"
+                        title: "Pick from gallery (AI)",
+                        subtitle: "Choose an existing meal photo",
+                        tint: Color.liftEatsCoral
                     ) {
                         onSelect(.gallery)
                     }
@@ -84,6 +88,7 @@ struct OptionRow: View {
     let icon: String
     let title: String
     let subtitle: String
+    let tint: Color
     let action: () -> Void
 
     var body: some View {
@@ -91,9 +96,9 @@ struct OptionRow: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.headline)
-                    .foregroundStyle(Color.liftEatsCoral)
+                    .foregroundStyle(tint)
                     .frame(width: 36, height: 36)
-                    .background(Color.liftEatsCoral.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -119,4 +124,8 @@ struct OptionRow: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+#Preview {
+    AddMealOptionsSheet(onSelect: { _ in print("add")}, onCancel: { print("")})
 }

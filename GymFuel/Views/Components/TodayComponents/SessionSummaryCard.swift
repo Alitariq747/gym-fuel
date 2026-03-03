@@ -11,59 +11,63 @@ struct SessionSummaryCard: View {
     let dayLog: DayLog
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 16) {
-                Text(dayLog.isTrainingDay ? "🏋️" : "😴")
-                     .font(.headline)
-                     .padding(10)
-                     .background(Color(.systemGray5), in: Circle())
+        HStack(spacing: 12) {
+            Text(dayLog.isTrainingDay ? "🏋️" : "😴")
+                .font(.headline)
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle()
+                        .fill(dayLog.isTrainingDay ? Color.fuelRed.opacity(0.15) : Color.fuelOrange.opacity(0.15))
+                )
 
-                VStack(alignment: .leading, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(dayLog.isTrainingDay ? "TODAY'S SESSION" : "TODAY'S RECOVERY")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.secondary)
-                        Text(sessionTitle)
-                            .font(.headline.bold())
-                    }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(sessionTitle)
+                    .font(.headline.weight(.semibold))
 
-                    Text(sessionSubtitle)
-                        .font(.subheadline)
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.fill")
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
-
-                    timingRow
-                        .opacity(dayLog.isTrainingDay ? 1 : 0)
-                        .accessibilityHidden(!dayLog.isTrainingDay)
+                    Text(timeLabel ?? "Prioritize rest today.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 6) {
+                Image(systemName: "pencil")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                ChipView(text: intensityLabel, tint: intensityColor)
+            }
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 12)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.9))
-        )
-        .shadow(
-            color: Color.black.opacity(0.12),
-            radius: 8,
-            x: 0, y: 4
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.systemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(.systemGray5), lineWidth: 1)
+                )
         )
     }
 
     private var sessionTitle: String {
         if dayLog.isTrainingDay {
-            let intensity = dayLog.trainingIntensity?.displayName ?? "Normal"
-            let session = dayLog.sessionType?.displayName ?? "Hypertrophy"
-            return "\(intensity) day - \(session)"
+            let session = dayLog.sessionType?.displayName ?? "Training"
+            return session
         }
-        return "Rest day - Recovery"
+        return "Rest & Recovery"
     }
 
-    private var sessionSubtitle: String {
+    private var intensityLabel: String {
         dayLog.isTrainingDay
-        ? "Fuel around your session today."
-        : "Prioritize sleep and rest today."
+        ? (dayLog.trainingIntensity?.displayName ?? "Normal")
+        : "Recovery"
     }
 
     private var intensityColor: Color {
@@ -71,47 +75,13 @@ struct SessionSummaryCard: View {
 
         switch intensity {
         case .recovery:
-            return Color(.systemGray2)
+            return Color.fuelOrange
         case .normal:
-            return Color.blue
+            return Color.fuelBlue
         case .hard:
-            return Color.green
+            return Color("FuelGreen")
         case .allOut:
-            return Color.red
-        }
-    }
-
-    private var intensityBars: some View {
-        HStack(spacing: 3) {
-            ForEach(0..<3, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 14)
-            }
-        }
-        .foregroundStyle(intensityColor)
-    }
-
-    private var timingRow: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "clock.fill")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-
-            Text(timeLabel ?? "—")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            HStack(spacing: 4) {
-                Text("Intensity: ")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.primary)
-                intensityBars
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-
+            return Color.fuelRed
         }
     }
 
@@ -123,10 +93,27 @@ struct SessionSummaryCard: View {
     }
 }
 
+private struct ChipView: View {
+    let text: String
+    let tint: Color
+
+    var body: some View {
+        Text(text)
+            .font(.caption2.weight(.semibold))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(tint.opacity(0.12))
+            )
+            .foregroundStyle(tint)
+    }
+}
+
 
 #Preview {
     ZStack {
         AppBackground()
-        SessionSummaryCard(dayLog: DayLog.demoTrainingDay)
+        SessionSummaryCard(dayLog: DayLog.demoRestDay)
     }
 }

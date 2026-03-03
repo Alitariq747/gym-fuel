@@ -89,28 +89,30 @@ final class DayLogViewModel: ObservableObject {
         if n == 0 { return false }
         if n == 7 { return true }
 
-        // 2) Convert date -> weekdayIndex (Mon=0 ... Sun=6)
         let cal = Calendar.current
-        let weekday = cal.component(.weekday, from: date) // Sun=1 ... Sat=7
+        let weekday = cal.component(.weekday, from: date)
         let weekdayIndex = (weekday + 5) % 7
 
-        // 3) Create a deterministic set of training weekdays spread across the week
-        let offset = stableSeed(from: profile.id) % 7
-        var chosen = Set<Int>()
-
-        let step = 7.0 / Double(n)
-        var x = 0.0
-
-        for _ in 0..<n {
-            var idx = (Int(round(x)) + offset) % 7
-            while chosen.contains(idx) {
-                idx = (idx + 1) % 7
-            }
-            chosen.insert(idx)
-            x += step
+  
+        let trainingWeekdays: Set<Int>
+        switch n {
+        case 1:
+            trainingWeekdays = [2] // Wed
+        case 2:
+            trainingWeekdays = [1, 3] // Tue, Thu
+        case 3:
+            trainingWeekdays = [0, 2, 4] // Mon, Wed, Fri
+        case 4:
+            trainingWeekdays = [0, 1, 3, 4] // Mon, Tue, Thu, Fri
+        case 5:
+            trainingWeekdays = [0, 1, 2, 3, 4] // Mon-Fri
+        case 6:
+            trainingWeekdays = [0, 1, 2, 3, 4, 5] // Mon-Sat
+        default:
+            trainingWeekdays = []
         }
 
-        return chosen.contains(weekdayIndex)
+        return trainingWeekdays.contains(weekdayIndex)
     }
 
     private func isCurrentLoad(_ loadId: UUID) -> Bool {
@@ -507,7 +509,7 @@ final class DayLogViewModel: ObservableObject {
          return normalized * 100.0
      }
     
-    /// Score (0–100) for how well total macros match targets.
+  
     func macroAdherenceScore(
         targets: Macros,
         consumed: Macros
@@ -546,7 +548,7 @@ final class DayLogViewModel: ObservableObject {
         return Int(totalScore.rounded())
     }
 
-    /// Score for how well timed are your meals
+   
     func timingAdherenceScore(
           targets: Macros,
           pre: Macros,
@@ -554,22 +556,20 @@ final class DayLogViewModel: ObservableObject {
       ) -> Int {
           let targetCarbs = targets.carbs
           let targetProtein = targets.protein
-          
-          // If targets are missing or tiny, timing doesn't matter much.
+
           guard targetCarbs > 0, targetProtein > 0 else {
               return 100
           }
-          
-          // Very simple "ideal" distribution for training days:
-          // - Pre: 30% of carbs, 20% of protein
-          // - Post: 30% of carbs, 30% of protein
-          let idealPreCarbs = targetCarbs * 0.30
-          let idealPreProtein = targetProtein * 0.20
-          
-          let idealPostCarbs = targetCarbs * 0.30
-          let idealPostProtein = targetProtein * 0.30
-          
-          // More forgiving tolerance for carbs timing than total macros.
+
+          let trainingTime = profile.trainingTimeOfDay ?? .varies
+          let split = timingSplit(for: trainingTime)
+
+          let idealPreCarbs = targetCarbs * split.preCarb
+          let idealPreProtein = targetProtein * split.preProtein
+
+          let idealPostCarbs = targetCarbs * split.postCarb
+          let idealPostProtein = targetProtein * split.postProtein
+
           let preCarbScore = ratioScore(
               actual: pre.carbs,
               target: idealPreCarbs,
@@ -580,7 +580,7 @@ final class DayLogViewModel: ObservableObject {
               target: idealPreProtein,
               tolerance: 0.5
           )
-          
+
           let postCarbScore = ratioScore(
               actual: post.carbs,
               target: idealPostCarbs,
@@ -591,17 +591,68 @@ final class DayLogViewModel: ObservableObject {
               target: idealPostProtein,
               tolerance: 0.5
           )
-          
+
           // Pre window: carbs are slightly more important than protein.
           let preScore = preCarbScore * 0.6 + preProteinScore * 0.4
-          
+
           // Post window: carbs & protein are equally important.
           let postScore = postCarbScore * 0.5 + postProteinScore * 0.5
-          
-          let timingScore = (preScore + postScore) / 2.0
-          
+
+          let timingScore = preScore * split.preWeight + postScore * split.postWeight
+
           return Int(timingScore.rounded())
       }
+
+    private struct TimingSplit {
+        let preCarb: Double
+        let preProtein: Double
+        let postCarb: Double
+        let postProtein: Double
+        let preWeight: Double
+        let postWeight: Double
+    }
+
+    private func timingSplit(for time: TrainingTimeOfDay) -> TimingSplit {
+        switch time {
+        case .morning:
+            // Often fasted: shift emphasis to post.
+            return TimingSplit(
+                preCarb: 0.20,
+                preProtein: 0.10,
+                postCarb: 0.40,
+                postProtein: 0.40,
+                preWeight: 0.30,
+                postWeight: 0.70
+            )
+        case .midday:
+            return TimingSplit(
+                preCarb: 0.30,
+                preProtein: 0.20,
+                postCarb: 0.30,
+                postProtein: 0.30,
+                preWeight: 0.50,
+                postWeight: 0.50
+            )
+        case .evening:
+            return TimingSplit(
+                preCarb: 0.40,
+                preProtein: 0.30,
+                postCarb: 0.20,
+                postProtein: 0.20,
+                preWeight: 0.60,
+                postWeight: 0.40
+            )
+        case .varies:
+            return TimingSplit(
+                preCarb: 0.30,
+                preProtein: 0.20,
+                postCarb: 0.30,
+                postProtein: 0.30,
+                preWeight: 0.50,
+                postWeight: 0.50
+            )
+        }
+    }
     
     // computed fuel score
     func computeFuelScore(for dayLog: DayLog, using meals: [Meal]) -> FuelScore? {

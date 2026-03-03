@@ -29,8 +29,8 @@ extension Meal {
     func timingTag(
         relativeTo sessionStart: Date?,
         isTrainingDay: Bool,
-        preWindowHours: Double = 3.0,
-        postWindowHours: Double = 4.0
+        preWindowHours: Double = 4.0,
+        postWindowHours: Double = 5.0
     ) -> MealTimingTag {
         // If it's a rest day, all meals are "restDay".
         guard isTrainingDay, let sessionStart = sessionStart else {

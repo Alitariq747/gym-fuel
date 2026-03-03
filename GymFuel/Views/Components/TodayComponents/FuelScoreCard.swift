@@ -12,7 +12,6 @@ import SwiftUI
 struct FuelScoreCard: View {
     let dayLog: DayLog
 
-    // MARK: - Derived data
 
     private var fuelScore: FuelScore? {
         dayLog.fuelScore
@@ -38,7 +37,6 @@ struct FuelScoreCard: View {
         fuelScore != nil
     }
 
-    // MARK: - Score bands & messages
 
     private enum ScoreBand {
         case noData
@@ -50,10 +48,10 @@ struct FuelScoreCard: View {
         var title: String {
             switch self {
             case .noData:    return "No score yet"
-            case .offPlan:   return "Off plan"
-            case .needsWork: return "Needs work"
-            case .solid:     return "Solid"
-            case .dialedIn:  return "Dialed in"
+            case .offPlan:   return "Off track"
+            case .needsWork: return "Getting there"
+            case .solid:     return "On track"
+            case .dialedIn:  return "Crushing it"
             }
         }
     }
@@ -74,40 +72,37 @@ struct FuelScoreCard: View {
     }
 
     private var bandMessage: String {
-        // Case 1: no score yet
         guard hasScore else {
             if isTrainingDay {
-                return "Log at least one pre- or post-workout meal to start today’s Fuel Score."
+                return "Log a pre- or post-workout meal to generate today’s score."
             } else {
-                return "Log your meals to see how well you’re fueling recovery on this rest day."
+                return "Log a meal to get your recovery score for today."
             }
         }
 
-        // Case 2: we have a score – branch on band + training/rest
         switch (scoreBand, isTrainingDay) {
         case (.dialedIn, true):
-            return "You’re nailing both macros and timing around your session."
+            return "Great fuel around your session. Keep this rhythm."
         case (.solid, true):
-            return "Good fuel overall. A small tweak to timing or protein would push this higher."
+            return "Solid fuel. A small timing or protein tweak gets you higher."
         case (.needsWork, true):
-            return "You’re missing either key macros or the timing around your workout."
+            return "A bit off on macros or timing today—adjust next meal."
         case (.offPlan, true):
-            return "Today’s fuel hasn’t supported your session well. Treat this as feedback, not judgment."
+            return "Fueling didn’t support the session. Reset with your next meal."
 
         case (.dialedIn, false):
-            return "Great macro balance for recovery. Protein and total calories are on point."
+            return "Recovery nutrition is strong. Protein and totals look great."
         case (.solid, false):
-            return "Solid rest-day fueling. You’re supporting recovery without overshooting."
+            return "Good rest-day balance. Recovery is supported."
         case (.needsWork, false):
-            return "Rest-day macros could be tighter, especially protein and total calories."
+            return "Rest-day macros are a bit loose—tighten protein and totals."
         case (.offPlan, false):
-            return "Today’s intake is far from your rest-day targets. Tomorrow is a fresh start."
+            return "Rest-day intake is off target. Aim to reset next meal."
         default:
             return ""
         }
     }
 
-    // MARK: - Gauge helpers
 
     private var progress: Double {
         guard hasScore else { return 0 }
@@ -133,20 +128,19 @@ struct FuelScoreCard: View {
         isTrainingDay ? "Training day" : "Rest day"
     }
 
-    // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
 
             // Header row
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Fuel Score")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
                     Text(scoreBand.title)
-                        .font(.headline)
+                        .font(.headline.weight(.semibold))
                 }
 
                 Spacer()
@@ -162,13 +156,13 @@ struct FuelScoreCard: View {
             }
 
             // Gauge + message
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 ZStack {
                     // Background circle
                     Circle()
                         .stroke(
                             Color(.systemGray5),
-                            style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
                         )
 
                     // Progress ring
@@ -182,7 +176,7 @@ struct FuelScoreCard: View {
                                 ]),
                                 center: .center
                             ),
-                            style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
                         )
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut(duration: 0.35), value: progress)
@@ -190,19 +184,20 @@ struct FuelScoreCard: View {
                     // Center text
                     VStack(spacing: 2) {
                         Text(hasScore ? "\(totalScore)" : "--")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                        Text("out of 100")
-                            .font(.caption)
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                        Text("of 100")
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
                 }
-                .frame(width: 110, height: 110)
+                .frame(width: 84, height: 84)
 
                 // Message on the right
                 Text(bandMessage)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(3)
 
                 Spacer(minLength: 0)
             }
@@ -215,7 +210,8 @@ struct FuelScoreCard: View {
                         metricChip(
                             systemImage: "flame.fill",
                             title: "Macros",
-                            value: macroScore
+                            value: macroScore,
+                            tint: Color("FuelOrange")
                         )
                     }
 
@@ -223,42 +219,49 @@ struct FuelScoreCard: View {
                         metricChip(
                             systemImage: "clock.fill",
                             title: "Timing",
-                            value: timingScore
+                            value: timingScore,
+                            tint: Color("FuelBlue")
                         )
                     } else if !isTrainingDay, let macroScore {
                         // For rest day, show “Recovery” chip based on macro adherence
                         metricChip(
                             systemImage: "moon.zzz.fill",
                             title: "Recovery",
-                            value: macroScore
+                            value: macroScore,
+                            tint: Color("FuelGreen")
                         )
                     }
 
                 }
                 .frame(maxWidth: .infinity)
             } else {
-                Text("Fuel Score appears once you’ve logged some food for this day.")
+                Text("Score appears after your first logged meal.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(16)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.95))
+                .fill(Color(.systemBackground))
         )
-//        .shadow(color: Color.black.opacity(0.12), radius: 10, x: 0, y: 6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color(.systemGray5), lineWidth: 1)
+        )
     }
 
 
     private func metricChip(
         systemImage: String,
         title: String,
-        value: Int
+        value: Int,
+        tint: Color
     ) -> some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 8) {
             Image(systemName: systemImage)
                 .font(.caption.weight(.semibold))
+                .foregroundStyle(tint)
 
             VStack(alignment: .center, spacing: 0) {
                 Text(title)
@@ -268,8 +271,8 @@ struct FuelScoreCard: View {
                     .font(.caption.weight(.semibold))
             }
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 18)
+        .padding(.vertical, 5)
+        .padding(.horizontal, 12)
         .background(
             Capsule()
                 .fill(Color(.systemGray6))
