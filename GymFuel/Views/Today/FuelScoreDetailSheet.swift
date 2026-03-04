@@ -16,6 +16,7 @@ struct FuelScoreDetailSheet: View {
     let consumed: Macros
     let preMacros: Macros
     let postMacros: Macros
+    let trainingTimeOfDay: TrainingTimeOfDay?
 
     private var isTrainingDay: Bool { dayLog.isTrainingDay }
     private var intensityLabel: String {
@@ -28,16 +29,56 @@ struct FuelScoreDetailSheet: View {
         }
     }
 
+    private struct TimingSplit {
+        let preCarb: Double
+        let preProtein: Double
+        let postCarb: Double
+        let postProtein: Double
+    }
+
+    private var timingSplit: TimingSplit {
+        switch trainingTimeOfDay ?? .varies {
+        case .morning:
+            return TimingSplit(
+                preCarb: 0.20,
+                preProtein: 0.10,
+                postCarb: 0.40,
+                postProtein: 0.40
+            )
+        case .midday:
+            return TimingSplit(
+                preCarb: 0.30,
+                preProtein: 0.20,
+                postCarb: 0.30,
+                postProtein: 0.30
+            )
+        case .evening:
+            return TimingSplit(
+                preCarb: 0.40,
+                preProtein: 0.30,
+                postCarb: 0.20,
+                postProtein: 0.20
+            )
+        case .varies:
+            return TimingSplit(
+                preCarb: 0.30,
+                preProtein: 0.20,
+                postCarb: 0.30,
+                postProtein: 0.30
+            )
+        }
+    }
+
     private var scoreTone: (label: String, color: Color) {
         switch fuelScore.total {
         case 85...:
-            return ("Crushing it", .green)
+            return ("Crushing it", Color.fuelGreen)
         case 70..<85:
-            return ("On track", Color("fuelBlue"))
+            return ("On track", Color.fuelBlue)
         case 50..<70:
-            return ("Getting there", .orange)
+            return ("Getting there", Color.fuelOrange)
         default:
-            return ("Off track", .red)
+            return ("Off track", Color.fuelRed)
         }
     }
 
@@ -190,10 +231,10 @@ struct FuelScoreDetailSheet: View {
                 tipRow(text: timingTip)
             }
 
-            macroRow(label: "Pre‑workout carbs", actual: preMacros.carbs, target: targets.carbs * 0.30, unit: "g")
-            macroRow(label: "Pre‑workout protein", actual: preMacros.protein, target: targets.protein * 0.20, unit: "g")
-            macroRow(label: "Post‑workout carbs", actual: postMacros.carbs, target: targets.carbs * 0.30, unit: "g")
-            macroRow(label: "Post‑workout protein", actual: postMacros.protein, target: targets.protein * 0.30, unit: "g")
+            macroRow(label: "Pre‑workout carbs", actual: preMacros.carbs, target: targets.carbs * timingSplit.preCarb, unit: "g")
+            macroRow(label: "Pre‑workout protein", actual: preMacros.protein, target: targets.protein * timingSplit.preProtein, unit: "g")
+            macroRow(label: "Post‑workout carbs", actual: postMacros.carbs, target: targets.carbs * timingSplit.postCarb, unit: "g")
+            macroRow(label: "Post‑workout protein", actual: postMacros.protein, target: targets.protein * timingSplit.postProtein, unit: "g")
         }
         .padding(14)
         .background(cardBackground())
@@ -419,7 +460,8 @@ struct FuelScoreDetailSheet: View {
             targets: Macros(calories: 3000, protein: 175, carbs: 250, fat: 50),
             consumed: Macros(calories: 3100, protein: 120, carbs: 180, fat: 32),
             preMacros: Macros(calories: 1500, protein: 55, carbs: 82, fat: 15),
-            postMacros: Macros(calories: 1000, protein: 55, carbs: 70, fat: 35)
+            postMacros: Macros(calories: 1000, protein: 55, carbs: 70, fat: 35),
+            trainingTimeOfDay: .evening
         )
     }
 }

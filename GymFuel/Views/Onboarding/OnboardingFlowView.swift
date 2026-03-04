@@ -33,6 +33,7 @@ private enum OnboardingStep: Hashable {
     case trainingTime
     case activityLevel
     case goal
+    case summary
 }
 
 struct OnboardingFlowView: View {
@@ -47,7 +48,7 @@ struct OnboardingFlowView: View {
     private let orderedSteps: [OnboardingStep] = [
         .name, .gender, .age, .height, .weight,
         .trainingDays, .experience, .trainingStyle,
-        .trainingTime, .activityLevel, .goal
+        .trainingTime, .activityLevel, .goal, .summary
     ]
 
     private var currentIndex: Int {
@@ -175,7 +176,19 @@ struct OnboardingFlowView: View {
         case .goal:
             OnboardingTrainingGoalStepView(
                 selectedGoal: $data.trainingGoal,
-                onFinish: finishOnboarding
+                onFinish: { go(to: .summary, direction: .forward) }
+            )
+
+        case .summary:
+            OnboardingSummaryStepView(
+                name: data.name,
+                trainingGoal: data.trainingGoal ?? .performance,
+                trainingDaysPerWeek: data.trainingDaysPerWeek ?? 3,
+                trainingExperience: data.trainingExperience ?? .beginner,
+                trainingStyle: data.trainingStyle ?? .mixed,
+                trainingTimeOfDay: data.trainingTimeOfDay ?? .varies,
+                activityLevel: data.nonTrainingActivityLevel ?? .somewhatActive,
+                onStart: finishOnboarding
             )
         }
     }
@@ -199,7 +212,6 @@ struct OnboardingFlowView: View {
         )
     }
 
-    // MARK: - Body
 
     var body: some View {
         NavigationStack {
@@ -224,7 +236,6 @@ struct OnboardingFlowView: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
 
-                // Animated step swapping
                 ZStack {
                     stepView
                         .transition(stepTransition)

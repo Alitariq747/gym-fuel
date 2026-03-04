@@ -24,6 +24,7 @@ struct ProfileView: View {
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
     @State private var deleteAppleNonce: String?
+    @State private var showSaveToast: Bool = false
 
     private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")!
     private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")!
@@ -58,6 +59,14 @@ struct ProfileView: View {
                                                 
                                                 if let updated = profileVm.profile {
                                                     self.draft = UserProfileDraft(from: updated)
+                                                }
+
+                                                if profileVm.errorMessage == nil {
+                                                    showSaveToast = true
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                                        showSaveToast = false
+                                                        dismiss()
+                                                    }
                                                 }
                                             }
                                         } label: {
@@ -151,6 +160,7 @@ struct ProfileView: View {
                                 .padding(.bottom)
                             }
                         }
+                        .scrollDismissesKeyboard(.interactively)
                     } else {
                         ProgressView("Getting Editor")
                     }
@@ -167,6 +177,31 @@ struct ProfileView: View {
             }
 
         }
+        .overlay(alignment: .bottom) {
+            if showSaveToast {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.fuelGreen)
+                    Text("Profile updated")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.primary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color(.systemGray5), lineWidth: 1)
+                        )
+                )
+                .padding(.bottom, 24)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: showSaveToast)
         .task(id: profileVm.profile?.id) {
             if let profile = profileVm.profile {
                 draft = UserProfileDraft(from: profile)

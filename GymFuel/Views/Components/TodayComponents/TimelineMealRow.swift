@@ -61,7 +61,7 @@ import SwiftUI
 
      private var impactColor: Color {
          guard impactDelta != nil else { return .secondary }
-         return isPositiveImpact ? .indigo : .red
+         return isPositiveImpact ? Color.fuelGreen : Color.fuelRed
      }
 
      private var impactIconName: String {
@@ -140,7 +140,7 @@ import SwiftUI
                 
                 Spacer()
                 
-                //  Vstack for impact chip and message
+                //  Vstack for impact chip
                 VStack(alignment: .trailing, spacing: 4) {
                     if let _ = impactDelta {
                         // Impact chip
@@ -163,16 +163,8 @@ import SwiftUI
                             RoundedRectangle(cornerRadius: 26)
                                 .stroke(impactColor.opacity(0.25), lineWidth: 1)
                         )
-
-                        // Impact message
-                        Text(impactMessageText)
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(impactColor)
                     } else {
-                        // Neutral state: no visible score change
-                        Text("NEUTRAL")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.secondary)
+                        EmptyView()
                     }
                 }
 

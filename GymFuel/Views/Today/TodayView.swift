@@ -19,7 +19,7 @@ struct TodayView: View {
     @StateObject private var addMealViewModel = AddMealViewModel(
         service: BackendMealParsingService(
             baseURL: URL(string:
-                "https://via-mailing-financial-placed.trycloudflare.com")!
+                "https://bus-carmen-distribution-corporation.trycloudflare.com")!
         )
     )
     
@@ -327,7 +327,8 @@ struct TodayView: View {
                     targets: log.macroTargets,
                     consumed: viewModel.consumedMacros,
                     preMacros: viewModel.preWorkoutMacros,
-                    postMacros: viewModel.postWorkoutMacros
+                    postMacros: viewModel.postWorkoutMacros,
+                    trainingTimeOfDay: viewModel.userProfile.trainingTimeOfDay
                 )
             } else {
                 Text("No Fuel Score for today yet.")

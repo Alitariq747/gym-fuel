@@ -11,9 +11,10 @@ struct ProfileEditorView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Binding var draft: UserProfileDraft
     let email: String?
-    
+
     // age
     @State private var ageText: String = ""
+    @FocusState private var isAgeFieldFocused: Bool
     private func syncAgeTextFromDraft() {
         ageText = draft.age.map(String.init) ?? ""
     }
@@ -91,6 +92,10 @@ struct ProfileEditorView: View {
             }
         }
         .padding()
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isAgeFieldFocused = false
+        }
         .onAppear {
             syncAgeTextFromDraft()
         }
@@ -177,6 +182,7 @@ struct ProfileEditorView: View {
                     .font(.callout.weight(.semibold))
                     .multilineTextAlignment(.trailing)
                     .keyboardType(.numberPad)
+                    .focused($isAgeFieldFocused)
                     .onChange(of: ageText) { _, newValue in
                         applyAgeTextToDraft(newValue)
                     }

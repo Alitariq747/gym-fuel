@@ -7,86 +7,50 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct MealParsingLoadingView: View {
-    @State private var progress: Double = 0.0
-    @State private var phase: Int = 0
-
-   
-    private let phases = [
-        "Analyzing your description…",
-        "Estimating macros and calories…",
-        "Checking ingredients and portions…",
-        "Almost done, polishing your meal…"
-    ]
+    @State private var spinnerRotation: Double = 0
 
     var body: some View {
-        VStack(spacing: 20) {
-          
-            VStack(spacing: 8) {
-                Image(systemName: "wand.and.stars.inverse")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(Color.liftEatsCoral)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 4)
+                    .frame(width: 26, height: 26)
 
-                Text("Estimating your meal")
-                    .font(.title3.weight(.semibold))
-
-                Text(phases[min(phase, phases.count - 1)])
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                Circle()
+                    .trim(from: 0.05, to: 0.65)
+                    .stroke(
+                        AngularGradient(
+                            colors: [
+                                Color.liftEatsCoral,
+                                Color.fuelOrange,
+                                Color.liftEatsCoral
+                            ],
+                            center: .center
+                        ),
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                    )
+                    .frame(width: 26, height: 26)
+                    .rotationEffect(.degrees(spinnerRotation))
+                    .animation(.linear(duration: 1.0).repeatForever(autoreverses: false), value: spinnerRotation)
             }
 
-            
-            VStack(spacing: 6) {
-                ProgressView(value: progress)
-                    .progressViewStyle(.linear)
-                    .tint(Color.liftEatsCoral)
-
-                Text("\(Int(progress * 100))%")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-
-            Text("This usually takes a few seconds.")
-                .font(.caption)
+            Text("Estimating your meal…")
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
         }
-        .padding(24)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.85))
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    Capsule()
+                        .stroke(.primary.opacity(0.08), lineWidth: 1)
+                )
         )
-        .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
-        .padding(.horizontal, 24)
         .task {
-            await animateProgress()
-        }
-    }
-
-    @MainActor
-    private func animateProgress() async {
-       
-        while progress < 0.95 {
-            
-            try? await Task.sleep(nanoseconds: 250_000_000)
-
-          
-            let step: Double = 0.03
-            progress = min(progress + step, 0.95)
-
-          
-            switch progress {
-            case 0.0..<0.25:
-                phase = 0
-            case 0.25..<0.5:
-                phase = 1
-            case 0.5..<0.8:
-                phase = 2
-            default:
-                phase = 3
-            }
+            spinnerRotation = 360
         }
     }
 }

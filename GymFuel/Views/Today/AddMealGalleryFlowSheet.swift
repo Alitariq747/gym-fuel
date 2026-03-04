@@ -61,6 +61,7 @@ struct AddMealGalleryFlowSheet: View {
                                     .resizable()
                                     .scaledToFit()
                                     .padding(8)
+                                ScanBeamOverlay()
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 240)
@@ -92,9 +93,7 @@ struct AddMealGalleryFlowSheet: View {
                             } else {
                                 VStack(spacing: 12) {
                                     MealParsingLoadingView()
-                                    Text("Estimating macros…")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
+
                                 }
                             }
                         }
