@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct MacroRingView: View {
 
     let title: String

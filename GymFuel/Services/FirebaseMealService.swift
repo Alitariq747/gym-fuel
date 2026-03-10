@@ -139,17 +139,17 @@ final class FirebaseMealService: MealService {
              }
          }    }
     
-    // /users/{userId}/dayLogs/{dayLogId}/meals
+  
     private func mealsCollection(for userId: String, dayLogId: String) -> CollectionReference {
         db.collection("users").document(userId).collection("dayLogs").document(dayLogId).collection("meals")
     }
     
-    // /users/{userId}/dayLogs/{dayLogId}/meals/{mealId}
+
     private func mealDocument(for meal: Meal) -> DocumentReference {
         mealsCollection(for: meal.userId, dayLogId: meal.dayLogId).document(meal.id)
     }
     
-    /// Safely convert Firestore numeric fields (Int/Double/NSNumber) to Double.
+
     private static func double(from any: Any?, default defaultValue: Double = 0) -> Double {
         if let d = any as? Double { return d.isFinite ? d : defaultValue }
         if let i = any as? Int { return Double(i) }

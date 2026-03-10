@@ -73,6 +73,15 @@ struct AddMealOptionsSheet: View {
                     ) {
                         onSelect(.gallery)
                     }
+
+                    OptionRow(
+                        icon: "bookmark",
+                        title: "Saved meals",
+                        subtitle: "Log a meal from your saves",
+                        tint: Color.indigo
+                    ) {
+                        onSelect(.savedMeals)
+                    }
                 }
 
                 Spacer(minLength: 8)
@@ -119,7 +128,7 @@ struct OptionRow: View {
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.white.opacity(0.9))
+                    .fill(Color(.systemBackground))
             )
         }
         .buttonStyle(.plain)

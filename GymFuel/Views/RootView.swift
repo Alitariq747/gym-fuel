@@ -11,6 +11,7 @@ struct RootView: View {
     
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
+    @StateObject private var savedMealsViewModel = SavedMealsViewModel()
  
         
     
@@ -23,6 +24,7 @@ struct RootView: View {
                 }  else if let profile = profileViewModel.profile {
                     if profile.isOnboardingComplete {
                         MainTabView(profile: profile)
+                            .environmentObject(savedMealsViewModel)
                     } else {
                         OnboardingFlowView { name, gender, age, heightCm, weightKg, trainingGoal, trainingDaysPerWeek, trainingExperience, trainingStyle, trainingTimeOfDay, nonTrainingActivityLevel in
                             Task {
@@ -41,6 +43,7 @@ struct RootView: View {
             .task(id: authManager.user?.uid) {
                 if let user = authManager.user {
                     await profileViewModel.loadProfile(for: user.uid)
+                    await savedMealsViewModel.loadSavedMeals(userId: user.uid)
                 } else {
                     profileViewModel.clear()
                 }
@@ -55,4 +58,5 @@ struct RootView: View {
     RootView()
         .environmentObject(FirebaseAuthManager())
         .environmentObject(UserProfileViewModel())
+        .environmentObject(SavedMealsViewModel())
 }

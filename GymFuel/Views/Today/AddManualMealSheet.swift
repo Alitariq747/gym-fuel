@@ -87,12 +87,10 @@ struct AddManualMealSheet: View {
                         .shadow(color: Color.black.opacity(0.12),
                                 radius: 6, x: 0, y: 3)
 
-                    // Nutrition label
                     Text("Nutrition")
                         .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(.secondary)
 
-                    // Macro fields – reuse your MacroRow
                     VStack(spacing: 12) {
                         MacroRow(
                             title: "Calories",

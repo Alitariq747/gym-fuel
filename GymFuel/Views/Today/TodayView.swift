@@ -19,7 +19,7 @@ struct TodayView: View {
     @StateObject private var addMealViewModel = AddMealViewModel(
         service: BackendMealParsingService(
             baseURL: URL(string:
-                "https://bus-carmen-distribution-corporation.trycloudflare.com")!
+                "https://sight-returned-worth-meanwhile.trycloudflare.com")!
         )
     )
     
@@ -28,7 +28,8 @@ struct TodayView: View {
         case ai
         case camera
         case gallery
-        
+        case savedMeals
+
         var id: String {
             switch self {
             case .manual:
@@ -39,6 +40,8 @@ struct TodayView: View {
                 return "camera"
             case .gallery:
                 return "gallery"
+            case .savedMeals:
+                return "savedMeals"
             }
         }
     }
@@ -310,6 +313,9 @@ struct TodayView: View {
                     addMealViewModel: addMealViewModel,
                     dayDate: selectedDate
                 )
+            case .savedMeals:
+                Text("Saved meals")
+                    .padding()
             }
         })
         .alert("Camera Access Needed", isPresented: $showPhotoPermissionAlert) {

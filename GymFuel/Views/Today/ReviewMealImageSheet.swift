@@ -14,6 +14,8 @@ struct ReviewMealImageSheet: View {
     @State var mealTime: Date
     let onSave: (String, ParsedMeal, Date) -> Void
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
+    @EnvironmentObject private var authManager: FirebaseAuthManager
     @State private var showTimePicker: Bool = false
     private let timePickerAnimation = Animation.easeInOut(duration: 0.35)
 
@@ -27,11 +29,61 @@ struct ReviewMealImageSheet: View {
             AppBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    let savedMealName = parsed.name ?? "Saved meal"
+                    let savedMealMacros = Macros(
+                        calories: parsed.calories,
+                        protein: parsed.protein,
+                        carbs: parsed.carbs,
+                        fat: parsed.fat
+                    )
+                    let isSavedMeal = savedMealsViewModel.isSavedMeal(
+                        name: savedMealName,
+                        description: originalDescription,
+                        macros: savedMealMacros
+                    )
+
                     HStack(alignment: .center, spacing: 8) {
                         Text("AI Details")
                             .font(.subheadline).bold()
                             .foregroundStyle(.primary)
                         Spacer()
+
+                        if isSavedMeal {
+                            Image(systemName: "bookmark.fill")
+                                .font(.headline).bold()
+                                .foregroundStyle(.primary)
+                                .padding(10)
+                                .background(Color(.systemBackground), in: Circle())
+                                .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+                        } else {
+                            Button {
+                                guard let uid = authManager.user?.uid else { return }
+                                if savedMealsViewModel.isSavedMeal(
+                                    name: savedMealName,
+                                    description: originalDescription,
+                                    macros: savedMealMacros
+                                ) {
+                                    return
+                                }
+                                let savedMeal = SavedMeal(
+                                    id: UUID().uuidString,
+                                    userId: uid,
+                                    name: savedMealName,
+                                    description: originalDescription,
+                                    macros: savedMealMacros
+                                )
+                                Task {
+                                    _ = await savedMealsViewModel.saveSavedMeal(savedMeal)
+                                }
+                            } label: {
+                                Image(systemName: "bookmark")
+                                    .font(.headline).bold()
+                                    .foregroundStyle(Color(.systemGray))
+                                    .padding(10)
+                                    .background(Color(.systemBackground), in: Circle())
+                                    .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+                            }
+                        }
 
                         Button {
                             showDiscardAlert = true
@@ -53,6 +105,7 @@ struct ReviewMealImageSheet: View {
                         .clipped()
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                        .allowsHitTesting(false)
 
                     Text(parsed.name ?? "")
                         .font(.title2).bold()
@@ -73,7 +126,7 @@ struct ReviewMealImageSheet: View {
                         }
                         .padding(.vertical, 12)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+                        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
                         .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
 
                         HStack(alignment: .center, spacing: 12) {
@@ -91,7 +144,7 @@ struct ReviewMealImageSheet: View {
                             }
                             .padding(.vertical, 15)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+                            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
                             .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
 
                             VStack(spacing: 6) {
@@ -108,7 +161,7 @@ struct ReviewMealImageSheet: View {
                             }
                             .padding(.vertical, 15)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+                            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
                             .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
 
                             VStack(spacing: 6) {
@@ -125,7 +178,7 @@ struct ReviewMealImageSheet: View {
                             }
                             .padding(.vertical, 15)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+                            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
                             .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
                         }
                     }
@@ -165,7 +218,7 @@ struct ReviewMealImageSheet: View {
                     .padding(.vertical, 18)
                     .background(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(Color.white.opacity(0.85))
+                            .fill(Color(.systemBackground))
                     )
                     .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
                     .contentShape(Rectangle())
@@ -195,7 +248,7 @@ struct ReviewMealImageSheet: View {
                         Button {
                             onSave(originalDescription, parsed, mealTime)
                         } label: {
-                            Text("Save meal")
+                            Text("Log meal")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Color.white.opacity(0.85))
                                 .padding(.vertical, 8)
@@ -247,4 +300,6 @@ struct ReviewMealImageSheet: View {
         onSave: { _, _, _ in print("save") },
         onDiscard: { print("") }
     )
+    .environmentObject(FirebaseAuthManager())
+    .environmentObject(SavedMealsViewModel())
 }

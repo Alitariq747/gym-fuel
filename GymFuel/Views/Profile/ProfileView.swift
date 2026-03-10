@@ -11,6 +11,7 @@ import AuthenticationServices
 struct ProfileView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
     @EnvironmentObject private var authManager: FirebaseAuthManager
+    @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     
@@ -21,6 +22,7 @@ struct ProfileView: View {
     @State private var showDeleteAccountConfirmation: Bool = false
     @State private var showEmailReauthPrompt: Bool = false
     @State private var showAppleReauthSheet: Bool = false
+    @State private var showSavedMealsSheet: Bool = false
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
     @State private var deleteAppleNonce: String?
@@ -105,6 +107,8 @@ struct ProfileView: View {
                                     .opacity(isBusy ? 0.6 : 1)
 
                                 legalSection
+                                savedMealsSection
+                                  
                                 
                                 if let signOutError {
                                     Text(signOutError)
@@ -235,6 +239,9 @@ struct ProfileView: View {
         .sheet(isPresented: $showAppleReauthSheet) {
             appleReauthSheet
         }
+        .sheet(isPresented: $showSavedMealsSheet) {
+            SavedMealsSheet()
+        }
     }
     private var canSave: Bool {
         guard let profile = profileVm.profile, let draft else { return false }
@@ -268,6 +275,31 @@ struct ProfileView: View {
                 linkRow(title: "Privacy Policy", systemImage: "hand.raised.fill", url: privacyURL)
                 Divider()
                 linkRow(title: "Terms of Service", systemImage: "checkmark.seal.fill", url: termsURL)
+            }
+            .padding(14)
+            .background(cardBackground)
+        }
+        .padding(.horizontal)
+    }
+
+    private var savedMealsSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "Saved Meals", systemImage: "bookmark")
+            VStack(spacing: 10) {
+                Button {
+                    showSavedMealsSheet = true
+                } label: {
+                    HStack {
+                        rowLabel("Manage Saved Meals", systemImage: "bookmark")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .padding(.leading, 6)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .padding(14)
             .background(cardBackground)
@@ -559,4 +591,5 @@ struct ProfileView: View {
     return ProfileView()
         .environmentObject(auth)
         .environmentObject(profileVM)
+        .environmentObject(SavedMealsViewModel())
 }

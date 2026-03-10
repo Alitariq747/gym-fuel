@@ -32,7 +32,7 @@ struct MacroRow: View {
                 .frame(width: 80)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 12)
-                .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+                .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
                 .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
 
         }

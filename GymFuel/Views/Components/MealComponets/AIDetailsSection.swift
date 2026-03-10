@@ -86,7 +86,7 @@ struct AIDetailsSection: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.85))
+                .fill(Color(.systemBackground))
         )
         .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
     }

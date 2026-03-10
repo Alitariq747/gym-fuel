@@ -12,6 +12,7 @@ struct MealDetailSheet: View {
 
 
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
 
 
     let meal: Meal
@@ -55,6 +56,7 @@ struct MealDetailSheet: View {
             AppBackground()
 
             ScrollView {
+                let isSavedMeal = savedMealsViewModel.isSavedMeal(meal)
                 VStack(alignment: .leading, spacing: 24) {
 
                     // Top bar: close + save
@@ -62,27 +64,63 @@ struct MealDetailSheet: View {
                         Button {
                             dismiss()
                         } label: {
-                            Text("X")
+                            Image(systemName: "xmark")
                                 .font(.headline.bold())
                                 .foregroundStyle(Color(.systemGray))
                                 .padding(10)
-                                .background(Color.white.opacity(0.9), in: Circle())
+                                .background(Color(.systemBackground), in: Circle())
                                 .shadow(color: Color.black.opacity(0.12),
                                         radius: 6, x: 0, y: 3)
                         }
 
                         Spacer()
 
-                        Button {
-                            save()
-                        } label: {
-                            Image(systemName: "checkmark")
-                                .font(.headline.bold())
-                                .foregroundStyle(Color(.systemGray))
-                                .padding(8)
-                                .background(Color.white.opacity(0.9), in: Circle())
-                                .shadow(color: Color.black.opacity(0.12),
-                                        radius: 6, x: 0, y: 3)
+                        HStack(spacing: 10) {
+                            if isSavedMeal {
+                                Image(systemName: "bookmark.fill")
+                                    .font(.headline.bold())
+                                    .foregroundStyle(.primary)
+                                    .padding(10)
+                                    .background(Color(.systemBackground), in: Circle())
+                                    .shadow(color: Color.black.opacity(0.12),
+                                            radius: 6, x: 0, y: 3)
+                            } else {
+                                Button {
+                                    if savedMealsViewModel.isSavedMeal(meal) {
+                                        return
+                                    }
+                                    let savedMeal = SavedMeal(
+                                        id: UUID().uuidString,
+                                        userId: meal.userId,
+                                        name: meal.aiName ?? "Saved meal",
+                                        description: meal.description,
+                                        macros: meal.macros
+                                    )
+                                    Task {
+                                        _ = await savedMealsViewModel.saveSavedMeal(savedMeal)
+                                    }
+                                } label: {
+                                    Image(systemName: "bookmark")
+                                        .font(.headline.bold())
+                                        .foregroundStyle(Color(.systemGray))
+                                        .padding(10)
+                                        .background(Color(.systemBackground), in: Circle())
+                                        .shadow(color: Color.black.opacity(0.12),
+                                                radius: 6, x: 0, y: 3)
+                                }
+                            }
+
+                            Button {
+                                save()
+                            } label: {
+                                Image(systemName: "checkmark")
+                                    .font(.headline.bold())
+                                    .foregroundStyle(Color(.systemGray))
+                                    .padding(10)
+                                    .background(Color(.systemBackground), in: Circle())
+                                    .shadow(color: Color.black.opacity(0.12),
+                                            radius: 6, x: 0, y: 3)
+                            }
                         }
                     }
 
@@ -99,7 +137,7 @@ struct MealDetailSheet: View {
                                 .scrollContentBackground(.hidden)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 14)
-                                .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 20))
+                                .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
                                 .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
                         }
 
@@ -178,7 +216,7 @@ struct MealDetailSheet: View {
                     .padding(.vertical, 18)
                     .background(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(Color.white.opacity(0.85))
+                            .fill(Color(.systemBackground))
                     )
                     .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
                     .contentShape(Rectangle())
@@ -226,7 +264,7 @@ struct MealDetailSheet: View {
         }
     }
 
-    // MARK: - Save Logic
+    
 
     private func save() {
         guard
@@ -259,4 +297,5 @@ struct MealDetailSheet: View {
 
 #Preview {
     MealDetailSheet(meal: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay)[0], onSave: { _ in print("")}, onDelete: { print("")})
+        .environmentObject(SavedMealsViewModel())
 }
