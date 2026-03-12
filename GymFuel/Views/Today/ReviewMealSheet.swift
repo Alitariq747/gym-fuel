@@ -53,7 +53,7 @@ struct ReviewMealSheet: View {
                         if isSavedMeal {
                             Image(systemName: "bookmark.fill")
                                 .font(.headline).bold()
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(Color(.systemGray))
                                 .padding(10)
                                 .background(Color(.systemBackground), in: Circle())
                                 .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)

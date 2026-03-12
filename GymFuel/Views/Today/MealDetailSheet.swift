@@ -12,7 +12,6 @@ struct MealDetailSheet: View {
 
 
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
 
 
     let meal: Meal
@@ -56,7 +55,6 @@ struct MealDetailSheet: View {
             AppBackground()
 
             ScrollView {
-                let isSavedMeal = savedMealsViewModel.isSavedMeal(meal)
                 VStack(alignment: .leading, spacing: 24) {
 
                     // Top bar: close + save
@@ -75,52 +73,16 @@ struct MealDetailSheet: View {
 
                         Spacer()
 
-                        HStack(spacing: 10) {
-                            if isSavedMeal {
-                                Image(systemName: "bookmark.fill")
-                                    .font(.headline.bold())
-                                    .foregroundStyle(.primary)
-                                    .padding(10)
-                                    .background(Color(.systemBackground), in: Circle())
-                                    .shadow(color: Color.black.opacity(0.12),
-                                            radius: 6, x: 0, y: 3)
-                            } else {
-                                Button {
-                                    if savedMealsViewModel.isSavedMeal(meal) {
-                                        return
-                                    }
-                                    let savedMeal = SavedMeal(
-                                        id: UUID().uuidString,
-                                        userId: meal.userId,
-                                        name: meal.aiName ?? "Saved meal",
-                                        description: meal.description,
-                                        macros: meal.macros
-                                    )
-                                    Task {
-                                        _ = await savedMealsViewModel.saveSavedMeal(savedMeal)
-                                    }
-                                } label: {
-                                    Image(systemName: "bookmark")
-                                        .font(.headline.bold())
-                                        .foregroundStyle(Color(.systemGray))
-                                        .padding(10)
-                                        .background(Color(.systemBackground), in: Circle())
-                                        .shadow(color: Color.black.opacity(0.12),
-                                                radius: 6, x: 0, y: 3)
-                                }
-                            }
-
-                            Button {
-                                save()
-                            } label: {
-                                Image(systemName: "checkmark")
-                                    .font(.headline.bold())
-                                    .foregroundStyle(Color(.systemGray))
-                                    .padding(10)
-                                    .background(Color(.systemBackground), in: Circle())
-                                    .shadow(color: Color.black.opacity(0.12),
-                                            radius: 6, x: 0, y: 3)
-                            }
+                        Button {
+                            save()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.headline.bold())
+                                .foregroundStyle(Color(.systemGray))
+                                .padding(10)
+                                .background(Color(.systemBackground), in: Circle())
+                                .shadow(color: Color.black.opacity(0.12),
+                                        radius: 6, x: 0, y: 3)
                         }
                     }
 

@@ -19,7 +19,7 @@ struct TodayView: View {
     @StateObject private var addMealViewModel = AddMealViewModel(
         service: BackendMealParsingService(
             baseURL: URL(string:
-                "https://sight-returned-worth-meanwhile.trycloudflare.com")!
+                "https://physicians-consulting-carlo-infrastructure.trycloudflare.com")!
         )
     )
     
@@ -48,6 +48,7 @@ struct TodayView: View {
     
     @State private var showAddMealOptions = false
     @State private var activeAddMealMode: AddMealMode?
+    @State private var selectedSavedMeal: SavedMeal?
     @State private var showPhotoPermissionAlert = false
     @State private var photoPermissionMessage = ""
     @State private var showFutureMealToast = false
@@ -314,10 +315,22 @@ struct TodayView: View {
                     dayDate: selectedDate
                 )
             case .savedMeals:
-                Text("Saved meals")
-                    .padding()
+                SavedMealsPickerSheet { meal in
+                    selectedSavedMeal = meal
+                    activeAddMealMode = nil
+                } onCancel: {
+                    activeAddMealMode = nil
+                }
             }
         })
+        .sheet(item: $selectedSavedMeal) { meal in
+            SavedMealLogSheet(meal: meal, selectedDate: selectedDate) { loggedAt in
+                Task {
+                    let description = meal.description ?? meal.name
+                    await viewModel.addMeal(description: description, macros: meal.macros, loggedAt: loggedAt)
+                }
+            }
+        }
         .alert("Camera Access Needed", isPresented: $showPhotoPermissionAlert) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -403,4 +416,5 @@ struct TodayView: View {
 #Preview {
   
         TodayView(viewModel: DayLogViewModel(profile: dummyProfile), selectedDate: .constant(Date()))
+        .environmentObject(SavedMealsViewModel())
 }
