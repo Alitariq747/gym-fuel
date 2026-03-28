@@ -45,11 +45,6 @@ final class WeeklyInsightsViewModel: ObservableObject {
     private let profile: UserProfile
     private let dayLogService: DayLogService
     private let calendar = Calendar.current
-    private let utcCalendar: Calendar = {
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
-        return cal
-    }()
     
     init(profile: UserProfile, initialDate: Date = Date(), dayLogService: DayLogService = FirebaseDayLogService()) {
         self.profile = profile
@@ -97,9 +92,9 @@ final class WeeklyInsightsViewModel: ObservableObject {
             return
         }
         
-        // Query using UTC day boundaries for consistency with storage.
-        let startOfRange = utcCalendar.startOfDay(for: firstDay)
-        guard let endOfRange = utcCalendar.date(byAdding: .day, value: 1, to: utcCalendar.startOfDay(for: lastDay)) else {
+        // Query using local day boundaries to match the UI.
+        let startOfRange = calendar.startOfDay(for: firstDay)
+        guard let endOfRange = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: lastDay)) else {
             errorMessage = "Failed to compute week range."
             return
         }

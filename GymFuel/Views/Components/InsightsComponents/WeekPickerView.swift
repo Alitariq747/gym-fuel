@@ -12,7 +12,7 @@ extension Calendar {
     func startOfWeek(for date: Date) -> Date {
         
         let components = dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
-        return self.date(from: components)!
+        return self.date(from: components) ?? startOfDay(for: date)
     }
     func daysInWeek(startingAt weekStart: Date) -> [Date] {
      
@@ -38,7 +38,7 @@ struct WeekPickerView: View {
     }
 
     private var weekEnd: Date {
-        calendar.date(byAdding: .day, value: 6, to: weekStart)!
+        calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
     }
 
     private var currentWeekStart: Date {

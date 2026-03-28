@@ -263,7 +263,7 @@ final class FirebaseAuthManager: ObservableObject {
     }
 
     func generateNonce(length: Int = 32) -> String {
-        precondition(length > 0)
+        guard length > 0 else { return "" }
         let charset: [Character] =
             Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
 

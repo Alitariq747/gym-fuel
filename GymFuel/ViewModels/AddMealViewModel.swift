@@ -17,6 +17,13 @@ final class AddMealViewModel: ObservableObject {
         case server = "We’re having trouble on our end. Please try again later."
         case invalidResponse = "We couldn’t understand the response. Please try again."
         case imageTooLarge = "This image is too large to upload. Try a different photo."
+        case signInRequired = "Please sign in to continue."
+        case sessionExpired = "Your session expired. Please sign in again."
+        case accountDisabled = "This account has been disabled."
+        case textQuotaExceeded = "You have reached your monthly text scan limit."
+        case imageQuotaExceeded = "You have reached your monthly image scan limit."
+        case textRateLimited = "Too many text meal requests. Please wait a moment and try again."
+        case imageRateLimited = "Too many image meal requests. Please wait a moment and try again."
         case unknown = "Something went wrong. Please try again."
     }
 
@@ -166,9 +173,26 @@ final class AddMealViewModel: ObservableObject {
                 return .invalidResponse
             case .invalidURL:
                 return .unknown
+            case .unauthenticated, .unauthorized:
+                return .signInRequired
+            case .sessionExpired:
+                return .sessionExpired
+            case .accountDisabled:
+                return .accountDisabled
+            case .textQuotaExceeded:
+                return .textQuotaExceeded
+            case .imageQuotaExceeded:
+                return .imageQuotaExceeded
+            case .aiTimeout:
+                return .timeout
+            case .textRateLimited:
+                return .textRateLimited
+            case .imageRateLimited:
+                return .imageRateLimited
+
+
             }
         }
-
         return .unknown
     }
 }

@@ -19,7 +19,7 @@ struct TodayView: View {
     @StateObject private var addMealViewModel = AddMealViewModel(
         service: BackendMealParsingService(
             baseURL: URL(string:
-                "https://physicians-consulting-carlo-infrastructure.trycloudflare.com")!
+                "http://localhost:5001")!
         )
     )
     

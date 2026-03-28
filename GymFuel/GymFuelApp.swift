@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseCore
 import GoogleSignIn
+import FirebaseAppCheck
 
 @main
 struct GymFuelApp: App {
@@ -15,6 +16,7 @@ struct GymFuelApp: App {
     @StateObject private var profileViewModel = UserProfileViewModel()
     
     init() {
+        AppCheck.setAppCheckProviderFactory(LiftEatsAppCheckProviderFactory())
         FirebaseApp.configure()
     }
     var body: some Scene {
