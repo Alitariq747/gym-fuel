@@ -11,6 +11,14 @@ import UIKit
 
 @MainActor
 final class AddMealViewModel: ObservableObject {
+    enum RecoveryAction {
+        case retry
+        case chooseNewPhoto
+        case dismiss
+        case manualFallback
+        case signIn
+    }
+
     enum UserFacingError: String {
         case offline = "You're offline. Check your connection and try again."
         case timeout = "This is taking too long. Please try again."
@@ -25,6 +33,21 @@ final class AddMealViewModel: ObservableObject {
         case textRateLimited = "Too many text meal requests. Please wait a moment and try again."
         case imageRateLimited = "Too many image meal requests. Please wait a moment and try again."
         case unknown = "Something went wrong. Please try again."
+
+        var recoveryAction: RecoveryAction {
+            switch self {
+            case .offline, .timeout, .server:
+                return .retry
+            case .imageTooLarge:
+                return .chooseNewPhoto
+            case .signInRequired, .sessionExpired:
+                return .signIn
+            case .textQuotaExceeded, .imageQuotaExceeded, .textRateLimited, .imageRateLimited:
+                return .manualFallback
+            case .invalidResponse, .accountDisabled, .unknown:
+                return .dismiss
+            }
+        }
     }
 
     @Published var descriptionText: String = ""
@@ -36,6 +59,8 @@ final class AddMealViewModel: ObservableObject {
     @Published var parsed: ParsedMeal? = nil
     @Published var isPreparingImage: Bool = false
     @Published private(set) var lastUserFacingError: UserFacingError? = nil
+    private var activePhotoRequestId = UUID()
+    private var activeParseRequestId = UUID()
 
     var isPhotoReady: Bool {
         selectedPhotoData != nil && !isPreparingImage && errorMessage == nil
@@ -48,6 +73,10 @@ final class AddMealViewModel: ObservableObject {
         default:
             return false
         }
+    }
+
+    var currentRecoveryAction: RecoveryAction? {
+        lastUserFacingError?.recoveryAction
     }
 
     private let service: MealParsingService
@@ -74,6 +103,8 @@ final class AddMealViewModel: ObservableObject {
         }
 
         isLoading = true
+        let requestId = UUID()
+        activeParseRequestId = requestId
         defer { isLoading = false }
 
         do {
@@ -89,8 +120,10 @@ final class AddMealViewModel: ObservableObject {
             }
 
             let result = try await service.parseMeal(request)
+            guard activeParseRequestId == requestId else { return }
             parsed = result
         } catch {
+            guard activeParseRequestId == requestId else { return }
             let friendlyError = mapToUserFacingError(error)
             lastUserFacingError = friendlyError
             errorMessage = friendlyError.rawValue
@@ -99,13 +132,7 @@ final class AddMealViewModel: ObservableObject {
 
     func reset() {
         descriptionText = ""
-        selectedPhotoData = nil
-        selectedPhotoMimeType = "image/jpeg"
-        selectedPhotoFilename = "meal.jpg"
-        parsed = nil
-        errorMessage = nil
-        lastUserFacingError = nil
-        isLoading = false
+        clearImageFlowState()
     }
 
     func setSelectedPhoto(_ image: UIImage) {
@@ -113,10 +140,13 @@ final class AddMealViewModel: ObservableObject {
         parsed = nil
 
         isPreparingImage = true
+        let requestId = UUID()
+        activePhotoRequestId = requestId
         Task.detached(priority: .userInitiated) { [imagePreprocessor] in
             do {
                 let processed = try imagePreprocessor.preprocess(image)
                 await MainActor.run {
+                    guard self.activePhotoRequestId == requestId else { return }
                     self.selectedPhotoData = processed.data
                     self.selectedPhotoMimeType = processed.mimeType
                     self.selectedPhotoFilename = processed.filename
@@ -124,6 +154,7 @@ final class AddMealViewModel: ObservableObject {
                 }
             } catch {
                 await MainActor.run {
+                    guard self.activePhotoRequestId == requestId else { return }
                     self.selectedPhotoData = nil
                     self.selectedPhotoMimeType = "image/jpeg"
                     self.selectedPhotoFilename = "meal.jpg"
@@ -136,12 +167,21 @@ final class AddMealViewModel: ObservableObject {
         }
     }
 
-    func removeSelectedPhoto() {
+    func clearImageFlowState() {
+        activePhotoRequestId = UUID()
+        activeParseRequestId = UUID()
         selectedPhotoData = nil
         selectedPhotoMimeType = "image/jpeg"
         selectedPhotoFilename = "meal.jpg"
+        parsed = nil
+        errorMessage = nil
+        isLoading = false
         isPreparingImage = false
         lastUserFacingError = nil
+    }
+
+    func removeSelectedPhoto() {
+        clearImageFlowState()
     }
 
     private func mapToUserFacingError(_ error: Error) -> UserFacingError {

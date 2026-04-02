@@ -53,8 +53,6 @@ struct TodayView: View {
     @State private var photoPermissionMessage = ""
     @State private var showFutureMealToast = false
     
-    @State private var showFuelScoreDetail = false
-
     
     struct DaySessionDraft {
         var isTrainingDay: Bool
@@ -186,13 +184,11 @@ struct TodayView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Button {
-                        showFuelScoreDetail = true
-                    } label: {
-                        MetricsPagerSection(dayLog: log, consumed: viewModel.consumedMacros, isLoading: viewModel.isLoading)
-                    }
-                    .buttonStyle(.plain)
-                    FuelTimelineSection(dayLog: log, preMeals: viewModel.preWorkoutMeals, postMeals: viewModel.postWorkoutMeals, supportMeals: viewModel.otherTrainingDayMeals, restMeals: viewModel.restDayMeals, fuelImpactByMealId: viewModel.fuelImpactByMealId) { meal in
+                    MacroCardsSection(
+                        targets: log.macroTargets,
+                        consumed: viewModel.consumedMacros
+                    )
+                    FuelTimelineSection(dayLog: log, preMeals: viewModel.preWorkoutMeals, postMeals: viewModel.postWorkoutMeals, supportMeals: viewModel.otherTrainingDayMeals, restMeals: viewModel.restDayMeals) { meal in
                         selectedMeal = meal
                     }
                     
@@ -335,24 +331,6 @@ struct TodayView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(photoPermissionMessage)
-        }
-        // sheet for FuelScore detail Sheet
-        .sheet(isPresented: $showFuelScoreDetail) {
-            if let log = viewModel.dayLog,
-               let score = log.fuelScore {
-                FuelScoreDetailSheet(
-                    dayLog: log,
-                    fuelScore: score,
-                    targets: log.macroTargets,
-                    consumed: viewModel.consumedMacros,
-                    preMacros: viewModel.preWorkoutMacros,
-                    postMacros: viewModel.postWorkoutMacros,
-                    trainingTimeOfDay: viewModel.userProfile.trainingTimeOfDay
-                )
-            } else {
-                Text("No Fuel Score for today yet.")
-                    .padding()
-            }
         }
         // sheets for profile and insights
         .sheet(item: $activeSheet) { sheet in

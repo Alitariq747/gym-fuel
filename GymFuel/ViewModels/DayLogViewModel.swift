@@ -163,14 +163,13 @@ final class DayLogViewModel: ObservableObject {
                         guard isCurrentLoad(loadId) else { return }
                         self.meals = loadedMeals
                         
-                        // Recompute fuel score only when meals load successfully.
-                        refreshFuelScore()
+                        // Keep consumed macros in sync when meals load.
+                        refreshConsumedMacros()
 
                         guard let updatedLog = self.dayLog else { return }
                         let shouldSave =
                             updatedLog.date != originalLog.date
                             || updatedLog.macroTargets != originalLog.macroTargets
-                            || updatedLog.fuelScore != originalLog.fuelScore
                             || updatedLog.consumedMacros != originalLog.consumedMacros
 
                         if shouldSave {
@@ -211,8 +210,7 @@ final class DayLogViewModel: ObservableObject {
                 sessionStart: sessionStart,
                 trainingIntensity: intensity,
                 sessionType: nil,
-                macroTargets: .zero,
-                fuelScore: nil
+                macroTargets: .zero
             )
             
             do {
@@ -229,8 +227,8 @@ final class DayLogViewModel: ObservableObject {
                     guard isCurrentLoad(loadId) else { return }
                     self.meals = loadedMeals
                     
-                    // Recompute fuel score only when meals load successfully.
-                    refreshFuelScore()
+                    // Keep consumed macros in sync when meals load.
+                    refreshConsumedMacros()
 
                     if let updatedLog = self.dayLog {
                         // Persist to Firestore (or queue offline).
@@ -306,7 +304,7 @@ final class DayLogViewModel: ObservableObject {
             self.errorMessage = error.localizedDescription
             self.dayLog = dayLog
         }
-        refreshFuelScore()
+        refreshConsumedMacros()
     }
     
     private static func dayId(for date: Date, userId: String) -> String {
@@ -351,7 +349,7 @@ final class DayLogViewModel: ObservableObject {
         
         let newMeal = Meal(id: UUID().uuidString, userId: profile.id, dayLogId: currentDayLog.id, loggedAt: loggedAt, description: description, macros: macros)
         meals.append(newMeal)
-        refreshFuelScore()
+        refreshConsumedMacros()
         
         do {
             try await mealService.saveMeal(newMeal)
@@ -385,7 +383,7 @@ final class DayLogViewModel: ObservableObject {
                             fat: parsedMeal.fat)
         let newMeal = Meal(id: UUID().uuidString, userId: profile.id, dayLogId: currentDayLog.id, loggedAt: loggedAt, description: originalDescription, macros: macros, aiName: parsedMeal.name, aiConfidence: parsedMeal.confidence, aiWarnings: parsedMeal.warnings, aiNotes: parsedMeal.notes, aiAssumptions: parsedMeal.assumptions)
         meals.append(newMeal)
-        refreshFuelScore()
+        refreshConsumedMacros()
         
         do {
             try await mealService.saveMeal(newMeal)
@@ -402,7 +400,7 @@ final class DayLogViewModel: ObservableObject {
             return
         }
         meals[index] = updated
-        refreshFuelScore()
+        refreshConsumedMacros()
         
         do {
             try await mealService.saveMeal(updated)
@@ -417,7 +415,7 @@ final class DayLogViewModel: ObservableObject {
     
     func removeMeal(_ meal: Meal) async {
         meals.removeAll { $0.id == meal.id }
-        refreshFuelScore()
+        refreshConsumedMacros()
         
         do {
             try await mealService.deleteMeal(meal)
@@ -432,7 +430,7 @@ final class DayLogViewModel: ObservableObject {
     
     func resetMeals() {
         meals.removeAll()
-        refreshFuelScore()
+        refreshConsumedMacros()
     }
     
     var mealsByTiming: [MealTimingTag: [Meal]] {
@@ -494,281 +492,9 @@ final class DayLogViewModel: ObservableObject {
           macros(for: restDayMeals)
       }
     
-    func ratioScore(
-         actual: Double,
-         target: Double,
-         tolerance: Double = 0.35
-     ) -> Double {
-         guard target > 0 else { return 100 } // nothing to hit, treat as fine
-         
-         let ratio = actual / target
-         let diff = abs(1.0 - ratio)          // 0 = perfect; 0.1 = 10% off
-         
-         // Normalize: diff = 0 → 100, diff = tolerance → 0
-         let normalized = max(0.0, 1.0 - diff / tolerance)
-         return normalized * 100.0
-     }
-    
-  
-    func macroAdherenceScore(
-        targets: Macros,
-        consumed: Macros
-    ) -> Int {
-        // Use a more forgiving tolerance so the score
-        // starts increasing earlier as the user eats.
-        let tol = 1.0
-        
-        let caloriesScore = ratioScore(
-            actual: consumed.calories,
-            target: targets.calories,
-            tolerance: tol
-        )
-        let proteinScore = ratioScore(
-            actual: consumed.protein,
-            target: targets.protein,
-            tolerance: tol
-        )
-        let carbsScore = ratioScore(
-            actual: consumed.carbs,
-            target: targets.carbs,
-            tolerance: tol
-        )
-        let fatScore = ratioScore(
-            actual: consumed.fat,
-            target: targets.fat,
-            tolerance: tol
-        )
-        
-        let totalScore =
-            caloriesScore * 0.4 +
-            proteinScore  * 0.3 +
-            carbsScore    * 0.2 +
-            fatScore      * 0.1
-        
-        return Int(totalScore.rounded())
-    }
-
-   
-    func timingAdherenceScore(
-          targets: Macros,
-          pre: Macros,
-          post: Macros
-      ) -> Int {
-          let targetCarbs = targets.carbs
-          let targetProtein = targets.protein
-
-          guard targetCarbs > 0, targetProtein > 0 else {
-              return 100
-          }
-
-          let trainingTime = profile.trainingTimeOfDay ?? .varies
-          let split = timingSplit(for: trainingTime)
-
-          let idealPreCarbs = targetCarbs * split.preCarb
-          let idealPreProtein = targetProtein * split.preProtein
-
-          let idealPostCarbs = targetCarbs * split.postCarb
-          let idealPostProtein = targetProtein * split.postProtein
-
-          let preCarbScore = ratioScore(
-              actual: pre.carbs,
-              target: idealPreCarbs,
-              tolerance: 0.5
-          )
-          let preProteinScore = ratioScore(
-              actual: pre.protein,
-              target: idealPreProtein,
-              tolerance: 0.5
-          )
-
-          let postCarbScore = ratioScore(
-              actual: post.carbs,
-              target: idealPostCarbs,
-              tolerance: 0.5
-          )
-          let postProteinScore = ratioScore(
-              actual: post.protein,
-              target: idealPostProtein,
-              tolerance: 0.5
-          )
-
-          // Pre window: carbs are slightly more important than protein.
-          let preScore = preCarbScore * 0.6 + preProteinScore * 0.4
-
-          // Post window: carbs & protein are equally important.
-          let postScore = postCarbScore * 0.5 + postProteinScore * 0.5
-
-          let timingScore = preScore * split.preWeight + postScore * split.postWeight
-
-          return Int(timingScore.rounded())
-      }
-
-    private struct TimingSplit {
-        let preCarb: Double
-        let preProtein: Double
-        let postCarb: Double
-        let postProtein: Double
-        let preWeight: Double
-        let postWeight: Double
-    }
-
-    private func timingSplit(for time: TrainingTimeOfDay) -> TimingSplit {
-        switch time {
-        case .morning:
-            // Often fasted: shift emphasis to post.
-            return TimingSplit(
-                preCarb: 0.20,
-                preProtein: 0.10,
-                postCarb: 0.40,
-                postProtein: 0.40,
-                preWeight: 0.30,
-                postWeight: 0.70
-            )
-        case .midday:
-            return TimingSplit(
-                preCarb: 0.30,
-                preProtein: 0.20,
-                postCarb: 0.30,
-                postProtein: 0.30,
-                preWeight: 0.50,
-                postWeight: 0.50
-            )
-        case .evening:
-            return TimingSplit(
-                preCarb: 0.40,
-                preProtein: 0.30,
-                postCarb: 0.20,
-                postProtein: 0.20,
-                preWeight: 0.60,
-                postWeight: 0.40
-            )
-        case .varies:
-            return TimingSplit(
-                preCarb: 0.30,
-                preProtein: 0.20,
-                postCarb: 0.30,
-                postProtein: 0.30,
-                preWeight: 0.50,
-                postWeight: 0.50
-            )
-        }
-    }
-    
-    // computed fuel score
-    func computeFuelScore(for dayLog: DayLog, using meals: [Meal]) -> FuelScore? {
-        let targets = dayLog.macroTargets
-        
-        guard targets.calories > 800 else {
-            return nil
-        }
-        
-        let consumed = macros(for: meals)
-        let macroScore = macroAdherenceScore(targets: targets, consumed: consumed)
-        
-        guard dayLog.isTrainingDay, let sessionStart = dayLog.sessionStart else {
-            return FuelScore(total: macroScore, macroAdherence: macroScore, timingAdherence: macroScore)
-        }
-        
-        let isTrainingDay = dayLog.isTrainingDay
-        
-        let groupedByTiming = Dictionary(grouping: meals) { meal in
-            meal.timingTag(relativeTo: sessionStart, isTrainingDay: isTrainingDay)
-        }
-        
-        let preMeals = groupedByTiming[.preWorkout] ?? []
-        let postMeals = groupedByTiming[.postWorkout] ?? []
-        
-        let pre = macros(for: preMeals)
-        let post = macros(for: postMeals)
-        
-        let timingScore = timingAdherenceScore(targets: targets, pre: pre, post: post)
-        
-        let intensity = dayLog.trainingIntensity ?? .normal
-        
-        let timingWeight: Double
-        switch intensity {
-        case .normal:
-            timingWeight = 0.4
-        case .hard:
-            timingWeight = 0.5
-        case .allOut:
-            timingWeight = 0.6
-        case .recovery:
-            timingWeight = 0.3
-        }
-        
-        let macroWeight = 1 - timingWeight
-        let totalScore = Double(macroScore) * macroWeight + Double(timingScore) * timingWeight
-        return FuelScore(total: Int(totalScore.rounded()), macroAdherence: macroScore, timingAdherence: timingScore)
-        
-        
-    }
-    
- 
-    func computeFuelScore(for dayLog: DayLog) -> FuelScore? {
-        return computeFuelScore(for: dayLog, using: meals)
-    }
-
-    struct MealFuelImpact {
-        let totalDelta: Int
-        let macroDelta: Int
-        let timingDelta: Int
-    }
-    
-    var fuelImpactByMealId: [String: MealFuelImpact] {
-        guard let log = dayLog, !meals.isEmpty else { return [:] }
-        
-        // sort meals in time order using loggedAt
-        let sortedMeals = meals.sorted { $0.loggedAt < $1.loggedAt }
-        
-        var result: [String: MealFuelImpact] = [:]
-        
-        // start with an empty score
-        var previousScore: FuelScore? = computeFuelScore(for: log, using: [])
-        
-        // loop  through the meals for the day
-        for (index, meal) in sortedMeals.enumerated() {
-            let mealsUptoNow = Array(sortedMeals[0...index])
-            
-            let newScore = computeFuelScore(for: log, using: mealsUptoNow)
-            
-            let totalDelta: Int
-            let macroDelta: Int
-            let timingDelta: Int
-            
-            switch(previousScore, newScore) {
-            case let (before?, after?):
-                totalDelta  = after.total - before.total
-                macroDelta  = after.macroAdherence - before.macroAdherence
-                timingDelta = after.timingAdherence - before.timingAdherence
-            
-            case(nil, let after?):
-                totalDelta = after.total
-                macroDelta = after.macroAdherence
-                timingDelta = after.timingAdherence
-            default:
-                totalDelta = 0
-                macroDelta = 0
-                timingDelta = 0
-            }
-            result[meal.id] = MealFuelImpact(totalDelta: totalDelta, macroDelta: macroDelta, timingDelta: timingDelta)
-            previousScore = newScore
-        }
-        return result
-    }
-    
-    func refreshFuelScore() {
+    func refreshConsumedMacros() {
         guard var current = dayLog else { return }
-        
-        let consumed = macros(for: meals)
-        current.consumedMacros = consumed
-        
-        if let score = computeFuelScore(for: current, using: meals) {
-            current.fuelScore = score
-        } else {
-            current.fuelScore = nil
-        }
-        
+        current.consumedMacros = macros(for: meals)
         self.dayLog = current
     }
 

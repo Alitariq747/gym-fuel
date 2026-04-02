@@ -33,15 +33,6 @@ struct DayFuelStatsRow: View {
             : "—"
     }
 
-    private var scoreValue: Int? {
-        row.fuelScore
-    }
-
-    private var scoreTextColor: Color {
-        guard let total = scoreValue else { return .secondary }
-        return total >= 75 ? .fuelGreen : .fuelRed
-    }
-
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
 
@@ -68,19 +59,6 @@ struct DayFuelStatsRow: View {
                 .frame(width: 90, alignment: .leading)
 
             Spacer()
-
-            // Column 4: fuel label + value, nicely aligned
-            HStack(spacing: 4) {
-                Text("Fuel")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Text(scoreValue.map(String.init) ?? "—")
-                    .font(.system(.subheadline, design: .monospaced))
-                    .foregroundStyle(scoreTextColor)
-                    .frame(width: 25, alignment: .trailing)
-            }
-            .frame(width: 60, alignment: .trailing)
         }
         .padding(.vertical, 6)
     }
@@ -91,7 +69,7 @@ struct DayFuelStatsRow: View {
         DayFuelStatsRow(
             row: DayFuelRow(
                 date: Date(),
-                fuelScore: 82, isTrainingDay: true,
+                isTrainingDay: true,
                 intensity: .recovery,
                 sessionType: .hypertrophy,
                 hasLog: true
@@ -100,7 +78,7 @@ struct DayFuelStatsRow: View {
         DayFuelStatsRow(
             row: DayFuelRow(
                 date: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
-                fuelScore: nil, isTrainingDay: false,
+                isTrainingDay: false,
                 intensity: nil,
                 sessionType: nil,
                 hasLog: false

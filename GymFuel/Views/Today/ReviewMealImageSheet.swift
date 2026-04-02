@@ -97,15 +97,20 @@ struct ReviewMealImageSheet: View {
                         }
                     }
 
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 220)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
-                        .allowsHitTesting(false)
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(Color(.systemBackground))
+
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: 220)
+                            .padding(8)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .allowsHitTesting(false)
 
                     Text(parsed.name ?? "")
                         .font(.title2).bold()
@@ -209,7 +214,7 @@ struct ReviewMealImageSheet: View {
                             .datePickerStyle(.wheel)
                             .transition(.opacity.combined(with: .move(edge: .top)))
 
-                            Text("We use the time you had your meal to provide better insights with your fuel score.")
+                            Text("Meal time helps categorize this meal as pre-workout, post-workout, support, or rest-day.")
                                 .font(.system(size: 12, weight: .light))
                                 .foregroundStyle(.secondary)
                         }

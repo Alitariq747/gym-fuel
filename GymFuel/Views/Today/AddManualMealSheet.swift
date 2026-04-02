@@ -152,7 +152,7 @@ struct AddManualMealSheet: View {
                                 .opacity.combined(with: .move(edge: .top))
                             )
 
-                            Text("We use the time you had your meal to provide better insights with your fuel score.")
+                            Text("Meal time helps categorize this meal as pre-workout, post-workout, support, or rest-day.")
                                 .font(.system(size: 12, weight: .light))
                                 .foregroundStyle(.secondary)
                         }

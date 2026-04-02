@@ -14,9 +14,7 @@ struct FuelTimelineSection: View {
     let postMeals: [Meal]
     let supportMeals: [Meal]
     let restMeals: [Meal]
-    
-    let fuelImpactByMealId: [String: DayLogViewModel.MealFuelImpact]
-    
+
     let onSelectMeal: (Meal) -> Void
     
     private var isTrainingDay: Bool {
@@ -69,13 +67,12 @@ struct FuelTimelineSection: View {
 
                 VStack(spacing: 12) {
                     ForEach(sortedPreMeals) { meal in
-                        let impact = fuelImpactByMealId[meal.id]
                         Button {
                             onSelectMeal(meal)
                         } label: {
                             TimelineMealRow(
                                 meal: meal,
-                                tag: .preWorkout, impact: impact
+                                tag: .preWorkout
                             )
                         }
                         .buttonStyle(.plain)
@@ -90,13 +87,12 @@ struct FuelTimelineSection: View {
 
                 VStack(spacing: 12) {
                     ForEach(sortedPostMeals) { meal in
-                        let impact = fuelImpactByMealId[meal.id]
                         Button {
                             onSelectMeal(meal)
                         } label: {
                             TimelineMealRow(
                                 meal: meal,
-                                tag: .postWorkout, impact: impact
+                                tag: .postWorkout
                             )
                         }
                         .buttonStyle(.plain)
@@ -110,13 +106,12 @@ struct FuelTimelineSection: View {
 
                 VStack(spacing: 12) {
                     ForEach(sortedSupportMeals) { meal in
-                        let impact = fuelImpactByMealId[meal.id]
                         Button {
                             onSelectMeal(meal)
                         } label: {
                             TimelineMealRow(
                                 meal: meal,
-                                tag: .otherOnTrainingDay, impact: impact
+                                tag: .otherOnTrainingDay
                             )
                         }
                         .buttonStyle(.plain)
@@ -133,13 +128,12 @@ struct FuelTimelineSection: View {
 
                 VStack(spacing: 12) {
                     ForEach(sortedRestMeals) { meal in
-                        let impact = fuelImpactByMealId[meal.id]
                         Button {
                             onSelectMeal(meal)
                         } label: {
                             TimelineMealRow(
                                 meal: meal,
-                                tag: .restDay, impact: impact
+                                tag: .restDay
                             )
                         }
                         .buttonStyle(.plain)
@@ -199,7 +193,7 @@ struct FuelTimelineSection: View {
         
         ScrollView {
             
-            FuelTimelineSection(dayLog: DayLog.demoTrainingDay, preMeals: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay), postMeals: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay), supportMeals: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay), restMeals: Meal.demoMeals(forRestDay: DayLog.demoRestDay), fuelImpactByMealId: [:], onSelectMeal: { _ in print("Hello")})
+            FuelTimelineSection(dayLog: DayLog.demoTrainingDay, preMeals: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay), postMeals: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay), supportMeals: Meal.demoMeals(forTrainingDay: DayLog.demoTrainingDay), restMeals: Meal.demoMeals(forRestDay: DayLog.demoRestDay), onSelectMeal: { _ in print("Hello")})
         }
     }
 }

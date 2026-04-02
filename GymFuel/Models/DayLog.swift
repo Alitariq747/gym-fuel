@@ -17,7 +17,6 @@ struct DayLog: Codable, Identifiable, Equatable {
     var trainingIntensity: TrainingIntensity?
     var sessionType: SessionType?
     var macroTargets: Macros
-    var fuelScore: FuelScore?
     var consumedMacros: Macros?
     
     init(
@@ -29,7 +28,6 @@ struct DayLog: Codable, Identifiable, Equatable {
         trainingIntensity: TrainingIntensity? = .normal,
         sessionType: SessionType? = nil,
         macroTargets: Macros = .zero,
-        fuelScore: FuelScore? = nil,
         consumedMacros: Macros? = .zero
     ) {
         self.id = id
@@ -40,7 +38,6 @@ struct DayLog: Codable, Identifiable, Equatable {
         self.trainingIntensity = trainingIntensity
         self.sessionType = sessionType
         self.macroTargets = macroTargets
-        self.fuelScore = fuelScore
         self.consumedMacros = consumedMacros
     }
 
@@ -75,8 +72,7 @@ extension DayLog {
                 protein: 160,
                 carbs: 260,
                 fat: 70
-            ),
-            fuelScore: FuelScore(total: 89, macroAdherence: 93, timingAdherence: 77)
+            )
         )
     }()
     
@@ -97,11 +93,9 @@ extension DayLog {
                 protein: 140,
                 carbs: 230,
                 fat: 65
-            ),
-            fuelScore: nil
+            )
         )
     }()
 }
-
 
 

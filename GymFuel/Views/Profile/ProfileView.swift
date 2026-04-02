@@ -28,8 +28,8 @@ struct ProfileView: View {
     @State private var deleteAppleNonce: String?
     @State private var showSaveToast: Bool = false
 
-    private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")!
-    private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")!
+    private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")
+    private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")
     
     var body: some View {
         let isBusy = profileVm.isSaving || isSigningOut || isDeletingAccount
@@ -307,17 +307,25 @@ struct ProfileView: View {
         .padding(.horizontal)
     }
 
-    private func linkRow(title: String, systemImage: String, url: URL) -> some View {
-        Link(destination: url) {
-            HStack {
-                rowLabel(title, systemImage: systemImage)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .padding(.leading, 6)
+    private func linkRow(title: String, systemImage: String, url: URL?) -> some View {
+        let rowContent = HStack {
+            rowLabel(title, systemImage: systemImage)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .padding(.leading, 6)
+        }
+        .contentShape(Rectangle())
+
+        return Group {
+            if let url {
+                Link(destination: url) {
+                    rowContent
+                }
+            } else {
+                rowContent
             }
-            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

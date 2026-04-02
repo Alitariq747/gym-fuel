@@ -51,14 +51,20 @@ struct AddMealCameraFlowSheet: View {
                         message: Text(alert.message),
                         primaryButton: .default(Text("Open Settings")) {
                             openAppSettings()
+                            dismissCameraEntry()
                         },
                         secondaryButton: .cancel(Text("Not Now"))
+                        {
+                            dismissCameraEntry()
+                        }
                     )
                 } else {
                     Alert(
                         title: Text(alert.title),
                         message: Text(alert.message),
-                        dismissButton: .default(Text("OK"))
+                        dismissButton: .default(Text("OK")) {
+                            dismissCameraEntry()
+                        }
                     )
                 }
             }
@@ -104,11 +110,11 @@ struct AddMealCameraFlowSheet: View {
                             if let error = addMealViewModel.errorMessage {
                                 MealParsingErrorView(
                                     message: error,
-                                    buttonTitle: "Back to photo",
+                                    buttonTitle: cameraErrorButtonTitle,
                                     hint: nil,
-                                    retryTitle: addMealViewModel.canRetry ? "Retry" : nil,
+                                    retryTitle: cameraErrorRecoveryAction == .retry ? "Retry" : nil,
                                     isRetryDisabled: addMealViewModel.isLoading,
-                                    onRetry: addMealViewModel.canRetry ? {
+                                    onRetry: cameraErrorRecoveryAction == .retry ? {
                                         pendingParsed = nil
                                         didStartParse = false
                                         Task {
@@ -119,9 +125,7 @@ struct AddMealCameraFlowSheet: View {
                                         }
                                     } : nil
                                 ) {
-                                    showReview = false
-                                    pendingParsed = nil
-                                    addMealViewModel.errorMessage = nil
+                                    handleCameraErrorPrimaryAction()
                                 }
                             } else {
                                 VStack(spacing: 12) {
@@ -174,6 +178,55 @@ struct AddMealCameraFlowSheet: View {
         comps.hour = timeComps.hour
         comps.minute = timeComps.minute
         return cal.date(from: comps) ?? date
+    }
+
+    private var cameraErrorRecoveryAction: AddMealViewModel.RecoveryAction {
+        addMealViewModel.currentRecoveryAction ?? .dismiss
+    }
+
+    private var cameraErrorButtonTitle: String {
+        switch cameraErrorRecoveryAction {
+        case .chooseNewPhoto:
+            return "Retake photo"
+        case .retry, .dismiss, .manualFallback, .signIn:
+            return "Close"
+        }
+    }
+
+    private func handleCameraErrorPrimaryAction() {
+        switch cameraErrorRecoveryAction {
+        case .chooseNewPhoto:
+            retakePhoto()
+        case .retry, .dismiss, .manualFallback, .signIn:
+            closeCameraFlow()
+        }
+    }
+
+    private func retakePhoto() {
+        capturedImage = nil
+        pendingParsed = nil
+        didStartParse = false
+        addMealViewModel.clearImageFlowState()
+        showReview = false
+
+        DispatchQueue.main.async {
+            showCamera = true
+        }
+    }
+
+    private func closeCameraFlow() {
+        capturedImage = nil
+        pendingParsed = nil
+        didStartParse = false
+        addMealViewModel.clearImageFlowState()
+        showReview = false
+        dismissSheet()
+    }
+
+    private func dismissCameraEntry() {
+        cameraAlert = nil
+        showCamera = false
+        closeCameraFlow()
     }
 
     private func openCameraIfAllowed() {

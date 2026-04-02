@@ -70,7 +70,7 @@ struct OnboardingSummaryStepView: View {
 
                 if showCard3 {
                     summaryCard(
-                        title: "FuelScore focus",
+                        title: "Fueling focus",
                         value: "Macro accuracy + timing",
                         detail: "Adjusted for when and how hard you train",
                         systemImage: "bolt.heart.fill",

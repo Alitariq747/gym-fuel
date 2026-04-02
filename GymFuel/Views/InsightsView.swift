@@ -79,7 +79,11 @@ struct InsightsView: View {
                     
                     //Stats VStack
                     VStack {
-                        MacroStats(averageFuelScore: viewModel.averageFuelScore, trainingDaysPlanned: viewModel.trainingDaysPlanned, trainingDaysCompleted: viewModel.trainingDaysLogged, restDays: viewModel.restDays, highScoreDays: viewModel.highScoreDays)
+                        MacroStats(
+                            trainingDaysPlanned: viewModel.trainingDaysPlanned,
+                            trainingDaysCompleted: viewModel.trainingDaysLogged,
+                            restDays: viewModel.restDays
+                        )
                         
                         // Per day data
                         VStack(spacing: 5) {
@@ -94,19 +98,7 @@ struct InsightsView: View {
                     .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 16))
                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.systemBackground)))
                     .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.black.opacity(0.08), radius: colorScheme == .dark ? 18 : 12, x: 0, y: colorScheme == .dark ? 10 : 6)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Fuel score trend")
-                            .font(.headline)
-                        WeeklyFuelScoreChart(points: viewModel.dailyFuelScores)
-                    }
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(Color(.systemBackground))
-                    )
-                    .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
-                    
+
                     WeeklyMacroOverviewCard(overview: viewModel.weeklyMacroOverview)
                 }
                 .padding()

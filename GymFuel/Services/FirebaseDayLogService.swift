@@ -121,16 +121,6 @@ final class FirebaseDayLogService: DayLogService {
             data["sessionType"] = FieldValue.delete()
         }
         
-        if let fuelScore = dayLog.fuelScore {
-              data["fuelScore"] = [
-                  "total":           fuelScore.total,
-                  "macroAdherence":  fuelScore.macroAdherence,
-                  "timingAdherence": fuelScore.timingAdherence
-              ]
-          } else {
-              data["fuelScore"] = FieldValue.delete()
-          }
-        
         if let consumed = dayLog.consumedMacros {
             data["consumedMacros"] = [
                 "calories": consumed.calories,
@@ -220,24 +210,6 @@ final class FirebaseDayLogService: DayLogService {
             )
         }
 
-          
-            var fuelScore: FuelScore? = nil
-            if let fuelDict = data["fuelScore"] as? [String: Any] {
-                let total = fuelDict["total"] as? Int
-                    ?? Int(Self.double(from: fuelDict["total"]))
-                let macroAdherence = fuelDict["macroAdherence"] as? Int
-                    ?? Int(Self.double(from: fuelDict["macroAdherence"]))
-                let timingAdherence = fuelDict["timingAdherence"] as? Int
-                    ?? Int(Self.double(from: fuelDict["timingAdherence"]))
-
-                fuelScore = FuelScore(
-                    total: total,
-                    macroAdherence: macroAdherence,
-                    timingAdherence: timingAdherence
-                )
-            }
-
-        
             return DayLog(
                 id: snapshot.documentID,
                 userId: userId,
@@ -247,7 +219,6 @@ final class FirebaseDayLogService: DayLogService {
                 trainingIntensity: trainingIntensity,
                 sessionType: sessionType,
                 macroTargets: macroTargets,
-                fuelScore: fuelScore,
                 consumedMacros: consumedMacros
             )
     }

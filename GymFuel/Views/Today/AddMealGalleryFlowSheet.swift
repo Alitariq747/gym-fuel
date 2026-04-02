@@ -28,6 +28,16 @@ struct AddMealGalleryFlowSheet: View {
         NavigationStack {
             ZStack {
                 AppBackground()
+
+                if let selectionError {
+                    MealParsingErrorView(
+                        message: selectionError,
+                        buttonTitle: "Choose another photo",
+                        hint: nil
+                    ) {
+                        chooseAnotherPhoto()
+                    }
+                }
             }
             .navigationDestination(isPresented: $showReview) {
                 ZStack {
@@ -71,11 +81,11 @@ struct AddMealGalleryFlowSheet: View {
                             if let error = addMealViewModel.errorMessage {
                                 MealParsingErrorView(
                                     message: error,
-                                    buttonTitle: "Back to photo",
+                                    buttonTitle: galleryErrorButtonTitle,
                                     hint: nil,
-                                    retryTitle: addMealViewModel.canRetry ? "Retry" : nil,
+                                    retryTitle: galleryErrorRecoveryAction == .retry ? "Retry" : nil,
                                     isRetryDisabled: addMealViewModel.isLoading,
-                                    onRetry: addMealViewModel.canRetry ? {
+                                    onRetry: galleryErrorRecoveryAction == .retry ? {
                                         pendingParsed = nil
                                         didStartParse = false
                                         Task {
@@ -86,9 +96,7 @@ struct AddMealGalleryFlowSheet: View {
                                         }
                                     } : nil
                                 ) {
-                                    showReview = false
-                                    pendingParsed = nil
-                                    addMealViewModel.errorMessage = nil
+                                    handleGalleryErrorPrimaryAction()
                                 }
                             } else {
                                 VStack(spacing: 12) {
@@ -117,6 +125,7 @@ struct AddMealGalleryFlowSheet: View {
         .onChange(of: selectedItem) { _, newItem in
             guard let newItem else {
                 selectedImage = nil
+                selectionError = nil
                 addMealViewModel.removeSelectedPhoto()
                 return
             }
@@ -178,6 +187,53 @@ struct AddMealGalleryFlowSheet: View {
         comps.hour = timeComps.hour
         comps.minute = timeComps.minute
         return cal.date(from: comps) ?? date
+    }
+
+    private var galleryErrorRecoveryAction: AddMealViewModel.RecoveryAction {
+        addMealViewModel.currentRecoveryAction ?? .dismiss
+    }
+
+    private var galleryErrorButtonTitle: String {
+        switch galleryErrorRecoveryAction {
+        case .chooseNewPhoto:
+            return "Choose another photo"
+        case .retry, .dismiss, .manualFallback, .signIn:
+            return "Close"
+        }
+    }
+
+    private func handleGalleryErrorPrimaryAction() {
+        switch galleryErrorRecoveryAction {
+        case .chooseNewPhoto:
+            chooseAnotherPhoto()
+        case .retry, .dismiss, .manualFallback, .signIn:
+            closeGalleryFlow()
+        }
+    }
+
+    private func chooseAnotherPhoto() {
+        selectedItem = nil
+        selectedImage = nil
+        pendingParsed = nil
+        didStartParse = false
+        selectionError = nil
+        addMealViewModel.clearImageFlowState()
+        showReview = false
+
+        DispatchQueue.main.async {
+            showPhotoPicker = true
+        }
+    }
+
+    private func closeGalleryFlow() {
+        selectedItem = nil
+        selectedImage = nil
+        pendingParsed = nil
+        didStartParse = false
+        selectionError = nil
+        addMealViewModel.clearImageFlowState()
+        showReview = false
+        dismissSheet()
     }
 }
 

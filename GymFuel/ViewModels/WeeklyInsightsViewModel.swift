@@ -10,18 +10,11 @@ import Combine
 
 struct DayFuelRow: Identifiable {
     let date: Date
-    let fuelScore: Int?
     let isTrainingDay: Bool
     let intensity: TrainingIntensity?
     let sessionType: SessionType?
     let hasLog: Bool
     
-    var id: Date { date }
-}
-
-struct DailyFuelScorePoint: Identifiable {
-    let date: Date
-    let score: Int?
     var id: Date { date }
 }
 
@@ -131,9 +124,7 @@ final class WeeklyInsightsViewModel: ObservableObject {
     
     var trainingDaysLogged: Int {
         weekDayLogs.values.filter { log in
-            guard log.isTrainingDay else { return false }
-            let total = log.fuelScore?.total ?? 0
-            return total > 0
+            log.isTrainingDay
         }.count
     }
     
@@ -141,50 +132,18 @@ final class WeeklyInsightsViewModel: ObservableObject {
         max(0, 7 - trainingDaysPlanned)
     }
     
-    var averageFuelScore: Int? {
-        let scores: [Int] = weekDayLogs.values.compactMap { log in
-                let total = log.fuelScore?.total ?? 0
-            return total > 0 ? total : nil
-        }
-        guard !scores.isEmpty else { return nil }
-        
-        let sum = scores.reduce(0, +)
-        return sum / scores.count
-    }
-    
-    var highScoreDays: Int {
-        weekDayLogs.values.filter { log in
-            let total = log.fuelScore?.total ?? 0
-            return total >= 75
-        }.count
-    }
-    
     var dayRows: [DayFuelRow] {
         weekDates.map { date in
             let dayStart = calendar.startOfDay(for: date)
             let log = weekDayLogs[dayStart]
-            
-            let totalScore = log?.fuelScore?.total ?? 0
-            let displayScore = totalScore > 0 ? totalScore : nil
-            
+
             return DayFuelRow(
                 date: dayStart,
-                fuelScore: displayScore,
                 isTrainingDay: log?.isTrainingDay ?? false,
                 intensity: log?.trainingIntensity,
                 sessionType: log?.sessionType,
                 hasLog: log != nil
             )
-        }
-    }
-    
-    var dailyFuelScores: [DailyFuelScorePoint] {
-        weekDates.map { date in
-            let dayStart = calendar.startOfDay(for: date)
-            let rawScore = weekDayLogs[dayStart]?.fuelScore?.total
-            let score = (rawScore ?? 0) > 0 ? rawScore : nil
-            
-            return DailyFuelScorePoint(date: dayStart, score: score)
         }
     }
 
