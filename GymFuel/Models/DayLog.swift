@@ -14,6 +14,7 @@ struct DayLog: Codable, Identifiable, Equatable {
     var date: Date
     var isTrainingDay: Bool
     var sessionStart: Date?
+    var sessionDurationMinutes: Int?
     var trainingIntensity: TrainingIntensity?
     var sessionType: SessionType?
     var macroTargets: Macros
@@ -25,6 +26,7 @@ struct DayLog: Codable, Identifiable, Equatable {
         date: Date,
         isTrainingDay: Bool = true,
         sessionStart: Date? = nil,
+        sessionDurationMinutes: Int? = nil,
         trainingIntensity: TrainingIntensity? = .normal,
         sessionType: SessionType? = nil,
         macroTargets: Macros = .zero,
@@ -35,6 +37,7 @@ struct DayLog: Codable, Identifiable, Equatable {
         self.date = date
         self.isTrainingDay = isTrainingDay
         self.sessionStart = sessionStart
+        self.sessionDurationMinutes = sessionDurationMinutes
         self.trainingIntensity = trainingIntensity
         self.sessionType = sessionType
         self.macroTargets = macroTargets
@@ -65,8 +68,9 @@ extension DayLog {
             date: today,
             isTrainingDay: true,
             sessionStart: sessionStart,
+            sessionDurationMinutes: 75,
             trainingIntensity: .allOut,
-            sessionType: .strength, // adjust to one of your SessionType cases
+            sessionType: .fullBody,
             macroTargets: Macros(
                 calories: 2400,
                 protein: 160,
@@ -97,5 +101,4 @@ extension DayLog {
         )
     }()
 }
-
 

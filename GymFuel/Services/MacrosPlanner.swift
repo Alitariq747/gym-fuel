@@ -72,7 +72,8 @@ struct MacrosPlanner {
         // 4. Add a training-day-specific adjustment based on intensity.
         let trainingAdjustment = trainingCalorieAdjustment(
             isTrainingDay: dayLog.isTrainingDay,
-            intensity: dayLog.trainingIntensity
+            intensity: dayLog.trainingIntensity,
+            durationMinutes: dayLog.sessionDurationMinutes
         )
         
         // 5. Compute a base "neutral" calorie target (before goal).
@@ -143,21 +144,45 @@ private extension MacrosPlanner {
     /// This is a rough estimate; we bias harder days higher.
     func trainingCalorieAdjustment(
         isTrainingDay: Bool,
-        intensity: TrainingIntensity?
+        intensity: TrainingIntensity?,
+        durationMinutes: Int?
     ) -> Double {
         guard isTrainingDay else {
             return 0
         }
         
+        let baseAdjustment: Double
         switch intensity ?? .normal {
         case .recovery:
-            return 150    // light cardio / deload
+            baseAdjustment = 150    // light cardio / deload
         case .normal:
-            return 250
+            baseAdjustment = 250
         case .hard:
-            return 400
+            baseAdjustment = 400
         case .allOut:
-            return 550
+            baseAdjustment = 550
+        }
+
+        let durationMultiplier = durationAdjustmentMultiplier(for: durationMinutes)
+        return baseAdjustment * durationMultiplier
+    }
+
+    func durationAdjustmentMultiplier(for durationMinutes: Int?) -> Double {
+        let minutes = durationMinutes ?? 60
+
+        switch minutes {
+        case ..<38:
+            return 0.85
+        case ..<53:
+            return 0.95
+        case ..<68:
+            return 1.00
+        case ..<83:
+            return 1.08
+        case ..<98:
+            return 1.16
+        default:
+            return 1.24
         }
     }
     
@@ -256,14 +281,14 @@ private extension MacrosPlanner {
         style: TrainingStyle,
         sessionType: SessionType?
     ) -> Macros {
-        let sessionType = sessionType ?? mapStyleToSessionType(style)
+        let macroProfile = macroProfile(for: sessionType, style: style)
         
         // 1. Determine protein grams per kg.
         let proteinPerKg = proteinPerKgRecommendation(
             weightKg: weightKg,
             goal: goal,
             experience: experience,
-            sessionType: sessionType
+            macroProfile: macroProfile
         )
         let proteinGrams = proteinPerKg * weightKg
         let proteinCalories = proteinGrams * 4.0
@@ -272,7 +297,7 @@ private extension MacrosPlanner {
         let fatPerKg = fatPerKgRecommendation(
             weightKg: weightKg,
             goal: goal,
-            sessionType: sessionType
+            macroProfile: macroProfile
         )
         let recommendedFatGrams = fatPerKg * weightKg
         let recommendedFatCalories = recommendedFatGrams * 9.0
@@ -293,34 +318,49 @@ private extension MacrosPlanner {
         )
     }
     
-    /// Fallback mapping from long-term training style to today's session type
-    /// when the sessionType is nil on the DayLog.
-    func mapStyleToSessionType(_ style: TrainingStyle) -> SessionType {
+    private enum SessionMacroProfile {
+        case resistance
+        case mixedConditioning
+        case endurance
+    }
+
+    /// Resolve a macro profile using the explicit session type when available,
+    /// otherwise fall back to the user's long-term style.
+    private func macroProfile(for sessionType: SessionType?, style: TrainingStyle) -> SessionMacroProfile {
+        if let sessionType {
+            switch sessionType {
+            case .push, .pull, .legs, .upper, .lower, .fullBody:
+                return .resistance
+            case .conditioning, .sports:
+                return .mixedConditioning
+            case .cardio, .mobility:
+                return .endurance
+            }
+        }
+
         switch style {
-        case .strength:
-            return .strength
-        case .hypertrophy:
-            return .hypertrophy
+        case .strength, .hypertrophy:
+            return .resistance
         case .mixed:
-            return .mixed
+            return .mixedConditioning
         case .endurance:
             return .endurance
         }
     }
     
     /// Protein recommendations in g/kg.
-    func proteinPerKgRecommendation(
+    private func proteinPerKgRecommendation(
         weightKg: Double,
         goal: TrainingGoal,
         experience: TrainingExperience,
-        sessionType: SessionType
+        macroProfile: SessionMacroProfile
     ) -> Double {
-        // Base by session type.
+        // Base by macro profile.
         let base: Double
-        switch sessionType {
-        case .strength, .hypertrophy:
+        switch macroProfile {
+        case .resistance:
             base = 1.8
-        case .mixed:
+        case .mixedConditioning:
             base = 1.7
         case .endurance:
             base = 1.6
@@ -343,16 +383,16 @@ private extension MacrosPlanner {
     }
     
     /// Fat recommendations in g/kg.
-    func fatPerKgRecommendation(
+    private func fatPerKgRecommendation(
         weightKg: Double,
         goal: TrainingGoal,
-        sessionType: SessionType
+        macroProfile: SessionMacroProfile
     ) -> Double {
         // Base fat intake.
         var base = 0.8
         
-        // Slightly lower fat for endurance or high-carb bias.
-        if sessionType == .endurance || sessionType == .mixed {
+        // Slightly lower fat for high-carb biased profiles.
+        if macroProfile == .mixedConditioning || macroProfile == .endurance {
             base = 0.7
         }
         

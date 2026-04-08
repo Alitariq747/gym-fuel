@@ -59,6 +59,7 @@ struct TodayView: View {
         var intensity: TrainingIntensity?
         var sessionType: SessionType?
         var sessionStart: Date
+        var sessionDurationMinutes: Int?
     }
     
     private func makeSessionDraft(from log: DayLog) -> DaySessionDraft {
@@ -68,7 +69,8 @@ struct TodayView: View {
              sessionType: log.sessionType,
              sessionStart: log.sessionStart
                  ?? viewModel.defaultSessionStart(for: log.date)
-                 ?? Date()
+                 ?? Date(),
+             sessionDurationMinutes: log.sessionDurationMinutes
          )
     }
     
@@ -77,7 +79,8 @@ struct TodayView: View {
         isTrainingDay: true,
         intensity: .normal,
         sessionType: nil,
-        sessionStart: Date()
+        sessionStart: Date(),
+        sessionDurationMinutes: 60
     )
         
     private func formattedDate(_ date: Date) -> String {
@@ -110,8 +113,6 @@ struct TodayView: View {
     var body: some View {
       
         ZStack {
-            // HStack for top row
-            AppBackground()
             
             ScrollView {
                 VStack(spacing: 10) {
@@ -140,7 +141,7 @@ struct TodayView: View {
                             } label: {
                                 Image(systemName: "chart.bar")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(.gray)
                                 
                             }
                             .buttonStyle(.plain)
@@ -150,7 +151,7 @@ struct TodayView: View {
                             } label: {
                                 Image(systemName: "gearshape.fill")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(.gray)
                             }
                             .buttonStyle(.plain)
                         }
@@ -158,7 +159,7 @@ struct TodayView: View {
                         .padding(.vertical, 6)
                         .background(
                             Capsule()
-                                .fill(Color(.systemBackground))
+                                .fill(Color(.systemGray6))
                         )
                     }
                     .frame(maxWidth: .infinity)
@@ -183,6 +184,8 @@ struct TodayView: View {
                         SessionSummaryCard(dayLog: log)
                     }
                     .buttonStyle(.plain)
+
+                    SessionStateCard(content: viewModel.currentSessionContent)
                     
                     MacroCardsSection(
                         targets: log.macroTargets,
@@ -221,8 +224,7 @@ struct TodayView: View {
                                 )
                         }
                         .disabled(isFutureSelectedDate)
-                        .opacity(isFutureSelectedDate ? 0.35 : 1)
-                    }
+                     }
                     .onTapGesture {
                         if isFutureSelectedDate {
                             showFutureMealToast = true
@@ -348,7 +350,11 @@ struct TodayView: View {
         }
 
         .onAppear {
+            viewModel.startPhaseClock()
             viewModel.loadDay(date: selectedDate)
+        }
+        .onDisappear {
+            viewModel.stopPhaseClock()
         }
         .onChange(of: selectedDate) { _, newDate in
             viewModel.loadDay(date: newDate)
@@ -383,6 +389,7 @@ struct TodayView: View {
             viewModel.setSessionType(sessionDraft.sessionType)
             viewModel.setSessionStart(sessionDraft.sessionStart)
             viewModel.setTrainingIntensity(sessionDraft.intensity)
+            viewModel.setSessionDurationMinutes(sessionDraft.sessionDurationMinutes)
         }
         
         await viewModel.saveCurrentDayLog()

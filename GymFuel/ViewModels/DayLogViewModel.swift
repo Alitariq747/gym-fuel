@@ -17,12 +17,26 @@ final class DayLogViewModel: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var isSavingMeal: Bool = false
+    @Published private(set) var currentDayMode: DayMode = .rest
+    @Published private(set) var currentTrainingSubstate: TrainingSubstate?
+    @Published private(set) var currentSessionTone: SessionTone = .calm
+    @Published private(set) var currentSessionContent = SessionStateContent(
+        title: "Recovery Day",
+        message: "Keep intake steady and focus on consistency.",
+        nextRecommendation: "Hit your daily protein target and hydrate.",
+        tone: .calm
+    )
 
     private var loadTask: Task<Void, Never>?
     private var activeLoadId: UUID?
+    private var phaseClockTask: Task<Void, Never>?
 
     // Dependencies
     private let planner: MacrosPlanner
+    private let phaseResolver = TrainingPhaseResolver()
+    private let substateResolver = TrainingSubstateResolver()
+    private let toneResolver = SessionToneResolver()
+    private let contentProvider = SessionStateContentProvider()
     private var profile: UserProfile
     private let dayLogService: DayLogService
     private let mealService: MealService
@@ -156,6 +170,7 @@ final class DayLogViewModel: ObservableObject {
                     let macros = try planner.planDailyMacros(profile: profile, dayLog: existing)
                     existing.macroTargets = macros
                     self.dayLog = existing
+                    recomputeDayMode()
                     
                     // 1b)
                     do {
@@ -217,6 +232,7 @@ final class DayLogViewModel: ObservableObject {
                 let macros = try planner.planDailyMacros(profile: profile, dayLog: newDayLog)
                 newDayLog.macroTargets = macros
                 self.dayLog = newDayLog
+                recomputeDayMode()
                 
                 
                 do {
@@ -268,6 +284,7 @@ final class DayLogViewModel: ObservableObject {
             current.sessionType = nil
             current.sessionStart = nil
             current.trainingIntensity = nil
+            current.sessionDurationMinutes = nil
         } else if current.sessionStart == nil {
             current.sessionStart = defaultSessionStart(for: current.date)
         }
@@ -289,6 +306,12 @@ final class DayLogViewModel: ObservableObject {
     func setSessionStart(_ sessionStart: Date) {
         guard var current = dayLog else { return }
         current.sessionStart = sessionStart
+        recalculateTargets(for: &current)
+    }
+
+    func setSessionDurationMinutes(_ sessionDurationMinutes: Int?) {
+        guard var current = dayLog else { return }
+        current.sessionDurationMinutes = sessionDurationMinutes
         recalculateTargets(for: &current)
     }
     
@@ -472,23 +495,23 @@ final class DayLogViewModel: ObservableObject {
          }
      }
     
-    /// Total macros from meals in the pre-workout window.
-      var preWorkoutMacros: Macros {
+    /// Total consumed macros from meals in the pre-workout window.
+      var preWorkoutConsumedMacros: Macros {
           macros(for: preWorkoutMeals)
       }
       
-      /// Total macros from meals in the post-workout window.
-      var postWorkoutMacros: Macros {
+      /// Total consumed macros from meals in the post-workout window.
+      var postWorkoutConsumedMacros: Macros {
           macros(for: postWorkoutMeals)
       }
       
-      /// Total macros from meals that are neither pre- nor post-workout on a training day.
-      var otherTrainingDayMacros: Macros {
+      /// Total consumed macros from support meals on a training day.
+      var supportConsumedMacros: Macros {
           macros(for: otherTrainingDayMeals)
       }
       
-      /// Total macros from meals on a rest day (when there is no training).
-      var restDayMacros: Macros {
+      /// Total consumed macros from meals on a rest day.
+      var restDayConsumedMacros: Macros {
           macros(for: restDayMeals)
       }
     
@@ -496,6 +519,66 @@ final class DayLogViewModel: ObservableObject {
         guard var current = dayLog else { return }
         current.consumedMacros = macros(for: meals)
         self.dayLog = current
+        recomputeDayMode()
+    }
+
+    func recomputeDayMode(now: Date = Date()) {
+        guard let dayLog else {
+            currentDayMode = .rest
+            currentTrainingSubstate = nil
+            currentSessionTone = .calm
+            currentSessionContent = contentProvider.resolveContent(
+                dayMode: .rest,
+                substate: nil,
+                tone: .calm
+            )
+            return
+        }
+
+        let context = SessionStateContext(
+            dayLog: dayLog,
+            now: now,
+            consumedMacros: consumedMacros,
+            preWorkoutConsumedMacros: preWorkoutConsumedMacros,
+            postWorkoutConsumedMacros: postWorkoutConsumedMacros,
+            supportConsumedMacros: supportConsumedMacros
+        )
+
+        let dayMode = phaseResolver.resolveDayMode(context: context)
+        currentDayMode = dayMode
+
+        if case .training(let phase) = dayMode {
+            currentTrainingSubstate = substateResolver.resolveSubstate(for: phase, context: context)
+        } else {
+            currentTrainingSubstate = nil
+        }
+
+        currentSessionTone = toneResolver.resolveTone(context: context)
+        currentSessionContent = contentProvider.resolveContent(
+            dayMode: dayMode,
+            substate: currentTrainingSubstate,
+            tone: currentSessionTone
+        )
+    }
+
+    func startPhaseClock() {
+        stopPhaseClock()
+        recomputeDayMode()
+
+        phaseClockTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(60))
+                if Task.isCancelled { break }
+                await MainActor.run {
+                    self?.recomputeDayMode()
+                }
+            }
+        }
+    }
+
+    func stopPhaseClock() {
+        phaseClockTask?.cancel()
+        phaseClockTask = nil
     }
 
 }

@@ -16,8 +16,19 @@
 		30EAF3DB2F4487E300FBFB87 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 30EAF3DA2F4487E300FBFB87 /* FirebaseFunctions */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		30E717772F853A8400C68864 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 30BA6F8F2EE44A5100DD124D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 30BA6F962EE44A5100DD124D;
+			remoteInfo = GymFuel;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		30BA6F972EE44A5100DD124D /* GymFuel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GymFuel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		30E717732F853A8400C68864 /* GymFuelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymFuelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -39,6 +50,11 @@
 			path = GymFuel;
 			sourceTree = "<group>";
 		};
+		30E717742F853A8400C68864 /* GymFuelTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = GymFuelTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +72,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		30E717702F853A8400C68864 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -63,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				30BA6F992EE44A5100DD124D /* GymFuel */,
+				30E717742F853A8400C68864 /* GymFuelTests */,
 				30EAF3D92F4487E300FBFB87 /* Frameworks */,
 				30BA6F982EE44A5100DD124D /* Products */,
 			);
@@ -72,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				30BA6F972EE44A5100DD124D /* GymFuel.app */,
+				30E717732F853A8400C68864 /* GymFuelTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,6 +140,29 @@
 			productReference = 30BA6F972EE44A5100DD124D /* GymFuel.app */;
 			productType = "com.apple.product-type.application";
 		};
+		30E717722F853A8400C68864 /* GymFuelTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 30E717792F853A8400C68864 /* Build configuration list for PBXNativeTarget "GymFuelTests" */;
+			buildPhases = (
+				30E7176F2F853A8400C68864 /* Sources */,
+				30E717702F853A8400C68864 /* Frameworks */,
+				30E717712F853A8400C68864 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				30E717782F853A8400C68864 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				30E717742F853A8400C68864 /* GymFuelTests */,
+			);
+			name = GymFuelTests;
+			packageProductDependencies = (
+			);
+			productName = GymFuelTests;
+			productReference = 30E717732F853A8400C68864 /* GymFuelTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -122,11 +170,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					30BA6F962EE44A5100DD124D = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					30E717722F853A8400C68864 = {
+						CreatedOnToolsVersion = 26.4;
+						TestTargetID = 30BA6F962EE44A5100DD124D;
 					};
 				};
 			};
@@ -149,12 +201,20 @@
 			projectRoot = "";
 			targets = (
 				30BA6F962EE44A5100DD124D /* GymFuel */,
+				30E717722F853A8400C68864 /* GymFuelTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		30BA6F952EE44A5100DD124D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		30E717712F853A8400C68864 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -171,7 +231,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		30E7176F2F853A8400C68864 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		30E717782F853A8400C68864 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 30BA6F962EE44A5100DD124D /* GymFuel */;
+			targetProxy = 30E717772F853A8400C68864 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		30BA6FA02EE44A5200DD124D /* Debug */ = {
@@ -365,6 +440,50 @@
 			};
 			name = Release;
 		};
+		30E7177A2F853A8400C68864 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8Q2JY29B23;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmad.GymFuelTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GymFuel.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GymFuel";
+			};
+			name = Debug;
+		};
+		30E7177B2F853A8400C68864 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8Q2JY29B23;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmad.GymFuelTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GymFuel.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GymFuel";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -382,6 +501,15 @@
 			buildConfigurations = (
 				30BA6FA32EE44A5200DD124D /* Debug */,
 				30BA6FA42EE44A5200DD124D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		30E717792F853A8400C68864 /* Build configuration list for PBXNativeTarget "GymFuelTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				30E7177A2F853A8400C68864 /* Debug */,
+				30E7177B2F853A8400C68864 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

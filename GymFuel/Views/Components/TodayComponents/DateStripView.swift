@@ -90,7 +90,7 @@ struct DateStripView: View {
         let dayNumberText = dayFormatter.string(from: date)
 
         // Colors
-        let selectedBackground = Color(.systemBackground)
+        let selectedBackground = Color(.secondarySystemBackground)
         let selectedForeground = Color(.systemGray)
         let todayForeground = Color(.systemGray)
         let normalForeground = Color(.secondaryLabel)
@@ -125,7 +125,6 @@ struct DateStripView: View {
 
 #Preview {
     ZStack {
-        AppBackground()
         DateStripView(selectedDate: .constant(Date()), pastDays: 15, futureDays: 15)
     }
    

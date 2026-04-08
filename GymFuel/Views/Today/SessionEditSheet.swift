@@ -14,6 +14,7 @@ struct SessionEditSheet: View {
     let onCancel: () -> Void
 
     @State private var showTimePicker = false
+    private let durationOptions = [30, 45, 60, 75, 90, 120]
 
     private let timePickerAnimation = Animation.spring(
         response: 0.28,
@@ -115,6 +116,24 @@ struct SessionEditSheet: View {
                                         )
                                     }
                                     .buttonStyle(.plain)
+
+                                    // Session duration
+                                    Menu {
+                                        Button("Not set") { draft.sessionDurationMinutes = nil }
+                                        ForEach(durationOptions, id: \.self) { minutes in
+                                            Button("\(minutes) min") {
+                                                draft.sessionDurationMinutes = minutes
+                                            }
+                                        }
+                                    } label: {
+                                        headerFieldRow(
+                                            systemImage: "timer",
+                                            title: "Duration",
+                                            value: durationLabel
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+
                                     // Time picker toggle
                                     Button {
                                         withAnimation(timePickerAnimation) {
@@ -217,8 +236,12 @@ struct SessionEditSheet: View {
         if !isTraining {
             draft.intensity = nil
             draft.sessionType = nil
+            draft.sessionDurationMinutes = nil
         } else if draft.intensity == nil {
             draft.intensity = .normal
+            if draft.sessionDurationMinutes == nil {
+                draft.sessionDurationMinutes = 60
+            }
         }
     }
 
@@ -281,6 +304,14 @@ struct SessionEditSheet: View {
         formatter.dateFormat = "h:mm a"
         return formatter.string(from: draft.sessionStart)
     }
+
+    private var durationLabel: String {
+        if let minutes = draft.sessionDurationMinutes {
+            return "\(minutes) min"
+        } else {
+            return "Choose duration"
+        }
+    }
 }
 
 #Preview {
@@ -290,7 +321,8 @@ struct SessionEditSheet: View {
                 isTrainingDay: true,
                 intensity: .normal,
                 sessionType: nil,
-                sessionStart: Date()
+                sessionStart: Date(),
+                sessionDurationMinutes: 60
             )
         ),
         onSave: { print("Save") },

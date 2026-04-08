@@ -108,6 +108,12 @@ final class FirebaseDayLogService: DayLogService {
         } else {
             data["sessionStart"] = FieldValue.delete()
         }
+
+        if let sessionDurationMinutes = dayLog.sessionDurationMinutes {
+            data["sessionDurationMinutes"] = sessionDurationMinutes
+        } else {
+            data["sessionDurationMinutes"] = FieldValue.delete()
+        }
         
         if let trainingIntensity = dayLog.trainingIntensity {
             data["trainingIntensity"] = trainingIntensity.rawValue
@@ -182,6 +188,7 @@ final class FirebaseDayLogService: DayLogService {
             let storedDate = (data["date"] as? Timestamp)?.dateValue() ?? defaultDate
             let isTrainingDay = data["isTrainingDay"] as? Bool ?? true
             let sessionStart = (data["sessionStart"] as? Timestamp)?.dateValue()
+            let sessionDurationMinutes = data["sessionDurationMinutes"] as? Int
 
         
             let intensityRaw = data["trainingIntensity"] as? String
@@ -216,6 +223,7 @@ final class FirebaseDayLogService: DayLogService {
                 date: storedDate,
                 isTrainingDay: isTrainingDay,
                 sessionStart: sessionStart,
+                sessionDurationMinutes: sessionDurationMinutes,
                 trainingIntensity: trainingIntensity,
                 sessionType: sessionType,
                 macroTargets: macroTargets,

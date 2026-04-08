@@ -29,17 +29,29 @@ enum TrainingIntensity: String, CaseIterable, Codable {
 }
 
 enum SessionType: String, CaseIterable, Codable {
-    case strength
-    case hypertrophy
-    case mixed
-    case endurance
+    case push
+    case pull
+    case legs
+    case upper
+    case lower
+    case fullBody
+    case conditioning
+    case cardio
+    case mobility
+    case sports
     
     var displayName: String {
           switch self {
-          case .strength: return "Strength"
-          case .hypertrophy: return "Hypertrophy"
-          case .mixed: return "CrossFit"
-          case .endurance: return "Endurance"
+          case .push: return "Push Day"
+          case .pull: return "Pull Day"
+          case .legs: return "Leg Day"
+          case .upper: return "Upper Body"
+          case .lower: return "Lower Body"
+          case .fullBody: return "Full Body"
+          case .conditioning: return "Conditioning"
+          case .cardio: return "Cardio"
+          case .mobility: return "Mobility"
+          case .sports: return "Sports"
           }
       }
 }

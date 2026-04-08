@@ -71,7 +71,7 @@ struct DayFuelStatsRow: View {
                 date: Date(),
                 isTrainingDay: true,
                 intensity: .recovery,
-                sessionType: .hypertrophy,
+                sessionType: .push,
                 hasLog: true
             )
         )
