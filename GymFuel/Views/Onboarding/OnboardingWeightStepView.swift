@@ -63,7 +63,6 @@ struct OnboardingWeightStepView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color(.systemBackground).ignoresSafeArea())
         .onAppear { initializeFromBindingIfNeeded() }
         .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
         .onChange(of: selectedKg) { _, newValue in

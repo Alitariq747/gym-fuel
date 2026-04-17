@@ -34,8 +34,10 @@ final class FirebaseAuthManager: ObservableObject {
     }
     
     deinit {
-        if let handle = authListenerHandle {
-            Auth.auth().removeStateDidChangeListener(handle)
+        MainActor.assumeIsolated {
+            if let handle = authListenerHandle {
+                Auth.auth().removeStateDidChangeListener(handle)
+            }
         }
     }
     

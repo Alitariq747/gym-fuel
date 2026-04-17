@@ -15,7 +15,6 @@ struct SavedMealsSheet: View {
 
     var body: some View {
         ZStack {
-            AppBackground()
             ScrollView {
                 VStack(spacing: 12) {
                 HStack {
@@ -122,7 +121,7 @@ struct SavedMealsSheet: View {
                                 }
                                 .padding(.vertical, 12)
                                 .padding(.horizontal, 14)
-                                .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20))
+                                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20))
                             }
                             .buttonStyle(.plain)
                         }

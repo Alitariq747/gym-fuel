@@ -22,7 +22,6 @@ struct AddSavedMealSheet: View {
 
     var body: some View {
         ZStack {
-            AppBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     HStack {

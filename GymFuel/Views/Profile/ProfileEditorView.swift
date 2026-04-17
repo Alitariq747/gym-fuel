@@ -58,25 +58,6 @@ struct ProfileEditorView: View {
         return "\(Int(kg.rounded())) kg"
     }
     
-    // Training Goal
-    @State private var isEditGoalPresented = false
-    private var trainingGoalPrimaryText: String {
-        draft.trainingGoal?.displayName ?? "Set"
-    }
-    
-    // Training Style
-    @State private var isEditTrainingStylePresented = false
-
-    // Training time
-    @State private var isEditTrainingTimePresented = false
-    
-    private var trainingTimePrimaryText: String {
-        draft.trainingTimeOfDay?.displayName ?? "Set"
-    }
-
-    // Training Experience
-    @State private var isEditTrainingExperiencePresented = false
-
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             profileHeader
@@ -84,11 +65,6 @@ struct ProfileEditorView: View {
             VStack(spacing: 12) {
                 sectionHeader(title: "Body Metrics", systemImage: "figure.stand")
                 bodyMetricsCard
-            }
-
-            VStack(spacing: 12) {
-                sectionHeader(title: "Training", systemImage: "dumbbell.fill")
-                trainingCard
             }
         }
         .padding()
@@ -110,31 +86,11 @@ struct ProfileEditorView: View {
                 EditWeightSheet(weightKg: $draft.weightKg)
             }
         }
-        .sheet(isPresented: $isEditGoalPresented) {
-            NavigationStack {
-                EditTrainingGoalSheet(trainingGoal: $draft.trainingGoal)
-            }
-        }
-        .sheet(isPresented: $isEditTrainingStylePresented) {
-            NavigationStack {
-                EditTrainingStyleSheet(trainingStyle: $draft.trainingStyle)
-            }
-        }
-        .sheet(isPresented: $isEditTrainingTimePresented) {
-            NavigationStack {
-                EditTrainingTimeSheet(trainingTime: $draft.trainingTimeOfDay)
-            }
-        }
-        .sheet(isPresented: $isEditTrainingExperiencePresented) {
-            NavigationStack {
-                EditTrainingExperienceSheet(trainingExperience: $draft.trainingExperience)
-            }
-        }
     }
 
     private var profileHeader: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 14) {
                 ZStack {
                     Circle()
                         .fill(
@@ -153,9 +109,9 @@ struct ProfileEditorView: View {
                         .foregroundStyle(.white)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     TextField("Your name", text: $draft.name)
-                        .font(.title3.weight(.semibold))
+                        .font(.title2.weight(.semibold))
                         .textInputAutocapitalization(.words)
                         .disableAutocorrection(true)
                     Text(email ?? "—")
@@ -169,7 +125,7 @@ struct ProfileEditorView: View {
                     .foregroundStyle(Color.primary.opacity(0.3))
             }
         }
-        .padding(14)
+        .padding(18)
         .background(cardBackground)
     }
 
@@ -225,48 +181,6 @@ struct ProfileEditorView: View {
         }
     }
 
-    private var trainingCard: some View {
-        VStack(spacing: 10) {
-            rowButton(
-                title: "Training Goal",
-                systemImage: "target",
-                value: trainingGoalPrimaryText.truncated(to: 18, addEllipsis: true),
-                isPlaceholder: trainingGoalPrimaryText == "Set"
-            ) {
-                isEditGoalPresented = true
-            }
-            Divider()
-            rowButton(
-                title: "Training Style",
-                systemImage: "figure.run",
-                value: draft.trainingStyle?.displayName.truncated(to: 18, addEllipsis: true) ?? "Set",
-                isPlaceholder: draft.trainingStyle == nil
-            ) {
-                isEditTrainingStylePresented = true
-            }
-            Divider()
-            rowButton(
-                title: "Training Time",
-                systemImage: "clock",
-                value: trainingTimePrimaryText,
-                isPlaceholder: trainingTimePrimaryText == "Set"
-            ) {
-                isEditTrainingTimePresented = true
-            }
-            Divider()
-            rowButton(
-                title: "Training Experience",
-                systemImage: "rosette",
-                value: draft.trainingExperience?.displayName.truncated(to: 18, addEllipsis: true) ?? "Set",
-                isPlaceholder: draft.trainingExperience == nil
-            ) {
-                isEditTrainingExperiencePresented = true
-            }
-        }
-        .padding(14)
-        .background(cardBackground)
-    }
-
     private var initials: String {
         let trimmed = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return "GF" }
@@ -292,12 +206,17 @@ struct ProfileEditorView: View {
 
     private func rowLabel(_ title: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.fuelBlue)
-                .frame(width: 18)
+            ZStack {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.fuelBlue.opacity(colorScheme == .dark ? 0.2 : 0.12))
+                    .frame(width: 30, height: 30)
+
+                Image(systemName: systemImage)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.fuelBlue)
+            }
             Text(title)
-                .font(.callout)
+                .font(.callout.weight(.medium))
                 .foregroundStyle(.secondary)
         }
     }
@@ -319,12 +238,14 @@ struct ProfileEditorView: View {
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.tertiary)
-                    .padding(.leading, 6)
+                    .padding(.leading, 8)
             }
+            .padding(.vertical, 2)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
+
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -343,10 +264,8 @@ struct ProfileEditorView: View {
 }
 
 #Preview {
-    ZStack {
-        AppBackground()
         ProfileEditorPreviewWrapper()
-    }
+    
 }
 
 private struct ProfileEditorPreviewWrapper: View {

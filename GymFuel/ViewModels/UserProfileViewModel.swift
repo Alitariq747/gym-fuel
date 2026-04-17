@@ -37,13 +37,13 @@ final class UserProfileViewModel: ObservableObject {
         isLoading = false
     }
     
-    func completeOnboarding(for uid: String, name: String, gender: Gender, heightCm: Double, age: Int, weightKg: Double, trainingGoal: TrainingGoal, trainingDaysPerWeek: Int, trainingExperience: TrainingExperience, trainingStyle: TrainingStyle, trainingTimeOfDay: TrainingTimeOfDay, nonTrainingActivityLevel: NonTrainingActivityLevel) async {
+    func completeOnboarding(for uid: String, name: String, gender: Gender, heightCm: Double, age: Int, weightKg: Double, goalType: GoalType, nonTrainingActivityLevel: NonTrainingActivityLevel) async {
         
         isLoading = true
         errorMessage = nil
         
         do {
-            let updatedProfile = try await service.updateProfile(for: uid, name: name, heightCm: heightCm, age: age, weightKg: weightKg, trainingGoal: trainingGoal, trainingDaysPerWeek: trainingDaysPerWeek, trainingExperience: trainingExperience, trainingStyle: trainingStyle, trainingTimeOfDay: trainingTimeOfDay, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: true, gender: gender)
+            let updatedProfile = try await service.updateProfile(for: uid, name: name, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: true, gender: gender)
             self.profile = updatedProfile
         } catch {
             self.errorMessage = error.localizedDescription
@@ -66,7 +66,7 @@ final class UserProfileViewModel: ObservableObject {
             guard let currentProfile = self.profile else { return }
             let onboarding = currentProfile.isOnboardingComplete
             
-            let updatedProfile = try await service.updateProfile(for: uid, name: draft.name, heightCm: draft.heightCm, age: draft.age, weightKg: draft.weightKg, trainingGoal: draft.trainingGoal, trainingDaysPerWeek: draft.trainingDaysPerWeek, trainingExperience: draft.trainingExperience, trainingStyle: draft.trainingStyle, trainingTimeOfDay: draft.trainingTimeOfDay, nonTrainingActivityLevel: draft.nonTrainingActivityLevel, isOnboardingComplete: onboarding, gender: draft.gender)
+            let updatedProfile = try await service.updateProfile(for: uid, name: draft.name, heightCm: draft.heightCm, age: draft.age, weightKg: draft.weightKg, goalType: draft.goalType, nonTrainingActivityLevel: draft.nonTrainingActivityLevel, isOnboardingComplete: onboarding, gender: draft.gender)
             
             self.profile = updatedProfile
         } catch {

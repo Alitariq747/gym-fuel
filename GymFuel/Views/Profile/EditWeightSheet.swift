@@ -48,7 +48,6 @@ struct EditWeightSheet: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color(.systemBackground).ignoresSafeArea())
         .navigationTitle("Weight")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

@@ -8,7 +8,7 @@
 import FirebaseFirestore
 import Foundation
 
-final class FirebaseSavedMealService: SavedMealService {
+final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
     private let db = Firestore.firestore()
 
     private func savedMealsCollection(for userId: String) -> CollectionReference {

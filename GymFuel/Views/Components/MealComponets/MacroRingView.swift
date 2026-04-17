@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MacroRingView: View {
 
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let unit: String
     let target: Double
@@ -32,62 +33,62 @@ struct MacroRingView: View {
         isOverTarget ? .red : color
     }
 
+    private var macroSymbol: String {
+        let key = title.lowercased()
+        if key.contains("protein") { return "fish.fill" }
+        if key.contains("carb") { return "bolt.fill" }
+        if key.contains("fat") { return "drop.fill" }
+        if key.contains("cal") { return "flame.fill" }
+        return image
+    }
+
+    private var targetLineText: String {
+        guard target > 0 else { return "/ --" }
+        return "/ \(Int(target)) \(unit)"
+    }
+
     var body: some View {
         VStack(spacing: 8) {
-
-//            // Top row: icon + labels
-//            HStack(alignment: .firstTextBaseline, spacing: 8) {
-//                Image(systemName: image)
-//                    .font(.system(size: 16, weight: .semibold))
-//                    .foregroundStyle(tint)
-//                    .animation(.easeInOut(duration: 0.20), value: isOverTarget)
-//
-//                VStack(alignment: .leading, spacing: 2) {
-//                    Text(title)
-//                        .font(.caption)
-//                        .foregroundStyle(.secondary)
-//
-//                    Text("\(Int(consumed)) \(unit)")
-//                        .font(.subheadline.weight(.semibold))
-//                }
-//
-//                Spacer()
-//
-//                if target > 0 {
-//                    Text("of \(Int(target))")
-//                        .font(.caption2)
-//                        .foregroundStyle(.secondary)
-//                }
-//            }
             Text(title.capitalized)
+                .font(.caption2)
                 .foregroundStyle(.secondary)
 
-            // Horizontal progress bar
-            ProgressView(value: progress)
-                .progressViewStyle(.linear)
-                .tint(tint)
-                .frame(height: 6)
-                .clipShape(Capsule())
-                .animation(
-                    .spring(response: 0.45, dampingFraction: 0.9),
-                    value: progress
-                )
-                .animation(
-                    .easeInOut(duration: 0.20),
-                    value: isOverTarget
-                )
-            
-            HStack(spacing: 0) {
-                Text("\(Int(consumed))")
+            ZStack {
+                Circle()
+                    .stroke(colorScheme == .dark ? Color(.secondarySystemBackground) : tint.opacity(0.1), lineWidth: 7)
+
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(
+                        tint,
+                        style: StrokeStyle(lineWidth: 7, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .animation(
+                        .spring(response: 0.45, dampingFraction: 0.9),
+                        value: progress
+                    )
+                    .animation(
+                        .easeInOut(duration: 0.20),
+                        value: isOverTarget
+                    )
+
+                Image(systemName: macroSymbol)
                     .font(.system(size: 16, weight: .semibold))
-                Text(" / \(Int(target)) \(unit)")
+                    .foregroundStyle(tint)
+            }
+            .frame(width: 58, height: 58)
+
+            VStack(spacing: 1) {
+                Text("\(Int(consumed))")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.primary)
+                Text(targetLineText)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 10)
-       
-        .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 2)
+        .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title) \(Int(consumed)) of \(Int(target)) \(unit)")
     }
@@ -95,9 +96,5 @@ struct MacroRingView: View {
 
 
 #Preview {
-    
-    ZStack {
-        AppBackground()
-        MacroRingView(title: "Protein", unit: "g", target: 100, consumed: 50, image: "bolt.fill", color: .green)
-    }
+    MacroRingView(title: "Calries", unit: "kcals", target: 100, consumed: 50, image: "bolt.fill", color: .liftEatsCoral)
 }

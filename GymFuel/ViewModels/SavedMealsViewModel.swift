@@ -83,15 +83,6 @@ final class SavedMealsViewModel: ObservableObject {
         }
     }
 
-    func isSavedMeal(_ meal: Meal) -> Bool {
-        let fingerprintValue = fingerprint(
-            name: meal.aiName ?? "",
-            description: meal.description,
-            macros: meal.macros
-        )
-        return savedMeals.contains { fingerprint(for: $0) == fingerprintValue }
-    }
-
     func isSavedMeal(name: String, description: String?, macros: Macros) -> Bool {
         let fingerprintValue = fingerprint(name: name, description: description ?? "", macros: macros)
         return savedMeals.contains { fingerprint(for: $0) == fingerprintValue }
@@ -121,4 +112,3 @@ extension SavedMealsViewModel {
         savedMeals = meals
     }
 }
-

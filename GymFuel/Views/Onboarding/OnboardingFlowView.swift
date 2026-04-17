@@ -13,11 +13,7 @@ private struct OnboardingData {
     var age: Int? = nil
     var heightCm: Double? = nil
     var weightKg: Double? = nil
-    var trainingGoal: TrainingGoal? = nil
-    var trainingDaysPerWeek: Int? = nil
-    var trainingExperience: TrainingExperience? = nil
-    var trainingStyle: TrainingStyle? = nil
-    var trainingTimeOfDay: TrainingTimeOfDay? = nil
+    var goalType: GoalType? = nil
     var nonTrainingActivityLevel: NonTrainingActivityLevel? = nil
 }
 
@@ -27,18 +23,13 @@ private enum OnboardingStep: Hashable {
     case age
     case height
     case weight
-    case trainingDays
-    case experience
-    case trainingStyle
-    case trainingTime
     case activityLevel
     case goal
-    case summary
 }
 
 struct OnboardingFlowView: View {
     /// Called when the last step finishes successfully.
-    let onFinished: (String, Gender, Int, Double, Double, TrainingGoal, Int, TrainingExperience, TrainingStyle, TrainingTimeOfDay, NonTrainingActivityLevel) -> Void
+    let onFinished: (String, Gender, Int, Double, Double, GoalType, NonTrainingActivityLevel) -> Void
 
     @State private var data = OnboardingData()
     @State private var step: OnboardingStep = .name
@@ -47,8 +38,7 @@ struct OnboardingFlowView: View {
 
     private let orderedSteps: [OnboardingStep] = [
         .name, .gender, .age, .height, .weight,
-        .trainingDays, .experience, .trainingStyle,
-        .trainingTime, .activityLevel, .goal, .summary
+        .activityLevel, .goal
     ]
 
     private var currentIndex: Int {
@@ -140,30 +130,6 @@ struct OnboardingFlowView: View {
         case .weight:
             OnboardingWeightStepView(
                 weightKg: $data.weightKg,
-                onNext: { go(to: .trainingDays, direction: .forward) }
-            )
-
-        case .trainingDays:
-            OnboardingTrainingDaysStepView(
-                trainingDaysPerWeek: $data.trainingDaysPerWeek,
-                onNext: { go(to: .experience, direction: .forward) }
-            )
-
-        case .experience:
-            OnboardingTrainingExperienceStepView(
-                selectedExperience: $data.trainingExperience,
-                onNext: { go(to: .trainingStyle, direction: .forward) }
-            )
-
-        case .trainingStyle:
-            OnboardingTrainingStyleStepView(
-                selectedStyle: $data.trainingStyle,
-                onNext: { go(to: .trainingTime, direction: .forward) }
-            )
-
-        case .trainingTime:
-            OnboardingTrainingTimeStepView(
-                selectedTime: $data.trainingTimeOfDay,
                 onNext: { go(to: .activityLevel, direction: .forward) }
             )
 
@@ -175,20 +141,8 @@ struct OnboardingFlowView: View {
 
         case .goal:
             OnboardingTrainingGoalStepView(
-                selectedGoal: $data.trainingGoal,
-                onFinish: { go(to: .summary, direction: .forward) }
-            )
-
-        case .summary:
-            OnboardingSummaryStepView(
-                name: data.name,
-                trainingGoal: data.trainingGoal ?? .performance,
-                trainingDaysPerWeek: data.trainingDaysPerWeek ?? 3,
-                trainingExperience: data.trainingExperience ?? .beginner,
-                trainingStyle: data.trainingStyle ?? .mixed,
-                trainingTimeOfDay: data.trainingTimeOfDay ?? .varies,
-                activityLevel: data.nonTrainingActivityLevel ?? .somewhatActive,
-                onStart: finishOnboarding
+                selectedGoal: $data.goalType,
+                onFinish: finishOnboarding
             )
         }
     }
@@ -198,17 +152,13 @@ struct OnboardingFlowView: View {
             let age = data.age,
             let height = data.heightCm,
             let weight = data.weightKg,
-            let goal = data.trainingGoal,
-            let days = data.trainingDaysPerWeek,
-            let experience = data.trainingExperience,
-            let style = data.trainingStyle,
-            let trainingTime = data.trainingTimeOfDay,
+            let goalType = data.goalType,
             let activityLevel = data.nonTrainingActivityLevel
         else { return }
 
         onFinished(
             data.name, data.gender, age, height, weight,
-            goal, days, experience, style, trainingTime, activityLevel
+            goalType, activityLevel
         )
     }
 
@@ -250,7 +200,7 @@ struct OnboardingFlowView: View {
 }
 
 #Preview {
-    OnboardingFlowView { name, gender, age, height, weight, trainingGoal, trainingDays, trainingExperience, trainingStyle, trainingTime, activityLevel in
-        print("Finished onboarding with:", name, gender, age, height, weight, trainingGoal, trainingDays, trainingExperience, trainingStyle, trainingTime, activityLevel)
+    OnboardingFlowView { name, gender, age, height, weight, goalType, activityLevel in
+        print("Finished onboarding with:", name, gender, age, height, weight, goalType, activityLevel)
     }
 }

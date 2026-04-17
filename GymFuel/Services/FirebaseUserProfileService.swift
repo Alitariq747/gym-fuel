@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-final class FirebaseUserProfileService {
+final class FirebaseUserProfileService: @unchecked Sendable {
     static let shared = FirebaseUserProfileService()
     
     private let db = Firestore.firestore()
@@ -27,25 +27,12 @@ final class FirebaseUserProfileService {
         let heightCm = data["heightCm"] as? Double
         let age = data["age"] as? Int
         let weightKg = data["weightKg"] as? Double
-        
-        let trainingGoalString = data["trainingGoal"] as? String
-        let trainingGoal = trainingGoalString.flatMap { TrainingGoal(rawValue: $0) }
-        
-        let trainingDaysPerWeek = data["trainingDaysPerWeek"] as? Int
-        
-        let trainingExperienceString = data["trainingExperience"] as? String
-        let trainingExperience = trainingExperienceString.flatMap { TrainingExperience(rawValue: $0) }
-        
-        let trainingStyleString = data["trainingStyle"] as? String
-        let trainingStyle = trainingStyleString.flatMap { TrainingStyle(rawValue: $0) }
-        
-        let trainingTimeString = data["trainingTimeOfDay"] as? String
-        let trainingTimeOfDay = trainingTimeString.flatMap { TrainingTimeOfDay(rawValue: $0) }
-        
+        let goalTypeString = data["goalType"] as? String
+        let goalType = goalTypeString.flatMap { GoalType(rawValue: $0) }
         let activityString = data["nonTrainingActivityLevel"] as? String
         let nonTrainingActivityLevel = activityString.flatMap { NonTrainingActivityLevel(rawValue: $0) } 
-        
-        return UserProfile(id: id, name: name, heightCm: heightCm ,age: age, weightKg: weightKg, trainingGoal: trainingGoal, trainingDaysPerWeek: trainingDaysPerWeek, trainingExperience: trainingExperience, trainingStyle: trainingStyle, trainingTimeOfDay: trainingTimeOfDay, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: isOnboardingComplete, gender: gender)
+
+        return UserProfile(id: id, name: name, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: isOnboardingComplete, gender: gender)
     }
     
     func fetchProfile(for uid: String) async throws -> UserProfile {
@@ -73,7 +60,7 @@ final class FirebaseUserProfileService {
             return mapDocument(id: snapshot.documentID, data: data)
         } else {
             // create a default profile
-            let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil , age: nil, weightKg: nil, trainingGoal: nil, trainingDaysPerWeek: nil , trainingExperience: nil, trainingStyle: nil, trainingTimeOfDay: nil, nonTrainingActivityLevel: nil, isOnboardingComplete: false, gender: .preferNotToSay)
+            let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil, age: nil, weightKg: nil, goalType: nil, nonTrainingActivityLevel: nil, isOnboardingComplete: false, gender: .preferNotToSay)
             
             let data: [String: Any] = [
                 "name": "",
@@ -99,7 +86,7 @@ final class FirebaseUserProfileService {
           
        }
     
-    func updateProfile(for uid: String, name: String, heightCm: Double? , age: Int?, weightKg: Double?, trainingGoal: TrainingGoal?, trainingDaysPerWeek: Int?, trainingExperience: TrainingExperience?, trainingStyle: TrainingStyle?, trainingTimeOfDay: TrainingTimeOfDay?, nonTrainingActivityLevel: NonTrainingActivityLevel?, isOnboardingComplete: Bool, gender: Gender) async throws -> UserProfile {
+    func updateProfile(for uid: String, name: String, heightCm: Double?, age: Int?, weightKg: Double?, goalType: GoalType?, nonTrainingActivityLevel: NonTrainingActivityLevel?, isOnboardingComplete: Bool, gender: Gender) async throws -> UserProfile {
         let docRef = profileDocument(for: uid)
         
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -123,23 +110,8 @@ final class FirebaseUserProfileService {
             data["weightKg"] = weightKg
         }
         
-        if let trainingGoal {
-                data["trainingGoal"] = trainingGoal.rawValue
-            }
-        if let trainingDaysPerWeek {
-            data["trainingDaysPerWeek"] = trainingDaysPerWeek
-        }
-        
-        if let trainingExperience {
-            data["trainingExperience"] = trainingExperience.rawValue
-            }
-        
-        if let trainingStyle {
-            data["trainingStyle"] = trainingStyle.rawValue
-        }
-        
-        if let trainingTimeOfDay {
-            data["trainingTimeOfDay"] = trainingTimeOfDay.rawValue
+        if let goalType {
+            data["goalType"] = goalType.rawValue
         }
         
         if let nonTrainingActivityLevel {
@@ -155,7 +127,7 @@ final class FirebaseUserProfileService {
                     }
             }
         }
-        return UserProfile(id: uid, name: trimmedName, heightCm: heightCm, age: age , weightKg: weightKg, trainingGoal: trainingGoal, trainingDaysPerWeek: trainingDaysPerWeek, trainingExperience: trainingExperience, trainingStyle: trainingStyle, trainingTimeOfDay: trainingTimeOfDay, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: isOnboardingComplete, gender: gender)
+        return UserProfile(id: uid, name: trimmedName, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: isOnboardingComplete, gender: gender)
     }
     
   

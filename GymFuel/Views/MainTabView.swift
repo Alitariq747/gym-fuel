@@ -9,25 +9,39 @@ import SwiftUI
 
 struct MainTabView: View {
     let profile: UserProfile
-    @StateObject private var dayLogViewModel: DayLogViewModel
-    @State private var selectedDate: Date = Date()
-    
-  
-    
-    init(profile: UserProfile) {
-        self.profile = profile
-        _dayLogViewModel = StateObject(wrappedValue: DayLogViewModel(profile: profile))
-    }
+    @State private var showProfile = false
+    @State private var showSavedMeals = false
     
     var body: some View {
         NavigationStack {
-            TodayView(
-                viewModel: dayLogViewModel,
-                selectedDate: $selectedDate
-            )
+            VStack(alignment: .leading, spacing: 18) {
+                Text("LiftEats is being rebuilt around goal-fit meal feedback.")
+                    .font(.title3.weight(.semibold))
+
+                Text("Auth, onboarding, profile, and saved meals are staying in place while the old Today and Insights flows are being removed.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                Button("Open Profile") {
+                    showProfile = true
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Open Saved Meals") {
+                    showSavedMeals = true
+                }
+                .buttonStyle(.bordered)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("LiftEats")
         }
-        .onChange(of: profile) { _, newProfile in
-            dayLogViewModel.updateProfile(newProfile)
+        .sheet(isPresented: $showProfile) {
+            NavigationStack { ProfileView() }
+        }
+        .sheet(isPresented: $showSavedMeals) {
+            SavedMealsSheet()
         }
     }
 }
@@ -41,5 +55,4 @@ struct MainTabView: View {
         .environmentObject(auth)
         .environmentObject(profileVM)
 }
-
 

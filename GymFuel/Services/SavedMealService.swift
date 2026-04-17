@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol SavedMealService {
+protocol SavedMealService: Sendable {
     func fetchSavedMeals(for userId: String) async throws -> [SavedMeal]
     func saveMeal(_ meal: SavedMeal) async throws
     func updateMeal(_ meal: SavedMeal) async throws

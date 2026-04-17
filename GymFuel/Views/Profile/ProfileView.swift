@@ -30,12 +30,30 @@ struct ProfileView: View {
 
     private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")
     private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")
+
+    private var isBusy: Bool {
+        profileVm.isSaving || isSigningOut || isDeletingAccount
+    }
+
+    private var draftBinding: Binding<UserProfileDraft>? {
+        guard draft != nil else { return nil }
+
+        return Binding(
+            get: {
+                if let draft = self.draft {
+                    return draft
+                }
+
+                // The binding is only exposed when draft exists, so this fallback
+                // should never be reached in practice.
+                return UserProfileDraft(from: self.profileVm.profile ?? dummyProfile)
+            },
+            set: { self.draft = $0 }
+        )
+    }
     
     var body: some View {
-        let isBusy = profileVm.isSaving || isSigningOut || isDeletingAccount
         ZStack {
-             AppBackground()
-
             Group {
                 if isSigningOut || isDeletingAccount {
                     VStack(spacing: 12) {
@@ -45,7 +63,7 @@ struct ProfileView: View {
                             .foregroundStyle(.secondary)
                     }
                 } else if profileVm.profile != nil {
-                    if let draftBinding = Binding($draft) {
+                    if let draftBinding {
                         ScrollView {
                             VStack(spacing: 16) {
                                 HStack {
@@ -72,11 +90,19 @@ struct ProfileView: View {
                                                 }
                                             }
                                         } label: {
-                                            Image(systemName: "checkmark")
-                                                .font(.headline)
-                                                .foregroundStyle(.secondary)
-                                                .padding(10)
-                                                .background(Color(.systemBackground), in: Circle())
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "checkmark")
+                                                    .font(.footnote.weight(.bold))
+                                                Text("Save")
+                                                    .font(.subheadline.weight(.semibold))
+                                            }
+                                            .foregroundStyle(canSave && !isBusy ? .primary : .secondary)
+                                            .padding(.horizontal, 14)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                Color(.systemBackground),
+                                                in: Capsule()
+                                            )
                                         }
                                         .buttonStyle(.plain)
                                         .disabled(!canSave || isBusy)
@@ -106,8 +132,8 @@ struct ProfileView: View {
                                     .disabled(isBusy)
                                     .opacity(isBusy ? 0.6 : 1)
 
-                                legalSection
                                 savedMealsSection
+                                legalSection
                                   
                                 
                                 if let signOutError {
@@ -118,50 +144,8 @@ struct ProfileView: View {
                                         .padding(.horizontal)
                                 }
                                 
-                                Button(role: .destructive) {
-                                    Task { await handleSignOut() }
-                                } label: {
-                                    HStack(spacing: 10) {
-                                        if isSigningOut {
-                                            ProgressView()
-                                                .controlSize(.small)
-                                        }
-
-                                        Text(isSigningOut ? "Signing out…" : "Sign out")
-                                            .font(.headline)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(isBusy)
-                                .padding(.horizontal)
-
-                                Button(role: .destructive) {
-                                    showDeleteAccountConfirmation = true
-                                } label: {
-                                    HStack(spacing: 10) {
-                                        Image(systemName: "trash.fill")
-                                        Text("Delete Account")
-                                            .font(.headline)
-                                    }
-                                    .foregroundStyle(.red)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        Color.red.opacity(colorScheme == .dark ? 0.18 : 0.1),
-                                        in: RoundedRectangle(cornerRadius: 12)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.red.opacity(0.35), lineWidth: 1)
-                                    )
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(isBusy)
-                                .padding(.horizontal)
-                                .padding(.bottom)
+                                accountSection
+                                    .padding(.bottom)
                             }
                         }
                         .scrollDismissesKeyboard(.interactively)
@@ -259,11 +243,7 @@ struct ProfileView: View {
         if draft.age != profile.age { return true }
         if draft.heightCm != profile.heightCm { return true }
         if draft.weightKg != profile.weightKg { return true }
-        if draft.trainingGoal != profile.trainingGoal { return true }
-        if draft.trainingDaysPerWeek != profile.trainingDaysPerWeek { return true }
-        if draft.trainingExperience != profile.trainingExperience { return true }
-        if draft.trainingStyle != profile.trainingStyle { return true }
-        if draft.trainingTimeOfDay != profile.trainingTimeOfDay { return true }
+        if draft.goalType != profile.goalType { return true }
         if draft.nonTrainingActivityLevel != profile.nonTrainingActivityLevel { return true }
         return false
     }
@@ -277,32 +257,132 @@ struct ProfileView: View {
                 linkRow(title: "Terms of Service", systemImage: "checkmark.seal.fill", url: termsURL)
             }
             .padding(14)
-            .background(cardBackground)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color(.secondarySystemBackground).opacity(colorScheme == .dark ? 0.75 : 0.9))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.primary.opacity(0.04), lineWidth: 1)
+            )
         }
         .padding(.horizontal)
+        .opacity(0.92)
     }
 
     private var savedMealsSection: some View {
         VStack(spacing: 12) {
             sectionHeader(title: "Saved Meals", systemImage: "bookmark")
-            VStack(spacing: 10) {
-                Button {
-                    showSavedMealsSheet = true
+            Button {
+                showSavedMealsSheet = true
+            } label: {
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.fuelBlue.opacity(0.12))
+                            .frame(width: 52, height: 52)
+
+                        Image(systemName: "fork.knife")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(Color.fuelBlue)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Manage Saved Meals")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("\(savedMealsViewModel.savedMeals.count)")
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(.primary)
+                    }
+
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .padding(.leading, 4)
+                }
+                .contentShape(Rectangle())
+                .padding(16)
+            }
+            .buttonStyle(.plain)
+            .background(cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.fuelBlue.opacity(0.12), lineWidth: 1)
+            )
+        }
+        .padding(.horizontal)
+    }
+
+    private var accountSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "Account", systemImage: "person.crop.circle")
+            VStack(spacing: 0) {
+                Button(role: .destructive) {
+                    Task { await handleSignOut() }
                 } label: {
-                    HStack {
-                        rowLabel("Manage Saved Meals", systemImage: "bookmark")
+                    HStack(spacing: 12) {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 18)
+
+                        Text(isSigningOut ? "Signing out…" : "Sign out")
+                            .font(.callout.weight(.semibold))
+                            .foregroundStyle(.primary)
+
                         Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                            .padding(.leading, 6)
+
+                        if isSigningOut {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
                     }
                     .contentShape(Rectangle())
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
                 }
                 .buttonStyle(.plain)
+                .disabled(isBusy)
+
+                Divider()
+
+                Button(role: .destructive) {
+                    showDeleteAccountConfirmation = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "trash.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.red)
+                            .frame(width: 18)
+
+                        Text("Delete Account")
+                            .font(.callout.weight(.semibold))
+                            .foregroundStyle(.red)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.red.opacity(0.6))
+                    }
+                    .contentShape(Rectangle())
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                }
+                .buttonStyle(.plain)
+                .disabled(isBusy)
             }
-            .padding(14)
             .background(cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.red.opacity(0.14), lineWidth: 1)
+            )
         }
         .padding(.horizontal)
     }

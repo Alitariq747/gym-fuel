@@ -41,17 +41,13 @@ struct UserProfile: Identifiable, Equatable {
     var heightCm: Double?   
     var age: Int?
     var weightKg: Double?
-    var trainingGoal: TrainingGoal?
-    var trainingDaysPerWeek: Int?    
-    var trainingExperience: TrainingExperience?
-    var trainingStyle: TrainingStyle?
-    var trainingTimeOfDay: TrainingTimeOfDay?
+    var goalType: GoalType?
     var nonTrainingActivityLevel: NonTrainingActivityLevel?
     var isOnboardingComplete: Bool
     var gender: Gender
 }
 
-var dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, trainingGoal: .muscleGain, trainingDaysPerWeek: 0, trainingExperience: .intermediate, trainingStyle: .hypertrophy,  trainingTimeOfDay: .morning, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: .male)
+let dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, goalType: .leanBulk, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: .male)
 
 struct UserProfileDraft: Equatable {
     let id: String
@@ -59,11 +55,7 @@ struct UserProfileDraft: Equatable {
     var heightCm: Double?
     var age: Int?
     var weightKg: Double?
-    var trainingGoal: TrainingGoal?
-    var trainingDaysPerWeek: Int?
-    var trainingExperience: TrainingExperience?
-    var trainingStyle: TrainingStyle?
-    var trainingTimeOfDay: TrainingTimeOfDay?
+    var goalType: GoalType?
     var nonTrainingActivityLevel: NonTrainingActivityLevel?
     var isOnboardingComplete: Bool
     var gender: Gender
@@ -75,21 +67,13 @@ struct UserProfileDraft: Equatable {
         self.heightCm = profile.heightCm
         self.age = profile.age
         self.weightKg = profile.weightKg
-        self.trainingGoal = profile.trainingGoal
-        self.trainingDaysPerWeek = profile.trainingDaysPerWeek
-        self.trainingExperience = profile.trainingExperience
-        self.trainingStyle = profile.trainingStyle
-        self.trainingTimeOfDay = profile.trainingTimeOfDay
+        self.goalType = profile.goalType
         self.nonTrainingActivityLevel = profile.nonTrainingActivityLevel
         self.isOnboardingComplete = profile.isOnboardingComplete
     }
     
     mutating func normalize() {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        if let days = trainingDaysPerWeek {
-            trainingDaysPerWeek = max(0, min(7, days))
-        }
     }
     
     func applying(to profile: UserProfile) -> UserProfile {
@@ -99,11 +83,7 @@ struct UserProfileDraft: Equatable {
             heightCm: heightCm,
             age: age,
             weightKg: weightKg,
-            trainingGoal: trainingGoal,
-            trainingDaysPerWeek: trainingDaysPerWeek,
-            trainingExperience: trainingExperience,
-            trainingStyle: trainingStyle,
-            trainingTimeOfDay: trainingTimeOfDay,
+            goalType: goalType,
             nonTrainingActivityLevel: nonTrainingActivityLevel,
             isOnboardingComplete: isOnboardingComplete,
             gender: gender
@@ -117,7 +97,6 @@ extension UserProfileDraft {
         var d = UserProfileDraft(from: dummyProfile)
 
         d.name = "Ahmad (Preview) "
-        d.trainingDaysPerWeek = 4
 
         return d
     }

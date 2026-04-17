@@ -50,7 +50,6 @@ struct EditHeightSheet: View {
             Spacer(minLength: 0)
         }
         .padding()
-        .background(Color(.systemBackground).ignoresSafeArea())
         .navigationTitle("Height")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct OnboardingTrainingGoalStepView: View {
-    @Binding var selectedGoal: TrainingGoal?
+    @Binding var selectedGoal: GoalType?
     @Environment(\.colorScheme) private var colorScheme
  
     let onFinish: () -> Void
     
-    @State private var tempSelection: TrainingGoal = .performance
+    @State private var tempSelection: GoalType = .leanBulk
     @State private var errorMessage: String?
-    
+
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "dot.scope")
@@ -30,7 +30,7 @@ struct OnboardingTrainingGoalStepView: View {
             Spacer()
             
             VStack(spacing: 12) {
-                ForEach(TrainingGoal.allCases, id: \.self) { goal in
+                ForEach(GoalType.allCases, id: \.self) { goal in
                     Button {
                         tempSelection = goal
                         errorMessage = nil
@@ -103,5 +103,5 @@ struct OnboardingTrainingGoalStepView: View {
 
 
 #Preview {
-    OnboardingTrainingGoalStepView(selectedGoal: .constant(.fatLoss), onFinish: { print("")})
+    OnboardingTrainingGoalStepView(selectedGoal: .constant(.cut), onFinish: { print("")})
 }
