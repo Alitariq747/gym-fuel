@@ -10,9 +10,29 @@ import Foundation
 
 final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
     private let db = Firestore.firestore()
+    
+    private struct SavedMealDocument: Codable {
+        let userId: String
+        let name: String
+        let description: String?
+        let macros: Macros
+        let createdAt: Date
+        let lastUsedAt: Date?
+    }
 
     private func savedMealsCollection(for userId: String) -> CollectionReference {
         db.collection("users").document(userId).collection("savedMeals")
+    }
+
+    private func decodeSavedMeal(from snapshot: QueryDocumentSnapshot) throws -> SavedMeal {
+        let document = try snapshot.data(as: SavedMealDocument.self)
+        return SavedMeal(id: snapshot.documentID, userId: document.userId, name: document.name, description: document.description, macros: document.macros, createdAt: document.createdAt, lastUsedAt: document.lastUsedAt)
+    }
+
+    private func encodeSavedMeal(_ meal: SavedMeal) throws -> [String: Any] {
+        try Firestore.Encoder().encode(
+            SavedMealDocument(userId: meal.userId, name: meal.name, description: meal.description, macros: meal.macros, createdAt: meal.createdAt, lastUsedAt: meal.lastUsedAt)
+        )
     }
 
     func fetchSavedMeals(for userId: String) async throws -> [SavedMeal] {
@@ -37,62 +57,14 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
                 }
         }
 
-        var result: [SavedMeal] = []
-
-        for doc in snapshot.documents {
-            let data = doc.data()
-            let storedUserId = data["userId"] as? String ?? userId
-            let name = data["name"] as? String ?? "Saved meal"
-            let description = data["description"] as? String
-            let createdAt = (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
-            let lastUsedAt = (data["lastUsedAt"] as? Timestamp)?.dateValue()
-
-            let macroDict = data["macros"] as? [String: Any] ?? [:]
-            let macros = Macros(
-                calories: Self.double(from: macroDict["calories"]),
-                protein: Self.double(from: macroDict["protein"]),
-                carbs: Self.double(from: macroDict["carbs"]),
-                fat: Self.double(from: macroDict["fat"])
-            )
-
-            let meal = SavedMeal(
-                id: doc.documentID,
-                userId: storedUserId,
-                name: name,
-                description: description,
-                macros: macros,
-                createdAt: createdAt,
-                lastUsedAt: lastUsedAt
-            )
-            result.append(meal)
-        }
-
-        return result
+        return try snapshot.documents.map(decodeSavedMeal)
     }
 
     func saveMeal(_ meal: SavedMeal) async throws {
         let docRef = savedMealsCollection(for: meal.userId).document(meal.id)
 
-        var data: [String: Any] = [
-            "userId": meal.userId,
-            "name": meal.name,
-            "macros": [
-                "calories": meal.macros.calories,
-                "protein": meal.macros.protein,
-                "carbs": meal.macros.carbs,
-                "fat": meal.macros.fat
-            ],
-            "createdAt": meal.createdAt,
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
-
-        if let description = meal.description, !description.isEmpty {
-            data["description"] = description
-        }
-
-        if let lastUsedAt = meal.lastUsedAt {
-            data["lastUsedAt"] = lastUsedAt
-        }
+        var data = try encodeSavedMeal(meal)
+        data["updatedAt"] = FieldValue.serverTimestamp()
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             docRef.setData(data, merge: true) { error in
@@ -107,22 +79,8 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
 
     func updateMeal(_ meal: SavedMeal) async throws {
         let docRef = savedMealsCollection(for: meal.userId).document(meal.id)
-        var data: [String: Any] = [
-            "name": meal.name,
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
-        data["macros"] = [
-            "calories": meal.macros.calories,
-            "protein": meal.macros.protein,
-            "carbs": meal.macros.carbs,
-            "fat": meal.macros.fat
-        ]
-        if let description = meal.description, !description.isEmpty {
-            data["description"] = description
-        }
-        if let lastUsedAt = meal.lastUsedAt {
-            data["lastUsedAt"] = lastUsedAt
-        }
+        var data = try encodeSavedMeal(meal)
+        data["updatedAt"] = FieldValue.serverTimestamp()
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             docRef.updateData(data) { error in
                 if let error = error {
@@ -145,15 +103,5 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
                 }
             }
         }
-    }
-
-    private static func double(from any: Any?, default defaultValue: Double = 0) -> Double {
-        if let d = any as? Double { return d.isFinite ? d : defaultValue }
-        if let i = any as? Int { return Double(i) }
-        if let n = any as? NSNumber {
-            let value = n.doubleValue
-            return value.isFinite ? value : defaultValue
-        }
-        return defaultValue
     }
 }

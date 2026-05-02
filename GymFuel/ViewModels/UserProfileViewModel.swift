@@ -16,11 +16,20 @@ final class UserProfileViewModel: ObservableObject {
        @Published private(set) var isLoading: Bool = false
        @Published var errorMessage: String?
        @Published private(set) var isSaving: Bool = false
+       var targetMacros: Macros? {
+           guard let profile else { return nil }
+           return macroTargetCalculator.targetMacros(for: profile)
+       }
        
        private let service: FirebaseUserProfileService
+       private let macroTargetCalculator: MacroTargetCalculator
        
-       init(service: FirebaseUserProfileService = .shared) {
+       init(
+           service: FirebaseUserProfileService = .shared,
+           macroTargetCalculator: MacroTargetCalculator = MacroTargetCalculator()
+       ) {
            self.service = service
+           self.macroTargetCalculator = macroTargetCalculator
        }
     
     func loadProfile(for uid: String) async {

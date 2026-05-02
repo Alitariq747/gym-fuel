@@ -47,6 +47,44 @@ struct UserProfile: Identifiable, Equatable {
     var gender: Gender
 }
 
+struct UserProfileDocument: Codable, Equatable {
+    var name: String
+    var heightCm: Double?
+    var age: Int?
+    var weightKg: Double?
+    var goalType: GoalType?
+    var nonTrainingActivityLevel: NonTrainingActivityLevel?
+    var isOnboardingComplete: Bool
+    var gender: Gender
+}
+
+extension UserProfile {
+    init(id: String, document: UserProfileDocument) {
+        self.id = id
+        self.name = document.name
+        self.heightCm = document.heightCm
+        self.age = document.age
+        self.weightKg = document.weightKg
+        self.goalType = document.goalType
+        self.nonTrainingActivityLevel = document.nonTrainingActivityLevel
+        self.isOnboardingComplete = document.isOnboardingComplete
+        self.gender = document.gender
+    }
+
+    var document: UserProfileDocument {
+        UserProfileDocument(
+            name: name,
+            heightCm: heightCm,
+            age: age,
+            weightKg: weightKg,
+            goalType: goalType,
+            nonTrainingActivityLevel: nonTrainingActivityLevel,
+            isOnboardingComplete: isOnboardingComplete,
+            gender: gender
+        )
+    }
+}
+
 let dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, goalType: .leanBulk, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: .male)
 
 struct UserProfileDraft: Equatable {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Macros: Codable, Equatable {
+struct Macros: Codable, Equatable, Hashable {
     var calories: Double
     var protein: Double
     var carbs: Double
