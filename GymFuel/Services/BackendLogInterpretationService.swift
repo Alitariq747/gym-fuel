@@ -5,7 +5,7 @@ import FirebaseAppCheck
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
 
-    init(baseURL: URL = URL(string: "https://mas-harbor-mating-lines.trycloudflare.com")!) {
+    init(baseURL: URL = URL(string: "https://challenging-newfoundland-mod-necklace.trycloudflare.com")!) {
         self.baseURL = baseURL
     }
 

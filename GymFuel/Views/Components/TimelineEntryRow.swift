@@ -5,6 +5,7 @@ struct TimelineEntryRow: View {
     var showsChevron: Bool = true
 
     private var feedback: LogEntryFeedback? { entry.feedback }
+    private var imageStoragePath: String? { entry.image?.storagePath }
     private var exerciseEmoji: String {
         let title = entry.title.lowercased()
 
@@ -40,6 +41,8 @@ struct TimelineEntryRow: View {
                             Color(.systemGray6),
                             in: Circle()
                         )
+                } else if let imageStoragePath {
+                    MealImageThumbnailView(storagePath: imageStoragePath, size: 72)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {

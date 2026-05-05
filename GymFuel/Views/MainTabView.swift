@@ -106,7 +106,7 @@ struct MainTabView: View {
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
-                    } else if !timelineViewModel.timeline.entries.isEmpty {
+                    } else if !timelineViewModel.timeline.entries.isEmpty || mealImageCard != nil {
                         ScrollView {
                             VStack(alignment: .leading, spacing: 12) {
                                 if let mealImageCard {
@@ -128,14 +128,13 @@ struct MainTabView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             if let mealImageCard {
                                 mealImageCard
-                            } else {
-                                VStack(spacing: 8) {
-                                    Text("No logs yet")
-                                        .font(.headline)
-                                    Text("Meals and exercise you log will appear here.")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
+                            }
+                            VStack(spacing: 8) {
+                                Text("No logs yet")
+                                    .font(.headline)
+                                Text("Meals and exercise you log will appear here.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -337,10 +336,8 @@ struct MainTabView: View {
 
     private var mealImageCard: AnyView? {
         guard mealImageDraft.shouldShowCard,
-              let imageData = mealImageDraft.originalData ?? mealImageDraft.compressedJPEGData,
-              let previewImage = UIImage(data: imageData) else {
-            return nil
-        }
+              let previewData = mealImageDraft.previewData,
+              let previewImage = UIImage(data: previewData) else { return nil }
 
         return AnyView(
             HStack(spacing: 14) {
@@ -351,7 +348,7 @@ struct MainTabView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(mealImageDraft.isSuccessful ? "Meal Image Ready" : "Meal Image")
+                    Text("Meal Analysis")
                         .font(.headline)
 
                     Text(mealImageDraft.statusMessage)
@@ -362,24 +359,23 @@ struct MainTabView: View {
 
                 Spacer(minLength: 0)
 
-                if mealImageDraft.isPending {
-                    ProgressView()
-                        .controlSize(.small)
-                } else if mealImageDraft.canRetry {
+                if mealImageDraft.canRetry {
                     Button("Retry") {
-                        Task {
-                            await analyzePreparedMealImage()
-                        }
+                        Task { await analyzePreparedMealImage() }
                     }
                     .font(.subheadline.weight(.semibold))
                     .buttonStyle(.plain)
+                } else {
+                    ProgressView()
+                        .controlSize(.small)
+                        .opacity(mealImageDraft.isPending ? 1 : 0)
                 }
             }
-            .padding(14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color(.quaternaryLabel), lineWidth: 1)
-            )
+                .padding(14)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(Color(.quaternaryLabel), lineWidth: 1)
+                )
         )
     }
 
@@ -430,7 +426,8 @@ struct MainTabView: View {
     }
 
     private func analyzePreparedMealImage() async {
-        guard let imageData = mealImageDraft.compressedJPEGData else {
+        guard mealImageDraft.isReadyToSubmit,
+              let imageData = mealImageDraft.compressedJPEGData else {
             mealImageDraft.state = .failed("We couldn't prepare that photo. Please try a different image.")
             return
         }
@@ -454,7 +451,7 @@ struct MainTabView: View {
             mealImageDraft.reset()
             selectedPhotoPickerItem = nil
         } else {
-            let message = composerViewModel.errorMessage ?? "We couldn't analyze that meal image. Please try again."
+            let message = composerViewModel.errorMessage ?? mealImageDraft.failureMessage ?? "We couldn't analyze that image. Please try again."
             mealImageDraft.state = .failed(message)
         }
     }

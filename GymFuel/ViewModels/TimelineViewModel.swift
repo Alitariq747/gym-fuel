@@ -2,7 +2,7 @@
 //  TimelineViewModel.swift
 //  GymFuel
 //
-//  Created by Codex on 15/04/2026.
+//  Created by Ahmad Ali Tariq on 15/04/2026.
 //
 
 import Foundation

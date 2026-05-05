@@ -24,6 +24,23 @@ struct MealImageDraft: Equatable, Sendable {
         originalData != nil || compressedJPEGData != nil
     }
 
+    var previewData: Data? {
+        originalData ?? compressedJPEGData
+    }
+
+    var hasPreparedPayload: Bool {
+        compressedJPEGData != nil
+    }
+
+    var isReadyToSubmit: Bool {
+        state == .readyToAnalyze && hasPreparedPayload
+    }
+
+    var failureMessage: String? {
+        guard case .failed(let message) = state else { return nil }
+        return message
+    }
+
     var shouldShowCard: Bool {
         hasImage && state != .idle
     }
