@@ -15,47 +15,81 @@ struct LogComposerBar: View {
         text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private var isEmpty: Bool {
+        trimmedText.isEmpty
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
-            TextField("What did you eat or exercise?", text: $text)
-                .textFieldStyle(.plain)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(Color(.secondarySystemBackground), in: Capsule())
-                .disabled(isSubmitting)
-                .onChange(of: text) { _, _ in
-                    onClearError()
-                }
-
-            if isSubmitting {
-                ProgressView()
-                    .controlSize(.small)
-            } else if trimmedText.isEmpty {
-                HStack(spacing: 14) {
-                    Button(action: onCameraTap) {
-                        Image(systemName: "camera")
+        HStack(spacing: 14) {
+            HStack(spacing: 14) {
+                TextField("What did you eat or exercise?", text: $text, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .disabled(isSubmitting)
+                    .onChange(of: text) { _, _ in
+                        onClearError()
                     }
 
-                    Button(action: onPhotoTap) {
-                        Image(systemName: "photo")
+                if isEmpty {
+                    HStack(spacing: 8) {
+                        composerActionButton(systemName: "camera", action: onCameraTap)
+                        composerActionButton(systemName: "photo", action: onPhotoTap)
+                        composerActionButton(systemName: "bookmark", action: onSavedMealsTap)
                     }
-
-                    Button(action: onSavedMealsTap) {
-                        Image(systemName: "bookmark")
+                } else {
+                    Button(action: onSubmit) {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(canSubmit ? Color.white : Color.secondary.opacity(0.9))
+                            .frame(width: 42, height: 42)
+                            .background(
+                                Circle()
+                                    .fill(canSubmit ? Color.fuelBlue : Color(.tertiarySystemFill))
+                            )
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(canSubmit ? 0.24 : 0), lineWidth: 1)
+                            )
                     }
+                    .buttonStyle(.plain)
+                    .disabled(!canSubmit || isSubmitting)
                 }
-                .foregroundStyle(.secondary)
-                .buttonStyle(.plain)
-            } else {
-                Button(action: onSubmit) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(canSubmit ? Color.fuelBlue : .secondary)
-                }
-                .buttonStyle(.plain)
-                .disabled(!canSubmit)
             }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .frame(minHeight: 64)
+            .background(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(isSubmitting ? Color(.systemGray6) : Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(Color.black.opacity(0.06), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.06), radius: 14, y: 6)
+            .opacity(isSubmitting ? 0.82 : 1)
         }
+    }
+
+    private func composerActionButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color.secondary)
+                .frame(width: 36, height: 36)
+                .background(
+                    Circle()
+                        .fill(Color(.systemBackground).opacity(0.9))
+                )
+                .overlay(
+                    Circle()
+                        .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(isSubmitting)
     }
 }
 

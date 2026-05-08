@@ -27,6 +27,17 @@ enum NonTrainingActivityLevel: String, CaseIterable, Codable {
             return "Physically demanding"
         }
     }
+
+    var shortDisplayName: String {
+        switch self {
+        case .mostlySitting:
+            return "Sedentary"
+        case .somewhatActive:
+            return "Active"
+        case .physicallyDemanding:
+            return "Demanding"
+        }
+    }
     
     var detail: String {
         switch self {

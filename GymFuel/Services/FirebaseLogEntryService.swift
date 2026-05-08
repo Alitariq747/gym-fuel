@@ -9,10 +9,20 @@ import FirebaseFirestore
 import Foundation
 
 final class FirebaseLogEntryService: @unchecked Sendable {
+    private final class ListenerCancellationBox: @unchecked Sendable {
+        let listener: ListenerRegistration
+
+        init(listener: ListenerRegistration) {
+            self.listener = listener
+        }
+    }
+
     private let db = Firestore.firestore()
 
     private struct LogEntryDocument: Codable {
         var userId: String
+        var source: LogEntrySource
+        var status: LogEntryStatus
         var loggedAt: Date
         var type: LogEntryType
         var title: String
@@ -31,6 +41,8 @@ final class FirebaseLogEntryService: @unchecked Sendable {
         return LogEntry(
             id: snapshot.documentID,
             userId: document.userId,
+            source: document.source,
+            status: document.status,
             loggedAt: document.loggedAt,
             type: document.type,
             title: document.title,
@@ -44,6 +56,8 @@ final class FirebaseLogEntryService: @unchecked Sendable {
     private func encodeEntry(_ entry: LogEntry) throws -> [String: Any] {
         let document = LogEntryDocument(
             userId: entry.userId,
+            source: entry.source,
+            status: entry.status,
             loggedAt: entry.loggedAt,
             type: entry.type,
             title: entry.title,
@@ -56,6 +70,38 @@ final class FirebaseLogEntryService: @unchecked Sendable {
     }
 }
 extension FirebaseLogEntryService: LogEntryService {
+    func observeEntries(
+        for userId: String,
+        from startDate: Date,
+        to endDate: Date,
+        onChange: @escaping LogEntryObservationHandler
+    ) -> LogEntryObservationCancellation {
+        let listener = entriesCollection(for: userId)
+            .whereField("loggedAt", isGreaterThanOrEqualTo: startDate)
+            .whereField("loggedAt", isLessThan: endDate)
+            .order(by: "loggedAt", descending: false)
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    onChange(.failure(error))
+                    return
+                }
+
+                guard let snapshot else { return }
+
+                do {
+                    let entries = try snapshot.documents.map(self.decodeEntry)
+                    onChange(.success(entries))
+                } catch {
+                    onChange(.failure(error))
+                }
+            }
+
+        let box = ListenerCancellationBox(listener: listener)
+        return {
+            box.listener.remove()
+        }
+    }
+
     func fetchEntries(
         for userId: String,
         from startDate: Date,

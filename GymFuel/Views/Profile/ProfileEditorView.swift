@@ -42,6 +42,18 @@ struct ProfileEditorView: View {
         draft.gender.displayName
     }
 
+    // goal and activity
+    @State private var showGoalDialog = false
+    @State private var showActivityDialog = false
+
+    private var goalTitle: String {
+        draft.goalType?.displayName ?? "Set"
+    }
+
+    private var activityLevelTitle: String {
+        draft.nonTrainingActivityLevel?.shortDisplayName ?? "Set"
+    }
+
     // Height
     @State private var isEditHeightPresented = false
 
@@ -65,6 +77,11 @@ struct ProfileEditorView: View {
             VStack(spacing: 12) {
                 sectionHeader(title: "Body Metrics", systemImage: "figure.stand")
                 bodyMetricsCard
+            }
+
+            VStack(spacing: 12) {
+                sectionHeader(title: "Targets", systemImage: "scope")
+                targetsCard
             }
         }
         .padding()
@@ -177,6 +194,32 @@ struct ProfileEditorView: View {
             Button("\(Gender.male.symbol) \(Gender.male.displayName)") { draft.gender = .male }
             Button("\(Gender.female.symbol) \(Gender.female.displayName)") { draft.gender = .female }
             Button(Gender.preferNotToSay.displayName) { draft.gender = .preferNotToSay }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private var targetsCard: some View {
+        VStack(spacing: 10) {
+            rowButton(title: "Goal", systemImage: "target", value: goalTitle, isPlaceholder: draft.goalType == nil) {
+                showGoalDialog = true
+            }
+            Divider()
+            rowButton(title: "Non-training Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.nonTrainingActivityLevel == nil) {
+                showActivityDialog = true
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+        .confirmationDialog("Pick Goal", isPresented: $showGoalDialog, titleVisibility: .visible) {
+            ForEach(GoalType.allCases, id: \.self) { goal in
+                Button(goal.displayName) { draft.goalType = goal }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .confirmationDialog("Pick Activity Level", isPresented: $showActivityDialog, titleVisibility: .visible) {
+            ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
+                Button(level.displayName) { draft.nonTrainingActivityLevel = level }
+            }
             Button("Cancel", role: .cancel) {}
         }
     }

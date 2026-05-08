@@ -31,9 +31,17 @@ final class TimelineViewModel: ObservableObject {
     }
 
     private let service: LogEntryService
+    private var observationCancellation: LogEntryObservationCancellation?
+    private var localImagePreviewDataByEntryId: [String: Data] = [:]
+    private var localPreparedImageDataByEntryId: [String: Data] = [:]
+    private var revealedSuccessEntryIDs: Set<String> = []
 
     init(service: LogEntryService = FirebaseLogEntryService()) {
         self.service = service
+    }
+
+    deinit {
+        observationCancellation?()
     }
 
     func loadTimeline(for date: Date, userId: String, calendar: Calendar = .current) async {
@@ -46,20 +54,25 @@ final class TimelineViewModel: ObservableObject {
         selectedDate = startOfDay
         isLoading = true
         errorMessage = nil
-
-        do {
-            let entries = try await service.fetchEntries(
-                for: userId,
-                from: startOfDay,
-                to: endOfDay
-            )
-            timeline = DayTimeline(date: startOfDay, entries: entries, calendar: calendar)
-        } catch {
-            errorMessage = error.localizedDescription
-            timeline = DayTimeline(date: startOfDay)
+        let cancellation = service.observeEntries(
+            for: userId,
+            from: startOfDay,
+            to: endOfDay
+        ) { [weak self] result in
+            guard let self else { return }
+            Task { @MainActor in
+                switch result {
+                case .success(let entries):
+                    self.timeline = DayTimeline(date: startOfDay, entries: entries, calendar: calendar)
+                    self.errorMessage = nil
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    self.timeline = DayTimeline(date: startOfDay)
+                }
+                self.isLoading = false
+            }
         }
-
-        isLoading = false
+        replaceObservation(cancellation)
     }
 
     func goToPreviousDay(userId: String, calendar: Calendar = .current) async {
@@ -74,5 +87,47 @@ final class TimelineViewModel: ObservableObject {
 
     func setSelectedDate(_ date: Date, userId: String, calendar: Calendar = .current) async {
         await loadTimeline(for: date, userId: userId, calendar: calendar)
+    }
+
+    func stopObservingEntries() {
+        observationCancellation?()
+        observationCancellation = nil
+    }
+
+    func replaceObservation(_ cancellation: @escaping LogEntryObservationCancellation) {
+        stopObservingEntries()
+        observationCancellation = cancellation
+    }
+
+    func setLocalImagePreviewData(_ data: Data, for entryId: String) {
+        localImagePreviewDataByEntryId[entryId] = data
+    }
+
+    func localImagePreviewData(for entryId: String) -> Data? {
+        localImagePreviewDataByEntryId[entryId]
+    }
+
+    func removeLocalImagePreviewData(for entryId: String) {
+        localImagePreviewDataByEntryId.removeValue(forKey: entryId)
+    }
+
+    func setLocalPreparedImageData(_ data: Data, for entryId: String) {
+        localPreparedImageDataByEntryId[entryId] = data
+    }
+
+    func localPreparedImageData(for entryId: String) -> Data? {
+        localPreparedImageDataByEntryId[entryId]
+    }
+
+    func removeLocalPreparedImageData(for entryId: String) {
+        localPreparedImageDataByEntryId.removeValue(forKey: entryId)
+    }
+
+    func hasRevealedSuccess(for entryId: String) -> Bool {
+        revealedSuccessEntryIDs.contains(entryId)
+    }
+
+    func markSuccessRevealed(for entryId: String) {
+        revealedSuccessEntryIDs.insert(entryId)
     }
 }

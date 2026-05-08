@@ -11,9 +11,23 @@ struct LogEntryImage: Codable, Equatable, Hashable, Sendable {
     let storagePath: String
 }
 
+enum LogEntrySource: String, Codable, Equatable, Hashable, Sendable {
+    case text
+    case image
+    case savedMeal
+}
+
+enum LogEntryStatus: String, Codable, Equatable, Hashable, Sendable {
+    case analyzing
+    case failed
+    case succeeded
+}
+
 struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     let id: String
     let userId: String
+    var source: LogEntrySource
+    var status: LogEntryStatus
     let loggedAt: Date
     let type: LogEntryType
     var title: String
@@ -25,6 +39,8 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     init(
         id: String = UUID().uuidString,
         userId: String,
+        source: LogEntrySource = .text,
+        status: LogEntryStatus = .succeeded,
         loggedAt: Date = Date(),
         type: LogEntryType,
         title: String,
@@ -35,6 +51,8 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     ) {
         self.id = id
         self.userId = userId
+        self.source = source
+        self.status = status
         self.loggedAt = loggedAt
         self.type = type
         self.title = title

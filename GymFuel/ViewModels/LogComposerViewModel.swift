@@ -30,6 +30,26 @@ final class LogComposerViewModel: ObservableObject {
         errorMessage = nil
     }
 
+    private func userFacingMessage(for error: Error, fallback: String? = nil) -> String {
+        if let interpretationError = error as? BackendLogInterpretationError,
+           let description = interpretationError.errorDescription {
+            return description
+        }
+        return fallback ?? error.localizedDescription
+    }
+
+    private func failureFeedback(message: String) -> LogEntryFeedback {
+        LogEntryFeedback(
+            explanation: message,
+            assumptions: [],
+            confidence: nil,
+            estimatedCalories: nil,
+            macros: nil,
+            goalFitScore: nil,
+            rebalanceHint: nil
+        )
+    }
+
     func submitText(userId: String, goal: GoalType, loggedAt: Date = .now) async -> Bool {
         let text = draft.trimmedText
         guard !text.isEmpty else {
@@ -37,44 +57,185 @@ final class LogComposerViewModel: ObservableObject {
             return false
         }
 
+        let pendingEntry = makePendingTextEntry(text: text, userId: userId, loggedAt: loggedAt)
         isSubmitting = true
         errorMessage = nil
 
         do {
-            let entry = try await interpretationService.interpretText(
+            try await logEntryService.saveEntry(pendingEntry)
+            draft = LogComposerDraft()
+            let interpretedEntry = try await interpretationService.interpretText(
                 text,
                 userId: userId,
                 goal: goal,
                 loggedAt: loggedAt
             )
-            try await logEntryService.saveEntry(entry)
-            draft = LogComposerDraft()
+            let resolvedEntry = LogEntry(
+                id: pendingEntry.id,
+                userId: pendingEntry.userId,
+                status: .succeeded,
+                loggedAt: pendingEntry.loggedAt,
+                type: interpretedEntry.type,
+                title: interpretedEntry.title,
+                rawInput: interpretedEntry.rawInput,
+                detail: interpretedEntry.detail,
+                feedback: interpretedEntry.feedback,
+                image: interpretedEntry.image
+            )
+            try await logEntryService.updateEntry(resolvedEntry)
             isSubmitting = false
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            let message = userFacingMessage(for: error)
+            var failedEntry = pendingEntry
+            failedEntry.status = .failed
+            failedEntry.feedback = failureFeedback(message: message)
+            try? await logEntryService.updateEntry(failedEntry)
             isSubmitting = false
             return false
         }
     }
 
-    func submitMealImage(_ imageData: Data, userId: String, goal: GoalType, loggedAt: Date = .now) async -> LogEntry? {
+    private func makePendingTextEntry(text: String, userId: String, loggedAt: Date) -> LogEntry {
+        LogEntry(userId: userId, source: .text, status: .analyzing, loggedAt: loggedAt, type: .food, title: "Analyzing entry", rawInput: text)
+    }
+
+    func retryTextEntry(_ entry: LogEntry, goal: GoalType) async -> Bool {
         isSubmitting = true
         errorMessage = nil
 
         do {
-            let entry = try await interpretationService.interpretMealImage(
+            var retryingEntry = entry
+            retryingEntry.status = .analyzing
+            retryingEntry.feedback = nil
+            try await logEntryService.updateEntry(retryingEntry)
+
+            let interpretedEntry = try await interpretationService.interpretText(
+                entry.rawInput,
+                userId: entry.userId,
+                goal: goal,
+                loggedAt: entry.loggedAt
+            )
+            let resolvedEntry = LogEntry(
+                id: entry.id,
+                userId: entry.userId,
+                status: .succeeded,
+                loggedAt: entry.loggedAt,
+                type: interpretedEntry.type,
+                title: interpretedEntry.title,
+                rawInput: interpretedEntry.rawInput,
+                detail: interpretedEntry.detail,
+                feedback: interpretedEntry.feedback,
+                image: interpretedEntry.image
+            )
+            try await logEntryService.updateEntry(resolvedEntry)
+            isSubmitting = false
+            return true
+        } catch {
+            let message = userFacingMessage(for: error)
+            var failedEntry = entry
+            failedEntry.status = .failed
+            failedEntry.feedback = failureFeedback(message: message)
+            try? await logEntryService.updateEntry(failedEntry)
+            isSubmitting = false
+            return false
+        }
+    }
+
+    func retryMealImageEntry(_ entry: LogEntry, imageData: Data, goal: GoalType) async -> LogEntry? {
+        isSubmitting = true
+        errorMessage = nil
+
+        do {
+            var retryingEntry = entry
+            retryingEntry.status = .analyzing
+            retryingEntry.feedback = nil
+            try await logEntryService.updateEntry(retryingEntry)
+
+            let interpretedEntry = try await interpretationService.interpretMealImage(
+                imageData,
+                userId: entry.userId,
+                goal: goal,
+                loggedAt: entry.loggedAt
+            )
+            let resolvedEntry = LogEntry(
+                id: entry.id,
+                userId: entry.userId,
+                status: .succeeded,
+                loggedAt: entry.loggedAt,
+                type: interpretedEntry.type,
+                title: interpretedEntry.title,
+                rawInput: interpretedEntry.rawInput,
+                detail: interpretedEntry.detail,
+                feedback: interpretedEntry.feedback,
+                image: interpretedEntry.image
+            )
+            try await logEntryService.updateEntry(resolvedEntry)
+            startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
+            isSubmitting = false
+            return resolvedEntry
+        } catch {
+            let message = userFacingMessage(for: error)
+            var failedEntry = entry
+            failedEntry.status = .failed
+            failedEntry.feedback = failureFeedback(message: message)
+            try? await logEntryService.updateEntry(failedEntry)
+            isSubmitting = false
+            return nil
+        }
+    }
+
+    func submitMealImage(
+        _ imageData: Data,
+        userId: String,
+        goal: GoalType,
+        loggedAt: Date = .now,
+        entryId: String = UUID().uuidString
+    ) async -> LogEntry? {
+        let pendingEntry = LogEntry(
+            id: entryId,
+            userId: userId,
+            source: .image,
+            status: .analyzing,
+            loggedAt: loggedAt,
+            type: .food,
+            title: "Analyzing meal image",
+            rawInput: "Meal image"
+        )
+        isSubmitting = true
+        errorMessage = nil
+
+        do {
+            try await logEntryService.saveEntry(pendingEntry)
+            draft = LogComposerDraft()
+            let interpretedEntry = try await interpretationService.interpretMealImage(
                 imageData,
                 userId: userId,
                 goal: goal,
                 loggedAt: loggedAt
             )
-            try await logEntryService.saveEntry(entry)
-            startBackgroundMealImageUpload(for: entry, imageData: imageData)
+            let resolvedEntry = LogEntry(
+                id: pendingEntry.id,
+                userId: pendingEntry.userId,
+                status: .succeeded,
+                loggedAt: pendingEntry.loggedAt,
+                type: interpretedEntry.type,
+                title: interpretedEntry.title,
+                rawInput: interpretedEntry.rawInput,
+                detail: interpretedEntry.detail,
+                feedback: interpretedEntry.feedback,
+                image: interpretedEntry.image
+            )
+            try await logEntryService.updateEntry(resolvedEntry)
+            startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
             isSubmitting = false
-            return entry
+            return resolvedEntry
         } catch {
-            errorMessage = error.localizedDescription
+            let message = userFacingMessage(for: error)
+            var failedEntry = pendingEntry
+            failedEntry.status = .failed
+            failedEntry.feedback = failureFeedback(message: message)
+            try? await logEntryService.updateEntry(failedEntry)
             isSubmitting = false
             return nil
         }
@@ -86,6 +247,7 @@ final class LogComposerViewModel: ObservableObject {
 
         let entry = LogEntry(
             userId: userId,
+            source: .savedMeal,
             loggedAt: loggedAt,
             type: .food,
             title: meal.name,
@@ -108,7 +270,10 @@ final class LogComposerViewModel: ObservableObject {
             isSubmitting = false
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = userFacingMessage(
+                for: error,
+                fallback: "We couldn't log that saved meal. Please try again."
+            )
             isSubmitting = false
             return false
         }

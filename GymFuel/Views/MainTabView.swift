@@ -106,18 +106,51 @@ struct MainTabView: View {
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                         }
-                    } else if !timelineViewModel.timeline.entries.isEmpty || mealImageCard != nil {
+                    } else if !timelineViewModel.timeline.entries.isEmpty {
                         ScrollView {
                             VStack(alignment: .leading, spacing: 12) {
-                                if let mealImageCard {
-                                    mealImageCard
-                                }
-
                                 ForEach(timelineViewModel.timeline.entries) { entry in
+                                    let retryAction: (() -> Void)? = entry.status == .failed ? {
+                                        Task {
+                                            if entry.source == .image,
+                                               let imageData = timelineViewModel.localPreparedImageData(for: entry.id) {
+                                                _ = await composerViewModel.retryMealImageEntry(
+                                                    entry,
+                                                    imageData: imageData,
+                                                    goal: profile.goalType ?? GoalType.defaultValue
+                                                )
+                                            } else {
+                                                _ = await composerViewModel.retryTextEntry(
+                                                    entry,
+                                                    goal: profile.goalType ?? GoalType.defaultValue
+                                                )
+                                            }
+                                        }
+                                    } : nil
+                                    let deleteAction: (() -> Void)? = entry.status == .failed ? {
+                                        Task {
+                                            let didDelete = await logEntryDetailViewModel.deleteEntry(entry)
+                                            if didDelete {
+                                                timelineViewModel.removeLocalImagePreviewData(for: entry.id)
+                                                timelineViewModel.removeLocalPreparedImageData(for: entry.id)
+                                            }
+                                        }
+                                    } : nil
+                                    let shouldAnimateSuccessReveal = entry.status == .succeeded && !timelineViewModel.hasRevealedSuccess(for: entry.id)
+                                    let successRevealCompleted: (() -> Void)? = shouldAnimateSuccessReveal ? {
+                                        timelineViewModel.markSuccessRevealed(for: entry.id)
+                                    } : nil
                                     Button {
                                         selectedEntry = entry
                                     } label: {
-                                        TimelineEntryRow(entry: entry)
+                                        TimelineEntryRow(
+                                            entry: entry,
+                                            localPreviewData: timelineViewModel.localImagePreviewData(for: entry.id),
+                                            onRetry: retryAction,
+                                            onDelete: deleteAction,
+                                            shouldAnimateSuccessReveal: shouldAnimateSuccessReveal,
+                                            onSuccessRevealCompleted: successRevealCompleted
+                                        )
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -125,28 +158,11 @@ struct MainTabView: View {
                         }
                         .scrollIndicators(.hidden)
                     } else if timelineViewModel.timeline.entries.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            if let mealImageCard {
-                                mealImageCard
-                            }
-                            VStack(spacing: 8) {
-                                Text("No logs yet")
-                                    .font(.headline)
-                                Text("Meals and exercise you log will appear here.")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+                        Color.clear
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
-                if let visibleError = composerViewModel.errorMessage {
-                    Text(visibleError)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
                 LogComposerBar(
                     text: $composerViewModel.draft.text,
                     isSubmitting: composerViewModel.isSubmitting,
@@ -205,10 +221,6 @@ struct MainTabView: View {
                         let didDelete = await logEntryDetailViewModel.deleteEntry(entry)
                         if didDelete {
                             selectedEntry = nil
-                            await timelineViewModel.loadTimeline(
-                                for: timelineViewModel.selectedDate,
-                                userId: profile.id
-                            )
                         }
                     }
                 },
@@ -239,10 +251,7 @@ struct MainTabView: View {
                         loggedAt: loggedAtForSelectedDay()
                     )
                     if didSave {
-                        await timelineViewModel.loadTimeline(
-                            for: timelineViewModel.selectedDate,
-                            userId: profile.id
-                        )
+                        showSavedMeals = false
                     }
                 }
             }
@@ -301,6 +310,7 @@ struct MainTabView: View {
                     pendingMealImageSource = nil
                 }
             )
+            .ignoresSafeArea()
         }
         .task(id: profile.id) {
             await timelineViewModel.loadTimeline(
@@ -312,70 +322,15 @@ struct MainTabView: View {
 
     private func handleUpdatedEntry(_ updatedEntry: LogEntry) async {
         selectedEntry = updatedEntry
-        await timelineViewModel.loadTimeline(
-            for: timelineViewModel.selectedDate,
-            userId: profile.id
-        )
     }
 
     private func submitCurrentDraft() async {
         let goalType = profile.goalType ?? GoalType.defaultValue
         let loggedAt = loggedAtForSelectedDay()
-        let didSubmit = await composerViewModel.submitText(
+        _ = await composerViewModel.submitText(
             userId: profile.id,
             goal: goalType,
             loggedAt: loggedAt
-        )
-        if didSubmit {
-            await timelineViewModel.loadTimeline(
-                for: timelineViewModel.selectedDate,
-                userId: profile.id
-            )
-        }
-    }
-
-    private var mealImageCard: AnyView? {
-        guard mealImageDraft.shouldShowCard,
-              let previewData = mealImageDraft.previewData,
-              let previewImage = UIImage(data: previewData) else { return nil }
-
-        return AnyView(
-            HStack(spacing: 14) {
-                Image(uiImage: previewImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 72, height: 72)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Meal Analysis")
-                        .font(.headline)
-
-                    Text(mealImageDraft.statusMessage)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Spacer(minLength: 0)
-
-                if mealImageDraft.canRetry {
-                    Button("Retry") {
-                        Task { await analyzePreparedMealImage() }
-                    }
-                    .font(.subheadline.weight(.semibold))
-                    .buttonStyle(.plain)
-                } else {
-                    ProgressView()
-                        .controlSize(.small)
-                        .opacity(mealImageDraft.isPending ? 1 : 0)
-                }
-            }
-                .padding(14)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(Color(.quaternaryLabel), lineWidth: 1)
-                )
         )
     }
 
@@ -432,27 +387,26 @@ struct MainTabView: View {
             return
         }
 
-        mealImageDraft.state = .analyzing
-
         let goalType = profile.goalType ?? GoalType.defaultValue
+        let entryId = UUID().uuidString
+        if let previewData = mealImageDraft.previewData {
+            timelineViewModel.setLocalImagePreviewData(previewData, for: entryId)
+        }
+        timelineViewModel.setLocalPreparedImageData(imageData, for: entryId)
         let savedEntry = await composerViewModel.submitMealImage(
             imageData,
             userId: profile.id,
             goal: goalType,
-            loggedAt: loggedAtForSelectedDay()
+            loggedAt: loggedAtForSelectedDay(),
+            entryId: entryId
         )
 
         if savedEntry != nil {
-            mealImageDraft.state = .succeeded
-            await timelineViewModel.loadTimeline(
-                for: timelineViewModel.selectedDate,
-                userId: profile.id
-            )
+            timelineViewModel.removeLocalImagePreviewData(for: entryId)
             mealImageDraft.reset()
             selectedPhotoPickerItem = nil
         } else {
-            let message = composerViewModel.errorMessage ?? mealImageDraft.failureMessage ?? "We couldn't analyze that image. Please try again."
-            mealImageDraft.state = .failed(message)
+            // The failed listener row is now the visible source of truth.
         }
     }
 
