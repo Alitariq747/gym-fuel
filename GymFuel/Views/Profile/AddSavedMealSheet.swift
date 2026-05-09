@@ -21,123 +21,35 @@ struct AddSavedMealSheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        ZStack {
+        NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    HStack {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.headline).bold()
-                                .foregroundStyle(.primary)
-                                .padding(10)
-                                .background(Color(.systemBackground), in: Circle())
-                                .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-                        }
-                        .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Create saved meal")
+                            .font(.title3.weight(.bold))
+                        Text("Build a reusable meal with clean macros for quick logging.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
 
-                        Spacer()
-
-                        Text("Add Meal")
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-
-                        Spacer()
-
-                        Button {
-                            createSavedMeal()
-                        } label: {
-                            Group {
-                                if savedMealsViewModel.isLoading {
-                                    ProgressView()
-                                } else {
-                                    Text("Create")
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.primary)
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Color(.systemBackground), in: Capsule())
-                            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(savedMealsViewModel.isLoading)
+                    VStack(spacing: 12) {
+                        premiumField("fork.knife", title: "Meal name", text: $nameText, color: .fuelOrange)
+                        premiumField("text.alignleft", title: "Description", text: $descriptionText, color: .fuelBlue, lineLimit: 3...6)
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Nick name")
-                            .font(.system(size: 16, weight: .regular))
+                        Label("Macros", systemImage: "chart.bar.fill")
+                            .font(.caption.weight(.bold))
                             .foregroundStyle(.secondary)
-
-                        TextField("e.g Post workout shake", text: $nameText)
-                            .font(.system(size: 18, weight: .regular))
-                            .foregroundStyle(.primary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 14)
-                            .background(
-                                Color(.systemBackground),
-                                in: RoundedRectangle(cornerRadius: 20)
-                            )
-                            .shadow(color: Color.black.opacity(0.12),
-                                    radius: 6, x: 0, y: 3)
+                        macroField("Calories", emoji: "🔥", text: $caloriesText, color: .fuelOrange)
+                        macroField("Protein", emoji: "💪", text: $proteinText, color: .fuelBlue)
+                        macroField("Carbs", emoji: "⚡️", text: $carbsText, color: .fuelGreen)
+                        macroField("Fat", emoji: "💧", text: $fatText, color: .pink)
                     }
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Description")
-                            .font(.system(size: 16, weight: .regular))
-                            .foregroundStyle(.secondary)
-
-                        TextEditor(text: $descriptionText)
-                            .font(.system(size: 18, weight: .regular))
-                            .frame(minHeight: 80)
-                            .foregroundStyle(.primary)
-                            .scrollContentBackground(.hidden)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 14)
-                            .background(
-                                Color(.systemBackground),
-                                in: RoundedRectangle(cornerRadius: 20)
-                            )
-                            .shadow(color: Color.black.opacity(0.12),
-                                    radius: 6, x: 0, y: 3)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Nutrition")
-                            .font(.system(size: 16, weight: .regular))
-                            .foregroundStyle(.secondary)
-
-                        MacroRow(
-                            title: "Calories",
-                            systemImage: "flame.fill",
-                            value: $caloriesText,
-                            color: Color.fuelOrange
-                        )
-                        MacroRow(
-                            title: "Protein",
-                            systemImage: "fish.fill",
-                            value: $proteinText,
-                            color: Color.green.opacity(0.8)
-                        )
-                        MacroRow(
-                            title: "Carbs",
-                            systemImage: "carrot.fill",
-                            value: $carbsText,
-                            color: Color.orange.opacity(0.8)
-                        )
-                        MacroRow(
-                            title: "Fat",
-                            systemImage: "drop.fill",
-                            value: $fatText,
-                            color: Color.cyan
-                        )
-
-
-                    }
-                    .frame(maxWidth: .infinity)
-                    
+                    .padding(16)
+                    .background(Color(.secondarySystemBackground),
+                        in: RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    )
                     if let errorMessage {
                         Text(errorMessage)
                             .foregroundStyle(.red)
@@ -150,13 +62,44 @@ struct AddSavedMealSheet: View {
                             .font(.footnote)
                     }
                 }
-                .padding()
+                .padding(20)
                 .onChange(of: nameText) { _, _ in clearErrors() }
                 .onChange(of: descriptionText) { _, _ in clearErrors() }
                 .onChange(of: caloriesText) { _, _ in clearErrors() }
                 .onChange(of: proteinText) { _, _ in clearErrors() }
                 .onChange(of: carbsText) { _, _ in clearErrors() }
                 .onChange(of: fatText) { _, _ in clearErrors() }
+            }
+            .navigationTitle("Add Meal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(Color.fuelRed)
+                            .frame(width: 34, height: 34)
+                            .background(Color.fuelRed.opacity(0.10), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { createSavedMeal() } label: {
+                        if savedMealsViewModel.isLoading {
+                            ProgressView()
+                                .frame(width: 34, height: 34)
+                        } else {
+                            Image(systemName: "checkmark")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(canCreate ? Color.white : Color.secondary)
+                                .frame(width: 34, height: 34)
+                                .background(canCreate ? Color.fuelGreen : Color(.tertiarySystemFill), in: Circle())
+                                .shadow(color: Color.fuelGreen.opacity(canCreate ? 0.24 : 0), radius: 10, y: 5)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canCreate || savedMealsViewModel.isLoading)
+                }
             }
         }
         .presentationDetents([.large])
@@ -165,6 +108,62 @@ struct AddSavedMealSheet: View {
     private func clearErrors() {
         errorMessage = nil
         savedMealsViewModel.clearErrorMessage()
+    }
+
+    private var editedMacros: Macros {
+        Macros(
+            calories: Double(caloriesText) ?? 0,
+            protein: Double(proteinText) ?? 0,
+            carbs: Double(carbsText) ?? 0,
+            fat: Double(fatText) ?? 0
+        )
+    }
+
+    private var canCreate: Bool {
+        let hasName = !nameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let macros = editedMacros
+        return hasName && (macros.calories > 0 || macros.protein > 0 || macros.carbs > 0 || macros.fat > 0)
+    }
+
+    private func premiumField(_ systemImage: String, title: String, text: Binding<String>, color: Color, lineLimit: ClosedRange<Int>? = nil) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(color)
+                .frame(width: 30, height: 30)
+                .background(color.opacity(0.12), in: Circle())
+            Group {
+                if let lineLimit {
+                    TextField(title, text: text, axis: .vertical)
+                        .lineLimit(lineLimit)
+                } else {
+                    TextField(title, text: text, axis: .vertical)
+                }
+            }
+            .font(.subheadline.weight(.medium))
+        }
+        .padding(14)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private func macroField(_ title: String, emoji: String, text: Binding<String>, color: Color) -> some View {
+        HStack(spacing: 12) {
+            Text(emoji)
+                .frame(width: 30, height: 30)
+                .background(color.opacity(0.12), in: Circle())
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+            Spacer()
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.subheadline.weight(.bold))
+                .frame(width: 74)
+        }
+        .padding(12)
+        .background(Color(.systemBackground).opacity(0.82), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: color.opacity(0.08), radius: 10, y: 5)
+        .shadow(color: Color.black.opacity(0.035), radius: 6, y: 3)
     }
 
     private func createSavedMeal() {

@@ -18,6 +18,8 @@ struct MainTabView: View {
     private let mealImagePreparationService = MealImagePreparationService()
     @State private var showProfile = false
     @State private var showSavedMeals = false
+    @State private var showStats = false
+    @State private var showDailyMacroDetails = false
     @State private var showDatePicker = false
     @State private var pickedDate = Date.now
     @State private var selectedEntry: LogEntry?
@@ -26,6 +28,7 @@ struct MainTabView: View {
     @State private var showCameraCapture = false
     @State private var showPhotoLibraryPicker = false
     @State private var selectedPhotoPickerItem: PhotosPickerItem?
+    @FocusState private var isComposerFocused: Bool
     private var targetMacros: Macros? {
         profileViewModel.targetMacros
     }
@@ -65,8 +68,7 @@ struct MainTabView: View {
                     Spacer()
 
                     HStack(spacing: 14) {
-                        Button {
-                        } label: {
+                        Button { showStats = true } label: {
                             Image(systemName: "flame.fill")
                                 .frame(width: 18, height: 18)
                                 .foregroundStyle(Color.fuelOrange)
@@ -90,7 +92,10 @@ struct MainTabView: View {
                     DailyMacroSummaryView(
                         targetMacros: targetMacros,
                         consumedMacros: consumedMacros,
-                        burnedCalories: timelineViewModel.burnedCalories
+                        burnedCalories: timelineViewModel.burnedCalories,
+                        onTap: {
+                            showDailyMacroDetails = true
+                        }
                     )
                 }
 
@@ -162,9 +167,14 @@ struct MainTabView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isComposerFocused = false
+                }
 
                 LogComposerBar(
                     text: $composerViewModel.draft.text,
+                    focus: $isComposerFocused,
                     isSubmitting: composerViewModel.isSubmitting,
                     canSubmit: canSubmitDraft,
                     onClearError: {
@@ -241,6 +251,20 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showProfile) {
             NavigationStack { ProfileView() }
+        }
+        .sheet(isPresented: $showStats) {
+            NavigationStack { StatsView(profile: profile) }
+        }
+        .sheet(isPresented: $showDailyMacroDetails) {
+            if let targetMacros {
+                DailyMacroDetailSheet(
+                    targetMacros: targetMacros,
+                    consumedMacros: consumedMacros,
+                    burnedCalories: timelineViewModel.burnedCalories
+                )
+                .presentationDetents([.height(320)])
+                .presentationDragIndicator(.hidden)
+            }
         }
         .sheet(isPresented: $showSavedMeals) {
             SavedMealsPickerSheet(userId: profile.id) { meal in

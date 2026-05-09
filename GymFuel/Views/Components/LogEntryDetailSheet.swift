@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LogEntryDetailSheet: View {
     let entry: LogEntry
+    @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
     var isPerformingAction: Bool = false
     var aiErrorMessage: String? = nil
     var actionErrorMessage: String? = nil
@@ -11,8 +12,11 @@ struct LogEntryDetailSheet: View {
     var onSaveCaloriesBurned: ((Double) -> Void)? = nil
     var onDeleteEntry: (() -> Void)? = nil
     var onUseAIAgain: ((String) -> Void)? = nil
+    var onSaveMeal: ((String, String?, Macros) -> Void)? = nil
 
     @State private var showManualEditSheet = false
+    @State private var showSaveMealSheet = false
+    @State private var showSavedMealToast = false
     @State private var showDeleteConfirmation = false
     @State private var isAIDetailsExpanded = false
     @State private var isEditingRawInput = false
@@ -21,6 +25,22 @@ struct LogEntryDetailSheet: View {
     
     private var canEditManually: Bool {
         entry.feedback?.macros != nil || entry.feedback?.estimatedCalories != nil
+    }
+    private var isSavedMealEntry: Bool {
+        entry.source == .savedMeal
+    }
+    private var saveableMealMacros: Macros? {
+        guard entry.status == .succeeded,
+              entry.type == .food,
+              let macros = entry.feedback?.macros
+        else {
+            return nil
+        }
+
+        return macros
+    }
+    private var canSaveAsMeal: Bool {
+        saveableMealMacros != nil
     }
     private var confidenceValue: Double? {
         entry.feedback?.confidence
@@ -301,6 +321,13 @@ struct LogEntryDetailSheet: View {
             }
             .padding()
         }
+        .overlay(alignment: .bottom) {
+            if showSavedMealToast {
+                savedMealToast
+                    .padding(.bottom, 18)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -311,13 +338,21 @@ struct LogEntryDetailSheet: View {
                         showManualEditSheet = true
                     }
                     .disabled(!canEditManually)
-                    Divider()
-                    Button("Edit with AI", systemImage: "sparkles") {
-                        onClearAIError?()
-                        editedRawInput = entry.rawInput
-                        isEditingRawInput = true
+                    if !isSavedMealEntry {
+                        Divider()
+                        Button("Edit with AI", systemImage: "sparkles") {
+                            onClearAIError?()
+                            editedRawInput = entry.rawInput
+                            isEditingRawInput = true
+                        }
+                        .disabled(isPerformingAction)
+                        Divider()
+                        Button("Save Meal", systemImage: "bookmark") {
+                            onClearActionError?()
+                            showSaveMealSheet = true
+                        }
+                        .disabled(!canSaveAsMeal || isPerformingAction)
                     }
-                    .disabled(isPerformingAction)
                     Divider()
                     Button("Delete Entry", systemImage: "trash", role: .destructive) {
                         onClearActionError?()
@@ -347,6 +382,23 @@ struct LogEntryDetailSheet: View {
                 )
             }
         }
+        .sheet(isPresented: $showSaveMealSheet) {
+            if let saveableMealMacros {
+                SaveLoggedMealSheet(
+                    initialName: entry.title,
+                    initialDescription: entry.detail ?? entry.rawInput,
+                    macros: saveableMealMacros
+                ) { name, description, macros in
+                    let meal = SavedMeal(id: UUID().uuidString, userId: entry.userId, name: name, description: description, macros: macros)
+                    Task {
+                        if await savedMealsViewModel.saveSavedMeal(meal) {
+                            showSaveMealSheet = false
+                            presentSavedMealToast()
+                        }
+                    }
+                }
+            }
+        }
         .confirmationDialog(
             "Delete this entry?",
             isPresented: $showDeleteConfirmation,
@@ -373,6 +425,31 @@ struct LogEntryDetailSheet: View {
         }
         .onChange(of: isEditingRawInput) { _, isEditing in
             isRawInputFocused = isEditing
+        }
+    }
+
+    private var savedMealToast: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(Color.fuelGreen)
+            Text("Meal saved")
+                .font(.subheadline.weight(.semibold))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color(.systemBackground).opacity(0.96), in: Capsule())
+        .shadow(color: Color.fuelGreen.opacity(0.16), radius: 14, y: 7)
+    }
+
+    private func presentSavedMealToast() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+            showSavedMealToast = true
+        }
+        Task {
+            try? await Task.sleep(for: .seconds(1.8))
+            withAnimation(.easeOut(duration: 0.2)) {
+                showSavedMealToast = false
+            }
         }
     }
 }

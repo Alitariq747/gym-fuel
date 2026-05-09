@@ -3,6 +3,7 @@ import SwiftUI
 struct LogComposerBar: View {
     @Binding var text: String
 
+    let focus: FocusState<Bool>.Binding
     let isSubmitting: Bool
     let canSubmit: Bool
     let onClearError: () -> Void
@@ -27,9 +28,15 @@ struct LogComposerBar: View {
                     .font(.footnote.weight(.medium))
                     .foregroundStyle(.primary)
                     .lineLimit(2)
+                    .focused(focus)
                     .disabled(isSubmitting)
                     .onChange(of: text) { _, _ in
                         onClearError()
+                    }
+                    .onChange(of: isSubmitting) { _, newValue in
+                        if newValue {
+                            focus.wrappedValue = false
+                        }
                     }
 
                 if isEmpty {
@@ -39,7 +46,10 @@ struct LogComposerBar: View {
                         composerActionButton(systemName: "bookmark", action: onSavedMealsTap)
                     }
                 } else {
-                    Button(action: onSubmit) {
+                    Button {
+                        focus.wrappedValue = false
+                        onSubmit()
+                    } label: {
                         Image(systemName: "arrow.up")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(canSubmit ? Color.white : Color.secondary.opacity(0.9))
@@ -95,9 +105,11 @@ struct LogComposerBar: View {
 
 #Preview {
     @Previewable @State var text = ""
+    @Previewable @FocusState var isFocused: Bool
 
     LogComposerBar(
         text: $text,
+        focus: $isFocused,
         isSubmitting: false,
         canSubmit: false,
         onClearError: {},

@@ -37,7 +37,7 @@ enum BackendLogInterpretationError: LocalizedError {
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
 
-    init(baseURL: URL = URL(string: "https://greater-pill-vehicle-allows.trycloudflare.com")!) {
+    init(baseURL: URL = URL(string: "http://localhost:5001")!) {
         self.baseURL = baseURL
     }
 
