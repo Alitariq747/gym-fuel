@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TimelineEntryRow: View {
     let entry: LogEntry
+    @Environment(\.colorScheme) private var colorScheme
     var localPreviewData: Data? = nil
     var showsChevron: Bool = true
     var onRetry: (() -> Void)? = nil
@@ -39,6 +40,16 @@ struct TimelineEntryRow: View {
         guard entry.status == .failed else { return nil }
         return feedback?.explanation ?? "We couldn't process this entry."
     }
+    private var timelineExplanation: String? {
+        guard entry.status != .failed else { return nil }
+        let shortExplanation = feedback?.shortExplanation?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let shortExplanation, !shortExplanation.isEmpty {
+            return shortExplanation
+        }
+
+        let explanation = feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines)
+        return explanation?.isEmpty == false ? explanation : nil
+    }
     private var isAnalyzingTextEntry: Bool {
         entry.status == .analyzing && entry.source == .text
     }
@@ -61,7 +72,7 @@ struct TimelineEntryRow: View {
         entry.type == .food && feedback?.goalFitScore != nil
     }
     private var hasRevealExplanation: Bool {
-        entry.status != .failed && !(feedback?.explanation.isEmpty ?? true)
+        timelineExplanation != nil
     }
     private var showsImagePlaceholder: Bool {
         entry.type == .food && imageStoragePath == nil && localPreviewData == nil && entry.rawInput == "Meal image"
@@ -301,8 +312,7 @@ struct TimelineEntryRow: View {
             }
             if entry.status != .failed,
                showRevealedExplanation,
-               let explanation = feedback?.explanation,
-               !explanation.isEmpty {
+               let timelineExplanation {
                 Divider()
                     .padding(8)
                 HStack(spacing: 12) {
@@ -320,7 +330,7 @@ struct TimelineEntryRow: View {
                         .frame(width: 42, height: 42)
                     }
 
-                    Text(explanation)
+                    Text(timelineExplanation)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -335,10 +345,12 @@ struct TimelineEntryRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        .background(rowBackground, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color(.quaternaryLabel), lineWidth: 1)
+                .stroke(rowStroke, lineWidth: 1)
         )
+        .shadow(color: rowShadow, radius: 10, y: 5)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedTitle)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedCalories)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedProtein)
@@ -382,6 +394,18 @@ struct TimelineEntryRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+    private var rowBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var rowStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color(.quaternaryLabel)
+    }
+
+    private var rowShadow: Color {
+        colorScheme == .dark ? Color.clear : Color.black.opacity(0.04)
+    }
 }
 
 private struct AnimatedEllipsisView: View {
@@ -405,6 +429,7 @@ private struct AnimatedEllipsisView: View {
             rawInput: "Chicken burrito bowl",
             feedback: LogEntryFeedback(
                 explanation: "High protein and decent satiety make this easier to fit into a cut.",
+                shortExplanation: "High protein and easy to fit into a cut.",
                 assumptions: [],
                 confidence: 0.84,
                 estimatedCalories: nil,
@@ -456,6 +481,7 @@ private struct AnimatedEllipsisView: View {
             rawInput: "2 eggs and toast",
             feedback: LogEntryFeedback(
                 explanation: "The meal analysis service is unavailable right now. Try again shortly.",
+                shortExplanation: nil,
                 assumptions: [],
                 confidence: nil,
                 estimatedCalories: nil,
@@ -479,6 +505,7 @@ private struct AnimatedEllipsisView: View {
             rawInput: "Meal image",
             feedback: LogEntryFeedback(
                 explanation: "The meal analysis service is unavailable right now. Try again shortly.",
+                shortExplanation: nil,
                 assumptions: [],
                 confidence: nil,
                 estimatedCalories: nil,
@@ -500,6 +527,7 @@ private struct AnimatedEllipsisView: View {
             rawInput: "45 min treadmill run",
             feedback: LogEntryFeedback(
                 explanation: "Moderate-duration cardio session with a reasonable calorie burn estimate.",
+                shortExplanation: "Moderate cardio with a reasonable burn estimate.",
                 assumptions: [],
                 confidence: 0.79,
                 estimatedCalories: 410,

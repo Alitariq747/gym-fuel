@@ -149,7 +149,10 @@ struct WelcomeView: View {
                 return
             }
 
-            authError = error.localizedDescription
+            authError = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't sign you in with Apple. Please try again."
+            )
         }
     }
 
@@ -167,7 +170,10 @@ struct WelcomeView: View {
                 if authError == .operationCancelled { return }
                 self.authError = authError.localizedDescription
             } else {
-                authError = error.localizedDescription
+                authError = AppErrorMessage.message(
+                    for: error,
+                    fallback: "We couldn't sign you in with Google. Please try again."
+                )
             }
         }
     }

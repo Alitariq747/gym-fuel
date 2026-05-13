@@ -36,15 +36,15 @@ struct ProfileEditorView: View {
     }
     
     // gender
-    @State private var showGenderDialog = false
+    @State private var showGenderSheet = false
 
     private var genderTitle: String {
         draft.gender.displayName
     }
 
     // goal and activity
-    @State private var showGoalDialog = false
-    @State private var showActivityDialog = false
+    @State private var showGoalSheet = false
+    @State private var showActivitySheet = false
 
     private var goalTitle: String {
         draft.goalType?.displayName ?? "Set"
@@ -71,7 +71,7 @@ struct ProfileEditorView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 14) {
             profileHeader
 
             VStack(spacing: 12) {
@@ -102,6 +102,21 @@ struct ProfileEditorView: View {
             NavigationStack {
                 EditWeightSheet(weightKg: $draft.weightKg)
             }
+        }
+        .sheet(isPresented: $showGoalSheet) {
+            goalPickerSheet
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showActivitySheet) {
+            activityPickerSheet
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showGenderSheet) {
+            genderPickerSheet
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -167,7 +182,7 @@ struct ProfileEditorView: View {
                 value: genderTitle,
                 isPlaceholder: false
             ) {
-                showGenderDialog = true
+                showGenderSheet = true
             }
             Divider()
             rowButton(
@@ -190,37 +205,202 @@ struct ProfileEditorView: View {
         }
         .padding(14)
         .background(cardBackground)
-        .confirmationDialog("Pick Gender", isPresented: $showGenderDialog, titleVisibility: .visible) {
-            Button("\(Gender.male.symbol) \(Gender.male.displayName)") { draft.gender = .male }
-            Button("\(Gender.female.symbol) \(Gender.female.displayName)") { draft.gender = .female }
-            Button(Gender.preferNotToSay.displayName) { draft.gender = .preferNotToSay }
-            Button("Cancel", role: .cancel) {}
+    }
+
+    private var genderPickerSheet: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            pickerSheetHeader(
+                title: "Choose gender",
+                subtitle: "This helps tune your calorie and macro estimates.",
+                dismiss: { showGenderSheet = false }
+            )
+            genderOption(.male, emoji: "👨", subtitle: "Use male-based macro equations.", tint: .fuelBlue)
+            genderOption(.female, emoji: "👩", subtitle: "Use female-based macro equations.", tint: .pink)
+            genderOption(.preferNotToSay, emoji: "✨", subtitle: "Keep things private and balanced.", tint: .fuelOrange)
+            Spacer(minLength: 0)
         }
+        .padding(18)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private func genderOption(_ option: Gender, emoji: String, subtitle: String, tint: Color) -> some View {
+        Button {
+            draft.gender = option
+            showGenderSheet = false
+        } label: {
+            HStack(spacing: 14) {
+                Text(emoji)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(tint.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(option.displayName)
+                        .font(.headline.weight(.semibold))
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(14)
+            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.gender == option ? tint : Color.gray.opacity(0.24), lineWidth: draft.gender == option ? 2 : 1))
+        }
+        .buttonStyle(.plain)
     }
 
     private var targetsCard: some View {
         VStack(spacing: 10) {
             rowButton(title: "Goal", systemImage: "target", value: goalTitle, isPlaceholder: draft.goalType == nil) {
-                showGoalDialog = true
+                showGoalSheet = true
             }
             Divider()
             rowButton(title: "Non-training Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.nonTrainingActivityLevel == nil) {
-                showActivityDialog = true
+                showActivitySheet = true
             }
         }
         .padding(14)
         .background(cardBackground)
-        .confirmationDialog("Pick Goal", isPresented: $showGoalDialog, titleVisibility: .visible) {
+    }
+
+    private var goalPickerSheet: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            pickerSheetHeader(
+                title: "Choose your goal",
+                subtitle: "This shapes your macro targets and goal fit score.",
+                dismiss: { showGoalSheet = false }
+            )
             ForEach(GoalType.allCases, id: \.self) { goal in
-                Button(goal.displayName) { draft.goalType = goal }
+                goalOptionRow(goal)
             }
-            Button("Cancel", role: .cancel) {}
+            Spacer(minLength: 0)
         }
-        .confirmationDialog("Pick Activity Level", isPresented: $showActivityDialog, titleVisibility: .visible) {
-            ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
-                Button(level.displayName) { draft.nonTrainingActivityLevel = level }
+        .padding(18)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private func goalOptionRow(_ goal: GoalType) -> some View {
+        Button {
+            draft.goalType = goal
+            showGoalSheet = false
+        } label: {
+            HStack(alignment: .top, spacing: 14) {
+                Text(goalEmoji(for: goal))
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(Color.fuelOrange.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(goal.displayName)
+                        .font(.headline.weight(.semibold))
+                    Text(goal.detail)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
             }
-            Button("Cancel", role: .cancel) {}
+            .padding(14)
+            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.goalType == goal ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: draft.goalType == goal ? 2 : 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func goalEmoji(for goal: GoalType) -> String {
+        switch goal {
+        case .leanBulk: return "💪"
+        case .maintain: return "⚖️"
+        case .cut: return "🔥"
+        }
+    }
+
+    private func pickerSheetHeader(title: String, subtitle: String, dismiss: @escaping () -> Void) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline.weight(.bold))
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button(action: dismiss) {
+                Image(systemName: "xmark")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 34, height: 34)
+                    .background(Color(.secondarySystemBackground), in: Circle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func pickerOptionContent(isSelected: Bool, title: String, detail: String, tint: Color) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.subheadline)
+                .foregroundStyle(isSelected ? tint : Color.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline.weight(.bold))
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var activityPickerSheet: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            pickerSheetHeader(
+                title: "Daily movement",
+                subtitle: "Outside workouts, how active is your normal day?",
+                dismiss: { showActivitySheet = false }
+            )
+
+            ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
+                activityOptionRow(level)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(18)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private func activityOptionRow(_ level: NonTrainingActivityLevel) -> some View {
+        Button {
+            draft.nonTrainingActivityLevel = level
+            showActivitySheet = false
+        } label: {
+            HStack(alignment: .top, spacing: 14) {
+                Text(activityEmoji(for: level))
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(Color.fuelBlue.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(level.displayName)
+                        .font(.headline.weight(.semibold))
+                    Text(level.detail)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(14)
+            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.nonTrainingActivityLevel == level ? Color.fuelBlue : Color.gray.opacity(0.24), lineWidth: draft.nonTrainingActivityLevel == level ? 2 : 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func activityEmoji(for level: NonTrainingActivityLevel) -> String {
+        switch level {
+        case .mostlySitting: return "🪑"
+        case .somewhatActive: return "🏃"
+        case .physicallyDemanding: return "🏗️"
         }
     }
 

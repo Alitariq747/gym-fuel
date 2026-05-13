@@ -24,7 +24,10 @@ final class SavedMealsViewModel: ObservableObject {
         do {
             savedMeals = try await service.fetchSavedMeals(for: userId)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't load your saved meals. Please try again."
+            )
         }
         isLoading = false
     }
@@ -38,7 +41,10 @@ final class SavedMealsViewModel: ObservableObject {
             upsertSavedMeal(meal)
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't save that meal. Please try again."
+            )
             return false
         }
     }
@@ -52,7 +58,10 @@ final class SavedMealsViewModel: ObservableObject {
             upsertSavedMeal(meal)
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't update that meal. Please try again."
+            )
             return false
         }
     }
@@ -66,7 +75,10 @@ final class SavedMealsViewModel: ObservableObject {
             savedMeals.removeAll { $0.id == meal.id }
             return true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't delete that meal. Please try again."
+            )
             return false
         }
     }

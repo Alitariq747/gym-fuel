@@ -112,7 +112,10 @@ struct SignUpView: View {
             try await authManager.signUp(email: email, password: password)
             errorMessage = nil
         } catch {
-            errorMessage = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't create your account. Please try again."
+            )
         }
     }
 }

@@ -66,7 +66,10 @@ final class TimelineViewModel: ObservableObject {
                     self.timeline = DayTimeline(date: startOfDay, entries: entries, calendar: calendar)
                     self.errorMessage = nil
                 case .failure(let error):
-                    self.errorMessage = error.localizedDescription
+                    self.errorMessage = AppErrorMessage.message(
+                        for: error,
+                        fallback: "We couldn't load your timeline. Please try again."
+                    )
                     self.timeline = DayTimeline(date: startOfDay)
                 }
                 self.isLoading = false

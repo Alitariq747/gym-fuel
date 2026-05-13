@@ -29,7 +29,7 @@ struct OnboardingNameStepView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Enter Name")
                     .font(.subheadline)
-                TextField("", text: $name)
+                TextField("", text: nameBinding)
                     .textInputAutocapitalization(.words)
                     .autocorrectionDisabled()
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -63,6 +63,18 @@ struct OnboardingNameStepView: View {
         .padding()
     }
     
+    private var nameBinding: Binding<String> {
+        Binding(
+            get: { name },
+            set: { newValue in
+                name = newValue
+                if errorMessage != nil {
+                    errorMessage = nil
+                }
+            }
+        )
+    }
+
     private func handleNext() {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         

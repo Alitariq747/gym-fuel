@@ -90,16 +90,23 @@ struct OnboardingHeightStepView: View {
     // MARK: - UI Pieces
 
     private var header: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "ruler")
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(Color.primary)
-                .padding(.top, 4)
+        VStack(spacing: 14) {
+            Text("📏")
+                .font(.system(size: 48))
+                .frame(width: 96, height: 96)
+                .background(
+                    LinearGradient(
+                        colors: [Color.fuelBlue.opacity(0.22), Color.fuelGreen.opacity(0.14)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: Circle()
+                )
+                .shadow(color: Color.fuelBlue.opacity(0.14), radius: 18, y: 10)
+                .padding(.top, 12)
 
-           
-
-            Text("Tell us your height so we can better estimate your fueling needs.")
-                .font(.body)
+            Text("Tell us your height so we can better estimate your nutrition needs.")
+                .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 
@@ -120,7 +127,17 @@ struct OnboardingHeightStepView: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(
+                    LinearGradient(
+                        colors: [Color(.secondarySystemBackground), Color.fuelBlue.opacity(0.08)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.fuelBlue.opacity(0.12), lineWidth: 1)
         )
     }
 
@@ -170,6 +187,10 @@ struct OnboardingHeightStepView: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color(.systemGray5), lineWidth: 1)
         )
     }
 
@@ -274,7 +295,7 @@ private struct UnitSegmentedControl: View {
             segment(title: "ft / in", unit: .feetInches)
         }
         .padding(4)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
        
     }
 
@@ -289,8 +310,8 @@ private struct UnitSegmentedControl: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isSelected ? Color(.systemBackground) : Color(.secondarySystemBackground))
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .fill(isSelected ? Color.fuelBlue.opacity(0.14) : Color.clear)
                 )
                 .foregroundStyle(isSelected ? .primary : .secondary)
         }

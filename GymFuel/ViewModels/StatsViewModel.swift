@@ -66,7 +66,10 @@ final class StatsViewModel: ObservableObject {
                 calendar: calendar
             )
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't load your stats. Please try again."
+            )
             snapshot = .empty
         }
 

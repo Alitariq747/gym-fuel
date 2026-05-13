@@ -54,24 +54,10 @@ struct EditHeightSheet: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button { dismiss()
-                } label: {
-                    Image(systemName: "x.circle.fill")
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(Color(.systemGray3))
-
-                }
-                .buttonStyle(.plain)
+                toolbarIconButton(systemImage: "xmark", action: { dismiss() })
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    handleDone()
-                } label: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color(.systemGray3))
-                }
-                .buttonStyle(.plain)
+                toolbarIconButton(systemImage: "checkmark", action: handleDone)
             }
         }
         .onAppear { initializeFromBindingIfNeeded() }
@@ -91,15 +77,28 @@ struct EditHeightSheet: View {
     }
 
     // MARK: - UI Pieces (matches onboarding styling)
+    private func toolbarIconButton(systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.circle)
+        .tint(.secondary)
+    }
+
     private var header: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "ruler")
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(.primary)
-                .padding(.top, 4)
+        VStack(spacing: 14) {
+            Text("📏")
+                .font(.system(size: 48))
+                .frame(width: 96, height: 96)
+                .background(Color.fuelBlue.opacity(0.13), in: Circle())
+                .shadow(color: Color.fuelBlue.opacity(0.12), radius: 18, y: 10)
+                .padding(.top, 12)
 
             Text("Update your height. We store it in centimeters, but you can enter it in either unit.")
-                .font(.body)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -120,6 +119,10 @@ struct EditHeightSheet: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color(.systemGray5), lineWidth: 1)
         )
     }
 
@@ -169,6 +172,10 @@ struct EditHeightSheet: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color(.systemGray5), lineWidth: 1)
         )
     }
 
@@ -264,7 +271,7 @@ private struct HeightUnitSegmentedControl: View {
             segment(title: "ft / in", unit: .feetInches)
         }
         .padding(4)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private func segment(title: String, unit: HeightUnit) -> some View {
@@ -278,8 +285,8 @@ private struct HeightUnitSegmentedControl: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isSelected ? Color(.systemBackground) : Color(.secondarySystemBackground))
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .fill(isSelected ? Color(.systemBackground) : Color.clear)
                 )
                 .foregroundStyle(isSelected ? .primary : .secondary)
         }

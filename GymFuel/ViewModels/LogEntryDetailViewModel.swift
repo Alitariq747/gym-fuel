@@ -65,7 +65,10 @@ final class LogEntryDetailViewModel: ObservableObject {
             isSaving = false
             return updatedEntry
         } catch {
-            setAIError(error.localizedDescription)
+            setAIError(AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't reinterpret this entry. Please try again."
+            ))
             isSaving = false
             return nil
         }
@@ -76,6 +79,7 @@ final class LogEntryDetailViewModel: ObservableObject {
             if updated.feedback == nil {
                 updated.feedback = LogEntryFeedback(
                     explanation: "",
+                    shortExplanation: nil,
                     assumptions: [],
                     confidence: nil,
                     estimatedCalories: nil,
@@ -94,6 +98,7 @@ final class LogEntryDetailViewModel: ObservableObject {
             if updated.feedback == nil {
                 updated.feedback = LogEntryFeedback(
                     explanation: "",
+                    shortExplanation: nil,
                     assumptions: [],
                     confidence: nil,
                     estimatedCalories: caloriesBurned,
@@ -104,6 +109,12 @@ final class LogEntryDetailViewModel: ObservableObject {
             } else {
                 updated.feedback?.estimatedCalories = caloriesBurned
             }
+        }
+    }
+
+    func updateLoggedAt(for entry: LogEntry, to loggedAt: Date) async -> LogEntry? {
+        await updateEntry(entry) { updated in
+            updated.loggedAt = loggedAt
         }
     }
 
@@ -119,7 +130,10 @@ final class LogEntryDetailViewModel: ObservableObject {
             isSaving = false
             return true
         } catch {
-            setActionError(error.localizedDescription)
+            setActionError(AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't delete this entry. Please try again."
+            ))
             isSaving = false
             return false
         }
@@ -140,7 +154,10 @@ final class LogEntryDetailViewModel: ObservableObject {
             isSaving = false
             return updatedEntry
         } catch {
-            setActionError(error.localizedDescription)
+            setActionError(AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't save those changes. Please try again."
+            ))
             isSaving = false
             return nil
         }

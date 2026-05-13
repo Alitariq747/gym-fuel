@@ -28,7 +28,7 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     let userId: String
     var source: LogEntrySource
     var status: LogEntryStatus
-    let loggedAt: Date
+    var loggedAt: Date
     let type: LogEntryType
     var title: String
     var rawInput: String

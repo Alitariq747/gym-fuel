@@ -14,8 +14,10 @@
             filePath = "GymFuel/Views/Profile/ProfileEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "329"
-            endingLineNumber = "329">
+            startingLineNumber = "456"
+            endingLineNumber = "456"
+            landmarkName = "cardBackground"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

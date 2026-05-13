@@ -12,6 +12,7 @@ import UIKit
 struct MainTabView: View {
     let profile: UserProfile
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var composerViewModel = LogComposerViewModel()
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject private var timelineViewModel = TimelineViewModel()
@@ -32,6 +33,19 @@ struct MainTabView: View {
     private var targetMacros: Macros? {
         profileViewModel.targetMacros
     }
+
+    private var topChipBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var topChipStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.clear
+    }
+
+    private var topChipShadow: Color {
+        colorScheme == .dark ? Color.clear : Color.black.opacity(0.08)
+    }
+
     private var consumedMacros: Macros {
         timelineViewModel.consumedMacros
     }
@@ -60,8 +74,9 @@ struct MainTabView: View {
                             .foregroundStyle(.primary)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Color(.systemBackground), in: Capsule())
-                            .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
+                            .background(topChipBackground, in: Capsule())
+                            .overlay(Capsule().stroke(topChipStroke, lineWidth: 1))
+                            .shadow(color: topChipShadow, radius: 10, y: 4)
                     }
                     .buttonStyle(.plain)
 
@@ -84,8 +99,9 @@ struct MainTabView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
-                    .background(Color(.systemBackground), in: Capsule())
-                    .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
+                    .background(topChipBackground, in: Capsule())
+                    .overlay(Capsule().stroke(topChipStroke, lineWidth: 1))
+                    .shadow(color: topChipShadow, radius: 10, y: 4)
                     .frame(width: 76, alignment: .trailing)
                 }
                 if let targetMacros {
@@ -223,6 +239,13 @@ struct MainTabView: View {
                             to: caloriesBurned
                             ) {
                                 await handleUpdatedEntry(updatedEntry)
+                        }
+                    }
+                },
+                onSaveLoggedAt: { loggedAt in
+                    Task {
+                        if let updatedEntry = await logEntryDetailViewModel.updateLoggedAt(for: entry, to: loggedAt) {
+                            await handleUpdatedEntry(updatedEntry)
                         }
                     }
                 },
@@ -373,7 +396,10 @@ struct MainTabView: View {
             mealImageDraft.compressedJPEGData = preparedImage.compressedJPEGData
             mealImageDraft.state = .readyToAnalyze
         } catch {
-            mealImageDraft.state = .failed(error.localizedDescription)
+            mealImageDraft.state = .failed(AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't prepare that photo. Please try a different image."
+            ))
         }
     }
 
@@ -400,7 +426,10 @@ struct MainTabView: View {
             mealImageDraft.compressedJPEGData = preparedImage.compressedJPEGData
             mealImageDraft.state = .readyToAnalyze
         } catch {
-            mealImageDraft.state = .failed(error.localizedDescription)
+            mealImageDraft.state = .failed(AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't prepare that photo. Please try a different image."
+            ))
         }
     }
 

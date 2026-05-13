@@ -18,25 +18,47 @@ struct OnboardingAgeStepView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Please enter your age")
-                .font(.title.bold())
-                .multilineTextAlignment(.center)
-            
-            Text("Your age helps us estimate your macros more accurately.")
-                .font(.body)
+        VStack(alignment: .leading, spacing: 18) {
+            Spacer(minLength: 28)
+
+            Text("🎂")
+                .font(.system(size: 58))
+                .frame(width: 116, height: 116)
+                .background(
+                    LinearGradient(
+                        colors: [Color.fuelOrange.opacity(0.22), Color.fuelGreen.opacity(0.14)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: Circle()
+                )
+                .frame(maxWidth: .infinity)
+
+            Text("Age helps calibrate your baseline energy needs before activity and goals are added.")
+                .font(.footnote)
                 .foregroundStyle(.secondary)
-//                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Enter Age")
-                    .font(.subheadline)
-                TextField("", text: $ageText)
-                    .keyboardType(.decimalPad)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 12)
-                    .padding(.leading, 12)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .font(.subheadline.weight(.semibold))
+                HStack(spacing: 10) {
+                    TextField("", text: ageBinding)
+                        .keyboardType(.numberPad)
+                        .font(.title3.weight(.semibold))
+                        .multilineTextAlignment(.leading)
+                    Spacer()
+                    Text("years")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(14)
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(errorMessage == nil ? Color(.secondarySystemBackground) : Color.fuelRed, lineWidth: 1)
+                )
             }
             
             if let errorMessage {
@@ -69,6 +91,18 @@ struct OnboardingAgeStepView: View {
         }
     }
     
+    private var ageBinding: Binding<String> {
+        Binding(
+            get: { ageText },
+            set: { newValue in
+                ageText = newValue.filter(\.isNumber)
+                if errorMessage != nil {
+                    errorMessage = nil
+                }
+            }
+        )
+    }
+
     private func handleNext() {
         guard let value = Int(ageText), value > 0, value < 120 else {
             errorMessage = "Please enter a valid age."

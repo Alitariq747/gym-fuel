@@ -10,17 +10,20 @@ struct LogEntryDetailSheet: View {
     var onClearActionError: (() -> Void)? = nil
     var onSaveMacros: ((Macros) -> Void)? = nil
     var onSaveCaloriesBurned: ((Double) -> Void)? = nil
+    var onSaveLoggedAt: ((Date) -> Void)? = nil
     var onDeleteEntry: (() -> Void)? = nil
     var onUseAIAgain: ((String) -> Void)? = nil
     var onSaveMeal: ((String, String?, Macros) -> Void)? = nil
 
     @State private var showManualEditSheet = false
+    @State private var showTimeEditSheet = false
     @State private var showSaveMealSheet = false
     @State private var showSavedMealToast = false
     @State private var showDeleteConfirmation = false
     @State private var isAIDetailsExpanded = false
     @State private var isEditingRawInput = false
     @State private var editedRawInput = ""
+    @State private var editedLoggedAt = Date()
     @FocusState private var isRawInputFocused: Bool
     
     private var canEditManually: Bool {
@@ -338,6 +341,12 @@ struct LogEntryDetailSheet: View {
                         showManualEditSheet = true
                     }
                     .disabled(!canEditManually)
+                    Divider()
+                    Button("Edit Time", systemImage: "clock") {
+                        onClearActionError?()
+                        showTimeEditSheet = true
+                    }
+                    .disabled(isPerformingAction)
                     if !isSavedMealEntry {
                         Divider()
                         Button("Edit with AI", systemImage: "sparkles") {
@@ -380,6 +389,38 @@ struct LogEntryDetailSheet: View {
                     initialCaloriesBurned: estimatedCalories,
                     onSave: onSaveCaloriesBurned
                 )
+            }
+        }
+        .sheet(isPresented: $showTimeEditSheet) {
+            VStack(spacing: 16) {
+                    Text("Edit Time")
+                        .font(.headline.weight(.semibold))
+                        .padding(.top, 8)
+                     DatePicker(
+                    "Logged time",
+                    selection: $editedLoggedAt,
+                    displayedComponents: .hourAndMinute
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+
+                Button {
+                    onSaveLoggedAt?(mergedLoggedAt(from: editedLoggedAt))
+                    showTimeEditSheet = false
+                } label: {
+                    Text("Save Time")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(isPerformingAction)
+            }
+            .padding(24)
+            .presentationDetents([.height(360)])
+            .presentationDragIndicator(.visible)
+            .onAppear {
+                editedLoggedAt = entry.loggedAt
             }
         }
         .sheet(isPresented: $showSaveMealSheet) {
@@ -452,6 +493,16 @@ struct LogEntryDetailSheet: View {
             }
         }
     }
+
+    private func mergedLoggedAt(from selectedTime: Date, calendar: Calendar = .current) -> Date {
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: selectedTime)
+        return calendar.date(
+            bySettingHour: timeComponents.hour ?? 0,
+            minute: timeComponents.minute ?? 0,
+            second: 0,
+            of: entry.loggedAt
+        ) ?? entry.loggedAt
+    }
 }
 
 #Preview {
@@ -464,6 +515,7 @@ struct LogEntryDetailSheet: View {
                 rawInput: "Chicken bowl with some salad and fruits with one cup of boiled rice",
                 feedback: LogEntryFeedback(
                     explanation: "High protein and moderate calories fit well into the day.",
+                    shortExplanation: "High protein and moderate calories.",
                     assumptions: [
                         "Rice was treated as roughly 1 cooked cup.",
                         "Salad dressing was assumed to be light and not separately logged.",

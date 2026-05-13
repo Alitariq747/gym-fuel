@@ -31,16 +31,16 @@ final class LogComposerViewModel: ObservableObject {
     }
 
     private func userFacingMessage(for error: Error, fallback: String? = nil) -> String {
-        if let interpretationError = error as? BackendLogInterpretationError,
-           let description = interpretationError.errorDescription {
-            return description
-        }
-        return fallback ?? error.localizedDescription
+        AppErrorMessage.message(
+            for: error,
+            fallback: fallback ?? "We couldn't log that entry. Please try again."
+        )
     }
 
     private func failureFeedback(message: String) -> LogEntryFeedback {
         LogEntryFeedback(
             explanation: message,
+            shortExplanation: nil,
             assumptions: [],
             confidence: nil,
             estimatedCalories: nil,
@@ -60,9 +60,11 @@ final class LogComposerViewModel: ObservableObject {
         let pendingEntry = makePendingTextEntry(text: text, userId: userId, loggedAt: loggedAt)
         isSubmitting = true
         errorMessage = nil
+        var didSavePendingEntry = false
 
         do {
             try await logEntryService.saveEntry(pendingEntry)
+            didSavePendingEntry = true
             draft = LogComposerDraft()
             let interpretedEntry = try await interpretationService.interpretText(
                 text,
@@ -87,10 +89,14 @@ final class LogComposerViewModel: ObservableObject {
             return true
         } catch {
             let message = userFacingMessage(for: error)
-            var failedEntry = pendingEntry
-            failedEntry.status = .failed
-            failedEntry.feedback = failureFeedback(message: message)
-            try? await logEntryService.updateEntry(failedEntry)
+            if didSavePendingEntry {
+                var failedEntry = pendingEntry
+                failedEntry.status = .failed
+                failedEntry.feedback = failureFeedback(message: message)
+                try? await logEntryService.updateEntry(failedEntry)
+            } else {
+                errorMessage = message
+            }
             isSubmitting = false
             return false
         }
@@ -204,9 +210,11 @@ final class LogComposerViewModel: ObservableObject {
         )
         isSubmitting = true
         errorMessage = nil
+        var didSavePendingEntry = false
 
         do {
             try await logEntryService.saveEntry(pendingEntry)
+            didSavePendingEntry = true
             draft = LogComposerDraft()
             let interpretedEntry = try await interpretationService.interpretMealImage(
                 imageData,
@@ -232,10 +240,14 @@ final class LogComposerViewModel: ObservableObject {
             return resolvedEntry
         } catch {
             let message = userFacingMessage(for: error)
-            var failedEntry = pendingEntry
-            failedEntry.status = .failed
-            failedEntry.feedback = failureFeedback(message: message)
-            try? await logEntryService.updateEntry(failedEntry)
+            if didSavePendingEntry {
+                var failedEntry = pendingEntry
+                failedEntry.status = .failed
+                failedEntry.feedback = failureFeedback(message: message)
+                try? await logEntryService.updateEntry(failedEntry)
+            } else {
+                errorMessage = message
+            }
             isSubmitting = false
             return nil
         }
@@ -255,6 +267,7 @@ final class LogComposerViewModel: ObservableObject {
             detail: meal.description,
             feedback: LogEntryFeedback(
                 explanation: "Saved meal logged directly.",
+                shortExplanation: nil,
                 assumptions: [],
                 confidence: nil,
                 estimatedCalories: nil,

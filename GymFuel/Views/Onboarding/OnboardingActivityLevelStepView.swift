@@ -20,55 +20,22 @@ struct OnboardingActivityLevelStepView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "bed.double")
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(Color.primary)
+            Text("🚶")
+                .font(.system(size: 48))
+                .frame(width: 96, height: 96)
+                .background(Color.fuelBlue.opacity(0.13), in: Circle())
             
             
-            Text("This tells us how active you are outside the gym so we can set your baseline calories, especially on rest days.")
-                .font(.body)
-                .foregroundStyle(.secondary)
+            Text("Set your Activity Level")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
             
             Spacer()
             
             VStack(spacing: 12) {
                 ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
-                    Button {
-                        tempSelection = level
-                        errorMessage = nil
-                    } label: {
-                        HStack(alignment: .center, spacing: 12) {
-                           
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(level.displayName)
-                                    .font(.headline)
-                                Text(level.detail)
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if tempSelection == level {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(Color.primary)
-                            } else {
-                                Image(systemName: "circle")
-                                    .foregroundStyle(Color.gray.opacity(0.3))
-                            }
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(
-                                    tempSelection == level
-                                    ? Color.primary
-                                    : Color.gray.opacity(0.3),
-                                    lineWidth: 1
-                                )
-                        )
-                    }
-                    .buttonStyle(.plain)
+                    activityOption(level)
                 }
             }
             
@@ -101,6 +68,43 @@ struct OnboardingActivityLevelStepView: View {
         }
     }
     
+    private func activityOption(_ level: NonTrainingActivityLevel) -> some View {
+        Button {
+            tempSelection = level
+            errorMessage = nil
+        } label: {
+            HStack(alignment: .top, spacing: 14) {
+                Text(activityEmoji(for: level))
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(Color.fuelBlue.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(level.displayName)
+                        .font(.headline.weight(.semibold))
+                    Text(level.detail)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(14)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(tempSelection == level ? Color.fuelBlue : Color.gray.opacity(0.24), lineWidth: tempSelection == level ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func activityEmoji(for level: NonTrainingActivityLevel) -> String {
+        switch level {
+        case .mostlySitting: return "🪑"
+        case .somewhatActive: return "🏃"
+        case .physicallyDemanding: return "🥵"
+        }
+    }
+
     private func handleNext() {
         selectedLevel = tempSelection
         errorMessage = nil

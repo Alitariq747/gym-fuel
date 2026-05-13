@@ -9,6 +9,7 @@ import Foundation
 
 struct LogEntryFeedback: Codable, Equatable, Hashable, Sendable {
     var explanation: String
+    var shortExplanation: String?
     var assumptions: [String]
     var confidence: Double?
     var estimatedCalories: Double?

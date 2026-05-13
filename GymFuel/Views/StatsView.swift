@@ -10,6 +10,7 @@ import SwiftUI
 struct StatsView: View {
     let profile: UserProfile
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
     private let macroTargetCalculator = MacroTargetCalculator()
     init(profile: UserProfile, viewModel: StatsViewModel = StatsViewModel()) {
@@ -132,9 +133,21 @@ struct StatsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.black.opacity(0.05), lineWidth: 1))
-        .shadow(color: .black.opacity(0.05), radius: 12, y: 6)
+        .background(statsCardBackground, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(statsCardStroke, lineWidth: 1))
+        .shadow(color: statsCardShadow, radius: 12, y: 6)
+    }
+
+    private var statsCardBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var statsCardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+    }
+
+    private var statsCardShadow: Color {
+        colorScheme == .dark ? Color.clear : Color.black.opacity(0.05)
     }
 
 }
@@ -174,7 +187,7 @@ private struct MacroMiniBarRow: View {
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 76)
+                    .frame(height: 150)
                 }
             }
         }

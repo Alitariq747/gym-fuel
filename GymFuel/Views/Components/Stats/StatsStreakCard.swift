@@ -9,6 +9,7 @@ import SwiftUI
 
 struct StatsStreakCard: View {
     let snapshot: StatsSnapshot
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -36,9 +37,21 @@ struct StatsStreakCard: View {
                 .background(Color.fuelOrange.opacity(0.14), in: Circle())
         }
         .padding(18)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.black.opacity(0.06), lineWidth: 1))
-        .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
+        .background(cardBackground, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(cardStroke, lineWidth: 1))
+        .shadow(color: cardShadow, radius: 16, y: 8)
+    }
+
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
+    }
+
+    private var cardShadow: Color {
+        colorScheme == .dark ? Color.clear : Color.black.opacity(0.06)
     }
 
     private var weeklyDayIndicators: some View {

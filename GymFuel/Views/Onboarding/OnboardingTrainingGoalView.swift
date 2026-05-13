@@ -18,50 +18,21 @@ struct OnboardingTrainingGoalStepView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "dot.scope")
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(Color.primary)
+            Text("🎯")
+                .font(.system(size: 48))
+                .frame(width: 96, height: 96)
+                .background(Color.fuelOrange.opacity(0.14), in: Circle())
             
-            Text("Pick the goal that best matches what you want over the next few months.")
-                .font(.body)
-                .foregroundStyle(.secondary)
+            Text("Choose your Training Goal")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
             
             Spacer()
             
             VStack(spacing: 12) {
                 ForEach(GoalType.allCases, id: \.self) { goal in
-                    Button {
-                        tempSelection = goal
-                        errorMessage = nil
-                    } label: {
-                        HStack(alignment: .center, spacing: 12) {
-                          
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(goal.displayName)
-                                    .font(.headline)
-                                Text(goal.detail)
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            Spacer()
-                            if tempSelection == goal {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(Color.primary)
-                            } else {
-                                Image(systemName: "circle")
-                                    .foregroundStyle(Color.gray.opacity(0.3))
-                            }
-                        }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(tempSelection == goal ? Color.primary : Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
+                    goalOption(goal)
                 }
             }
             
@@ -93,6 +64,43 @@ struct OnboardingTrainingGoalStepView: View {
         }
     }
     
+    private func goalOption(_ goal: GoalType) -> some View {
+        Button {
+            tempSelection = goal
+            errorMessage = nil
+        } label: {
+            HStack(alignment: .top, spacing: 14) {
+                Text(goalEmoji(for: goal))
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+                    .background(Color.fuelOrange.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(goal.displayName)
+                        .font(.headline.weight(.semibold))
+                    Text(goal.detail)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(14)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(tempSelection == goal ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: tempSelection == goal ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func goalEmoji(for goal: GoalType) -> String {
+        switch goal {
+        case .leanBulk: return "💪"
+        case .maintain: return "⚖️"
+        case .cut: return "🔥"
+        }
+    }
+
     private func handleFinish() {
        
         selectedGoal = tempSelection

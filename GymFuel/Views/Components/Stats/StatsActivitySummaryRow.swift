@@ -10,6 +10,7 @@ import SwiftUI
 struct StatsActivitySummaryRow: View {
     let foodLogs: Int
     let workoutLogs: Int
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -35,9 +36,21 @@ struct StatsActivitySummaryRow: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .padding(.horizontal, 12)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Color.black.opacity(0.05), lineWidth: 1))
-        .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
+        .background(tileBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(tileStroke, lineWidth: 1))
+        .shadow(color: tileShadow, radius: 10, y: 5)
+    }
+
+    private var tileBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var tileStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+    }
+
+    private var tileShadow: Color {
+        colorScheme == .dark ? Color.clear : Color.black.opacity(0.05)
     }
 }
 

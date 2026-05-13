@@ -40,7 +40,10 @@ final class UserProfileViewModel: ObservableObject {
             let profile = try await service.fetchProfile(for: uid)
             self.profile = profile
         } catch {
-            self.errorMessage = error.localizedDescription
+            self.errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't load your profile. Please try again."
+            )
             self.profile = nil
         }
         isLoading = false
@@ -55,7 +58,10 @@ final class UserProfileViewModel: ObservableObject {
             let updatedProfile = try await service.updateProfile(for: uid, name: name, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: true, gender: gender)
             self.profile = updatedProfile
         } catch {
-            self.errorMessage = error.localizedDescription
+            self.errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't finish setting up your profile. Please try again."
+            )
             self.profile = nil
         }
         isLoading = false
@@ -69,6 +75,7 @@ final class UserProfileViewModel: ObservableObject {
     
     func saveProfileEdits(for uid: String, draft: UserProfileDraft) async {
         isSaving = true
+        defer { isSaving = false }
         errorMessage = nil
         
         do {
@@ -79,9 +86,11 @@ final class UserProfileViewModel: ObservableObject {
             
             self.profile = updatedProfile
         } catch {
-            self.errorMessage = error.localizedDescription
+            self.errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't save your profile changes. Please try again."
+            )
         }
-        isSaving = false
     }
     
     

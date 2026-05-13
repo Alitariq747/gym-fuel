@@ -42,11 +42,11 @@ enum NonTrainingActivityLevel: String, CaseIterable, Codable {
     var detail: String {
         switch self {
         case .mostlySitting:
-            return "Desk job or student, lots of sitting, little movement outside workouts."
+            return "Mostly desk or study time with light daily movement."
         case .somewhatActive:
-            return "On your feet a fair bit (teaching, retail, walking around), but not heavy physical labor."
+            return "On your feet often, but not heavy physical labor."
         case .physicallyDemanding:
-            return "Job or daily life involves regular physical work (construction, warehouse, delivery, etc.)."
+            return "Daily work includes lifting, carrying, or long active hours."
         }
     }
 }

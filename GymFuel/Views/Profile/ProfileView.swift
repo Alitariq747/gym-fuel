@@ -92,19 +92,18 @@ struct ProfileView: View {
                                         } label: {
                                             HStack(spacing: 6) {
                                                 Image(systemName: "checkmark")
-                                                    .font(.footnote.weight(.bold))
+                                                    .font(.caption.weight(.bold))
                                                 Text("Save")
-                                                    .font(.subheadline.weight(.semibold))
+                                                    .font(.caption.weight(.bold))
                                             }
                                             .foregroundStyle(canSave && !isBusy ? .primary : .secondary)
-                                            .padding(.horizontal, 14)
-                                            .padding(.vertical, 10)
-                                            .background(
-                                                Color(.systemBackground),
-                                                in: Capsule()
-                                            )
+                                            .frame(height: 32)
+                                            .padding(.horizontal, 12)
+                                            .background(Color(.secondarySystemBackground), in: Capsule())
+                                            .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
                                         }
                                         .buttonStyle(.plain)
+                                        .shadow(color: .black.opacity(canSave && !isBusy ? 0.06 : 0), radius: 8, y: 3)
                                         .disabled(!canSave || isBusy)
                                     }
                                     Spacer()
@@ -117,12 +116,14 @@ struct ProfileView: View {
                                         dismiss()
                                     } label: {
                                         Image(systemName: "xmark")
-                                            .font(.headline)
-                                            .foregroundStyle(.secondary)
-                                            .padding(10)
-                                            .background(Color(.systemBackground), in: Circle())
+                                            .font(.caption.weight(.bold))
+                                            .foregroundStyle(.primary)
+                                            .frame(width: 32, height: 32)
+                                            .background(Color(.secondarySystemBackground), in: Circle())
+                                            .overlay(Circle().stroke(Color.black.opacity(0.05), lineWidth: 1))
                                     }
                                     .buttonStyle(.plain)
+                                    .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
                                     .disabled(isBusy)
                                 }
                                 .padding(.horizontal)
@@ -497,7 +498,10 @@ struct ProfileView: View {
             signOutError = nil
             dismiss()
         } catch {
-            signOutError = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+            signOutError = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't sign you out. Please try again."
+            )
         }
     }
 
@@ -639,12 +643,18 @@ struct ProfileView: View {
             return
         }
 
-        let details = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+        let details = AppErrorMessage.message(
+            for: error,
+            fallback: "Please verify your account and try again."
+        )
         signOutError = "Verification failed. \(details)"
     }
 
     private func setDeleteError(_ error: Error) {
-        let details = (error as? AuthManagerError)?.localizedDescription ?? error.localizedDescription
+        let details = AppErrorMessage.message(
+            for: error,
+            fallback: "Please try deleting your account again."
+        )
         signOutError = "Delete failed. \(details)"
     }
 

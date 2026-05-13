@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CaloriesStatsCard: View {
     let snapshot: StatsSnapshot
+    @Environment(\.colorScheme) private var colorScheme
 
     private var calorieTargetLabel: String? {
         guard let target = snapshot.dailyStats.compactMap(\.targetCalories).first else { return nil }
@@ -27,9 +28,21 @@ struct CaloriesStatsCard: View {
             summaryRow
         }
         .padding(16)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.black.opacity(0.05), lineWidth: 1))
-        .shadow(color: .black.opacity(0.05), radius: 12, y: 6)
+        .background(cardBackground, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(cardStroke, lineWidth: 1))
+        .shadow(color: cardShadow, radius: 12, y: 6)
+    }
+
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+    }
+
+    private var cardShadow: Color {
+        colorScheme == .dark ? Color.clear : Color.black.opacity(0.05)
     }
 
     private var header: some View {
