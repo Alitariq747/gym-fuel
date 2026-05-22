@@ -11,6 +11,13 @@ struct LogEntryImage: Codable, Equatable, Hashable, Sendable {
     let storagePath: String
 }
 
+enum LogEntryImageUploadStatus: String, Codable, Equatable, Hashable, Sendable {
+    case localOnly
+    case uploading
+    case uploaded
+    case failed
+}
+
 enum LogEntrySource: String, Codable, Equatable, Hashable, Sendable {
     case text
     case image
@@ -35,6 +42,7 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     var detail: String?
     var feedback: LogEntryFeedback?
     var image: LogEntryImage?
+    var imageUploadStatus: LogEntryImageUploadStatus?
 
     init(
         id: String = UUID().uuidString,
@@ -47,7 +55,8 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
         rawInput: String,
         detail: String? = nil,
         feedback: LogEntryFeedback? = nil,
-        image: LogEntryImage? = nil
+        image: LogEntryImage? = nil,
+        imageUploadStatus: LogEntryImageUploadStatus? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -60,5 +69,6 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.detail = detail
         self.feedback = feedback
         self.image = image
+        self.imageUploadStatus = imageUploadStatus
     }
 }

@@ -7,13 +7,24 @@
 
 import Foundation
 
+struct EstimatedItemComponent: Codable, Equatable, Hashable, Sendable {
+    var name: String
+    var estimatedAmount: String
+}
+
+struct EstimatedItem: Codable, Equatable, Hashable, Sendable {
+    var name: String
+    var quantity: String
+    var estimatedComponents: [EstimatedItemComponent]
+    var mainUncertainty: String?
+}
+
 struct LogEntryFeedback: Codable, Equatable, Hashable, Sendable {
     var explanation: String
-    var shortExplanation: String?
     var assumptions: [String]
     var confidence: Double?
     var estimatedCalories: Double?
     var macros: Macros?
     var goalFitScore: Int?
-    var rebalanceHint: String?
+    var estimatedItems: [EstimatedItem]?
 }

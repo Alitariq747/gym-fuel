@@ -19,6 +19,8 @@ private struct OnboardingData {
 
 private enum OnboardingStep: Hashable {
     case name
+    case liftEatsIntro
+    case liftEatsDifference
     case gender
     case age
     case height
@@ -37,7 +39,7 @@ struct OnboardingFlowView: View {
     // MARK: - Step order + progress
 
     private let orderedSteps: [OnboardingStep] = [
-        .name, .gender, .age, .height, .weight,
+        .name, .liftEatsIntro, .liftEatsDifference, .gender, .age, .height, .weight,
         .activityLevel, .goal
     ]
 
@@ -104,8 +106,18 @@ struct OnboardingFlowView: View {
         switch step {
         case .name:
             OnboardingNameStepView(
-                onNext: { go(to: .gender, direction: .forward) },
+                onNext: { go(to: .liftEatsIntro, direction: .forward) },
                 name: $data.name
+            )
+
+        case .liftEatsIntro:
+            liftEatsIntro(
+                onNext: { go(to: .liftEatsDifference, direction: .forward) }
+            )
+
+        case .liftEatsDifference:
+            OnboardingLiftEats(
+                onNext: { go(to: .gender, direction: .forward) }
             )
 
         case .gender:

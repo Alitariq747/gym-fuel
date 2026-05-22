@@ -164,53 +164,8 @@ struct LogEntryDetailSheet: View {
                 VStack(alignment: .leading, spacing: 16) {
                     TimelineEntryRow(entry: entry, showsChevron: false)
 
-                    if let rebalanceHint = entry.feedback?.rebalanceHint {
-                        HStack(alignment: .top, spacing: 12) {
-                            Text("💡")
-                                .font(.title3)
-                                .frame(width: 40, height: 40)
-                                .background(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.fuelOrange.opacity(0.16),
-                                            Color.fuelOrange.opacity(0.08),
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    in: Circle()
-                                )
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Rebalance Hint")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-
-                                Text(rebalanceHint)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-
-                            Spacer(minLength: 0)
-                        }
-                        .padding(14)
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    Color(.systemBackground),
-                                    Color(.secondarySystemBackground),
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .stroke(Color.fuelOrange.opacity(0.14), lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
+                    if let explanation = entry.feedback?.explanation, !explanation.isEmpty {
+                        LiftEatsAnalysisCard(explanation: explanation)
                     }
 
                     if showsAIDetails {
@@ -505,6 +460,51 @@ struct LogEntryDetailSheet: View {
     }
 }
 
+private struct LiftEatsAnalysisCard: View {
+    let explanation: String
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color(.quaternaryLabel)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image("LiftEatsWelcomeIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                Text("LiftEats Analysis")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Text(explanation)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(cardStroke, lineWidth: 1))
+    }
+}
+
+private struct PreviewSavedMealService: SavedMealService {
+    func fetchSavedMeals(for userId: String) async throws -> [SavedMeal] { [] }
+    func saveMeal(_ meal: SavedMeal) async throws { }
+    func updateMeal(_ meal: SavedMeal) async throws { }
+    func deleteMeal(userId: String, mealId: String) async throws { }
+}
+
 #Preview {
     NavigationStack {
         LogEntryDetailSheet(
@@ -515,7 +515,6 @@ struct LogEntryDetailSheet: View {
                 rawInput: "Chicken bowl with some salad and fruits with one cup of boiled rice",
                 feedback: LogEntryFeedback(
                     explanation: "High protein and moderate calories fit well into the day.",
-                    shortExplanation: "High protein and moderate calories.",
                     assumptions: [
                         "Rice was treated as roughly 1 cooked cup.",
                         "Salad dressing was assumed to be light and not separately logged.",
@@ -523,10 +522,10 @@ struct LogEntryDetailSheet: View {
                     confidence: 0.72,
                     estimatedCalories: nil,
                     macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
-                    goalFitScore: 78,
-                    rebalanceHint: "Keep later meals lighter on fats if needed."
+                    goalFitScore: 78
                 )
             )
         )
+        .environmentObject(SavedMealsViewModel(service: PreviewSavedMealService()))
     }
 }

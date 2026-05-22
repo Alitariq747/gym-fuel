@@ -35,6 +35,9 @@ final class TimelineViewModel: ObservableObject {
     private var localImagePreviewDataByEntryId: [String: Data] = [:]
     private var localPreparedImageDataByEntryId: [String: Data] = [:]
     private var revealedSuccessEntryIDs: Set<String> = []
+    private var previousEntryStatusesByID: [String: LogEntryStatus] = [:]
+    private var pendingSuccessRevealEntryIDs: Set<String> = []
+    private var attemptedImageUploadRetryEntryIDs: Set<String> = []
 
     init(service: LogEntryService = FirebaseLogEntryService()) {
         self.service = service
@@ -63,6 +66,7 @@ final class TimelineViewModel: ObservableObject {
             Task { @MainActor in
                 switch result {
                 case .success(let entries):
+                    self.trackStatusTransitions(for: entries)
                     self.timeline = DayTimeline(date: startOfDay, entries: entries, calendar: calendar)
                     self.errorMessage = nil
                 case .failure(let error):
@@ -130,7 +134,36 @@ final class TimelineViewModel: ObservableObject {
         revealedSuccessEntryIDs.contains(entryId)
     }
 
+    func shouldAnimateSuccessReveal(for entry: LogEntry) -> Bool {
+        entry.status == .succeeded &&
+        pendingSuccessRevealEntryIDs.contains(entry.id) &&
+        !revealedSuccessEntryIDs.contains(entry.id)
+    }
+
     func markSuccessRevealed(for entryId: String) {
         revealedSuccessEntryIDs.insert(entryId)
+        pendingSuccessRevealEntryIDs.remove(entryId)
+    }
+
+    func imageUploadRetryCandidates() -> [LogEntry] {
+        let candidates = timeline.entries.filter {
+            $0.source == .image &&
+            $0.status == .succeeded &&
+            $0.imageUploadStatus == .failed &&
+            $0.image == nil &&
+            !attemptedImageUploadRetryEntryIDs.contains($0.id)
+        }
+        attemptedImageUploadRetryEntryIDs.formUnion(candidates.map(\.id))
+        return candidates
+    }
+
+    private func trackStatusTransitions(for entries: [LogEntry]) {
+        for entry in entries {
+            let previousStatus = previousEntryStatusesByID[entry.id]
+            if previousStatus == .analyzing, entry.status == .succeeded {
+                pendingSuccessRevealEntryIDs.insert(entry.id)
+            }
+            previousEntryStatusesByID[entry.id] = entry.status
+        }
     }
 }

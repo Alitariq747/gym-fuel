@@ -7,9 +7,12 @@ enum BackendLogInterpretationError: LocalizedError {
     case appCheckFailed
     case serverUnavailable
     case invalidResponse
+    case invalidRequest(String)
     case decodingFailed
     case networkUnavailable
     case requestTimedOut
+    case monthlyQuotaExceeded(String)
+    case rateLimited(String)
     case unknown
 
     var errorDescription: String? {
@@ -22,12 +25,18 @@ enum BackendLogInterpretationError: LocalizedError {
             return "The meal analysis service is unavailable right now. Try again shortly."
         case .invalidResponse:
             return "We couldn't understand the server response. Please try again."
+        case .invalidRequest(let message):
+            return message
         case .decodingFailed:
             return "We couldn't process the meal analysis response. Please try again."
         case .networkUnavailable:
             return "You're offline or the connection is unstable. Please try again."
         case .requestTimedOut:
             return "The request took too long. Please try again."
+        case .monthlyQuotaExceeded(let message):
+            return message
+        case .rateLimited(let message):
+            return message
         case .unknown:
             return "Something went wrong while logging your meal. Please try again."
         }
@@ -37,7 +46,7 @@ enum BackendLogInterpretationError: LocalizedError {
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
 
-    init(baseURL: URL = URL(string: "http://localhost:5001")!) {
+    init(baseURL: URL = URL(string: "https://ribbon-execute-nextel-recovered.trycloudflare.com")!) {
         self.baseURL = baseURL
     }
 
@@ -75,6 +84,11 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         var title: String
         var detail: String?
         var feedback: LogEntryFeedback
+    }
+
+    private struct BackendErrorResponse: Codable {
+        var error: String
+        var message: String?
     }
 
     private func makeLogEntry(
@@ -128,11 +142,46 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             return .unauthorized
         case 403:
             return .appCheckFailed
+        case 504:
+            return .requestTimedOut
         case 429, 500...599:
             return .serverUnavailable
         default:
             return .invalidResponse
         }
+    }
+
+    private func mapBackendErrorCode(_ code: String, message: String?) -> BackendLogInterpretationError? {
+        switch code {
+        case "auth/missing-bearer-token",
+             "auth/id-token-revoked",
+             "auth/id-token-expired",
+             "auth/user-disabled",
+             "auth/invalid-id-token":
+            return .unauthorized
+        case "appcheck/missing-token", "appcheck/invalid-token":
+            return .appCheckFailed
+        case "interpretation/text-required",
+             "interpretation/image-required",
+             "interpretation/invalid-goal":
+            return .invalidRequest(message ?? "Please check your entry and try again.")
+        case "quota/text-monthly-limit-exceeded",
+             "quota/image-monthly-limit-exceeded":
+            return .monthlyQuotaExceeded(message ?? "You have reached your monthly scan limit.")
+        case "rate-limit/too-many-interpret-text-requests":
+            return .rateLimited(message ?? "Too many requests. Please wait a moment and try again.")
+        default:
+            return nil
+        }
+    }
+
+    private func mapBackendErrorResponse(_ data: Data, statusCode: Int) -> BackendLogInterpretationError {
+        if let backendError = try? JSONDecoder().decode(BackendErrorResponse.self, from: data),
+           let mappedError = mapBackendErrorCode(backendError.error, message: backendError.message) {
+            return mappedError
+        }
+
+        return mapHTTPStatusCode(statusCode)
     }
 
     private func sendTextInterpretationRequest(_ requestData: Data) async throws -> TextInterpretationResponse {
@@ -160,7 +209,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             throw BackendLogInterpretationError.invalidResponse
         }
         guard (200..<300).contains(httpResponse.statusCode) else {
-            throw mapHTTPStatusCode(httpResponse.statusCode)
+            throw mapBackendErrorResponse(data, statusCode: httpResponse.statusCode)
         }
 
         do {
@@ -195,7 +244,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             throw BackendLogInterpretationError.invalidResponse
         }
         guard (200..<300).contains(httpResponse.statusCode) else {
-            throw mapHTTPStatusCode(httpResponse.statusCode)
+            throw mapBackendErrorResponse(data, statusCode: httpResponse.statusCode)
         }
 
         do {

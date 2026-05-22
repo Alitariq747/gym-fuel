@@ -18,7 +18,7 @@ struct TimelineEntryRow: View {
     @State private var showRevealedExplanation = false
     @State private var revealSequenceTask: Task<Void, Never>?
     @State private var runningSuccessRevealEntryID: String?
-    private let revealStepDelay: Duration = .milliseconds(400)
+    private let revealStepDelay: Duration = .milliseconds(220)
     private let revealAnimationDuration = 0.3
 
     private var feedback: LogEntryFeedback? { entry.feedback }
@@ -42,11 +42,6 @@ struct TimelineEntryRow: View {
     }
     private var timelineExplanation: String? {
         guard entry.status != .failed else { return nil }
-        let shortExplanation = feedback?.shortExplanation?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let shortExplanation, !shortExplanation.isEmpty {
-            return shortExplanation
-        }
-
         let explanation = feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines)
         return explanation?.isEmpty == false ? explanation : nil
     }
@@ -74,8 +69,14 @@ struct TimelineEntryRow: View {
     private var hasRevealExplanation: Bool {
         timelineExplanation != nil
     }
-    private var showsImagePlaceholder: Bool {
-        entry.type == .food && imageStoragePath == nil && localPreviewData == nil && entry.rawInput == "Meal image"
+    private var isMealImageEntry: Bool {
+        let rawInput = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        return entry.type == .food && (
+            imageStoragePath != nil ||
+            localPreviewData != nil ||
+            entry.imageUploadStatus != nil ||
+            rawInput == "Meal image"
+        )
     }
     private var exerciseEmoji: String {
         let title = entry.title.lowercased()
@@ -188,8 +189,6 @@ struct TimelineEntryRow: View {
                             Color(.systemGray6),
                             in: Circle()
                         )
-                } else if let imageStoragePath {
-                    MealImageThumbnailView(storagePath: imageStoragePath, size: 72)
                 } else if let localPreviewData,
                           let previewImage = UIImage(data: localPreviewData) {
                     Image(uiImage: previewImage)
@@ -197,15 +196,8 @@ struct TimelineEntryRow: View {
                         .scaledToFill()
                         .frame(width: 72, height: 72)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                } else if showsImagePlaceholder {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(.systemGray6))
-                        Image(systemName: entry.status == .failed ? "photo.badge.exclamationmark" : "photo")
-                            .font(.title3)
-                            .foregroundStyle(entry.status == .failed ? .red : .secondary)
-                    }
-                    .frame(width: 72, height: 72)
+                } else if isMealImageEntry {
+                    MealImageThumbnailView(entryId: entry.id, storagePath: imageStoragePath, size: 72)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
@@ -269,9 +261,9 @@ struct TimelineEntryRow: View {
                     .foregroundStyle(.secondary)
                     .buttonStyle(.plain)
                 } else if showsChevron && entry.status != .analyzing {
-                    Image(systemName: "chevron.right")
+                    Image(systemName: "ellipsis")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.primary)
                 }
             }
             if let macros = feedback?.macros, entry.type == .food,
@@ -314,33 +306,37 @@ struct TimelineEntryRow: View {
                showRevealedExplanation,
                let timelineExplanation {
                 Divider()
-                    .padding(8)
-                HStack(spacing: 12) {
+                    .padding(.vertical, 2)
+                let scoreTone = feedback?.goalFitScore.map(scoreColor) ?? Color.fuelGreen
+                HStack(spacing: 10) {
                     if showRevealedGoalFit, let goalFitScore = feedback?.goalFitScore {
-                        let scoreColor = goalFitScore >= 60 ? Color.fuelGreen : Color.fuelRed
-
-                        ZStack {
-                            Circle()
-                                .fill(Color(.systemBackground))
-                                .overlay(Circle().stroke(scoreColor))
+                        VStack(spacing: -1) {
                             Text("\(goalFitScore)")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(scoreColor)
+                            Text(scoreLabel(for: goalFitScore).uppercased())
+                                .font(.system(size: 7, weight: .semibold))
                         }
-                        .frame(width: 42, height: 42)
+                        .foregroundStyle(scoreTone)
+                        .frame(width: 40, height: 40)
+                        .background(scoreTone.opacity(0.14), in: Circle())
+                        .overlay(Circle().stroke(scoreTone.opacity(0.18), lineWidth: 1))
+                        .shadow(color: scoreTone.opacity(0.12), radius: 8, y: 3)
+
+                        Rectangle()
+                            .fill(scoreTone.opacity(0.14))
+                            .frame(width: 1, height: 32)
                     }
 
                     Text(timelineExplanation)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(.caption2.weight(.regular))
+                        .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.horizontal, 12)
-//                .background(
-//                    Color(.systemBackground),
-//                    in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-//                )
-//                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.quaternaryLabel)))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 2)
+
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -360,6 +356,11 @@ struct TimelineEntryRow: View {
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedExplanation)
         .onAppear {
             syncRevealStateForCurrentEntry()
+        }
+        .onDisappear {
+            revealSequenceTask?.cancel()
+            revealSequenceTask = nil
+            runningSuccessRevealEntryID = nil
         }
         .onChange(of: entry.id) { _, _ in
             syncRevealStateForCurrentEntry()
@@ -393,6 +394,18 @@ struct TimelineEntryRow: View {
                 .foregroundStyle(.primary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func scoreColor(for score: Int) -> Color {
+        if score >= 75 { return .fuelGreen }
+        if score >= 50 { return .fuelOrange }
+        return .fuelRed
+    }
+
+    private func scoreLabel(for score: Int) -> String {
+        if score >= 75 { return "High" }
+        if score >= 50 { return "Med" }
+        return "Low"
     }
 
     private var rowBackground: Color {
@@ -429,13 +442,11 @@ private struct AnimatedEllipsisView: View {
             rawInput: "Chicken burrito bowl",
             feedback: LogEntryFeedback(
                 explanation: "High protein and decent satiety make this easier to fit into a cut.",
-                shortExplanation: "High protein and easy to fit into a cut.",
                 assumptions: [],
                 confidence: 0.84,
                 estimatedCalories: nil,
                 macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
-                goalFitScore: 68,
-                rebalanceHint: nil
+                goalFitScore: 68
             )
         )
     )
@@ -481,13 +492,11 @@ private struct AnimatedEllipsisView: View {
             rawInput: "2 eggs and toast",
             feedback: LogEntryFeedback(
                 explanation: "The meal analysis service is unavailable right now. Try again shortly.",
-                shortExplanation: nil,
                 assumptions: [],
                 confidence: nil,
                 estimatedCalories: nil,
                 macros: nil,
-                goalFitScore: nil,
-                rebalanceHint: nil
+                goalFitScore: nil
             )
         )
     )
@@ -505,13 +514,11 @@ private struct AnimatedEllipsisView: View {
             rawInput: "Meal image",
             feedback: LogEntryFeedback(
                 explanation: "The meal analysis service is unavailable right now. Try again shortly.",
-                shortExplanation: nil,
                 assumptions: [],
                 confidence: nil,
                 estimatedCalories: nil,
                 macros: nil,
-                goalFitScore: nil,
-                rebalanceHint: nil
+                goalFitScore: nil
             )
         )
     )
@@ -527,13 +534,11 @@ private struct AnimatedEllipsisView: View {
             rawInput: "45 min treadmill run",
             feedback: LogEntryFeedback(
                 explanation: "Moderate-duration cardio session with a reasonable calorie burn estimate.",
-                shortExplanation: "Moderate cardio with a reasonable burn estimate.",
                 assumptions: [],
                 confidence: 0.79,
                 estimatedCalories: 410,
                 macros: nil,
-                goalFitScore: nil,
-                rebalanceHint: nil
+                goalFitScore: nil
             )
         )
     )

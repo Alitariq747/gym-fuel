@@ -24,32 +24,91 @@ enum MealImagePreparationError: LocalizedError {
 struct MealImagePreparationService {
     func prepareImageData(
         from originalData: Data,
-        maxDimension: CGFloat = 1600,
-        compressionQuality: CGFloat = 0.75
+        maxDimension: CGFloat = 1024,
+        minimumDimensionBeforeExtraCompression: CGFloat = 768,
+        maxFileSizeBytes: Int = 1_500_000,
+        compressionQuality: CGFloat = 0.70,
+        minimumCompressionQuality: CGFloat = 0.60
     ) throws -> PreparedMealImage {
         guard let image = UIImage(data: originalData) else {
             throw MealImagePreparationError.invalidImageData
         }
 
-        let longestSide = max(image.size.width, image.size.height)
-        let scale = min(1, maxDimension / longestSide)
-        let targetSize = CGSize(
-            width: image.size.width * scale,
-            height: image.size.height * scale
+        let compressedJPEGData = try compressImage(
+            image,
+            maxDimension: maxDimension,
+            minimumDimensionBeforeExtraCompression: minimumDimensionBeforeExtraCompression,
+            maxFileSizeBytes: maxFileSizeBytes,
+            compressionQuality: compressionQuality,
+            minimumCompressionQuality: minimumCompressionQuality
         )
-
-        let renderer = UIGraphicsImageRenderer(size: targetSize)
-        let resizedImage = renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: targetSize))
-        }
-
-        guard let compressedJPEGData = resizedImage.jpegData(compressionQuality: compressionQuality) else {
-            throw MealImagePreparationError.compressionFailed
-        }
 
         return PreparedMealImage(
             originalData: originalData,
             compressedJPEGData: compressedJPEGData
         )
+    }
+
+    private func compressImage(
+        _ image: UIImage,
+        maxDimension: CGFloat,
+        minimumDimensionBeforeExtraCompression: CGFloat,
+        maxFileSizeBytes: Int,
+        compressionQuality: CGFloat,
+        minimumCompressionQuality: CGFloat
+    ) throws -> Data {
+        var currentMaxDimension = maxDimension
+        var smallestCompressedData: Data?
+
+        while currentMaxDimension >= 320 {
+            let resizedImage = resizeImage(image, maxDimension: currentMaxDimension)
+            var currentQuality = compressionQuality
+
+            while currentQuality >= minimumCompressionQuality {
+                guard let compressedData = resizedImage.jpegData(compressionQuality: currentQuality) else {
+                    throw MealImagePreparationError.compressionFailed
+                }
+
+                smallestCompressedData = compressedData
+
+                if compressedData.count <= maxFileSizeBytes {
+                    return compressedData
+                }
+
+                currentQuality -= 0.05
+            }
+
+            if currentMaxDimension <= minimumDimensionBeforeExtraCompression {
+                currentMaxDimension *= 0.85
+            } else {
+                currentMaxDimension = max(minimumDimensionBeforeExtraCompression, currentMaxDimension * 0.85)
+            }
+        }
+
+        guard let smallestCompressedData else {
+            throw MealImagePreparationError.compressionFailed
+        }
+
+        return smallestCompressedData
+    }
+
+    private func resizeImage(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let pixelSize = CGSize(
+            width: image.size.width * image.scale,
+            height: image.size.height * image.scale
+        )
+        let longestSide = max(pixelSize.width, pixelSize.height)
+        let scale = min(1, maxDimension / longestSide)
+        let targetSize = CGSize(
+            width: pixelSize.width * scale,
+            height: pixelSize.height * scale
+        )
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
     }
 }

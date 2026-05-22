@@ -9,7 +9,8 @@ import SwiftUI
 import UIKit
 
 struct MealImageThumbnailView: View {
-    let storagePath: String
+    let entryId: String?
+    let storagePath: String?
     var size: CGFloat = 72
     var maxSizeBytes: Int64 = 2 * 1024 * 1024
 
@@ -20,11 +21,13 @@ struct MealImageThumbnailView: View {
     private let mealImageUploadService: MealImageUploadService
 
     init(
-        storagePath: String,
+        entryId: String? = nil,
+        storagePath: String? = nil,
         size: CGFloat = 72,
         maxSizeBytes: Int64 = 2 * 1024 * 1024,
         mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService()
     ) {
+        self.entryId = entryId
         self.storagePath = storagePath
         self.size = size
         self.maxSizeBytes = maxSizeBytes
@@ -55,9 +58,24 @@ struct MealImageThumbnailView: View {
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .task(id: storagePath) {
+        .task(id: "\(entryId ?? "")-\(storagePath ?? "")") {
             await loadImage()
         }
+    }
+
+    private func loadCachedImage() async -> UIImage? {
+        guard let entryId else { return nil }
+        let imageData = await Task.detached(priority: .utility) {
+            MealImageCacheService().imageData(for: entryId)
+        }.value
+        return imageData.flatMap(UIImage.init(data:))
+    }
+
+    private func cacheImageData(_ imageData: Data) async {
+        guard let entryId else { return }
+        try? await Task.detached(priority: .utility) {
+            try MealImageCacheService().saveImageData(imageData, entryId: entryId)
+        }.value
     }
 
     private func loadImage() async {
@@ -67,6 +85,18 @@ struct MealImageThumbnailView: View {
         didFail = false
 
         do {
+            if let cachedImage = await loadCachedImage() {
+                image = cachedImage
+                isLoading = false
+                return
+            }
+
+            guard let storagePath else {
+                didFail = true
+                isLoading = false
+                return
+            }
+
             let imageData = try await mealImageUploadService.fetchMealImageData(
                 at: storagePath,
                 maxSizeBytes: maxSizeBytes
@@ -77,6 +107,7 @@ struct MealImageThumbnailView: View {
                 return
             }
 
+            await cacheImageData(imageData)
             image = loadedImage
             isLoading = false
         } catch {

@@ -16,7 +16,6 @@ struct MainTabView: View {
     @StateObject private var composerViewModel = LogComposerViewModel()
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject private var timelineViewModel = TimelineViewModel()
-    private let mealImagePreparationService = MealImagePreparationService()
     @State private var showProfile = false
     @State private var showSavedMeals = false
     @State private var showStats = false
@@ -133,8 +132,8 @@ struct MainTabView: View {
                                 ForEach(timelineViewModel.timeline.entries) { entry in
                                     let retryAction: (() -> Void)? = entry.status == .failed ? {
                                         Task {
-                                            if entry.source == .image,
-                                               let imageData = timelineViewModel.localPreparedImageData(for: entry.id) {
+                                            if entry.source == .image {
+                                                guard let imageData = await imageDataForRetryingMealImage(entryId: entry.id) else { return }
                                                 _ = await composerViewModel.retryMealImageEntry(
                                                     entry,
                                                     imageData: imageData,
@@ -157,7 +156,7 @@ struct MainTabView: View {
                                             }
                                         }
                                     } : nil
-                                    let shouldAnimateSuccessReveal = entry.status == .succeeded && !timelineViewModel.hasRevealedSuccess(for: entry.id)
+                                    let shouldAnimateSuccessReveal = timelineViewModel.shouldAnimateSuccessReveal(for: entry)
                                     let successRevealCompleted: (() -> Void)? = shouldAnimateSuccessReveal ? {
                                         timelineViewModel.markSuccessRevealed(for: entry.id)
                                     } : nil
@@ -365,10 +364,29 @@ struct MainTabView: View {
                 userId: profile.id
             )
         }
+        .onChange(of: timelineViewModel.timeline.entries) { _, _ in
+            retryFailedMealImageUploadsIfNeeded()
+        }
     }
 
     private func handleUpdatedEntry(_ updatedEntry: LogEntry) async {
         selectedEntry = updatedEntry
+    }
+
+    private func retryFailedMealImageUploadsIfNeeded() {
+        timelineViewModel.imageUploadRetryCandidates().forEach { entry in
+            composerViewModel.retryFailedMealImageUploadIfNeeded(for: entry)
+        }
+    }
+
+    private func imageDataForRetryingMealImage(entryId: String) async -> Data? {
+        if let imageData = timelineViewModel.localPreparedImageData(for: entryId) {
+            return imageData
+        }
+
+        return await Task.detached(priority: .utility) {
+            MealImageCacheService().imageData(for: entryId)
+        }.value
     }
 
     private func submitCurrentDraft() async {
@@ -391,7 +409,7 @@ struct MainTabView: View {
                 return
             }
 
-            let preparedImage = try mealImagePreparationService.prepareImageData(from: imageData)
+            let preparedImage = try await prepareMealImageDataOffMain(imageData)
             mealImageDraft.originalData = preparedImage.originalData
             mealImageDraft.compressedJPEGData = preparedImage.compressedJPEGData
             mealImageDraft.state = .readyToAnalyze
@@ -407,21 +425,21 @@ struct MainTabView: View {
         showCameraCapture = false
         pendingMealImageSource = nil
 
-        guard let imageData = image.jpegData(compressionQuality: 1) else {
-            mealImageDraft.state = .failed("We couldn't capture that photo. Please try again.")
-            return
-        }
-
         mealImageDraft.source = .camera
         mealImageDraft.state = .preparing
         Task {
-            await prepareCapturedMealImageData(imageData)
+            await prepareCapturedMealImage(image)
         }
     }
 
-    private func prepareCapturedMealImageData(_ imageData: Data) async {
+    private func prepareCapturedMealImage(_ image: UIImage) async {
         do {
-            let preparedImage = try mealImagePreparationService.prepareImageData(from: imageData)
+            let preparedImage = try await Task.detached(priority: .userInitiated) {
+                guard let imageData = image.jpegData(compressionQuality: 1) else {
+                    throw MealImagePreparationError.compressionFailed
+                }
+                return try MealImagePreparationService().prepareImageData(from: imageData)
+            }.value
             mealImageDraft.originalData = preparedImage.originalData
             mealImageDraft.compressedJPEGData = preparedImage.compressedJPEGData
             mealImageDraft.state = .readyToAnalyze
@@ -431,6 +449,12 @@ struct MainTabView: View {
                 fallback: "We couldn't prepare that photo. Please try a different image."
             ))
         }
+    }
+
+    private func prepareMealImageDataOffMain(_ imageData: Data) async throws -> PreparedMealImage {
+        try await Task.detached(priority: .userInitiated) {
+            try MealImagePreparationService().prepareImageData(from: imageData)
+        }.value
     }
 
     private func analyzePreparedMealImage() async {
@@ -446,6 +470,9 @@ struct MainTabView: View {
             timelineViewModel.setLocalImagePreviewData(previewData, for: entryId)
         }
         timelineViewModel.setLocalPreparedImageData(imageData, for: entryId)
+        try? await Task.detached(priority: .utility) {
+            try MealImageCacheService().saveImageData(imageData, entryId: entryId)
+        }.value
         let savedEntry = await composerViewModel.submitMealImage(
             imageData,
             userId: profile.id,
@@ -456,6 +483,7 @@ struct MainTabView: View {
 
         if savedEntry != nil {
             timelineViewModel.removeLocalImagePreviewData(for: entryId)
+            timelineViewModel.removeLocalPreparedImageData(for: entryId)
             mealImageDraft.reset()
             selectedPhotoPickerItem = nil
         } else {

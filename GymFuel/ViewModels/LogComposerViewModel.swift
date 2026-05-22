@@ -40,13 +40,11 @@ final class LogComposerViewModel: ObservableObject {
     private func failureFeedback(message: String) -> LogEntryFeedback {
         LogEntryFeedback(
             explanation: message,
-            shortExplanation: nil,
             assumptions: [],
             confidence: nil,
             estimatedCalories: nil,
             macros: nil,
-            goalFitScore: nil,
-            rebalanceHint: nil
+            goalFitScore: nil
         )
     }
 
@@ -75,6 +73,7 @@ final class LogComposerViewModel: ObservableObject {
             let resolvedEntry = LogEntry(
                 id: pendingEntry.id,
                 userId: pendingEntry.userId,
+                source: .text,
                 status: .succeeded,
                 loggedAt: pendingEntry.loggedAt,
                 type: interpretedEntry.type,
@@ -125,6 +124,7 @@ final class LogComposerViewModel: ObservableObject {
             let resolvedEntry = LogEntry(
                 id: entry.id,
                 userId: entry.userId,
+                source: .text,
                 status: .succeeded,
                 loggedAt: entry.loggedAt,
                 type: interpretedEntry.type,
@@ -167,6 +167,7 @@ final class LogComposerViewModel: ObservableObject {
             let resolvedEntry = LogEntry(
                 id: entry.id,
                 userId: entry.userId,
+                source: .image,
                 status: .succeeded,
                 loggedAt: entry.loggedAt,
                 type: interpretedEntry.type,
@@ -174,7 +175,8 @@ final class LogComposerViewModel: ObservableObject {
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
                 feedback: interpretedEntry.feedback,
-                image: interpretedEntry.image
+                image: interpretedEntry.image,
+                imageUploadStatus: .localOnly
             )
             try await logEntryService.updateEntry(resolvedEntry)
             startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
@@ -206,7 +208,8 @@ final class LogComposerViewModel: ObservableObject {
             loggedAt: loggedAt,
             type: .food,
             title: "Analyzing meal image",
-            rawInput: "Meal image"
+            rawInput: "Meal image",
+            imageUploadStatus: .localOnly
         )
         isSubmitting = true
         errorMessage = nil
@@ -225,6 +228,7 @@ final class LogComposerViewModel: ObservableObject {
             let resolvedEntry = LogEntry(
                 id: pendingEntry.id,
                 userId: pendingEntry.userId,
+                source: .image,
                 status: .succeeded,
                 loggedAt: pendingEntry.loggedAt,
                 type: interpretedEntry.type,
@@ -232,7 +236,8 @@ final class LogComposerViewModel: ObservableObject {
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
                 feedback: interpretedEntry.feedback,
-                image: interpretedEntry.image
+                image: interpretedEntry.image,
+                imageUploadStatus: .localOnly
             )
             try await logEntryService.updateEntry(resolvedEntry)
             startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
@@ -267,13 +272,11 @@ final class LogComposerViewModel: ObservableObject {
             detail: meal.description,
             feedback: LogEntryFeedback(
                 explanation: "Saved meal logged directly.",
-                shortExplanation: nil,
                 assumptions: [],
                 confidence: nil,
                 estimatedCalories: nil,
                 macros: meal.macros,
-                goalFitScore: nil,
-                rebalanceHint: nil
+                goalFitScore: nil
             )
         )
 
@@ -292,6 +295,42 @@ final class LogComposerViewModel: ObservableObject {
         }
     }
 
+    private func canRetryMealImageUpload(for entry: LogEntry) -> Bool {
+        entry.source == .image &&
+        entry.status == .succeeded &&
+        entry.imageUploadStatus == .failed &&
+        entry.image == nil
+    }
+
+    func retryFailedMealImageUploadIfNeeded(for entry: LogEntry) {
+        guard canRetryMealImageUpload(for: entry) else { return }
+        let mealImageUploadService = mealImageUploadService
+        let logEntryService = logEntryService
+
+        Task.detached(priority: .utility) {
+            guard let imageData = MealImageCacheService().imageData(for: entry.id) else { return }
+            var uploadingEntry = entry
+            uploadingEntry.imageUploadStatus = .uploading
+            try? await logEntryService.updateEntry(uploadingEntry)
+
+            do {
+                let storagePath = try await mealImageUploadService.uploadMealImage(
+                    imageData,
+                    userId: entry.userId,
+                    entryId: entry.id
+                )
+                var uploadedEntry = uploadingEntry
+                uploadedEntry.image = LogEntryImage(storagePath: storagePath)
+                uploadedEntry.imageUploadStatus = .uploaded
+                try await logEntryService.updateEntry(uploadedEntry)
+            } catch {
+                var failedEntry = entry
+                failedEntry.imageUploadStatus = .failed
+                try? await logEntryService.updateEntry(failedEntry)
+            }
+        }
+    }
+
     private func startBackgroundMealImageUpload(for entry: LogEntry, imageData: Data) {
         let mealImageUploadService = mealImageUploadService
         let logEntryService = logEntryService
@@ -306,9 +345,12 @@ final class LogComposerViewModel: ObservableObject {
 
                 var updatedEntry = entry
                 updatedEntry.image = LogEntryImage(storagePath: storagePath)
+                updatedEntry.imageUploadStatus = .uploaded
                 try await logEntryService.updateEntry(updatedEntry)
             } catch {
-                // Background upload is secondary to the meal log itself.
+                var failedUploadEntry = entry
+                failedUploadEntry.imageUploadStatus = .failed
+                try? await logEntryService.updateEntry(failedUploadEntry)
             }
         }
     }

@@ -79,13 +79,11 @@ final class LogEntryDetailViewModel: ObservableObject {
             if updated.feedback == nil {
                 updated.feedback = LogEntryFeedback(
                     explanation: "",
-                    shortExplanation: nil,
                     assumptions: [],
                     confidence: nil,
                     estimatedCalories: nil,
                     macros: macros,
-                    goalFitScore: nil,
-                    rebalanceHint: nil
+                    goalFitScore: nil
                 )
             } else {
                 updated.feedback?.macros = macros
@@ -98,13 +96,11 @@ final class LogEntryDetailViewModel: ObservableObject {
             if updated.feedback == nil {
                 updated.feedback = LogEntryFeedback(
                     explanation: "",
-                    shortExplanation: nil,
                     assumptions: [],
                     confidence: nil,
                     estimatedCalories: caloriesBurned,
                     macros: nil,
-                    goalFitScore: nil,
-                    rebalanceHint: nil
+                    goalFitScore: nil
                 )
             } else {
                 updated.feedback?.estimatedCalories = caloriesBurned
@@ -127,6 +123,7 @@ final class LogEntryDetailViewModel: ObservableObject {
                 try await mealImageUploadService.deleteMealImage(at: storagePath)
             }
             try await service.deleteEntry(userId: entry.userId, entryId: entry.id)
+            await deleteCachedMealImage(entryId: entry.id)
             isSaving = false
             return true
         } catch {
@@ -137,6 +134,12 @@ final class LogEntryDetailViewModel: ObservableObject {
             isSaving = false
             return false
         }
+    }
+
+    private func deleteCachedMealImage(entryId: String) async {
+        await Task.detached(priority: .utility) {
+            MealImageCacheService().deleteImageData(for: entryId)
+        }.value
     }
 
     func updateEntry(
