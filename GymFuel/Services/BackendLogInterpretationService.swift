@@ -46,7 +46,7 @@ enum BackendLogInterpretationError: LocalizedError {
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
 
-    init(baseURL: URL = URL(string: "https://ribbon-execute-nextel-recovered.trycloudflare.com")!) {
+    init(baseURL: URL = URL(string: "http://localhost:5001")!) {
         self.baseURL = baseURL
     }
 
@@ -81,6 +81,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
 
     private struct TextInterpretationResponse: Codable {
         var type: LogEntryType
+        var rawInput: String?
         var title: String
         var detail: String?
         var feedback: LogEntryFeedback
@@ -274,6 +275,11 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         loggedAt: Date
     ) async throws -> LogEntry {
         let response = try await sendImageInterpretationRequest(imageData: imageData, goal: goal)
-        return makeLogEntry(from: response, rawText: "Meal image", userId: userId, loggedAt: loggedAt)
+        return makeLogEntry(
+            from: response,
+            rawText: response.rawInput ?? "Meal image",
+            userId: userId,
+            loggedAt: loggedAt
+        )
     }
 }

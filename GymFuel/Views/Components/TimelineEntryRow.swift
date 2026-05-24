@@ -446,7 +446,8 @@ private struct AnimatedEllipsisView: View {
                 confidence: 0.84,
                 estimatedCalories: nil,
                 macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
-                goalFitScore: 68
+                goalFitScore: 68,
+                estimatedItems: nil
             )
         )
     )
@@ -496,7 +497,8 @@ private struct AnimatedEllipsisView: View {
                 confidence: nil,
                 estimatedCalories: nil,
                 macros: nil,
-                goalFitScore: nil
+                goalFitScore: nil,
+                estimatedItems: nil
             )
         )
     )
@@ -518,7 +520,8 @@ private struct AnimatedEllipsisView: View {
                 confidence: nil,
                 estimatedCalories: nil,
                 macros: nil,
-                goalFitScore: nil
+                goalFitScore: nil,
+                estimatedItems: nil
             )
         )
     )
@@ -538,7 +541,8 @@ private struct AnimatedEllipsisView: View {
                 confidence: 0.79,
                 estimatedCalories: 410,
                 macros: nil,
-                goalFitScore: nil
+                goalFitScore: nil,
+                estimatedItems: nil
             )
         )
     )

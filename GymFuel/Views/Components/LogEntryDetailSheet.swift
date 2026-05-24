@@ -63,6 +63,9 @@ struct LogEntryDetailSheet: View {
     private var assumptions: [String] {
         entry.feedback?.assumptions ?? []
     }
+    private var estimatedItems: [EstimatedItem] {
+        entry.feedback?.estimatedItems ?? []
+    }
     private var hasExpandableAIDetails: Bool {
         !assumptions.isEmpty
     }
@@ -166,6 +169,10 @@ struct LogEntryDetailSheet: View {
 
                     if let explanation = entry.feedback?.explanation, !explanation.isEmpty {
                         LiftEatsAnalysisCard(explanation: explanation)
+                    }
+
+                    if !estimatedItems.isEmpty {
+                        EstimatedItemsCard(items: estimatedItems)
                     }
 
                     if showsAIDetails {
@@ -460,6 +467,62 @@ struct LogEntryDetailSheet: View {
     }
 }
 
+private struct EstimatedItemsCard: View {
+    let items: [EstimatedItem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Estimated Breakdown")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            ForEach(items, id: \.self) { item in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(item.name)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+
+                        if !item.quantity.isEmpty {
+                            Text(item.quantity)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    if !item.estimatedComponents.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(item.estimatedComponents, id: \.self) { component in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text("-")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+
+                                    Text("\(component.name): \(component.estimatedAmount)")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                    }
+
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color(.quaternaryLabel).opacity(0.55), lineWidth: 1)
+        )
+    }
+}
+
 private struct LiftEatsAnalysisCard: View {
     let explanation: String
     @Environment(\.colorScheme) private var colorScheme
@@ -522,7 +585,8 @@ private struct PreviewSavedMealService: SavedMealService {
                     confidence: 0.72,
                     estimatedCalories: nil,
                     macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
-                    goalFitScore: 78
+                    goalFitScore: 78,
+                    estimatedItems: nil
                 )
             )
         )

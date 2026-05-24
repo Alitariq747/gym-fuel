@@ -16,7 +16,6 @@ struct EstimatedItem: Codable, Equatable, Hashable, Sendable {
     var name: String
     var quantity: String
     var estimatedComponents: [EstimatedItemComponent]
-    var mainUncertainty: String?
 }
 
 struct LogEntryFeedback: Codable, Equatable, Hashable, Sendable {

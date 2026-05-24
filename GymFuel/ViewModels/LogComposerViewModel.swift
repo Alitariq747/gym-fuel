@@ -44,7 +44,8 @@ final class LogComposerViewModel: ObservableObject {
             confidence: nil,
             estimatedCalories: nil,
             macros: nil,
-            goalFitScore: nil
+            goalFitScore: nil,
+            estimatedItems: nil
         )
     }
 
@@ -276,7 +277,8 @@ final class LogComposerViewModel: ObservableObject {
                 confidence: nil,
                 estimatedCalories: nil,
                 macros: meal.macros,
-                goalFitScore: nil
+                goalFitScore: nil,
+                estimatedItems: nil
             )
         )
 

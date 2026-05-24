@@ -83,7 +83,8 @@ final class LogEntryDetailViewModel: ObservableObject {
                     confidence: nil,
                     estimatedCalories: nil,
                     macros: macros,
-                    goalFitScore: nil
+                    goalFitScore: nil,
+                    estimatedItems: nil
                 )
             } else {
                 updated.feedback?.macros = macros
@@ -100,7 +101,8 @@ final class LogEntryDetailViewModel: ObservableObject {
                     confidence: nil,
                     estimatedCalories: caloriesBurned,
                     macros: nil,
-                    goalFitScore: nil
+                    goalFitScore: nil,
+                    estimatedItems: nil
                 )
             } else {
                 updated.feedback?.estimatedCalories = caloriesBurned
