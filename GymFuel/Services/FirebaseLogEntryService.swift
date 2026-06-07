@@ -138,7 +138,7 @@ extension FirebaseLogEntryService: LogEntryService {
         let docRef = entriesCollection(for: entry.userId).document(entry.id)
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            docRef.updateData(data) { error in
+            docRef.setData(data, merge: true) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {

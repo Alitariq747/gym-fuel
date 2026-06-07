@@ -12,10 +12,9 @@ import UIKit
 struct MainTabView: View {
     let profile: UserProfile
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
-    @Environment(\.colorScheme) private var colorScheme
-    @StateObject private var composerViewModel = LogComposerViewModel()
+    @StateObject var composerViewModel = LogComposerViewModel()
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
-    @StateObject private var timelineViewModel = TimelineViewModel()
+    @StateObject var timelineViewModel = TimelineViewModel()
     @State private var showProfile = false
     @State private var showSavedMeals = false
     @State private var showStats = false
@@ -23,26 +22,14 @@ struct MainTabView: View {
     @State private var showDatePicker = false
     @State private var pickedDate = Date.now
     @State private var selectedEntry: LogEntry?
-    @State private var mealImageDraft = MealImageDraft()
-    @State private var pendingMealImageSource: MealImageSource?
-    @State private var showCameraCapture = false
-    @State private var showPhotoLibraryPicker = false
-    @State private var selectedPhotoPickerItem: PhotosPickerItem?
+    @State var mealImageDraft = MealImageDraft()
+    @State var pendingMealImageSource: MealImageSource?
+    @State var showCameraCapture = false
+    @State var showPhotoLibraryPicker = false
+    @State var selectedPhotoPickerItem: PhotosPickerItem?
     @FocusState private var isComposerFocused: Bool
     private var targetMacros: Macros? {
         profileViewModel.targetMacros
-    }
-
-    private var topChipBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
-    }
-
-    private var topChipStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.clear
-    }
-
-    private var topChipShadow: Color {
-        colorScheme == .dark ? Color.clear : Color.black.opacity(0.08)
     }
 
     private var consumedMacros: Macros {
@@ -55,54 +42,19 @@ struct MainTabView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                HStack {
-                    Image("LiftEatsWelcomeIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 34, height: 34)
-                        .frame(width: 76, alignment: .leading)
-
-                    Spacer()
-
-                    Button {
+                MainTabHeaderView(
+                    selectedDate: timelineViewModel.selectedDate,
+                    onDateTap: {
                         pickedDate = timelineViewModel.selectedDate
                         showDatePicker = true
-                    } label: {
-                        Text(timelineViewModel.selectedDate.formatted(.dateTime.month(.abbreviated).day()))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(topChipBackground, in: Capsule())
-                            .overlay(Capsule().stroke(topChipStroke, lineWidth: 1))
-                            .shadow(color: topChipShadow, radius: 10, y: 4)
+                    },
+                    onStatsTap: {
+                        showStats = true
+                    },
+                    onProfileTap: {
+                        showProfile = true
                     }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
-                    HStack(spacing: 14) {
-                        Button { showStats = true } label: {
-                            Image(systemName: "flame.fill")
-                                .frame(width: 18, height: 18)
-                                .foregroundStyle(Color.fuelOrange)
-                        }
-                        .buttonStyle(.plain)
-
-                        Button { showProfile = true } label: {
-                            Image(systemName: "gearshape")
-                                .frame(width: 18, height: 18)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .font(.system(size: 16, weight: .semibold))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                    .background(topChipBackground, in: Capsule())
-                    .overlay(Capsule().stroke(topChipStroke, lineWidth: 1))
-                    .shadow(color: topChipShadow, radius: 10, y: 4)
-                    .frame(width: 76, alignment: .trailing)
-                }
+                )
                 if let targetMacros {
                     DailyMacroSummaryView(
                         targetMacros: targetMacros,
@@ -114,77 +66,27 @@ struct MainTabView: View {
                     )
                 }
 
-                Group {
-                    if timelineViewModel.isLoading {
-                        ProgressView("Loading timeline...")
-                    } else if let errorMessage = timelineViewModel.errorMessage {
-                        VStack(spacing: 8) {
-                            Text("Failed to load timeline")
-                                .font(.headline)
-                            Text(errorMessage)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                    } else if !timelineViewModel.timeline.entries.isEmpty {
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 12) {
-                                ForEach(timelineViewModel.timeline.entries) { entry in
-                                    let retryAction: (() -> Void)? = entry.status == .failed ? {
-                                        Task {
-                                            if entry.source == .image {
-                                                guard let imageData = await imageDataForRetryingMealImage(entryId: entry.id) else { return }
-                                                _ = await composerViewModel.retryMealImageEntry(
-                                                    entry,
-                                                    imageData: imageData,
-                                                    goal: profile.goalType ?? GoalType.defaultValue
-                                                )
-                                            } else {
-                                                _ = await composerViewModel.retryTextEntry(
-                                                    entry,
-                                                    goal: profile.goalType ?? GoalType.defaultValue
-                                                )
-                                            }
-                                        }
-                                    } : nil
-                                    let deleteAction: (() -> Void)? = entry.status == .failed ? {
-                                        Task {
-                                            let didDelete = await logEntryDetailViewModel.deleteEntry(entry)
-                                            if didDelete {
-                                                timelineViewModel.removeLocalImagePreviewData(for: entry.id)
-                                                timelineViewModel.removeLocalPreparedImageData(for: entry.id)
-                                            }
-                                        }
-                                    } : nil
-                                    let shouldAnimateSuccessReveal = timelineViewModel.shouldAnimateSuccessReveal(for: entry)
-                                    let successRevealCompleted: (() -> Void)? = shouldAnimateSuccessReveal ? {
-                                        timelineViewModel.markSuccessRevealed(for: entry.id)
-                                    } : nil
-                                    Button {
-                                        selectedEntry = entry
-                                    } label: {
-                                        TimelineEntryRow(
-                                            entry: entry,
-                                            localPreviewData: timelineViewModel.localImagePreviewData(for: entry.id),
-                                            onRetry: retryAction,
-                                            onDelete: deleteAction,
-                                            shouldAnimateSuccessReveal: shouldAnimateSuccessReveal,
-                                            onSuccessRevealCompleted: successRevealCompleted
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                        }
-                        .scrollIndicators(.hidden)
-                    } else if timelineViewModel.timeline.entries.isEmpty {
-                        Color.clear
+                MainTabTimelineContentView(
+                    viewModel: timelineViewModel,
+                    localPreviewData: { entryId in
+                        timelineViewModel.localImagePreviewData(for: entryId)
+                    },
+                    onSelectEntry: { entry in
+                        selectedEntry = entry
+                    },
+                    onRetryEntry: { entry in
+                        retryFailedEntry(entry)
+                    },
+                    onDeleteFailedEntry: { entry in
+                        deleteFailedEntry(entry)
+                    },
+                    onSuccessRevealCompleted: { entryId in
+                        timelineViewModel.markSuccessRevealed(for: entryId)
                     }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                )
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    isComposerFocused = false
+                    dismissComposerKeyboard()
                 }
 
                 LogComposerBar(
@@ -196,16 +98,20 @@ struct MainTabView: View {
                         composerViewModel.clearError()
                     },
                     onCameraTap: {
+                        dismissComposerKeyboard()
                         pendingMealImageSource = .camera
                     },
                     onPhotoTap: {
+                        dismissComposerKeyboard()
                         pendingMealImageSource = .photoLibrary
                     },
                     onSavedMealsTap: {
+                        dismissComposerKeyboard()
                         composerViewModel.clearError()
                         showSavedMeals = true
                     },
                     onSubmit: {
+                        dismissComposerKeyboard()
                         Task { await submitCurrentDraft() }
                     }
                 )
@@ -322,11 +228,15 @@ struct MainTabView: View {
             .presentationDetents([.medium])
         }
         .onChange(of: pendingMealImageSource) { _, newValue in
+            if newValue != nil {
+                dismissComposerKeyboard()
+            }
             showCameraCapture = newValue == .camera
             showPhotoLibraryPicker = newValue == .photoLibrary
         }
         .onChange(of: selectedPhotoPickerItem) { _, newValue in
             guard newValue != nil else { return }
+            dismissComposerKeyboard()
             mealImageDraft.source = .photoLibrary
             mealImageDraft.state = .preparing
             pendingMealImageSource = nil
@@ -336,6 +246,7 @@ struct MainTabView: View {
         }
         .onChange(of: mealImageDraft.state) { _, newValue in
             guard newValue == .readyToAnalyze else { return }
+            dismissComposerKeyboard()
             Task {
                 await analyzePreparedMealImage()
             }
@@ -367,10 +278,25 @@ struct MainTabView: View {
         .onChange(of: timelineViewModel.timeline.entries) { _, _ in
             retryFailedMealImageUploadsIfNeeded()
         }
+        .onChange(of: composerViewModel.isSubmitting) { _, isSubmitting in
+            if isSubmitting {
+                dismissComposerKeyboard()
+            }
+        }
     }
 
     private func handleUpdatedEntry(_ updatedEntry: LogEntry) async {
         selectedEntry = updatedEntry
+    }
+
+    func dismissComposerKeyboard() {
+        isComposerFocused = false
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 
     private func retryFailedMealImageUploadsIfNeeded() {
@@ -379,17 +305,36 @@ struct MainTabView: View {
         }
     }
 
-    private func imageDataForRetryingMealImage(entryId: String) async -> Data? {
-        if let imageData = timelineViewModel.localPreparedImageData(for: entryId) {
-            return imageData
+    private func retryFailedEntry(_ entry: LogEntry) {
+        Task {
+            if entry.source == .image {
+                guard let imageData = await imageDataForRetryingMealImage(entryId: entry.id) else { return }
+                _ = await composerViewModel.retryMealImageEntry(
+                    entry,
+                    imageData: imageData,
+                    goal: profile.goalType ?? GoalType.defaultValue
+                )
+            } else {
+                _ = await composerViewModel.retryTextEntry(
+                    entry,
+                    goal: profile.goalType ?? GoalType.defaultValue
+                )
+            }
         }
+    }
 
-        return await Task.detached(priority: .utility) {
-            MealImageCacheService().imageData(for: entryId)
-        }.value
+    private func deleteFailedEntry(_ entry: LogEntry) {
+        Task {
+            let didDelete = await logEntryDetailViewModel.deleteEntry(entry)
+            if didDelete {
+                timelineViewModel.removeLocalImagePreviewData(for: entry.id)
+                timelineViewModel.removeLocalPreparedImageData(for: entry.id)
+            }
+        }
     }
 
     private func submitCurrentDraft() async {
+        dismissComposerKeyboard()
         let goalType = profile.goalType ?? GoalType.defaultValue
         let loggedAt = loggedAtForSelectedDay()
         _ = await composerViewModel.submitText(
@@ -399,99 +344,7 @@ struct MainTabView: View {
         )
     }
 
-    private func loadSelectedPhotoData() async {
-        guard let selectedPhotoPickerItem else { return }
-
-        do {
-            let imageData = try await selectedPhotoPickerItem.loadTransferable(type: Data.self)
-            guard let imageData else {
-                mealImageDraft.state = .failed("We couldn't load that photo. Please try another image.")
-                return
-            }
-
-            let preparedImage = try await prepareMealImageDataOffMain(imageData)
-            mealImageDraft.originalData = preparedImage.originalData
-            mealImageDraft.compressedJPEGData = preparedImage.compressedJPEGData
-            mealImageDraft.state = .readyToAnalyze
-        } catch {
-            mealImageDraft.state = .failed(AppErrorMessage.message(
-                for: error,
-                fallback: "We couldn't prepare that photo. Please try a different image."
-            ))
-        }
-    }
-
-    private func handleCapturedMealImage(_ image: UIImage) {
-        showCameraCapture = false
-        pendingMealImageSource = nil
-
-        mealImageDraft.source = .camera
-        mealImageDraft.state = .preparing
-        Task {
-            await prepareCapturedMealImage(image)
-        }
-    }
-
-    private func prepareCapturedMealImage(_ image: UIImage) async {
-        do {
-            let preparedImage = try await Task.detached(priority: .userInitiated) {
-                guard let imageData = image.jpegData(compressionQuality: 1) else {
-                    throw MealImagePreparationError.compressionFailed
-                }
-                return try MealImagePreparationService().prepareImageData(from: imageData)
-            }.value
-            mealImageDraft.originalData = preparedImage.originalData
-            mealImageDraft.compressedJPEGData = preparedImage.compressedJPEGData
-            mealImageDraft.state = .readyToAnalyze
-        } catch {
-            mealImageDraft.state = .failed(AppErrorMessage.message(
-                for: error,
-                fallback: "We couldn't prepare that photo. Please try a different image."
-            ))
-        }
-    }
-
-    private func prepareMealImageDataOffMain(_ imageData: Data) async throws -> PreparedMealImage {
-        try await Task.detached(priority: .userInitiated) {
-            try MealImagePreparationService().prepareImageData(from: imageData)
-        }.value
-    }
-
-    private func analyzePreparedMealImage() async {
-        guard mealImageDraft.isReadyToSubmit,
-              let imageData = mealImageDraft.compressedJPEGData else {
-            mealImageDraft.state = .failed("We couldn't prepare that photo. Please try a different image.")
-            return
-        }
-
-        let goalType = profile.goalType ?? GoalType.defaultValue
-        let entryId = UUID().uuidString
-        if let previewData = mealImageDraft.previewData {
-            timelineViewModel.setLocalImagePreviewData(previewData, for: entryId)
-        }
-        timelineViewModel.setLocalPreparedImageData(imageData, for: entryId)
-        try? await Task.detached(priority: .utility) {
-            try MealImageCacheService().saveImageData(imageData, entryId: entryId)
-        }.value
-        let savedEntry = await composerViewModel.submitMealImage(
-            imageData,
-            userId: profile.id,
-            goal: goalType,
-            loggedAt: loggedAtForSelectedDay(),
-            entryId: entryId
-        )
-
-        if savedEntry != nil {
-            timelineViewModel.removeLocalImagePreviewData(for: entryId)
-            timelineViewModel.removeLocalPreparedImageData(for: entryId)
-            mealImageDraft.reset()
-            selectedPhotoPickerItem = nil
-        } else {
-            // The failed listener row is now the visible source of truth.
-        }
-    }
-
-    private func loggedAtForSelectedDay(
+    func loggedAtForSelectedDay(
         calendar: Calendar = .current,
         now: Date = .now
     ) -> Date {

@@ -4,7 +4,6 @@ struct TimelineEntryRow: View {
     let entry: LogEntry
     @Environment(\.colorScheme) private var colorScheme
     var localPreviewData: Data? = nil
-    var showsChevron: Bool = true
     var onRetry: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
     var shouldAnimateSuccessReveal: Bool = false
@@ -15,7 +14,6 @@ struct TimelineEntryRow: View {
     @State private var showRevealedCarbs = false
     @State private var showRevealedFat = false
     @State private var showRevealedGoalFit = false
-    @State private var showRevealedExplanation = false
     @State private var revealSequenceTask: Task<Void, Never>?
     @State private var runningSuccessRevealEntryID: String?
     private let revealStepDelay: Duration = .milliseconds(220)
@@ -40,11 +38,6 @@ struct TimelineEntryRow: View {
         guard entry.status == .failed else { return nil }
         return feedback?.explanation ?? "We couldn't process this entry."
     }
-    private var timelineExplanation: String? {
-        guard entry.status != .failed else { return nil }
-        let explanation = feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines)
-        return explanation?.isEmpty == false ? explanation : nil
-    }
     private var isAnalyzingTextEntry: Bool {
         entry.status == .analyzing && entry.source == .text
     }
@@ -65,9 +58,6 @@ struct TimelineEntryRow: View {
     }
     private var hasGoalFitScore: Bool {
         entry.type == .food && feedback?.goalFitScore != nil
-    }
-    private var hasRevealExplanation: Bool {
-        timelineExplanation != nil
     }
     private var isMealImageEntry: Bool {
         let rawInput = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -109,7 +99,6 @@ struct TimelineEntryRow: View {
         showRevealedCarbs = hasConsumedMacros
         showRevealedFat = hasConsumedMacros
         showRevealedGoalFit = hasGoalFitScore
-        showRevealedExplanation = hasRevealExplanation
     }
 
     private func resetRevealState() {
@@ -119,7 +108,6 @@ struct TimelineEntryRow: View {
         showRevealedCarbs = false
         showRevealedFat = false
         showRevealedGoalFit = false
-        showRevealedExplanation = false
     }
 
     private func syncRevealStateForCurrentEntry() {
@@ -159,10 +147,6 @@ struct TimelineEntryRow: View {
 
             if hasGoalFitScore {
                 await reveal(\.showRevealedGoalFit)
-            }
-
-            if hasRevealExplanation {
-                await reveal(\.showRevealedExplanation)
             }
 
             runningSuccessRevealEntryID = nil
@@ -248,23 +232,7 @@ struct TimelineEntryRow: View {
                     }
                 }
                 Spacer(minLength: 12)
-                if entry.status == .failed {
-                    HStack(spacing: 12) {
-                        Button(action: { onRetry?() }) {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        Button(action: { onDelete?() }) {
-                            Image(systemName: "xmark")
-                        }
-                    }
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                    .buttonStyle(.plain)
-                } else if showsChevron && entry.status != .analyzing {
-                    Image(systemName: "ellipsis")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.primary)
-                }
+                trailingAccessory
             }
             if let macros = feedback?.macros, entry.type == .food,
                showRevealedCalories || showRevealedProtein || showRevealedCarbs || showRevealedFat {
@@ -302,42 +270,6 @@ struct TimelineEntryRow: View {
                     .foregroundStyle(.red)
                     .lineLimit(2)
             }
-            if entry.status != .failed,
-               showRevealedExplanation,
-               let timelineExplanation {
-                Divider()
-                    .padding(.vertical, 2)
-                let scoreTone = feedback?.goalFitScore.map(scoreColor) ?? Color.fuelGreen
-                HStack(spacing: 10) {
-                    if showRevealedGoalFit, let goalFitScore = feedback?.goalFitScore {
-                        VStack(spacing: -1) {
-                            Text("\(goalFitScore)")
-                                .font(.subheadline.weight(.bold))
-                            Text(scoreLabel(for: goalFitScore).uppercased())
-                                .font(.system(size: 7, weight: .semibold))
-                        }
-                        .foregroundStyle(scoreTone)
-                        .frame(width: 40, height: 40)
-                        .background(scoreTone.opacity(0.14), in: Circle())
-                        .overlay(Circle().stroke(scoreTone.opacity(0.18), lineWidth: 1))
-                        .shadow(color: scoreTone.opacity(0.12), radius: 8, y: 3)
-
-                        Rectangle()
-                            .fill(scoreTone.opacity(0.14))
-                            .frame(width: 1, height: 32)
-                    }
-
-                    Text(timelineExplanation)
-                        .font(.caption2.weight(.regular))
-                        .foregroundStyle(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 4)
-                .padding(.vertical, 2)
-
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -353,7 +285,6 @@ struct TimelineEntryRow: View {
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedCarbs)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedFat)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedGoalFit)
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedExplanation)
         .onAppear {
             syncRevealStateForCurrentEntry()
         }
@@ -370,6 +301,25 @@ struct TimelineEntryRow: View {
         }
         .onChange(of: shouldAnimateSuccessReveal) { _, _ in
             syncRevealStateForCurrentEntry()
+        }
+    }
+
+    @ViewBuilder
+    private var trailingAccessory: some View {
+        if entry.status == .failed {
+            HStack(spacing: 12) {
+                Button(action: { onRetry?() }) {
+                    Image(systemName: "arrow.clockwise")
+                }
+                Button(action: { onDelete?() }) {
+                    Image(systemName: "xmark")
+                }
+            }
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .buttonStyle(.plain)
+        } else if showRevealedGoalFit, let goalFitScore = feedback?.goalFitScore, entry.type == .food {
+            GoalFitScoreRing(score: goalFitScore, tone: scoreColor(for: goalFitScore), label: scoreLabel(for: goalFitScore))
         }
     }
 
@@ -418,6 +368,42 @@ struct TimelineEntryRow: View {
 
     private var rowShadow: Color {
         colorScheme == .dark ? Color.clear : Color.black.opacity(0.04)
+    }
+}
+
+private struct GoalFitScoreRing: View {
+    let score: Int
+    let tone: Color
+    let label: String
+
+    private var progress: Double {
+        min(max(Double(score) / 100, 0), 1)
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color(.tertiarySystemFill), lineWidth: 4)
+
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(
+                    tone,
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+
+            VStack(spacing: -1) {
+                Text("\(score)")
+                    .font(.system(size: 13, weight: .bold))
+                Text(label.uppercased())
+                    .font(.system(size: 6.5, weight: .semibold))
+            }
+            .foregroundStyle(tone)
+        }
+        .frame(width: 42, height: 42)
+        .padding(.top, 2)
+        .accessibilityLabel("Goal fit score \(score), \(label)")
     }
 }
 

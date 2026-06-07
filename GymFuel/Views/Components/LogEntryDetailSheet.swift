@@ -165,14 +165,14 @@ struct LogEntryDetailSheet: View {
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
-                    TimelineEntryRow(entry: entry, showsChevron: false)
-
-                    if let explanation = entry.feedback?.explanation, !explanation.isEmpty {
-                        LiftEatsAnalysisCard(explanation: explanation)
-                    }
+                    TimelineEntryRow(entry: entry)
 
                     if !estimatedItems.isEmpty {
                         EstimatedItemsCard(items: estimatedItems)
+                    }
+
+                    if let explanation = entry.feedback?.explanation, !explanation.isEmpty {
+                        LiftEatsAnalysisCard(explanation: explanation)
                     }
 
                     if showsAIDetails {
@@ -472,54 +472,104 @@ private struct EstimatedItemsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Estimated Breakdown")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 10) {
+//                Text("🍽️")
+//                    .font(.system(size: 15))
+//                    .frame(width: 32, height: 32)
+//                    .background(Color(.secondarySystemFill), in: Circle())
 
-            ForEach(items, id: \.self) { item in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(item.name)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-
-                        if !item.quantity.isEmpty {
-                            Text(item.quantity)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    if !item.estimatedComponents.isEmpty {
-                        VStack(alignment: .leading, spacing: 6) {
-                            ForEach(item.estimatedComponents, id: \.self) { component in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Text("-")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-
-                                    Text("\(component.name): \(component.estimatedAmount)")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                            }
-                        }
-                    }
-
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Estimated Breakdown")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text("Based on your meal description")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+            .padding(.horizontal, 2)
+
+            VStack(spacing: 10) {
+                ForEach(items, id: \.self) { item in
+                    EstimatedItemRow(item: item)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color(.quaternaryLabel).opacity(0.55), lineWidth: 1)
-        )
+    }
+}
+
+private struct EstimatedItemRow: View {
+    let item: EstimatedItem
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var isExpanded = false
+
+    private var itemTitle: String {
+        item.quantity.isEmpty ? item.name : "\(item.name) (\(item.quantity))"
+    }
+
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var cardStroke: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color(.quaternaryLabel)
+    }
+
+    var body: some View {
+        Button {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.86)) {
+                isExpanded.toggle()
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    Text(itemTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 8)
+
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                }
+
+                if isExpanded, !item.estimatedComponents.isEmpty {
+                    Divider()
+
+                    VStack(spacing: 8) {
+                        ForEach(item.estimatedComponents, id: \.self) { component in
+                            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                Text(component.name)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+
+                                Spacer(minLength: 8)
+
+                                Text(component.estimatedAmount)
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(cardBackground, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(cardStroke, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(isExpanded ? "Collapses estimated components" : "Expands estimated components")
     }
 }
 
@@ -586,7 +636,24 @@ private struct PreviewSavedMealService: SavedMealService {
                     estimatedCalories: nil,
                     macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
                     goalFitScore: 78,
-                    estimatedItems: nil
+                    estimatedItems: [
+                        EstimatedItem(
+                            name: "Chicken Bowl",
+                            quantity: "1 serving",
+                            estimatedComponents: [
+                                EstimatedItemComponent(name: "Chicken breast", estimatedAmount: "120g"),
+                                EstimatedItemComponent(name: "Cooked rice", estimatedAmount: "1 cup"),
+                                EstimatedItemComponent(name: "Salad greens", estimatedAmount: "1 cup")
+                            ]
+                        ),
+                        EstimatedItem(
+                            name: "Fruit",
+                            quantity: "1 cup",
+                            estimatedComponents: [
+                                EstimatedItemComponent(name: "Mixed fruit", estimatedAmount: "1 cup")
+                            ]
+                        )
+                    ]
                 )
             )
         )

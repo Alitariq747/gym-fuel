@@ -22,15 +22,15 @@ struct OnboardingLiftEats: View {
                 }
                 .font(.title2.bold())
 
-                Text("After every log, LiftEats explains what worked, what could improve, and how to make your next meal better for your goal.")
+                Text("After every log, LiftEats shows what you ate, how it fits your goal, and the nutrition patterns that matter most.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
                     Image("eggs_toast_coffee")
                         .resizable()
                         .scaledToFill()
@@ -48,10 +48,11 @@ struct OnboardingLiftEats: View {
                             macroValue("8g", label: "FAT")
                         }
                     }
-                }
 
-                Divider()
-                scoreSummary
+                    Spacer(minLength: 8)
+
+                    OnboardingGoalFitScoreRing(score: 58, tone: .fuelOrange, label: "Med")
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
@@ -109,15 +110,15 @@ struct OnboardingLiftEats: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text("A simple breakfast, but for lean bulk it needs more fuel. The egg helps, while the toast and coffee leave the meal light on protein and total calories.")
+            Text("This meal is easy to repeat and keeps calories controlled, but the score stays moderate because it is light on protein and total fuel for a muscle-focused goal. LiftEats weighs that tradeoff instead of judging the meal as good or bad.")
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(alignment: .top, spacing: 10) {
-                Text("💡")
+                Text("🔎")
                     .frame(width: 30, height: 30)
                     .background(Color.fuelOrange.opacity(0.14), in: Circle())
-                Text("Add Greek yogurt or another egg, plus banana or oats, to turn this into a stronger muscle-building breakfast.")
+                Text("The score reflects useful protein, goal calories, macro balance, and how practical the meal is to repeat.")
                     .font(.caption.weight(.medium))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -154,7 +155,7 @@ struct OnboardingLiftEats: View {
                 }
                 .font(.headline.weight(.bold))
 
-                Text("One extra egg, Greek yogurt, and oats can move this from light to goal-ready.")
+                Text("Adding a higher-protein side and a bit more training fuel could move the same breakfast from light to goal-ready.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -181,29 +182,41 @@ struct OnboardingLiftEats: View {
                 .foregroundStyle(.secondary)
         }
     }
+}
 
-    private var scoreSummary: some View {
-        HStack(spacing: 10) {
+private struct OnboardingGoalFitScoreRing: View {
+    let score: Int
+    let tone: Color
+    let label: String
+
+    private var progress: Double {
+        min(max(Double(score) / 100, 0), 1)
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color(.tertiarySystemFill), lineWidth: 4)
+
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(
+                    tone,
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+
             VStack(spacing: -1) {
-                Text("58")
-                    .font(.subheadline.weight(.bold))
-                Text("LOW")
-                    .font(.system(size: 7, weight: .semibold))
+                Text("\(score)")
+                    .font(.system(size: 13, weight: .bold))
+                Text(label.uppercased())
+                    .font(.system(size: 6.5, weight: .semibold))
             }
-            .foregroundStyle(Color.liftEatsCoral)
-            .frame(width: 40, height: 40)
-            .background(Color.liftEatsCoral.opacity(0.14), in: Circle())
-
-            Rectangle()
-                .fill(Color.liftEatsCoral.opacity(0.14))
-                .frame(width: 1, height: 32)
-
-            Text("Good start with eggs and toast but this meal is a bit low in protein and carbs for your lean bulk goal.")
-                .font(.caption2)
-                .fixedSize(horizontal: false, vertical: true)
+            .foregroundStyle(tone)
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 2)
+        .frame(width: 42, height: 42)
+        .padding(.top, 2)
+        .accessibilityLabel("Goal fit score \(score), \(label)")
     }
 }
 

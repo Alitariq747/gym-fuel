@@ -21,6 +21,7 @@ private enum OnboardingStep: Hashable {
     case name
     case liftEatsIntro
     case liftEatsDifference
+    case goalFitScoreExplainer
     case gender
     case age
     case height
@@ -34,12 +35,12 @@ struct OnboardingFlowView: View {
     let onFinished: (String, Gender, Int, Double, Double, GoalType, NonTrainingActivityLevel) -> Void
 
     @State private var data = OnboardingData()
-    @State private var step: OnboardingStep = .name
+    @State private var step: OnboardingStep = .liftEatsIntro
 
     // MARK: - Step order + progress
 
     private let orderedSteps: [OnboardingStep] = [
-        .name, .liftEatsIntro, .liftEatsDifference, .gender, .age, .height, .weight,
+        .liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer, .name, .gender, .age, .height, .weight,
         .activityLevel, .goal
     ]
 
@@ -106,7 +107,7 @@ struct OnboardingFlowView: View {
         switch step {
         case .name:
             OnboardingNameStepView(
-                onNext: { go(to: .liftEatsIntro, direction: .forward) },
+                onNext: { go(to: .gender, direction: .forward) },
                 name: $data.name
             )
 
@@ -117,7 +118,13 @@ struct OnboardingFlowView: View {
 
         case .liftEatsDifference:
             OnboardingLiftEats(
-                onNext: { go(to: .gender, direction: .forward) }
+                onNext: { go(to: .goalFitScoreExplainer, direction: .forward) }
+            )
+
+        case .goalFitScoreExplainer:
+            GoalFitScoreExplainerSheet(
+                primaryButtonTitle: "Next",
+                onPrimaryAction: { go(to: .name, direction: .forward) }
             )
 
         case .gender:

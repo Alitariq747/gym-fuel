@@ -45,8 +45,10 @@ enum BackendLogInterpretationError: LocalizedError {
 
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
+    private let textRequestTimeout: TimeInterval = 16
+    private let imageRequestTimeout: TimeInterval = 24
 
-    init(baseURL: URL = URL(string: "http://localhost:5001")!) {
+    init(baseURL: URL = URL(string: "https://talented-hydrocodone-controls-excellence.trycloudflare.com")!) {
         self.baseURL = baseURL
     }
 
@@ -189,6 +191,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         let url = baseURL.appendingPathComponent("interpretText")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = textRequestTimeout
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = requestData
 
@@ -224,6 +227,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         let url = baseURL.appendingPathComponent("interpretMealImage")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = imageRequestTimeout
         let multipartBody = makeImageMultipartFormData(imageData: imageData, goal: goal)
         request.setValue("multipart/form-data; boundary=\(multipartBody.boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = multipartBody.body
