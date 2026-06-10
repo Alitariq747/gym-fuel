@@ -5,6 +5,7 @@
 //  Created by Ahmad Ali Tariq on 06/12/2025.
 //
 
+import AVFoundation
 import PhotosUI
 import SwiftUI
 import UIKit
@@ -26,6 +27,7 @@ struct MainTabView: View {
     @State var mealImageDraft = MealImageDraft()
     @State var pendingMealImageSource: MealImageSource?
     @State var showCameraCapture = false
+    @State private var showCameraPermissionAlert = false
     @State var showPhotoLibraryPicker = false
     @State var selectedPhotoPickerItem: PhotosPickerItem?
     @FocusState private var isComposerFocused: Bool
@@ -138,8 +140,7 @@ struct MainTabView: View {
                             composerViewModel.clearError()
                         },
                         onCameraTap: {
-                            dismissComposerKeyboard()
-                            pendingMealImageSource = .camera
+                            handleCameraTap()
                         },
                         onPhotoTap: {
                             dismissComposerKeyboard()
@@ -354,6 +355,14 @@ struct MainTabView: View {
             matching: .images,
             preferredItemEncoding: .current
         )
+        .alert("Camera Access Required", isPresented: $showCameraPermissionAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Open Settings") {
+                openAppSettings()
+            }
+        } message: {
+            Text("Allow camera access in Settings to capture meal photos for logging.")
+        }
         .fullScreenCover(isPresented: $showCameraCapture) {
             MealCameraCaptureView(
                 onImagePicked: { image in
@@ -384,6 +393,27 @@ struct MainTabView: View {
 
     private func handleUpdatedEntry(_ updatedEntry: LogEntry) async {
         selectedEntry = updatedEntry
+    }
+
+    private func handleCameraTap() {
+        dismissComposerKeyboard()
+
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .denied, .restricted:
+            pendingMealImageSource = nil
+            showCameraCapture = false
+            showCameraPermissionAlert = true
+        case .authorized, .notDetermined:
+            pendingMealImageSource = .camera
+        @unknown default:
+            pendingMealImageSource = nil
+            showCameraPermissionAlert = true
+        }
+    }
+
+    private func openAppSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
     }
 
     func dismissComposerKeyboard() {
