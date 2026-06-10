@@ -45,7 +45,7 @@ enum BackendLogInterpretationError: LocalizedError {
 
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
-    init(baseURL: URL = URL(string: "https://gymfuel-ai-service-890151577476.us-central1.run.app")!) {
+    init(baseURL: URL = AppConfig.backendBaseURL) {
         self.baseURL = baseURL
     }
 

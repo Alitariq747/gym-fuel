@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-	<dict>
-		<key>CFBundleURLTypes</key>
-		<array>
-			<dict>
+<dict>
+	<key>BACKEND_BASE_URL</key>
+	<string>https://gymfuel-ai-service-890151577476.us-central1.run.app</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
@@ -13,11 +15,7 @@
 			<array>
 				<string>com.googleusercontent.apps.890151577476-guu8u27r5au2os55jc4dmscv80n0moih</string>
 			</array>
-			</dict>
-		</array>
-		<key>NSCameraUsageDescription</key>
-		<string>LiftEats uses the camera so you can capture meal photos for logging.</string>
-		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>LiftEats may save meal photos when needed to support your meal logging flow.</string>
-	</dict>
+		</dict>
+	</array>
+</dict>
 </plist>
