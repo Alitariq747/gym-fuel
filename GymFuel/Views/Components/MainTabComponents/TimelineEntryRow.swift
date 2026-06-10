@@ -15,6 +15,8 @@ struct TimelineEntryRow: View {
     @State private var showRevealedFat = false
     @State private var showRevealedGoalFit = false
     @State private var revealSequenceTask: Task<Void, Never>?
+    @State private var imageAnalysisMessage = "Analyzing"
+    @State private var imageAnalysisMessageTask: Task<Void, Never>?
     @State private var runningSuccessRevealEntryID: String?
     private let revealStepDelay: Duration = .milliseconds(220)
     private let revealAnimationDuration = 0.3
@@ -131,6 +133,27 @@ struct TimelineEntryRow: View {
             revealSequenceTask = nil
             runningSuccessRevealEntryID = nil
             applyImmediateRevealState()
+        }
+    }
+
+    private func syncImageAnalysisMessageState() {
+        guard isAnalyzingImageEntry else {
+            imageAnalysisMessageTask?.cancel()
+            imageAnalysisMessageTask = nil
+            imageAnalysisMessage = "Analyzing"
+            return
+        }
+
+        guard imageAnalysisMessageTask == nil else { return }
+        imageAnalysisMessage = "Analyzing"
+        imageAnalysisMessageTask = Task {
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { imageAnalysisMessage = "Crafting Description" }
+
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { imageAnalysisMessage = "Finalising" }
         }
     }
 
@@ -255,7 +278,7 @@ struct TimelineEntryRow: View {
                 Divider()
                     .padding(.vertical, 2)
                 HStack(spacing: 0) {
-                    Text("🛠️ Analyzing")
+                    Text("🛠️ \(imageAnalysisMessage)")
                     AnimatedEllipsisView()
                 }
                 .font(.caption)
@@ -287,10 +310,13 @@ struct TimelineEntryRow: View {
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedGoalFit)
         .onAppear {
             syncRevealStateForCurrentEntry()
+            syncImageAnalysisMessageState()
         }
         .onDisappear {
             revealSequenceTask?.cancel()
             revealSequenceTask = nil
+            imageAnalysisMessageTask?.cancel()
+            imageAnalysisMessageTask = nil
             runningSuccessRevealEntryID = nil
         }
         .onChange(of: entry.id) { _, _ in
@@ -298,6 +324,7 @@ struct TimelineEntryRow: View {
         }
         .onChange(of: entry.status) { _, _ in
             syncRevealStateForCurrentEntry()
+            syncImageAnalysisMessageState()
         }
         .onChange(of: shouldAnimateSuccessReveal) { _, _ in
             syncRevealStateForCurrentEntry()

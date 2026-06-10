@@ -6,12 +6,15 @@
 //
 
 import Foundation
+import FirebasePerformance
 
 @MainActor
 final class TimelineViewModel: ObservableObject {
     @Published var selectedDate: Date = .now
     @Published private(set) var timeline: DayTimeline = DayTimeline(date: .now)
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var loggedDaysInVisibleMonth: Set<Date> = []
+    @Published private(set) var isLoadingLoggedDays: Bool = false
     @Published private(set) var errorMessage: String?
     var consumedMacros: Macros {
         timeline.entries.reduce(.zero) { partial, entry in
@@ -38,6 +41,7 @@ final class TimelineViewModel: ObservableObject {
     private var previousEntryStatusesByID: [String: LogEntryStatus] = [:]
     private var pendingSuccessRevealEntryIDs: Set<String> = []
     private var attemptedImageUploadRetryEntryIDs: Set<String> = []
+    private var timelineLoadTrace: Trace?
 
     init(service: LogEntryService = FirebaseLogEntryService()) {
         self.service = service
@@ -57,6 +61,7 @@ final class TimelineViewModel: ObservableObject {
         selectedDate = startOfDay
         isLoading = true
         errorMessage = nil
+        timelineLoadTrace = FirebaseTelemetryService.startPerformanceTrace("timeline_load_time")
         let cancellation = service.observeEntries(
             for: userId,
             from: startOfDay,
@@ -66,10 +71,24 @@ final class TimelineViewModel: ObservableObject {
             Task { @MainActor in
                 switch result {
                 case .success(let entries):
+                    FirebaseTelemetryService.stopPerformanceTrace(
+                        self.timelineLoadTrace,
+                        attributes: [
+                            "outcome": "success",
+                        ]
+                    )
+                    self.timelineLoadTrace = nil
                     self.trackStatusTransitions(for: entries)
                     self.timeline = DayTimeline(date: startOfDay, entries: entries, calendar: calendar)
                     self.errorMessage = nil
                 case .failure(let error):
+                    FirebaseTelemetryService.stopPerformanceTrace(
+                        self.timelineLoadTrace,
+                        attributes: [
+                            "outcome": "failure",
+                        ]
+                    )
+                    self.timelineLoadTrace = nil
                     self.errorMessage = AppErrorMessage.message(
                         for: error,
                         fallback: "We couldn't load your timeline. Please try again."
@@ -80,6 +99,31 @@ final class TimelineViewModel: ObservableObject {
             }
         }
         replaceObservation(cancellation)
+    }
+
+    func loadLoggedDaysInVisibleMonth(
+        containing date: Date,
+        userId: String,
+        calendar: Calendar = .current
+    ) async {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: date) else { return }
+
+        isLoadingLoggedDays = true
+        defer { isLoadingLoggedDays = false }
+
+        do {
+            let entries = try await service.fetchEntries(
+                for: userId,
+                from: monthInterval.start,
+                to: monthInterval.end
+            )
+            loggedDaysInVisibleMonth = Set(entries.map { calendar.startOfDay(for: $0.loggedAt) })
+        } catch {
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't load your logged days."
+            )
+        }
     }
 
     func goToPreviousDay(userId: String, calendar: Calendar = .current) async {

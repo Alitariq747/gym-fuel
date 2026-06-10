@@ -10,8 +10,13 @@ import SwiftUI
 struct SavedMealsSheet: View {
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
     @State private var showAddSavedMealSheet: Bool = false
     @State private var selectedMeal: SavedMeal?
+
+    private var preferredColorScheme: ColorScheme? {
+        AppColorSchemePreference(rawValue: colorSchemePreference)?.colorScheme
+    }
 
     var body: some View {
         ZStack {
@@ -136,9 +141,11 @@ struct SavedMealsSheet: View {
         .presentationDetents([.large])
         .sheet(isPresented: $showAddSavedMealSheet) {
             AddSavedMealSheet()
+                .preferredColorScheme(preferredColorScheme)
         }
         .sheet(item: $selectedMeal) { meal in
             EditSavedMealSheet(meal: meal)
+                .preferredColorScheme(preferredColorScheme)
         }
     }
 }

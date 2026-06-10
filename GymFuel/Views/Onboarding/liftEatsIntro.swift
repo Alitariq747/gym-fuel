@@ -90,7 +90,7 @@ struct liftEatsIntro: View {
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity)
                     .foregroundStyle(.white)
-                    .background(Color.black, in: RoundedRectangle(cornerRadius: 12))
+                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
         }

@@ -57,7 +57,9 @@ final class UserProfileViewModel: ObservableObject {
         do {
             let updatedProfile = try await service.updateProfile(for: uid, name: name, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: true, gender: gender)
             self.profile = updatedProfile
+            FirebaseTelemetryService.logOnboardingEvent("complete_succeeded")
         } catch {
+            FirebaseTelemetryService.logOnboardingEvent("complete_failed")
             self.errorMessage = AppErrorMessage.message(
                 for: error,
                 fallback: "We couldn't finish setting up your profile. Please try again."

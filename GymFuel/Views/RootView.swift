@@ -32,9 +32,9 @@ struct RootView: View {
                         }
                     }
                 } else if profileViewModel.isLoading {
-                    ProgressView("Loading…")
+                    AppLoadingView()
                 } else {
-                    ProgressView("Loading…")
+                    AppLoadingView()
                 }
         }
         .task(id: authManager.user?.uid) {

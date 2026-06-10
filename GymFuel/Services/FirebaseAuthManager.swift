@@ -27,9 +27,11 @@ final class FirebaseAuthManager: ObservableObject {
     init() {
        
         self.user = Auth.auth().currentUser
+        FirebaseTelemetryService.setUserID(self.user?.uid)
         
         authListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             self?.user = user
+            FirebaseTelemetryService.setUserID(user?.uid)
         }
     }
     
@@ -47,6 +49,7 @@ final class FirebaseAuthManager: ObservableObject {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.user = result.user
+            FirebaseTelemetryService.logAuthEvent("sign_up_succeeded", method: "email")
         } catch {
             // Convert Firebase NSError into our own error type
             throw mapFirebaseAuthError(error)
@@ -57,6 +60,20 @@ final class FirebaseAuthManager: ObservableObject {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.user = result.user
+            FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "email")
+        } catch {
+            throw mapFirebaseAuthError(error)
+        }
+    }
+
+    func sendPasswordReset(email: String) async throws {
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedEmail.isEmpty else {
+            throw AuthManagerError.missingEmail
+        }
+
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: normalizedEmail)
         } catch {
             throw mapFirebaseAuthError(error)
         }
@@ -67,6 +84,7 @@ final class FirebaseAuthManager: ObservableObject {
             try Auth.auth().signOut()
             GIDSignIn.sharedInstance.signOut()
             self.user = nil
+            FirebaseTelemetryService.logAuthEvent("sign_out_succeeded", method: "direct")
         } catch {
             throw mapFirebaseAuthError(error)
         }
@@ -102,6 +120,7 @@ final class FirebaseAuthManager: ObservableObject {
 
             let authResult = try await Auth.auth().signIn(with: credential)
             self.user = authResult.user
+            FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "google")
         } catch {
             throw mapFirebaseAuthError(error)
         }
@@ -117,6 +136,7 @@ final class FirebaseAuthManager: ObservableObject {
         do {
             let authResult = try await Auth.auth().signIn(with: credential)
             self.user = authResult.user
+            FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "apple")
         } catch {
             throw mapFirebaseAuthError(error)
         }
@@ -132,6 +152,7 @@ final class FirebaseAuthManager: ObservableObject {
             try? Auth.auth().signOut()
             GIDSignIn.sharedInstance.signOut()
             self.user = nil
+            FirebaseTelemetryService.logAuthEvent("delete_account_succeeded", method: "authenticated")
         } catch {
             let nsError = error as NSError
             if nsError.domain == FunctionsErrorDomain,

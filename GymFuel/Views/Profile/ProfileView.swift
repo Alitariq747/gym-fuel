@@ -28,12 +28,17 @@ struct ProfileView: View {
     @State private var deletePassword: String = ""
     @State private var deleteAppleNonce: String?
     @State private var showSaveToast: Bool = false
+    @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
 
     private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")
     private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")
 
     private var isBusy: Bool {
         profileVm.isSaving || isSigningOut || isDeletingAccount
+    }
+
+    private var preferredColorScheme: ColorScheme? {
+        AppColorSchemePreference(rawValue: colorSchemePreference)?.colorScheme
     }
 
     private var draftBinding: Binding<UserProfileDraft>? {
@@ -134,6 +139,7 @@ struct ProfileView: View {
                                     .disabled(isBusy)
                                     .opacity(isBusy ? 0.6 : 1)
 
+                                appearanceSection
                                 savedMealsSection
                                 liftEatsSection
                                 legalSection
@@ -200,13 +206,11 @@ struct ProfileView: View {
                 draft = nil
             }
         }
-        .confirmationDialog("Delete Account?", isPresented: $showDeleteAccountConfirmation, titleVisibility: .visible) {
-            Button("Delete Account", role: .destructive) {
-                Task { await startDeleteFlow() }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This will permanently delete your account and all associated data from LiftEats. This action cannot be undone.")
+        .sheet(isPresented: $showDeleteAccountConfirmation) {
+            deleteAccountWarningSheet
+                .preferredColorScheme(preferredColorScheme)
+                .presentationDetents([.height(390)])
+                .presentationDragIndicator(.visible)
         }
         .alert("Confirm your password", isPresented: $showEmailReauthPrompt) {
             TextField("Email", text: $deleteEmail)
@@ -225,14 +229,61 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showAppleReauthSheet) {
             appleReauthSheet
+                .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showSavedMealsSheet) {
             SavedMealsSheet()
+                .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showGoalFitExplainerSheet) {
             GoalFitScoreExplainerSheet(primaryButtonTitle: "Done")
+                .preferredColorScheme(preferredColorScheme)
         }
     }
+    private var deleteAccountWarningSheet: some View {
+        VStack(spacing: 18) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 42, weight: .semibold))
+                .foregroundStyle(Color.fuelRed)
+                .frame(width: 74, height: 74)
+                .background(Color.fuelRed.opacity(0.12), in: Circle())
+
+            VStack(spacing: 8) {
+                Text("Delete your account?")
+                    .font(.title3.weight(.bold))
+                    .multilineTextAlignment(.center)
+
+                Text("This permanently removes your LiftEats account, profile, saved meals, and logged history. This action cannot be undone.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: 10) {
+                Button(role: .destructive) {
+                    showDeleteAccountConfirmation = false
+                    Task { await startDeleteFlow() }
+                } label: {
+                    Text("Delete Account")
+                        .font(.headline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.fuelRed)
+
+                Button("Cancel") {
+                    showDeleteAccountConfirmation = false
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(24)
+    }
+
     private var canSave: Bool {
         guard let profile = profileVm.profile, let draft else { return false }
 
@@ -274,6 +325,34 @@ struct ProfileView: View {
         }
         .padding(.horizontal)
         .opacity(0.92)
+    }
+
+    private var appearanceSection: some View {
+        VStack(spacing: 12) {
+            sectionHeader(title: "Appearance", systemImage: "circle.lefthalf.filled")
+            Menu {
+                ForEach(AppColorSchemePreference.allCases) { preference in
+                    Button {
+                        colorSchemePreference = preference.rawValue
+                    } label: {
+                        Label(
+                            preference.displayName,
+                            systemImage: colorSchemePreference == preference.rawValue ? "checkmark" : ""
+                        )
+                    }
+                }
+            } label: {
+                settingsRow(
+                    title: "Color Scheme",
+                    systemImage: "paintbrush.fill",
+                    value: AppColorSchemePreference(rawValue: colorSchemePreference)?.displayName ?? AppColorSchemePreference.system.displayName,
+                    tint: .fuelBlue
+                )
+            }
+            .buttonStyle(.plain)
+            .background(cardBackground)
+        }
+        .padding(.horizontal)
     }
 
     private var savedMealsSection: some View {
@@ -457,6 +536,35 @@ struct ProfileView: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private func settingsRow(title: String, systemImage: String, value: String, tint: Color) -> some View {
+        HStack(spacing: 14) {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(tint.opacity(0.12))
+                .frame(width: 52, height: 52)
+                .overlay(
+                    Image(systemName: systemImage)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(tint)
+                )
+
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Image(systemName: "chevron.down")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
+        .padding(16)
     }
 
     private func sectionHeader(title: String, systemImage: String) -> some View {

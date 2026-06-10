@@ -28,6 +28,34 @@ private enum OnboardingStep: Hashable {
     case weight
     case activityLevel
     case goal
+    case summary
+
+    var analyticsName: String {
+        switch self {
+        case .name:
+            return "name"
+        case .liftEatsIntro:
+            return "lift_eats_intro"
+        case .liftEatsDifference:
+            return "lift_eats_difference"
+        case .goalFitScoreExplainer:
+            return "goal_fit_score_explainer"
+        case .gender:
+            return "gender"
+        case .age:
+            return "age"
+        case .height:
+            return "height"
+        case .weight:
+            return "weight"
+        case .activityLevel:
+            return "activity_level"
+        case .goal:
+            return "goal"
+        case .summary:
+            return "summary"
+        }
+    }
 }
 
 struct OnboardingFlowView: View {
@@ -41,7 +69,7 @@ struct OnboardingFlowView: View {
 
     private let orderedSteps: [OnboardingStep] = [
         .liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer, .name, .gender, .age, .height, .weight,
-        .activityLevel, .goal
+        .activityLevel, .goal, .summary
     ]
 
     private var currentIndex: Int {
@@ -161,8 +189,26 @@ struct OnboardingFlowView: View {
         case .goal:
             OnboardingTrainingGoalStepView(
                 selectedGoal: $data.goalType,
-                onFinish: finishOnboarding
+                onFinish: { go(to: .summary, direction: .forward) }
             )
+
+        case .summary:
+            if let age = data.age,
+               let height = data.heightCm,
+               let weight = data.weightKg,
+               let goalType = data.goalType,
+               let activityLevel = data.nonTrainingActivityLevel {
+                OnboardingSummaryStepView(
+                    name: data.name,
+                    gender: data.gender,
+                    age: age,
+                    heightCm: height,
+                    weightKg: weight,
+                    goalType: goalType,
+                    activityLevel: activityLevel,
+                    onStartTracking: finishOnboarding
+                )
+            }
         }
     }
 
@@ -175,6 +221,7 @@ struct OnboardingFlowView: View {
             let activityLevel = data.nonTrainingActivityLevel
         else { return }
 
+        FirebaseTelemetryService.logOnboardingEvent("finish_tapped", step: step.analyticsName)
         onFinished(
             data.name, data.gender, age, height, weight,
             goalType, activityLevel
@@ -214,6 +261,12 @@ struct OnboardingFlowView: View {
                 Spacer(minLength: 0)
             }
             .navigationBarBackButtonHidden(true)
+            .onAppear {
+                FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: step.analyticsName)
+            }
+            .onChange(of: step) { _, newStep in
+                FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: newStep.analyticsName)
+            }
         }
     }
 }

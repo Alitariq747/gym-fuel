@@ -13,7 +13,7 @@ struct MainTabTimelineContentView: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                ProgressView("Loading timeline...")
+                ProgressView()
             } else if let errorMessage = viewModel.errorMessage {
                 errorView(errorMessage)
             } else if !viewModel.timeline.entries.isEmpty {

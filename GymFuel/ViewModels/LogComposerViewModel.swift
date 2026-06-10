@@ -57,11 +57,13 @@ final class LogComposerViewModel: ObservableObject {
         }
 
         let pendingEntry = makePendingTextEntry(text: text, userId: userId, loggedAt: loggedAt)
+        let trace = FirebaseTelemetryService.startPerformanceTrace("text_meal_log_total")
         isSubmitting = true
         errorMessage = nil
         var didSavePendingEntry = false
 
         do {
+            FirebaseTelemetryService.logMealAIEvent("submit_started", source: "text")
             try await logEntryService.saveEntry(pendingEntry)
             didSavePendingEntry = true
             draft = LogComposerDraft()
@@ -85,9 +87,25 @@ final class LogComposerViewModel: ObservableObject {
                 image: interpretedEntry.image
             )
             try await logEntryService.updateEntry(resolvedEntry)
+            FirebaseTelemetryService.logMealAIEvent("submit_succeeded", source: "text")
+            FirebaseTelemetryService.stopPerformanceTrace(
+                trace,
+                attributes: [
+                    "source": "text",
+                    "outcome": "success",
+                ]
+            )
             isSubmitting = false
             return true
         } catch {
+            FirebaseTelemetryService.logMealAIEvent("submit_failed", source: "text")
+            FirebaseTelemetryService.stopPerformanceTrace(
+                trace,
+                attributes: [
+                    "source": "text",
+                    "outcome": "failure",
+                ]
+            )
             let message = userFacingMessage(for: error)
             if didSavePendingEntry {
                 var failedEntry = pendingEntry
@@ -111,6 +129,7 @@ final class LogComposerViewModel: ObservableObject {
         errorMessage = nil
 
         do {
+            FirebaseTelemetryService.logMealAIEvent("retry_started", source: "text")
             var retryingEntry = entry
             retryingEntry.status = .analyzing
             retryingEntry.feedback = nil
@@ -136,9 +155,11 @@ final class LogComposerViewModel: ObservableObject {
                 image: interpretedEntry.image
             )
             try await logEntryService.updateEntry(resolvedEntry)
+            FirebaseTelemetryService.logMealAIEvent("retry_succeeded", source: "text")
             isSubmitting = false
             return true
         } catch {
+            FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "text")
             let message = userFacingMessage(for: error)
             var failedEntry = entry
             failedEntry.status = .failed
@@ -154,6 +175,7 @@ final class LogComposerViewModel: ObservableObject {
         errorMessage = nil
 
         do {
+            FirebaseTelemetryService.logMealAIEvent("retry_started", source: "image")
             var retryingEntry = entry
             retryingEntry.status = .analyzing
             retryingEntry.feedback = nil
@@ -181,9 +203,11 @@ final class LogComposerViewModel: ObservableObject {
             )
             try await logEntryService.updateEntry(resolvedEntry)
             startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
+            FirebaseTelemetryService.logMealAIEvent("retry_succeeded", source: "image")
             isSubmitting = false
             return resolvedEntry
         } catch {
+            FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "image")
             let message = userFacingMessage(for: error)
             var failedEntry = entry
             failedEntry.status = .failed
@@ -212,11 +236,13 @@ final class LogComposerViewModel: ObservableObject {
             rawInput: "Meal image",
             imageUploadStatus: .localOnly
         )
+        let trace = FirebaseTelemetryService.startPerformanceTrace("image_meal_log_total")
         isSubmitting = true
         errorMessage = nil
         var didSavePendingEntry = false
 
         do {
+            FirebaseTelemetryService.logMealAIEvent("submit_started", source: "image")
             try await logEntryService.saveEntry(pendingEntry)
             didSavePendingEntry = true
             draft = LogComposerDraft()
@@ -242,9 +268,25 @@ final class LogComposerViewModel: ObservableObject {
             )
             try await logEntryService.updateEntry(resolvedEntry)
             startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
+            FirebaseTelemetryService.logMealAIEvent("submit_succeeded", source: "image")
+            FirebaseTelemetryService.stopPerformanceTrace(
+                trace,
+                attributes: [
+                    "source": "image",
+                    "outcome": "success",
+                ]
+            )
             isSubmitting = false
             return resolvedEntry
         } catch {
+            FirebaseTelemetryService.logMealAIEvent("submit_failed", source: "image")
+            FirebaseTelemetryService.stopPerformanceTrace(
+                trace,
+                attributes: [
+                    "source": "image",
+                    "outcome": "failure",
+                ]
+            )
             let message = userFacingMessage(for: error)
             if didSavePendingEntry {
                 var failedEntry = pendingEntry
@@ -285,9 +327,11 @@ final class LogComposerViewModel: ObservableObject {
         do {
             try await logEntryService.saveEntry(entry)
             draft = LogComposerDraft()
+            FirebaseTelemetryService.logSavedMealEvent("log_succeeded")
             isSubmitting = false
             return true
         } catch {
+            FirebaseTelemetryService.logSavedMealEvent("log_failed")
             errorMessage = userFacingMessage(
                 for: error,
                 fallback: "We couldn't log that saved meal. Please try again."
@@ -314,6 +358,7 @@ final class LogComposerViewModel: ObservableObject {
             var uploadingEntry = entry
             uploadingEntry.imageUploadStatus = .uploading
             try? await logEntryService.updateEntry(uploadingEntry)
+            let trace = FirebaseTelemetryService.startPerformanceTrace("image_upload_time")
 
             do {
                 let storagePath = try await mealImageUploadService.uploadMealImage(
@@ -325,10 +370,32 @@ final class LogComposerViewModel: ObservableObject {
                 uploadedEntry.image = LogEntryImage(storagePath: storagePath)
                 uploadedEntry.imageUploadStatus = .uploaded
                 try await logEntryService.updateEntry(uploadedEntry)
+                FirebaseTelemetryService.stopPerformanceTrace(
+                    trace,
+                    attributes: [
+                        "source": "image_retry",
+                        "outcome": "success",
+                    ]
+                )
             } catch {
+                FirebaseTelemetryService.recordNonFatal(
+                    error,
+                    reason: "meal_image_upload_retry_failed",
+                    metadata: [
+                        "entry_id": entry.id,
+                        "source": "image_retry",
+                    ]
+                )
                 var failedEntry = entry
                 failedEntry.imageUploadStatus = .failed
                 try? await logEntryService.updateEntry(failedEntry)
+                FirebaseTelemetryService.stopPerformanceTrace(
+                    trace,
+                    attributes: [
+                        "source": "image_retry",
+                        "outcome": "failure",
+                    ]
+                )
             }
         }
     }
@@ -338,6 +405,7 @@ final class LogComposerViewModel: ObservableObject {
         let logEntryService = logEntryService
 
         Task.detached(priority: .utility) {
+            let trace = FirebaseTelemetryService.startPerformanceTrace("image_upload_time")
             do {
                 let storagePath = try await mealImageUploadService.uploadMealImage(
                     imageData,
@@ -349,10 +417,32 @@ final class LogComposerViewModel: ObservableObject {
                 updatedEntry.image = LogEntryImage(storagePath: storagePath)
                 updatedEntry.imageUploadStatus = .uploaded
                 try await logEntryService.updateEntry(updatedEntry)
+                FirebaseTelemetryService.stopPerformanceTrace(
+                    trace,
+                    attributes: [
+                        "source": "image_submit",
+                        "outcome": "success",
+                    ]
+                )
             } catch {
+                FirebaseTelemetryService.recordNonFatal(
+                    error,
+                    reason: "meal_image_upload_failed",
+                    metadata: [
+                        "entry_id": entry.id,
+                        "source": "image_submit",
+                    ]
+                )
                 var failedUploadEntry = entry
                 failedUploadEntry.imageUploadStatus = .failed
                 try? await logEntryService.updateEntry(failedUploadEntry)
+                FirebaseTelemetryService.stopPerformanceTrace(
+                    trace,
+                    attributes: [
+                        "source": "image_submit",
+                        "outcome": "failure",
+                    ]
+                )
             }
         }
     }

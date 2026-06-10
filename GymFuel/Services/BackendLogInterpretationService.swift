@@ -45,10 +45,7 @@ enum BackendLogInterpretationError: LocalizedError {
 
 final class BackendLogInterpretationService: LogInterpretationService, @unchecked Sendable {
     private let baseURL: URL
-    private let textRequestTimeout: TimeInterval = 16
-    private let imageRequestTimeout: TimeInterval = 24
-
-    init(baseURL: URL = URL(string: "https://talented-hydrocodone-controls-excellence.trycloudflare.com")!) {
+    init(baseURL: URL = URL(string: "https://gymfuel-ai-service-890151577476.us-central1.run.app")!) {
         self.baseURL = baseURL
     }
 
@@ -187,11 +184,82 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         return mapHTTPStatusCode(statusCode)
     }
 
+    private func recordResponseDecodingFailure(
+        _ error: Error,
+        route: String,
+        statusCode: Int
+    ) {
+        FirebaseTelemetryService.recordNonFatal(
+            error,
+            reason: "backend_response_decoding_failed",
+            metadata: [
+                "route": route,
+                "status_code": statusCode,
+            ]
+        )
+    }
+
+    private func recordUnexpectedEmptyAIResponse(
+        route: String,
+        statusCode: Int
+    ) {
+        let error = NSError(
+            domain: "BackendLogInterpretationService",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Decoded AI response was unexpectedly empty."]
+        )
+
+        FirebaseTelemetryService.recordNonFatal(
+            error,
+            reason: "unexpected_empty_ai_response",
+            metadata: [
+                "route": route,
+                "status_code": statusCode,
+            ]
+        )
+    }
+
+    private func normalizeAIResponseIfNeeded(
+        _ response: TextInterpretationResponse,
+        route: String,
+        statusCode: Int
+    ) -> TextInterpretationResponse {
+        let trimmedTitle = response.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedExplanation = response.feedback.explanation.trimmingCharacters(in: .whitespacesAndNewlines)
+        let shouldRecordEmptyResponse = trimmedTitle.isEmpty || trimmedExplanation.isEmpty
+
+        if shouldRecordEmptyResponse {
+            recordUnexpectedEmptyAIResponse(route: route, statusCode: statusCode)
+        }
+
+        let fallbackTitle: String
+        let fallbackExplanation: String
+
+        switch response.type {
+        case .food:
+            fallbackTitle = "Logged meal"
+            fallbackExplanation = "Estimated nutrition based on the logged entry."
+        case .exercise:
+            fallbackTitle = "Logged exercise"
+            fallbackExplanation = "Estimated calorie burn based on the logged activity."
+        }
+
+        var normalizedResponse = response
+        normalizedResponse.title = trimmedTitle.isEmpty ? fallbackTitle : trimmedTitle
+
+        if trimmedExplanation.isEmpty {
+            normalizedResponse.feedback.explanation = fallbackExplanation
+        } else {
+            normalizedResponse.feedback.explanation = trimmedExplanation
+        }
+
+        return normalizedResponse
+    }
+
     private func sendTextInterpretationRequest(_ requestData: Data) async throws -> TextInterpretationResponse {
         let url = baseURL.appendingPathComponent("interpretText")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = textRequestTimeout
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = requestData
 
@@ -217,8 +285,21 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         }
 
         do {
-            return try JSONDecoder().decode(TextInterpretationResponse.self, from: data)
+            let decodedResponse = try JSONDecoder().decode(TextInterpretationResponse.self, from: data)
+            return normalizeAIResponseIfNeeded(
+                decodedResponse,
+                route: "interpretText",
+                statusCode: httpResponse.statusCode
+            )
         } catch {
+            if let backendError = error as? BackendLogInterpretationError {
+                throw backendError
+            }
+            recordResponseDecodingFailure(
+                error,
+                route: "interpretText",
+                statusCode: httpResponse.statusCode
+            )
             throw BackendLogInterpretationError.decodingFailed
         }
     }
@@ -227,7 +308,6 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         let url = baseURL.appendingPathComponent("interpretMealImage")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = imageRequestTimeout
         let multipartBody = makeImageMultipartFormData(imageData: imageData, goal: goal)
         request.setValue("multipart/form-data; boundary=\(multipartBody.boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = multipartBody.body
@@ -253,8 +333,21 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         }
 
         do {
-            return try JSONDecoder().decode(TextInterpretationResponse.self, from: data)
+            let decodedResponse = try JSONDecoder().decode(TextInterpretationResponse.self, from: data)
+            return normalizeAIResponseIfNeeded(
+                decodedResponse,
+                route: "interpretMealImage",
+                statusCode: httpResponse.statusCode
+            )
         } catch {
+            if let backendError = error as? BackendLogInterpretationError {
+                throw backendError
+            }
+            recordResponseDecodingFailure(
+                error,
+                route: "interpretMealImage",
+                statusCode: httpResponse.statusCode
+            )
             throw BackendLogInterpretationError.decodingFailed
         }
     }

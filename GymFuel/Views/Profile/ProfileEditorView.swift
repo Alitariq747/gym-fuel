@@ -9,8 +9,17 @@ import SwiftUI
 
 struct ProfileEditorView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
     @Binding var draft: UserProfileDraft
     let email: String?
+
+    private var preferredColorScheme: ColorScheme? {
+        switch colorSchemePreference {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
 
     // age
     @State private var ageText: String = ""
@@ -96,25 +105,30 @@ struct ProfileEditorView: View {
             NavigationStack {
                 EditHeightSheet(heightCm: $draft.heightCm)
             }
+            .preferredColorScheme(preferredColorScheme)
             .presentationDetents([.large])
         }
         .sheet(isPresented: $isEditWeightPresented) {
             NavigationStack {
                 EditWeightSheet(weightKg: $draft.weightKg)
             }
+            .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showGoalSheet) {
             goalPickerSheet
+                .preferredColorScheme(preferredColorScheme)
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showActivitySheet) {
             activityPickerSheet
+                .preferredColorScheme(preferredColorScheme)
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showGenderSheet) {
             genderPickerSheet
+                .preferredColorScheme(preferredColorScheme)
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
         }
@@ -196,7 +210,7 @@ struct ProfileEditorView: View {
             Divider()
             rowButton(
                 title: "Weight",
-                systemImage: "scalemass",
+                systemImage: "number",
                 value: weightPrimaryText,
                 isPlaceholder: weightPrimaryText == "Set"
             ) {
@@ -251,7 +265,7 @@ struct ProfileEditorView: View {
 
     private var targetsCard: some View {
         VStack(spacing: 10) {
-            rowButton(title: "Goal", systemImage: "target", value: goalTitle, isPlaceholder: draft.goalType == nil) {
+            rowButton(title: "Goal", systemImage: "scope", value: goalTitle, isPlaceholder: draft.goalType == nil) {
                 showGoalSheet = true
             }
             Divider()
