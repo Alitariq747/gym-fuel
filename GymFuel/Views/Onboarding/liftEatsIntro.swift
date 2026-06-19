@@ -62,9 +62,9 @@ struct liftEatsIntro: View {
                         .foregroundStyle(.secondary)
 
                     VStack(spacing: 8) {
-                        GoalScoreRow(emoji: "🔥", title: "Cut", score: "62", tint: .liftEatsCoral)
-                        GoalScoreRow(emoji: "⚖️", title: "Maintain", score: "76", tint: .orange)
-                        GoalScoreRow(emoji: "💪", title: "Lean bulk", score: "91", tint: .green)
+                        GoalScoreRow(goal: .cut, title: "Cut", score: "62", tint: .liftEatsCoral)
+                        GoalScoreRow(goal: .maintain, title: "Maintain", score: "76", tint: .orange)
+                        GoalScoreRow(goal: .leanBulk, title: "Lean bulk", score: "91", tint: .green)
                     }
                 }
             }
@@ -116,16 +116,22 @@ struct liftEatsIntro: View {
 }
 
 private struct GoalScoreRow: View {
-    let emoji: String
+    let goal: GoalType
     let title: String
     let score: String
     let tint: Color
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(emoji)
+            Image(systemName: goal.symbolName)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
                 .frame(width: 30, height: 30)
-                .background(tint.opacity(0.12), in: Circle())
+                .background(Color(.systemBackground), in: Circle())
+                .overlay {
+                    Circle()
+                        .stroke(tint.opacity(0.18), lineWidth: 1)
+                }
             Text(title)
                 .font(.subheadline.weight(.semibold))
             Spacer()

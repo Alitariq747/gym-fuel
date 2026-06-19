@@ -35,7 +35,7 @@ struct WelcomeView: View {
                 Text("Welcome to LiftEats")
                     .font(.title.bold())
 
-                Text("Fuel your training with personalised macros, meal timing, and AI-powered logging.")
+                Text("Your frictionless journey to lose fat and gain muscle starts here...")
                     .font(.body)
                     .foregroundStyle(.secondary)
             }

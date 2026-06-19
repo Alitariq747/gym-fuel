@@ -33,6 +33,17 @@ enum GoalType: String, CaseIterable, Codable, Equatable {
             return "Lose fat with tighter calorie control while still keeping nutrition strong enough to support recovery and muscle retention."
         }
     }
+
+    var symbolName: String {
+        switch self {
+        case .leanBulk:
+            return "figure.strengthtraining.traditional"
+        case .maintain:
+            return "scale.3d"
+        case .cut:
+            return "flame.fill"
+        }
+    }
 }
 
 extension GoalType {

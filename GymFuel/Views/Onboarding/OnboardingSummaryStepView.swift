@@ -50,7 +50,7 @@ struct OnboardingSummaryStepView: View {
             .onboardingSummaryAppearance(isVisible: hasAppeared, order: 1)
 
             VStack(spacing: 0) {
-                summaryRow(emoji: goalEmoji, title: "Goal", value: goalType.displayName, tint: .fuelOrange)
+                goalSummaryRow(title: "Goal", value: goalType.displayName, tint: .fuelOrange)
                 summaryDivider
                 summaryRow(emoji: "🔥", title: "Calories", value: "\(Int(targetMacros.calories)) kcal", tint: .fuelOrange)
                 summaryDivider
@@ -84,22 +84,38 @@ struct OnboardingSummaryStepView: View {
         }
     }
 
-    private var goalEmoji: String {
-        "🎯"
-    }
-
     private var summaryDivider: some View {
         Divider()
             .padding(.leading, 50)
             .padding(.vertical, 10)
     }
 
+    private func goalSummaryRow(title: String, value: String, tint: Color) -> some View {
+        summaryRowContent(title: title, value: value) {
+            Image(systemName: goalType.symbolName)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color.primary)
+                .frame(width: 38, height: 38)
+                .background(Color(.systemBackground), in: Circle())
+                .overlay {
+                    Circle()
+                        .stroke(tint.opacity(colorScheme == .dark ? 0.24 : 0.16), lineWidth: 1)
+                }
+        }
+    }
+
     private func summaryRow(emoji: String, title: String, value: String, tint: Color) -> some View {
-        HStack(spacing: 12) {
+        summaryRowContent(title: title, value: value) {
             Text(emoji)
                 .font(.title3)
                 .frame(width: 38, height: 38)
                 .background(tint.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+        }
+    }
+
+    private func summaryRowContent<Icon: View>(title: String, value: String, @ViewBuilder icon: () -> Icon) -> some View {
+        HStack(spacing: 12) {
+            icon()
 
             Text(title)
                 .font(.subheadline.weight(.semibold))

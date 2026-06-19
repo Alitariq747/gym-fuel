@@ -52,7 +52,7 @@ struct SaveLoggedMealSheet: View {
 
                     VStack(spacing: 12) {
                         premiumField("fork.knife", title: "Meal name", text: $nameText, color: .fuelOrange)
-                        premiumField("text.alignleft", title: "Description", text: $descriptionText, color: .fuelBlue, lineLimit: 3...6)
+                        premiumField("text.alignleft", title: "Pre-workout, breakfast, post-lift snack", text: $descriptionText, color: .fuelBlue, lineLimit: 3...6)
                     }
 
                     if let errorMessage {

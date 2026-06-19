@@ -837,13 +837,13 @@ struct ProfileView: View {
     
 }
 
-#Preview {
-    let auth = FirebaseAuthManager()
-    let profileVM = UserProfileViewModel()
-    profileVM._setProfileForPreview(dummyProfile)
-
-    return ProfileView()
-        .environmentObject(auth)
-        .environmentObject(profileVM)
-        .environmentObject(SavedMealsViewModel())
-}
+//#Preview {
+//    let auth = FirebaseAuthManager()
+//    let profileVM = UserProfileViewModel()
+//    profileVM._setProfileForPreview(dummyProfile)
+//
+//    return ProfileView()
+//        .environmentObject(auth)
+//        .environmentObject(profileVM)
+//        .environmentObject(SavedMealsViewModel())
+//}

@@ -12,6 +12,8 @@ struct MealImageThumbnailView: View {
     let entryId: String?
     let storagePath: String?
     var size: CGFloat = 72
+    var width: CGFloat? = nil
+    var height: CGFloat? = nil
     var maxSizeBytes: Int64 = 2 * 1024 * 1024
 
     @State private var image: UIImage?
@@ -24,12 +26,16 @@ struct MealImageThumbnailView: View {
         entryId: String? = nil,
         storagePath: String? = nil,
         size: CGFloat = 72,
+        width: CGFloat? = nil,
+        height: CGFloat? = nil,
         maxSizeBytes: Int64 = 2 * 1024 * 1024,
         mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService()
     ) {
         self.entryId = entryId
         self.storagePath = storagePath
         self.size = size
+        self.width = width
+        self.height = height
         self.maxSizeBytes = maxSizeBytes
         self.mealImageUploadService = mealImageUploadService
     }
@@ -56,7 +62,7 @@ struct MealImageThumbnailView: View {
                 }
             }
         }
-        .frame(width: size, height: size)
+        .frame(width: width ?? size, height: height ?? size)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .task(id: "\(entryId ?? "")-\(storagePath ?? "")") {
             await loadImage()

@@ -35,9 +35,9 @@ struct DailyMacroDetailSheet: View {
             }
 
             HStack(spacing: 10) {
-                summaryTile("PRO", current: consumedMacros.protein, target: targetMacros.protein)
-                summaryTile("CARB", current: consumedMacros.carbs, target: targetMacros.carbs)
-                summaryTile("FAT", current: consumedMacros.fat, target: targetMacros.fat)
+                summaryTile("PRO", symbol: "fish", current: consumedMacros.protein, target: targetMacros.protein)
+                summaryTile("CARB", symbol: "leaf.fill", current: consumedMacros.carbs, target: targetMacros.carbs)
+                summaryTile("FAT", symbol: "drop.fill", current: consumedMacros.fat, target: targetMacros.fat)
             }
         }
         .padding(20)
@@ -72,7 +72,7 @@ struct DailyMacroDetailSheet: View {
         .frame(width: 108, height: 108)
     }
 
-    private func summaryTile(_ short: String, current: Double, target: Double) -> some View {
+    private func summaryTile(_ short: String, symbol: String, current: Double, target: Double) -> some View {
         let progress = min(max(current / max(target, 1), 0), 1)
         let baseColor: Color = switch short {
         case "PRO": .fuelBlue
@@ -82,9 +82,15 @@ struct DailyMacroDetailSheet: View {
         let fillColor: Color = current > target ? .fuelRed : baseColor
 
         return VStack(alignment: .leading, spacing: 6) {
-            Text(short)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 5) {
+                Image(systemName: symbol)
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(baseColor)
+                    .frame(width: 14, height: 14)
+                Text(short)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text("\(Int(current.rounded()))")
                     .font(.headline.weight(.bold))

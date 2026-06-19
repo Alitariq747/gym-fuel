@@ -49,6 +49,12 @@ final class LogComposerViewModel: ObservableObject {
         )
     }
 
+    private func feedback(_ feedback: LogEntryFeedback?, scoredFor goal: GoalType) -> LogEntryFeedback? {
+        var feedback = feedback
+        feedback?.goalType = goal
+        return feedback
+    }
+
     func submitText(userId: String, goal: GoalType, loggedAt: Date = .now) async -> Bool {
         let text = draft.trimmedText
         guard !text.isEmpty else {
@@ -83,7 +89,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: interpretedEntry.feedback,
+                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
                 image: interpretedEntry.image
             )
             try await logEntryService.updateEntry(resolvedEntry)
@@ -151,7 +157,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: interpretedEntry.feedback,
+                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
                 image: interpretedEntry.image
             )
             try await logEntryService.updateEntry(resolvedEntry)
@@ -197,7 +203,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: interpretedEntry.feedback,
+                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
                 image: interpretedEntry.image,
                 imageUploadStatus: .localOnly
             )
@@ -262,7 +268,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: interpretedEntry.feedback,
+                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
                 image: interpretedEntry.image,
                 imageUploadStatus: .localOnly
             )

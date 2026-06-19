@@ -71,11 +71,11 @@ struct LogComposerBar: View {
             .padding(.vertical, 14)
             .frame(minHeight: 64)
             .background(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(isSubmitting ? Color(.systemGray6) : Color(.secondarySystemBackground))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(Color.black.opacity(0.06), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.06), radius: 14, y: 6)

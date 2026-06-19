@@ -2,7 +2,10 @@ import SwiftUI
 
 struct MainTabHeaderView: View {
     let selectedDate: Date
-    let onDateTap: () -> Void
+    let loggedDays: Set<Date>
+    let canNavigateToNextDate: Bool
+    let onPreviousDateTap: () -> Void
+    let onNextDateTap: () -> Void
     let onStatsTap: () -> Void
     let onProfileTap: () -> Void
 
@@ -20,6 +23,22 @@ struct MainTabHeaderView: View {
         colorScheme == .dark ? Color.clear : Color.black.opacity(0.08)
     }
 
+    private var calendar: Calendar {
+        .current
+    }
+
+    private var hasLogsOnSelectedDate: Bool {
+        loggedDays.contains(calendar.startOfDay(for: selectedDate))
+    }
+
+    private var dateChipBackground: Color {
+        hasLogsOnSelectedDate ? Color.fuelGreen.opacity(0.12) : chipBackground
+    }
+
+    private var dateChipStroke: Color {
+        hasLogsOnSelectedDate ? Color.fuelGreen.opacity(0.22) : chipStroke
+    }
+
     var body: some View {
         HStack {
             Image("LiftEatsWelcomeIcon")
@@ -30,17 +49,21 @@ struct MainTabHeaderView: View {
 
             Spacer()
 
-            Button(action: onDateTap) {
+            HStack(spacing: 8) {
+                dateChevronButton(systemName: "chevron.left", isEnabled: true, action: onPreviousDateTap)
+
                 Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(chipBackground, in: Capsule())
-                    .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
+                    .foregroundStyle(hasLogsOnSelectedDate ? Color.fuelGreen : .primary)
+                    .frame(minWidth: 58)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(dateChipBackground, in: Capsule())
+                    .overlay(Capsule().stroke(dateChipStroke, lineWidth: 1))
                     .shadow(color: chipShadow, radius: 10, y: 4)
+
+                dateChevronButton(systemName: "chevron.right", isEnabled: canNavigateToNextDate, action: onNextDateTap)
             }
-            .buttonStyle(.plain)
 
             Spacer()
 
@@ -66,12 +89,28 @@ struct MainTabHeaderView: View {
             .frame(width: 76, alignment: .trailing)
         }
     }
+
+    private func dateChevronButton(systemName: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(isEnabled ? Color.primary : Color.secondary.opacity(0.55))
+                .frame(width: 34, height: 34)
+//                .background(chipBackground.opacity(isEnabled ? 1 : 0.65), in: Circle())
+//                .overlay(Circle().stroke(chipStroke, lineWidth: 1))
+//                .shadow(color: chipShadow.opacity(isEnabled ? 1 : 0.45), radius: 10, y: 4)
+        }
+        .buttonStyle(.plain)
+    }
 }
 
 #Preview {
     MainTabHeaderView(
         selectedDate: .now,
-        onDateTap: {},
+        loggedDays: [Calendar.current.startOfDay(for: .now)],
+        canNavigateToNextDate: false,
+        onPreviousDateTap: {},
+        onNextDateTap: {},
         onStatsTap: {},
         onProfileTap: {}
     )

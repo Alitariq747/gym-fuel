@@ -389,7 +389,7 @@ struct LogEntryDetailSheet: View {
             if let saveableMealMacros {
                 SaveLoggedMealSheet(
                     initialName: entry.title,
-                    initialDescription: entry.detail ?? entry.rawInput,
+                    initialDescription: nil,
                     macros: saveableMealMacros
                 ) { name, description, macros in
                     let meal = SavedMeal(id: UUID().uuidString, userId: entry.userId, name: name, description: description, macros: macros)

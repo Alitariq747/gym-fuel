@@ -8,15 +8,16 @@ struct DailyMacroSummaryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 10) {
-                Text("🔥")
-                    .font(.title3)
+                Image(systemName: "flame.fill")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.orange)
                 Text("\(Int(consumedMacros.calories.rounded()))")
                     .font(.title3.weight(.bold))
                 inlineMacro("P", value: consumedMacros.protein, color: .blue)
                 inlineMacro("C", value: consumedMacros.carbs, color: .orange)
                 inlineMacro("F", value: consumedMacros.fat, color: .pink)
                 Spacer(minLength: 8)
-                Image(systemName: "chevron.right")
+                Image(systemName: "ellipsis")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -27,10 +28,10 @@ struct DailyMacroSummaryView: View {
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ),
-                in: RoundedRectangle(cornerRadius: 26, style: .continuous)
+                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(Color(.quaternaryLabel).opacity(0.7), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.05), radius: 16, y: 8)

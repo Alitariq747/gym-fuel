@@ -70,10 +70,7 @@ struct OnboardingTrainingGoalStepView: View {
             errorMessage = nil
         } label: {
             HStack(alignment: .top, spacing: 14) {
-                Text(goalEmoji(for: goal))
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-                    .background(Color.fuelOrange.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+                goalSymbol(goal)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(goal.displayName)
                         .font(.headline.weight(.semibold))
@@ -93,12 +90,17 @@ struct OnboardingTrainingGoalStepView: View {
         .buttonStyle(.plain)
     }
 
-    private func goalEmoji(for goal: GoalType) -> String {
-        switch goal {
-        case .leanBulk: return "💪"
-        case .maintain: return "⚖️"
-        case .cut: return "🔥"
-        }
+    private func goalSymbol(_ goal: GoalType) -> some View {
+        Image(systemName: goal.symbolName)
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundStyle(Color.primary)
+            .frame(width: 44, height: 44)
+            .background(Color(.systemBackground), in: Circle())
+            .overlay {
+                Circle()
+                    .stroke(Color.fuelOrange.opacity(colorScheme == .dark ? 0.24 : 0.16), lineWidth: 1)
+            }
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0 : 0.05), radius: 8, y: 4)
     }
 
     private func handleFinish() {

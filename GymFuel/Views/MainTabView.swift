@@ -20,9 +20,7 @@ struct MainTabView: View {
     @State private var showSavedMeals = false
     @State private var showStats = false
     @State private var showDailyMacroDetails = false
-    @State private var showDatePicker = false
     @State private var showFutureLoggingToast = false
-    @State private var pickedDate = Date.now
     @State private var selectedEntry: LogEntry?
     @State var mealImageDraft = MealImageDraft()
     @State var pendingMealImageSource: MealImageSource?
@@ -56,6 +54,13 @@ struct MainTabView: View {
         isDateWithinLoggingWindow(timelineViewModel.selectedDate)
     }
 
+    private var canNavigateToNextDate: Bool {
+        guard let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: timelineViewModel.selectedDate) else {
+            return false
+        }
+        return !isFutureDate(nextDay)
+    }
+
     private func isFutureDate(_ date: Date, calendar: Calendar = .current, now: Date = .now) -> Bool {
         calendar.startOfDay(for: date) > calendar.startOfDay(for: now)
     }
@@ -85,9 +90,13 @@ struct MainTabView: View {
             VStack(spacing: 20) {
                 MainTabHeaderView(
                     selectedDate: timelineViewModel.selectedDate,
-                    onDateTap: {
-                        pickedDate = timelineViewModel.selectedDate
-                        showDatePicker = true
+                    loggedDays: timelineViewModel.loggedDaysInVisibleMonth,
+                    canNavigateToNextDate: canNavigateToNextDate,
+                    onPreviousDateTap: {
+                        navigateToPreviousDate()
+                    },
+                    onNextDateTap: {
+                        navigateToNextDate()
                     },
                     onStatsTap: {
                         showStats = true
@@ -129,6 +138,7 @@ struct MainTabView: View {
                 .onTapGesture {
                     dismissComposerKeyboard()
                 }
+
 
                 if canLogForSelectedDate {
                     LogComposerBar(
@@ -287,44 +297,6 @@ struct MainTabView: View {
             }
             .preferredColorScheme(preferredColorScheme)
         }
-        .sheet(isPresented: $showDatePicker) {
-            LoggedMonthCalendarView(
-                visibleMonth: pickedDate,
-                selectedDate: timelineViewModel.selectedDate,
-                loggedDays: timelineViewModel.loggedDaysInVisibleMonth,
-                onPreviousMonth: {
-                    pickedDate = Calendar.current.date(byAdding: .month, value: -1, to: pickedDate) ?? pickedDate
-                },
-                onNextMonth: {
-                    pickedDate = Calendar.current.date(byAdding: .month, value: 1, to: pickedDate) ?? pickedDate
-                },
-                onSelectDate: { date in
-                    guard !isFutureDate(date) else {
-                        showDatePicker = false
-                        presentFutureLoggingToast()
-                        return
-                    }
-
-                    Task {
-                        await timelineViewModel.setSelectedDate(date, userId: profile.id)
-                        showDatePicker = false
-                    }
-                },
-                onSelectFutureDate: {
-                    showDatePicker = false
-                    presentFutureLoggingToast()
-                }
-            )
-            .padding()
-            .preferredColorScheme(preferredColorScheme)
-            .task(id: pickedDate) {
-                await timelineViewModel.loadLoggedDaysInVisibleMonth(
-                    containing: pickedDate,
-                    userId: profile.id
-                )
-            }
-            .presentationDetents([.medium])
-        }
         .onChange(of: pendingMealImageSource) { _, newValue in
             if newValue != nil {
                 dismissComposerKeyboard()
@@ -380,6 +352,16 @@ struct MainTabView: View {
                 for: timelineViewModel.selectedDate,
                 userId: profile.id
             )
+            await timelineViewModel.loadLoggedDaysInVisibleMonth(
+                containing: timelineViewModel.selectedDate,
+                userId: profile.id
+            )
+        }
+        .task(id: timelineViewModel.selectedDate) {
+            await timelineViewModel.loadLoggedDaysInVisibleMonth(
+                containing: timelineViewModel.selectedDate,
+                userId: profile.id
+            )
         }
         .onChange(of: timelineViewModel.timeline.entries) { _, _ in
             retryFailedMealImageUploadsIfNeeded()
@@ -393,6 +375,23 @@ struct MainTabView: View {
 
     private func handleUpdatedEntry(_ updatedEntry: LogEntry) async {
         selectedEntry = updatedEntry
+    }
+
+    private func navigateToPreviousDate() {
+        Task {
+            await timelineViewModel.goToPreviousDay(userId: profile.id)
+        }
+    }
+
+    private func navigateToNextDate() {
+        guard canNavigateToNextDate else {
+            presentFutureLoggingToast()
+            return
+        }
+
+        Task {
+            await timelineViewModel.goToNextDay(userId: profile.id)
+        }
     }
 
     private func handleCameraTap() {
