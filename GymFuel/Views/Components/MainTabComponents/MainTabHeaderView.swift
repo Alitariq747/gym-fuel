@@ -4,6 +4,7 @@ struct MainTabHeaderView: View {
     let selectedDate: Date
     let loggedDays: Set<Date>
     let canNavigateToNextDate: Bool
+    let navigationDirection: DayNavigationDirection
     let onPreviousDateTap: () -> Void
     let onNextDateTap: () -> Void
     let onStatsTap: () -> Void
@@ -39,35 +40,75 @@ struct MainTabHeaderView: View {
         hasLogsOnSelectedDate ? Color.fuelGreen.opacity(0.22) : chipStroke
     }
 
+    private var dateChangeTransition: AnyTransition {
+        switch navigationDirection {
+        case .previous:
+            return .asymmetric(
+                insertion: .move(edge: .leading).combined(with: .opacity),
+                removal: .move(edge: .trailing).combined(with: .opacity)
+            )
+        case .next:
+            return .asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            )
+        }
+    }
+
     var body: some View {
-        HStack {
+        ViewThatFits(in: .horizontal) {
+            headerLayout(compact: false)
+                .frame(minWidth: 330)
+
+            headerLayout(compact: true)
+        }
+    }
+
+    private func headerLayout(compact: Bool) -> some View {
+        HStack(spacing: compact ? 6 : 8) {
             Image("LiftEatsWelcomeIcon")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 34, height: 34)
-                .frame(width: 76, alignment: .leading)
+                .frame(width: compact ? 30 : 34, height: compact ? 30 : 34)
+                .frame(width: compact ? 34 : 76, alignment: .leading)
 
-            Spacer()
+            Spacer(minLength: compact ? 2 : 8)
 
-            HStack(spacing: 8) {
-                dateChevronButton(systemName: "chevron.left", isEnabled: true, action: onPreviousDateTap)
+            HStack(spacing: compact ? 4 : 8) {
+                dateChevronButton(
+                    systemName: "chevron.left",
+                    isEnabled: true,
+                    size: compact ? 28 : 34,
+                    action: onPreviousDateTap
+                )
 
-                Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(hasLogsOnSelectedDate ? Color.fuelGreen : .primary)
-                    .frame(minWidth: 58)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .background(dateChipBackground, in: Capsule())
-                    .overlay(Capsule().stroke(dateChipStroke, lineWidth: 1))
-                    .shadow(color: chipShadow, radius: 10, y: 4)
+                ZStack {
+                    Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
+                        .id(selectedDate)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(hasLogsOnSelectedDate ? Color.fuelGreen : .primary)
+                        .transition(dateChangeTransition)
+                }
+                .frame(minWidth: compact ? 50 : 58)
+                .clipped()
+                .padding(.horizontal, compact ? 8 : 12)
+                .padding(.vertical, compact ? 8 : 9)
+                .background(dateChipBackground, in: Capsule())
+                .overlay(Capsule().stroke(dateChipStroke, lineWidth: 1))
+                .shadow(color: chipShadow, radius: 10, y: 4)
+                .animation(.easeInOut(duration: 0.24), value: selectedDate)
 
-                dateChevronButton(systemName: "chevron.right", isEnabled: canNavigateToNextDate, action: onNextDateTap)
+                dateChevronButton(
+                    systemName: "chevron.right",
+                    isEnabled: canNavigateToNextDate,
+                    size: compact ? 28 : 34,
+                    action: onNextDateTap
+                )
             }
 
-            Spacer()
+            Spacer(minLength: compact ? 2 : 8)
 
-            HStack(spacing: 14) {
+            HStack(spacing: compact ? 10 : 14) {
                 Button(action: onStatsTap) {
                     Image(systemName: "flame.fill")
                         .frame(width: 18, height: 18)
@@ -81,21 +122,26 @@ struct MainTabHeaderView: View {
             }
             .buttonStyle(.plain)
             .font(.system(size: 16, weight: .semibold))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, compact ? 10 : 12)
+            .padding(.vertical, compact ? 9 : 10)
             .background(chipBackground, in: Capsule())
             .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
             .shadow(color: chipShadow, radius: 10, y: 4)
-            .frame(width: 76, alignment: .trailing)
+            .frame(width: compact ? 68 : 76, alignment: .trailing)
         }
     }
 
-    private func dateChevronButton(systemName: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+    private func dateChevronButton(
+        systemName: String,
+        isEnabled: Bool,
+        size: CGFloat,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(isEnabled ? Color.primary : Color.secondary.opacity(0.55))
-                .frame(width: 34, height: 34)
+                .frame(width: size, height: size)
 //                .background(chipBackground.opacity(isEnabled ? 1 : 0.65), in: Circle())
 //                .overlay(Circle().stroke(chipStroke, lineWidth: 1))
 //                .shadow(color: chipShadow.opacity(isEnabled ? 1 : 0.45), radius: 10, y: 4)
@@ -107,8 +153,9 @@ struct MainTabHeaderView: View {
 #Preview {
     MainTabHeaderView(
         selectedDate: .now,
-        loggedDays: [Calendar.current.startOfDay(for: .now)],
+        loggedDays: [],
         canNavigateToNextDate: false,
+        navigationDirection: .previous,
         onPreviousDateTap: {},
         onNextDateTap: {},
         onStatsTap: {},

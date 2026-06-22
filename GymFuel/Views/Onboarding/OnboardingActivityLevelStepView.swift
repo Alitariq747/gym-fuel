@@ -19,7 +19,8 @@ struct OnboardingActivityLevelStepView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 20) {
             Text("🚶")
                 .font(.system(size: 48))
                 .frame(width: 96, height: 96)
@@ -60,7 +61,8 @@ struct OnboardingActivityLevelStepView: View {
             .buttonStyle(.plain)
             
         }
-        .padding()
+            .padding()
+        }
         .onAppear {
             if let existing = selectedLevel {
                 tempSelection = existing

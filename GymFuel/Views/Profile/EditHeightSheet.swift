@@ -32,7 +32,8 @@ struct EditHeightSheet: View {
     private let inchRange = Array(0...11)
 
     var body: some View {
-        VStack(spacing: 16) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 16) {
             header
 
             HeightUnitSegmentedControl(selectedUnit: $selectedUnit)
@@ -49,7 +50,8 @@ struct EditHeightSheet: View {
 
             Spacer(minLength: 0)
         }
-        .padding()
+            .padding()
+        }
         .navigationTitle("Height")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

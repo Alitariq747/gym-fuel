@@ -29,7 +29,8 @@ struct EditWeightSheet: View {
     private let lbsRange = Array(66...440)
 
     var body: some View {
-        VStack(spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 20) {
             header
 
             WeightUnitSegmentedControl(selectedUnit: $selectedUnit)
@@ -46,8 +47,9 @@ struct EditWeightSheet: View {
 
             Spacer(minLength: 0)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
         .navigationTitle("Weight")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

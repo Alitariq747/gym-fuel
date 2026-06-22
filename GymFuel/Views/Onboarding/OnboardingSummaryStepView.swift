@@ -29,7 +29,8 @@ struct OnboardingSummaryStepView: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 12) {
             Image("summary")
                 .resizable()
                 .scaledToFit()
@@ -78,7 +79,8 @@ struct OnboardingSummaryStepView: View {
             .buttonStyle(.plain)
             .onboardingSummaryAppearance(isVisible: hasAppeared, order: 3)
         }
-        .padding()
+            .padding()
+        }
         .onAppear {
             hasAppeared = true
         }
@@ -152,4 +154,3 @@ private extension View {
         onStartTracking: {}
     )
 }
-

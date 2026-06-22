@@ -15,7 +15,8 @@ struct liftEatsIntro: View {
     @State private var hasAppeared = false
 
     var body: some View {
-        VStack {
+        AdaptiveScrollContainer {
+            VStack {
            
             VStack(alignment: .leading, spacing: 10) {
                 Text("Calories don’t tell the full story.")
@@ -94,7 +95,8 @@ struct liftEatsIntro: View {
             }
             .buttonStyle(.plain)
         }
-        .padding()
+            .padding()
+        }
         .onAppear {
             hasAppeared = true
         }

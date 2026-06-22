@@ -265,8 +265,7 @@ struct OnboardingFlowView: View {
                         .transition(stepTransition)
                 }
                 .id(step)
-
-                Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationBarBackButtonHidden(true)
             .onAppear {

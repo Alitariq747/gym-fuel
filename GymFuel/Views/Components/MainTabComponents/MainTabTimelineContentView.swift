@@ -7,6 +7,7 @@ struct MainTabTimelineContentView: View {
     let onRetryEntry: (LogEntry) -> Void
     let onDeleteFailedEntry: (LogEntry) -> Void
     let onSuccessRevealCompleted: (String) -> Void
+    let bottomContentInset: CGFloat
 
     @State private var lastAutoScrolledPendingEntryID: String?
 
@@ -34,6 +35,7 @@ struct MainTabTimelineContentView: View {
                             .id(entry.id)
                     }
                 }
+                .padding(.bottom, bottomContentInset)
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)

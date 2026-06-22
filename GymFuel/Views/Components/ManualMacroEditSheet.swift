@@ -37,7 +37,8 @@ struct ManualMacroEditSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 18) {
+            AdaptiveScrollContainer {
+                VStack(alignment: .leading, spacing: 18) {
                 Text(isExerciseEditor ? "Edit Calories Burned" : "Edit Macros")
                     .font(.title3.weight(.bold))
                 Text(editorSubtitle)
@@ -76,10 +77,12 @@ struct ManualMacroEditSheet: View {
                 .background(Color.liftEatsCoral, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .disabled(updatedMacros == nil && updatedCaloriesBurned == nil)
             }
-            .padding()
+                .padding()
+            }
             .navigationBarHidden(true)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
+        .presentationContentInteraction(.scrolls)
     }
 
     private var isExerciseEditor: Bool {

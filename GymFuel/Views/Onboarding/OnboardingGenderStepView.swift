@@ -16,7 +16,8 @@ struct OnboardingGenderStepView: View {
     let onNext: () -> Void
   
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 4) {
                  
                   
                   Text("Whats your gender ?")
@@ -52,7 +53,8 @@ struct OnboardingGenderStepView: View {
             .buttonStyle(.plain)
                 
               }
-              .padding()
+                .padding()
+        }
     }
     
     private func genderOption(_ option: Gender, emoji: String, subtitle: String, tint: Color) -> some View {

@@ -222,18 +222,20 @@ struct ProfileEditorView: View {
     }
 
     private var genderPickerSheet: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            pickerSheetHeader(
-                title: "Choose gender",
-                subtitle: "This helps tune your calorie and macro estimates.",
-                dismiss: { showGenderSheet = false }
-            )
-            genderOption(.male, emoji: "👨", subtitle: "Use male-based macro equations.", tint: .fuelBlue)
-            genderOption(.female, emoji: "👩", subtitle: "Use female-based macro equations.", tint: .pink)
-            genderOption(.preferNotToSay, emoji: "✨", subtitle: "Keep things private and balanced.", tint: .fuelOrange)
-            Spacer(minLength: 0)
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 14) {
+                pickerSheetHeader(
+                    title: "Choose gender",
+                    subtitle: "This helps tune your calorie and macro estimates.",
+                    dismiss: { showGenderSheet = false }
+                )
+                genderOption(.male, emoji: "👨", subtitle: "Use male-based macro equations.", tint: .fuelBlue)
+                genderOption(.female, emoji: "👩", subtitle: "Use female-based macro equations.", tint: .pink)
+                genderOption(.preferNotToSay, emoji: "✨", subtitle: "Keep things private and balanced.", tint: .fuelOrange)
+                Spacer(minLength: 0)
+            }
+            .padding(18)
         }
-        .padding(18)
         .background(Color(.systemGroupedBackground))
     }
 
@@ -278,18 +280,20 @@ struct ProfileEditorView: View {
     }
 
     private var goalPickerSheet: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            pickerSheetHeader(
-                title: "Choose your goal",
-                subtitle: "This shapes your macro targets and goal fit score.",
-                dismiss: { showGoalSheet = false }
-            )
-            ForEach(GoalType.allCases, id: \.self) { goal in
-                goalOptionRow(goal)
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 14) {
+                pickerSheetHeader(
+                    title: "Choose your goal",
+                    subtitle: "This shapes your macro targets and goal fit score.",
+                    dismiss: { showGoalSheet = false }
+                )
+                ForEach(GoalType.allCases, id: \.self) { goal in
+                    goalOptionRow(goal)
+                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+            .padding(18)
         }
-        .padding(18)
         .background(Color(.systemGroupedBackground))
     }
 
@@ -370,19 +374,21 @@ struct ProfileEditorView: View {
     }
 
     private var activityPickerSheet: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            pickerSheetHeader(
-                title: "Daily movement",
-                subtitle: "Outside workouts, how active is your normal day?",
-                dismiss: { showActivitySheet = false }
-            )
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 14) {
+                pickerSheetHeader(
+                    title: "Daily movement",
+                    subtitle: "Outside workouts, how active is your normal day?",
+                    dismiss: { showActivitySheet = false }
+                )
 
-            ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
-                activityOptionRow(level)
+                ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
+                    activityOptionRow(level)
+                }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+            .padding(18)
         }
-        .padding(18)
         .background(Color(.systemGroupedBackground))
     }
 
@@ -501,5 +507,4 @@ struct ProfileEditorView: View {
             )
     }
 }
-
 

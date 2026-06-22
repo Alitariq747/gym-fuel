@@ -34,7 +34,8 @@ struct OnboardingWeightStepView: View {
     private let lbsRange = Array(66...440)
 
     var body: some View {
-        VStack(spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 20) {
             header
 
             UnitSegmentedControl(selectedUnit: $selectedUnit)
@@ -61,8 +62,9 @@ struct OnboardingWeightStepView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
         .onAppear { initializeFromBindingIfNeeded() }
         .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
         .onChange(of: selectedKg) { _, newValue in

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DailyMacroDetailSheet: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let targetMacros: Macros
     let consumedMacros: Macros
     let burnedCalories: Double
@@ -15,15 +17,6 @@ struct DailyMacroDetailSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Capsule()
-                .fill(Color.secondary.opacity(0.22))
-                .frame(width: 42, height: 5)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 10)
-
-            Text("Details")
-                .font(.title3.weight(.bold))
-
             HStack(alignment: .center, spacing: 18) {
                 calorieMeta("Eaten", value: Int(consumedMacros.calories.rounded()))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -34,20 +27,41 @@ struct DailyMacroDetailSheet: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
 
-            HStack(spacing: 10) {
-                summaryTile("PRO", symbol: "fish", current: consumedMacros.protein, target: targetMacros.protein)
-                summaryTile("CARB", symbol: "leaf.fill", current: consumedMacros.carbs, target: targetMacros.carbs)
-                summaryTile("FAT", symbol: "drop.fill", current: consumedMacros.fat, target: targetMacros.fat)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    summaryTile("PRO", symbol: "fish", current: consumedMacros.protein, target: targetMacros.protein)
+                        .frame(minWidth: 90)
+                    summaryTile("CARB", symbol: "leaf.fill", current: consumedMacros.carbs, target: targetMacros.carbs)
+                        .frame(minWidth: 90)
+                    summaryTile("FAT", symbol: "drop.fill", current: consumedMacros.fat, target: targetMacros.fat)
+                        .frame(minWidth: 90)
+                }
+
+                VStack(spacing: 8) {
+                    summaryTile("PRO", symbol: "fish", current: consumedMacros.protein, target: targetMacros.protein)
+                    summaryTile("CARB", symbol: "leaf.fill", current: consumedMacros.carbs, target: targetMacros.carbs)
+                    summaryTile("FAT", symbol: "drop.fill", current: consumedMacros.fat, target: targetMacros.fat)
+                }
             }
         }
-        .padding(20)
-        .background(
-            LinearGradient(
-                colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 20)
+        .background(backgroundStyle)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(cardStrokeColor, lineWidth: 1)
+        }
+        .shadow(color: cardShadowColor, radius: colorScheme == .dark ? 6 : 10, y: colorScheme == .dark ? 2 : 5)
+    }
+
+    private var cardStrokeColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+    }
+
+    private var cardShadowColor: Color {
+        colorScheme == .dark ? Color.black.opacity(0.18) : Color.black.opacity(0.05)
     }
 
     private var calorieProgressRing: some View {
@@ -110,8 +124,12 @@ struct DailyMacroDetailSheet: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(Color(.systemBackground).opacity(0.8), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: .black.opacity(0.035), radius: 8, y: 4)
+        .background(tileBackgroundColor, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(tileStrokeColor, lineWidth: 1)
+        }
+        .shadow(color: tileShadowColor, radius: colorScheme == .dark ? 6 : 8, y: colorScheme == .dark ? 3 : 4)
     }
 
     private func calorieMeta(_ label: String, value: Int, alignment: HorizontalAlignment = .leading) -> some View {
@@ -125,6 +143,31 @@ struct DailyMacroDetailSheet: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    @ViewBuilder
+    private var backgroundStyle: some View {
+        if colorScheme == .dark {
+            Color(.secondarySystemBackground)
+        } else {
+            LinearGradient(
+                colors: [Color(.secondarySystemBackground), Color(.secondarySystemBackground)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+
+    private var tileBackgroundColor: Color {
+        colorScheme == .dark ? Color(.systemBackground) : Color(.systemBackground).opacity(0.8)
+    }
+
+    private var tileStrokeColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.clear
+    }
+
+    private var tileShadowColor: Color {
+        colorScheme == .dark ? Color.black.opacity(0.18) : Color.black.opacity(0.035)
     }
 }
 

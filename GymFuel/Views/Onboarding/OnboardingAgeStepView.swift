@@ -18,7 +18,8 @@ struct OnboardingAgeStepView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 18) {
             Spacer(minLength: 28)
 
             Text("🎂")
@@ -82,7 +83,8 @@ struct OnboardingAgeStepView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding()
+            .padding()
+        }
         .onAppear {
             // Pre-fill if we already have an age
             if let currentAge = age, ageText.isEmpty {

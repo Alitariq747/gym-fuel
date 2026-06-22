@@ -15,7 +15,8 @@ struct OnboardingLiftEats: View {
     @State private var cardsAppeared = false
 
     var body: some View {
-        VStack {
+        AdaptiveScrollContainer {
+            VStack {
             VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Small changes; Better results.")
@@ -83,7 +84,8 @@ struct OnboardingLiftEats: View {
             }
             .buttonStyle(.plain)
         }
-        .padding()
+            .padding()
+        }
         .onAppear {
             cardsAppeared = false
             DispatchQueue.main.async {

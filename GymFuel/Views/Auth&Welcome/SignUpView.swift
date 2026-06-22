@@ -18,7 +18,8 @@ struct SignUpView: View {
 
     var body: some View {
 
-        VStack(spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 20) {
             Spacer()
             Image(systemName: "figure.strengthtraining.traditional.circle.fill")
                 .renderingMode(.original)
@@ -78,7 +79,8 @@ struct SignUpView: View {
             .buttonStyle(.plain)
             .disabled(isLoading)
         }
-        .padding()
+            .padding()
+        }
         .navigationTitle("Sign up to LiftEats")
         .navigationBarBackButtonHidden()
         .toolbar {

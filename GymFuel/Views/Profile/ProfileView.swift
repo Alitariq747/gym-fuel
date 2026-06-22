@@ -12,12 +12,12 @@ struct ProfileView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     
     @State private var draft: UserProfileDraft? = nil
     @State private var signOutError: String?
     @State private var isSigningOut: Bool = false
+    @State private var showSignOutConfirmation: Bool = false
     @State private var isDeletingAccount: Bool = false
     @State private var showDeleteAccountConfirmation: Bool = false
     @State private var showEmailReauthPrompt: Bool = false
@@ -72,65 +72,72 @@ struct ProfileView: View {
                     if let draftBinding {
                         ScrollView {
                             VStack(spacing: 16) {
-                                HStack {
-                                    if profileVm.isSaving {
-                                        ProgressView()
-                                    } else {
-                                        Button {
-                                            Task {
-                                                guard let uid = authManager.user?.uid else { return }
-                                                guard let draft else { return }
-                                                
-                                                await profileVm.saveProfileEdits(for: uid, draft: draft)
-                                                
-                                                if let updated = profileVm.profile {
-                                                    self.draft = UserProfileDraft(from: updated)
-                                                }
-
-                                                if profileVm.errorMessage == nil {
-                                                    showSaveToast = true
-                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                                        showSaveToast = false
-                                                        dismiss()
-                                                    }
-                                                }
-                                            }
-                                        } label: {
-                                            HStack(spacing: 6) {
-                                                Image(systemName: "checkmark")
-                                                    .font(.caption.weight(.bold))
-                                                Text("Save")
-                                                    .font(.caption.weight(.bold))
-                                            }
-                                            .foregroundStyle(canSave && !isBusy ? .primary : .secondary)
-                                            .frame(height: 32)
-                                            .padding(.horizontal, 12)
-                                            .background(Color(.secondarySystemBackground), in: Capsule())
-                                            .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
-                                        }
-                                        .buttonStyle(.plain)
-                                        .shadow(color: .black.opacity(canSave && !isBusy ? 0.06 : 0), radius: 8, y: 3)
-                                        .disabled(!canSave || isBusy)
-                                    }
-                                    Spacer()
+                                ZStack {
                                     Text("Settings")
                                         .font(.title2.weight(.semibold))
                                         .foregroundStyle(.primary)
-                                        .frame(maxWidth: .infinity)
-                                    Spacer()
-                                    Button {
-                                        dismiss()
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                            .font(.caption.weight(.bold))
-                                            .foregroundStyle(.primary)
-                                            .frame(width: 32, height: 32)
-                                            .background(Color(.secondarySystemBackground), in: Circle())
-                                            .overlay(Circle().stroke(Color.black.opacity(0.05), lineWidth: 1))
+
+                                    HStack {
+                                        Group {
+                                            if profileVm.isSaving {
+                                                ProgressView()
+                                            } else {
+                                                Button {
+                                                    Task {
+                                                        guard let uid = authManager.user?.uid else { return }
+                                                        guard let draft else { return }
+
+                                                        await profileVm.saveProfileEdits(for: uid, draft: draft)
+
+                                                        if let updated = profileVm.profile {
+                                                            self.draft = UserProfileDraft(from: updated)
+                                                        }
+
+                                                        if profileVm.errorMessage == nil {
+                                                            showSaveToast = true
+                                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                                                showSaveToast = false
+                                                                dismiss()
+                                                            }
+                                                        }
+                                                    }
+                                                } label: {
+                                                    HStack(spacing: 6) {
+                                                        Image(systemName: "checkmark")
+                                                            .font(.caption.weight(.bold))
+                                                        Text("Save")
+                                                            .font(.caption.weight(.bold))
+                                                    }
+                                                    .foregroundStyle(canSave && !isBusy ? .primary : .secondary)
+                                                    .frame(height: 32)
+                                                    .padding(.horizontal, 12)
+                                                    .background(Color(.secondarySystemBackground), in: Capsule())
+                                                    .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
+                                                }
+                                                .buttonStyle(.plain)
+                                                .shadow(color: .black.opacity(canSave && !isBusy ? 0.06 : 0), radius: 8, y: 3)
+                                                .disabled(!canSave || isBusy)
+                                            }
+                                        }
+                                        .frame(width: 72, alignment: .leading)
+
+                                        Spacer()
+
+                                        Button {
+                                            dismiss()
+                                        } label: {
+                                            Image(systemName: "xmark")
+                                                .font(.caption.weight(.bold))
+                                                .foregroundStyle(.primary)
+                                                .frame(width: 32, height: 32)
+                                                .background(Color(.secondarySystemBackground), in: Circle())
+                                                .overlay(Circle().stroke(Color.black.opacity(0.05), lineWidth: 1))
+                                        }
+                                        .buttonStyle(.plain)
+                                        .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
+                                        .disabled(isBusy)
+                                        .frame(width: 72, alignment: .trailing)
                                     }
-                                    .buttonStyle(.plain)
-                                    .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
-                                    .disabled(isBusy)
                                 }
                                 .padding(.horizontal)
                                 .padding(.top)
@@ -139,10 +146,19 @@ struct ProfileView: View {
                                     .disabled(isBusy)
                                     .opacity(isBusy ? 0.6 : 1)
 
-                                appearanceSection
-                                savedMealsSection
-                                liftEatsSection
-                                legalSection
+                                ProfileAppearanceSection(colorSchemePreference: $colorSchemePreference)
+                                ProfileReminderSection(preferredColorScheme: preferredColorScheme)
+                                ProfileSavedMealsSection(
+                                    savedMealCount: savedMealsViewModel.savedMeals.count,
+                                    onOpen: { showSavedMealsSheet = true }
+                                )
+                                ProfileLiftEatsSection(
+                                    onOpenScoreExplanation: { showGoalFitExplainerSheet = true }
+                                )
+                                ProfileLegalSection(
+                                    privacyURL: privacyURL,
+                                    termsURL: termsURL
+                                )
                                   
                                 
                                 if let signOutError {
@@ -199,6 +215,7 @@ struct ProfileView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: showSaveToast)
+        .toolbar(.hidden, for: .navigationBar)
         .task(id: profileVm.profile?.id) {
             if let profile = profileVm.profile {
                 draft = UserProfileDraft(from: profile)
@@ -210,6 +227,12 @@ struct ProfileView: View {
             deleteAccountWarningSheet
                 .preferredColorScheme(preferredColorScheme)
                 .presentationDetents([.height(390)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showSignOutConfirmation) {
+            signOutConfirmationSheet
+                .preferredColorScheme(preferredColorScheme)
+                .presentationDetents([.height(310)])
                 .presentationDragIndicator(.visible)
         }
         .alert("Confirm your password", isPresented: $showEmailReauthPrompt) {
@@ -284,6 +307,50 @@ struct ProfileView: View {
         .padding(24)
     }
 
+    private var signOutConfirmationSheet: some View {
+        VStack(spacing: 18) {
+            Image(systemName: "rectangle.portrait.and.arrow.right")
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(Color.fuelOrange)
+                .frame(width: 68, height: 68)
+                .background(Color.fuelOrange.opacity(0.12), in: Circle())
+
+            VStack(spacing: 7) {
+                Text("Sign out of LiftEats?")
+                    .font(.title3.weight(.bold))
+                    .multilineTextAlignment(.center)
+
+                Text("You can sign back in anytime. Your saved profile and logs will remain available.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: 10) {
+                Button(role: .destructive) {
+                    showSignOutConfirmation = false
+                    Task { await handleSignOut() }
+                } label: {
+                    Text("Sign Out")
+                        .font(.headline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.fuelRed)
+
+                Button("Cancel") {
+                    showSignOutConfirmation = false
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(24)
+    }
+
     private var canSave: Bool {
         guard let profile = profileVm.profile, let draft else { return false }
 
@@ -305,154 +372,12 @@ struct ProfileView: View {
         return false
     }
 
-    private var legalSection: some View {
-        VStack(spacing: 12) {
-            sectionHeader(title: "Legal", systemImage: "doc.text")
-            VStack(spacing: 10) {
-                linkRow(title: "Privacy Policy", systemImage: "hand.raised.fill", url: privacyURL)
-                Divider()
-                linkRow(title: "Terms of Service", systemImage: "checkmark.seal.fill", url: termsURL)
-            }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(.secondarySystemBackground).opacity(colorScheme == .dark ? 0.75 : 0.9))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.primary.opacity(0.04), lineWidth: 1)
-            )
-        }
-        .padding(.horizontal)
-        .opacity(0.92)
-    }
-
-    private var appearanceSection: some View {
-        VStack(spacing: 12) {
-            sectionHeader(title: "Appearance", systemImage: "circle.lefthalf.filled")
-            Menu {
-                ForEach(AppColorSchemePreference.allCases) { preference in
-                    Button {
-                        colorSchemePreference = preference.rawValue
-                    } label: {
-                        Label(
-                            preference.displayName,
-                            systemImage: colorSchemePreference == preference.rawValue ? "checkmark" : ""
-                        )
-                    }
-                }
-            } label: {
-                settingsRow(
-                    title: "Color Scheme",
-                    systemImage: "paintbrush.fill",
-                    value: AppColorSchemePreference(rawValue: colorSchemePreference)?.displayName ?? AppColorSchemePreference.system.displayName,
-                    tint: .fuelBlue
-                )
-            }
-            .buttonStyle(.plain)
-            .background(cardBackground)
-        }
-        .padding(.horizontal)
-    }
-
-    private var savedMealsSection: some View {
-        VStack(spacing: 12) {
-            sectionHeader(title: "Saved Meals", systemImage: "bookmark")
-            Button {
-                showSavedMealsSheet = true
-            } label: {
-                HStack(spacing: 14) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.fuelBlue.opacity(0.12))
-                            .frame(width: 52, height: 52)
-
-                        Image(systemName: "fork.knife")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(Color.fuelBlue)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Manage Saved Meals")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("\(savedMealsViewModel.savedMeals.count)")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(.primary)
-                    }
-
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                        .padding(.leading, 4)
-                }
-                .contentShape(Rectangle())
-                .padding(16)
-            }
-            .buttonStyle(.plain)
-            .background(cardBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.fuelBlue.opacity(0.12), lineWidth: 1)
-            )
-        }
-        .padding(.horizontal)
-    }
-
-    private var liftEatsSection: some View {
-        VStack(spacing: 12) {
-            sectionHeader(title: "LiftEats", systemImage: "sparkles")
-            Button {
-                showGoalFitExplainerSheet = true
-            } label: {
-                HStack(spacing: 14) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.fuelOrange.opacity(0.12))
-                            .frame(width: 52, height: 52)
-
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(Color.fuelOrange)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("How score is calculated")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                        .padding(.leading, 4)
-                }
-                .contentShape(Rectangle())
-                .padding(16)
-            }
-            .buttonStyle(.plain)
-            .background(cardBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.fuelOrange.opacity(0.12), lineWidth: 1)
-            )
-        }
-        .padding(.horizontal)
-    }
-
     private var accountSection: some View {
         VStack(spacing: 12) {
-            sectionHeader(title: "Account", systemImage: "person.crop.circle")
+            ProfileSectionHeader(title: "Account", systemImage: "person.crop.circle")
             VStack(spacing: 0) {
                 Button(role: .destructive) {
-                    Task { await handleSignOut() }
+                    showSignOutConfirmation = true
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
@@ -506,105 +431,13 @@ struct ProfileView: View {
                 .buttonStyle(.plain)
                 .disabled(isBusy)
             }
-            .background(cardBackground)
+            .background(ProfileCardBackground())
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .stroke(Color.red.opacity(0.14), lineWidth: 1)
             )
         }
         .padding(.horizontal)
-    }
-
-    private func linkRow(title: String, systemImage: String, url: URL?) -> some View {
-        let rowContent = HStack {
-            rowLabel(title, systemImage: systemImage)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .padding(.leading, 6)
-        }
-        .contentShape(Rectangle())
-
-        return Group {
-            if let url {
-                Link(destination: url) {
-                    rowContent
-                }
-            } else {
-                rowContent
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func settingsRow(title: String, systemImage: String, value: String, tint: Color) -> some View {
-        HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(tint.opacity(0.12))
-                .frame(width: 52, height: 52)
-                .overlay(
-                    Image(systemName: systemImage)
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(tint)
-                )
-
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            Text(value)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            Image(systemName: "chevron.down")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
-        }
-        .contentShape(Rectangle())
-        .padding(16)
-    }
-
-    private func sectionHeader(title: String, systemImage: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.primary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, 2)
-    }
-
-    private func rowLabel(_ title: String, systemImage: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.fuelBlue)
-                .frame(width: 18)
-            Text(title)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(.ultraThinMaterial)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(.primary.opacity(0.06), lineWidth: 1)
-            )
-            .shadow(
-                color: colorScheme == .dark ? Color.black.opacity(0.25) : Color.black.opacity(0.08),
-                radius: colorScheme == .dark ? 14 : 10,
-                x: 0,
-                y: colorScheme == .dark ? 8 : 6
-            )
     }
 
     private var appleReauthSheet: some View {
@@ -649,8 +482,8 @@ struct ProfileView: View {
         defer { isSigningOut = false }
 
         do {
-            profileVm.clear()
             try authManager.signOut()
+            profileVm.clear()
             signOutError = nil
             dismiss()
         } catch {
@@ -836,14 +669,3 @@ struct ProfileView: View {
     }
     
 }
-
-//#Preview {
-//    let auth = FirebaseAuthManager()
-//    let profileVM = UserProfileViewModel()
-//    profileVM._setProfileForPreview(dummyProfile)
-//
-//    return ProfileView()
-//        .environmentObject(auth)
-//        .environmentObject(profileVM)
-//        .environmentObject(SavedMealsViewModel())
-//}

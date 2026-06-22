@@ -22,7 +22,8 @@ struct SignInView: View {
     @State private var isLoading = false
 
     var body: some View {
-        VStack(spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 20) {
             Spacer()
             Image(systemName: "figure.strengthtraining.traditional.circle.fill")
                 .renderingMode(.original)
@@ -95,7 +96,8 @@ struct SignInView: View {
             .disabled(isLoading)
 
         }
-        .padding()
+            .padding()
+        }
         .navigationTitle("Welcome Back")
         .navigationBarBackButtonHidden()
         .toolbar {
@@ -115,7 +117,7 @@ struct SignInView: View {
         }
         .sheet(isPresented: $showResetPasswordSheet) {
             resetPasswordSheet
-                .presentationDetents([.height(430)])
+                .presentationDetents([.height(430), .large])
                 .presentationDragIndicator(.visible)
         }
         .alert("Reset link sent", isPresented: $showResetLinkSentAlert) {
@@ -126,7 +128,8 @@ struct SignInView: View {
     }
 
     private var resetPasswordSheet: some View {
-        VStack(spacing: 12) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 12) {
             Image("LiftEatsWelcomeIcon")
                 .resizable()
                 .scaledToFit()
@@ -170,7 +173,8 @@ struct SignInView: View {
             .buttonStyle(.plain)
             .disabled(isSendingResetLink)
         }
-        .padding(24)
+            .padding(24)
+        }
     }
 
     private func sendResetLink() async {

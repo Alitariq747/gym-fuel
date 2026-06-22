@@ -21,7 +21,8 @@ struct WelcomeView: View {
     @State private var appleNonce: String?
 
     var body: some View {
-        VStack(spacing: 16) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 16) {
             Spacer(minLength: 24)
 
             Image("LiftEatsWelcomeIcon")
@@ -111,8 +112,8 @@ struct WelcomeView: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
+            }
         }
-       
     }
 
     @MainActor

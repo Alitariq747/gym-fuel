@@ -36,7 +36,8 @@ struct OnboardingHeightStepView: View {
     private let inchRange = Array(0...11)
 
     var body: some View {
-        VStack(spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(spacing: 20) {
             header
 
             UnitSegmentedControl(selectedUnit: $selectedUnit)
@@ -69,8 +70,9 @@ struct OnboardingHeightStepView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
         .onAppear { initializeFromBindingIfNeeded() }
         .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
         .onChange(of: selectedCm) { _, newValue in

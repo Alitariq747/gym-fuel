@@ -16,7 +16,8 @@ struct OnboardingNameStepView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 20) {
             Text("Welcome to LiftEats")
                 .font(.title.bold())
                 .multilineTextAlignment(.center)
@@ -60,7 +61,8 @@ struct OnboardingNameStepView: View {
             
            
         }
-        .padding()
+            .padding()
+        }
     }
     
     private var nameBinding: Binding<String> {

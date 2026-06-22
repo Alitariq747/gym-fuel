@@ -10,6 +10,11 @@ import PhotosUI
 import SwiftUI
 import UIKit
 
+enum DayNavigationDirection {
+    case previous
+    case next
+}
+
 struct MainTabView: View {
     let profile: UserProfile
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
@@ -19,7 +24,7 @@ struct MainTabView: View {
     @State private var showProfile = false
     @State private var showSavedMeals = false
     @State private var showStats = false
-    @State private var showDailyMacroDetails = false
+    @State private var showTextLogSheet = false
     @State private var showFutureLoggingToast = false
     @State private var selectedEntry: LogEntry?
     @State var mealImageDraft = MealImageDraft()
@@ -28,7 +33,7 @@ struct MainTabView: View {
     @State private var showCameraPermissionAlert = false
     @State var showPhotoLibraryPicker = false
     @State var selectedPhotoPickerItem: PhotosPickerItem?
-    @FocusState private var isComposerFocused: Bool
+    @State private var dayNavigationDirection: DayNavigationDirection = .previous
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
 
     private var preferredColorScheme: ColorScheme? {
@@ -46,10 +51,6 @@ struct MainTabView: View {
     private var consumedMacros: Macros {
         timelineViewModel.consumedMacros
     }
-    private var canSubmitDraft: Bool {
-        composerViewModel.draft.hasContent
-    }
-
     private var canLogForSelectedDate: Bool {
         isDateWithinLoggingWindow(timelineViewModel.selectedDate)
     }
@@ -84,6 +85,25 @@ struct MainTabView: View {
             }
         }
     }
+
+    private var dayChangeAnimation: Animation {
+        .easeInOut(duration: 0.24)
+    }
+
+    private var dayContentTransition: AnyTransition {
+        switch dayNavigationDirection {
+        case .previous:
+            return .asymmetric(
+                insertion: .move(edge: .leading).combined(with: .opacity),
+                removal: .move(edge: .trailing).combined(with: .opacity)
+            )
+        case .next:
+            return .asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            )
+        }
+    }
     
     var body: some View {
         NavigationStack {
@@ -92,6 +112,7 @@ struct MainTabView: View {
                     selectedDate: timelineViewModel.selectedDate,
                     loggedDays: timelineViewModel.loggedDaysInVisibleMonth,
                     canNavigateToNextDate: canNavigateToNextDate,
+                    navigationDirection: dayNavigationDirection,
                     onPreviousDateTap: {
                         navigateToPreviousDate()
                     },
@@ -105,88 +126,27 @@ struct MainTabView: View {
                         showProfile = true
                     }
                 )
-                if let targetMacros {
-                    DailyMacroSummaryView(
-                        targetMacros: targetMacros,
-                        consumedMacros: consumedMacros,
-                        burnedCalories: timelineViewModel.burnedCalories,
-                        onTap: {
-                            showDailyMacroDetails = true
-                        }
-                    )
+                ZStack {
+                    dayContent
+                        .id(timelineViewModel.selectedDate)
+                        .transition(dayContentTransition)
                 }
-
-                MainTabTimelineContentView(
-                    viewModel: timelineViewModel,
-                    localPreviewData: { entryId in
-                        timelineViewModel.localImagePreviewData(for: entryId)
-                    },
-                    onSelectEntry: { entry in
-                        selectedEntry = entry
-                    },
-                    onRetryEntry: { entry in
-                        retryFailedEntry(entry)
-                    },
-                    onDeleteFailedEntry: { entry in
-                        deleteFailedEntry(entry)
-                    },
-                    onSuccessRevealCompleted: { entryId in
-                        timelineViewModel.markSuccessRevealed(for: entryId)
-                    }
-                )
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    dismissComposerKeyboard()
-                }
-
-
-                if canLogForSelectedDate {
-                    LogComposerBar(
-                        text: $composerViewModel.draft.text,
-                        focus: $isComposerFocused,
-                        isSubmitting: composerViewModel.isSubmitting,
-                        canSubmit: canSubmitDraft,
-                        onClearError: {
-                            composerViewModel.clearError()
-                        },
-                        onCameraTap: {
-                            handleCameraTap()
-                        },
-                        onPhotoTap: {
-                            dismissComposerKeyboard()
-                            pendingMealImageSource = .photoLibrary
-                        },
-                        onSavedMealsTap: {
-                            dismissComposerKeyboard()
-                            composerViewModel.clearError()
-                            showSavedMeals = true
-                        },
-                        onSubmit: {
-                            dismissComposerKeyboard()
-                            Task { await submitCurrentDraft() }
-                        }
-                    )
-                } else {
-                    HStack(spacing: 10) {
-                        Image(systemName: "calendar.badge.clock")
-                            .foregroundStyle(Color.secondary)
-                        Text("Logging is available for today and the past 7 days")
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 16)
-                    .frame(minHeight: 64)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .stroke(Color.black.opacity(0.06), lineWidth: 1)
-                    )
-                }
+                .clipped()
+                .animation(dayChangeAnimation, value: timelineViewModel.selectedDate)
             }
             .padding(.horizontal)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if selectedEntry == nil {
+                    bottomDock
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, -10)
+                }
+            }
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $showProfile) {
+                ProfileView()
+                    .preferredColorScheme(preferredColorScheme)
+            }
             .navigationDestination(item: $selectedEntry) { entry in
             LogEntryDetailSheet(
                 entry: entry,
@@ -262,25 +222,21 @@ struct MainTabView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .sheet(isPresented: $showProfile) {
-            NavigationStack { ProfileView() }
-                .preferredColorScheme(preferredColorScheme)
-        }
         .sheet(isPresented: $showStats) {
             NavigationStack { StatsView(profile: profile) }
                 .preferredColorScheme(preferredColorScheme)
         }
-        .sheet(isPresented: $showDailyMacroDetails) {
-            if let targetMacros {
-                DailyMacroDetailSheet(
-                    targetMacros: targetMacros,
-                    consumedMacros: consumedMacros,
-                    burnedCalories: timelineViewModel.burnedCalories
-                )
-                .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.height(320)])
-                .presentationDragIndicator(.hidden)
-            }
+        .sheet(isPresented: $showTextLogSheet) {
+            TextEntrySheet(
+                text: $composerViewModel.draft.text,
+                onClearError: {
+                    composerViewModel.clearError()
+                },
+                onAnalyze: {
+                    Task { await submitCurrentDraft() }
+                }
+            )
+            .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showSavedMeals) {
             SavedMealsPickerSheet(userId: profile.id) { meal in
@@ -378,6 +334,7 @@ struct MainTabView: View {
     }
 
     private func navigateToPreviousDate() {
+        dayNavigationDirection = .previous
         Task {
             await timelineViewModel.goToPreviousDay(userId: profile.id)
         }
@@ -389,8 +346,49 @@ struct MainTabView: View {
             return
         }
 
+        dayNavigationDirection = .next
         Task {
             await timelineViewModel.goToNextDay(userId: profile.id)
+        }
+    }
+
+    private var dayContent: some View {
+        VStack(spacing: 20) {
+            if let targetMacros {
+                DailyMacroDetailSheet(
+                    targetMacros: targetMacros,
+                    consumedMacros: consumedMacros,
+                    burnedCalories: timelineViewModel.burnedCalories
+                )
+            }
+
+            Text("Logged Today")
+                .font(.title3.weight(.bold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            MainTabTimelineContentView(
+                viewModel: timelineViewModel,
+                localPreviewData: { entryId in
+                    timelineViewModel.localImagePreviewData(for: entryId)
+                },
+                onSelectEntry: { entry in
+                    selectedEntry = entry
+                },
+                onRetryEntry: { entry in
+                    retryFailedEntry(entry)
+                },
+                onDeleteFailedEntry: { entry in
+                    deleteFailedEntry(entry)
+                },
+                onSuccessRevealCompleted: { entryId in
+                    timelineViewModel.markSuccessRevealed(for: entryId)
+                },
+                bottomContentInset: canLogForSelectedDate ? 118 : 24
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                dismissComposerKeyboard()
+            }
         }
     }
 
@@ -416,13 +414,52 @@ struct MainTabView: View {
     }
 
     func dismissComposerKeyboard() {
-        isComposerFocused = false
         UIApplication.shared.sendAction(
             #selector(UIResponder.resignFirstResponder),
             to: nil,
             from: nil,
             for: nil
         )
+    }
+
+    @ViewBuilder
+    private var bottomDock: some View {
+        if canLogForSelectedDate {
+            LogActionDock(
+                isSubmitting: composerViewModel.isSubmitting,
+                onCameraTap: {
+                    handleCameraTap()
+                },
+                onPhotoTap: {
+                    pendingMealImageSource = .photoLibrary
+                },
+                onTextTap: {
+                    composerViewModel.clearError()
+                    showTextLogSheet = true
+                },
+                onSavedMealsTap: {
+                    composerViewModel.clearError()
+                    showSavedMeals = true
+                }
+            )
+        } else {
+            HStack(spacing: 10) {
+                Image(systemName: "calendar.badge.clock")
+                    .foregroundStyle(Color.secondary)
+                Text("Logging is available for today and the past 7 days")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .frame(minHeight: 64)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(Color.black.opacity(0.06), lineWidth: 1)
+            )
+        }
     }
 
     private func retryFailedMealImageUploadsIfNeeded() {
@@ -494,16 +531,4 @@ struct MainTabView: View {
         ) ?? now
     }
 
-}
-
-#Preview {
-    let auth = FirebaseAuthManager()
-    let profileVM = UserProfileViewModel()
-    let savedMealsVM = SavedMealsViewModel()
-    profileVM._setProfileForPreview(dummyProfile)
-
-    return MainTabView(profile: dummyProfile)
-        .environmentObject(auth)
-        .environmentObject(profileVM)
-        .environmentObject(savedMealsVM)
 }

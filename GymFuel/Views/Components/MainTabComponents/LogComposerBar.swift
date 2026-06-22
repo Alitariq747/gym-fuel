@@ -1,122 +1,73 @@
 import SwiftUI
 
-struct LogComposerBar: View {
-    @Binding var text: String
+struct LogActionDock: View {
+    @Environment(\.colorScheme) private var colorScheme
 
-    let focus: FocusState<Bool>.Binding
     let isSubmitting: Bool
-    let canSubmit: Bool
-    let onClearError: () -> Void
     let onCameraTap: () -> Void
     let onPhotoTap: () -> Void
+    let onTextTap: () -> Void
     let onSavedMealsTap: () -> Void
-    let onSubmit: () -> Void
-
-    private var trimmedText: String {
-        text.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private var isEmpty: Bool {
-        trimmedText.isEmpty
-    }
 
     var body: some View {
-        HStack(spacing: 14) {
-            HStack(spacing: 14) {
-                TextField("What did you eat or exercise?", text: $text, axis: .vertical)
-                    .textFieldStyle(.plain)
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(.primary)
-                    .lineLimit(2)
-                    .focused(focus)
-                    .disabled(isSubmitting)
-                    .onChange(of: text) { _, _ in
-                        onClearError()
-                    }
-                    .onChange(of: isSubmitting) { _, newValue in
-                        if newValue {
-                            focus.wrappedValue = false
-                        }
-                    }
-
-                if isEmpty {
-                    HStack(spacing: 8) {
-                        composerActionButton(systemName: "camera", action: onCameraTap)
-                        composerActionButton(systemName: "photo", action: onPhotoTap)
-                        composerActionButton(systemName: "bookmark", action: onSavedMealsTap)
-                    }
-                } else {
-                    Button {
-                        focus.wrappedValue = false
-                        onSubmit()
-                    } label: {
-                        Image(systemName: "arrow.up")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(canSubmit ? Color.white : Color.secondary.opacity(0.9))
-                            .frame(width: 42, height: 42)
-                            .background(
-                                Circle()
-                                    .fill(canSubmit ? Color.fuelBlue : Color(.tertiarySystemFill))
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white.opacity(canSubmit ? 0.24 : 0), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!canSubmit || isSubmitting)
-                }
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .frame(minHeight: 64)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(isSubmitting ? Color(.systemGray6) : Color(.secondarySystemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.black.opacity(0.06), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.06), radius: 14, y: 6)
-            .opacity(isSubmitting ? 0.82 : 1)
+        HStack(spacing: 2) {
+            dockButton(title: "Text", systemName: "text.bubble", action: onTextTap)
+            dockButton(title: "Camera", systemName: "camera", action: onCameraTap)
+            dockButton(title: "Gallery", systemName: "photo.on.rectangle", action: onPhotoTap)
+            dockButton(title: "Saved", systemName: "bookmark", action: onSavedMealsTap)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(dockBackgroundColor, in: Capsule(style: .continuous))
+        .overlay {
+            Capsule(style: .continuous)
+                .stroke(dockStrokeColor, lineWidth: 1)
+        }
+        .shadow(color: dockShadowColor, radius: colorScheme == .dark ? 12 : 20, y: colorScheme == .dark ? 4 : 10)
+        .opacity(isSubmitting ? 0.72 : 1)
+        .disabled(isSubmitting)
     }
 
-    private func composerActionButton(systemName: String, action: @escaping () -> Void) -> some View {
+    private func dockButton(title: String, systemName: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color.secondary)
-                .frame(width: 36, height: 36)
-                .background(
-                    Circle()
-                        .fill(Color(.systemBackground).opacity(0.9))
-                )
-                .overlay(
-                    Circle()
-                        .stroke(Color.black.opacity(0.05), lineWidth: 1)
-                )
+            VStack(spacing: 5) {
+                Image(systemName: systemName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.primary.opacity(0.72))
+
+                Text(title)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Color.primary.opacity(0.58))
+                    .lineLimit(1)
+            }
+            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(isSubmitting)
+        .accessibilityLabel(title)
+    }
+
+    private var dockBackgroundColor: Color {
+        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+    }
+
+    private var dockStrokeColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+    }
+
+    private var dockShadowColor: Color {
+        colorScheme == .dark ? Color.black.opacity(0.22) : Color.black.opacity(0.12)
     }
 }
 
 #Preview {
-    @Previewable @State var text = ""
-    @Previewable @FocusState var isFocused: Bool
-
-    LogComposerBar(
-        text: $text,
-        focus: $isFocused,
+    LogActionDock(
         isSubmitting: false,
-        canSubmit: false,
-        onClearError: {},
         onCameraTap: {},
         onPhotoTap: {},
-        onSavedMealsTap: {},
-        onSubmit: {}
+        onTextTap: {},
+        onSavedMealsTap: {}
     )
     .padding()
 }
