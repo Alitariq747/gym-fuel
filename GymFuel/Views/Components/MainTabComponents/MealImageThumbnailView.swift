@@ -43,9 +43,15 @@ struct MealImageThumbnailView: View {
     var body: some View {
         Group {
             if let image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
+                ZStack {
+                    Color(.systemGray6)
+
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: width ?? size, height: height ?? size)
+                        .clipped()
+                }
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)

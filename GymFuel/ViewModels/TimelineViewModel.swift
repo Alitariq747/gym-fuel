@@ -34,6 +34,7 @@ final class TimelineViewModel: ObservableObject {
     }
 
     private let service: LogEntryService
+    private let hapticFeedbackService: HapticFeedbackProviding
     private var observationCancellation: LogEntryObservationCancellation?
     private var localImagePreviewDataByEntryId: [String: Data] = [:]
     private var localPreparedImageDataByEntryId: [String: Data] = [:]
@@ -43,8 +44,12 @@ final class TimelineViewModel: ObservableObject {
     private var attemptedImageUploadRetryEntryIDs: Set<String> = []
     private var timelineLoadTrace: Trace?
 
-    init(service: LogEntryService = FirebaseLogEntryService()) {
+    init(
+        service: LogEntryService = FirebaseLogEntryService(),
+        hapticFeedbackService: HapticFeedbackProviding = HapticFeedbackService()
+    ) {
         self.service = service
+        self.hapticFeedbackService = hapticFeedbackService
     }
 
     deinit {
@@ -206,6 +211,7 @@ final class TimelineViewModel: ObservableObject {
             let previousStatus = previousEntryStatusesByID[entry.id]
             if previousStatus == .analyzing, entry.status == .succeeded {
                 pendingSuccessRevealEntryIDs.insert(entry.id)
+                hapticFeedbackService.notifySuccess()
             }
             previousEntryStatusesByID[entry.id] = entry.status
         }

@@ -11,6 +11,7 @@ struct RootView: View {
     
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
+    @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @StateObject private var savedMealsViewModel = SavedMealsViewModel()
  
         
@@ -39,9 +40,11 @@ struct RootView: View {
         }
         .task(id: authManager.user?.uid) {
             if let user = authManager.user {
+                await subscriptionViewModel.syncUser(userId: user.uid)
                 await profileViewModel.loadProfile(for: user.uid)
                 await savedMealsViewModel.loadSavedMeals(userId: user.uid)
             } else {
+                await subscriptionViewModel.syncUser(userId: nil)
                 profileViewModel.clear()
             }
         }
@@ -54,5 +57,6 @@ struct RootView: View {
     RootView()
         .environmentObject(FirebaseAuthManager())
         .environmentObject(UserProfileViewModel())
+        .environmentObject(SubscriptionViewModel())
         .environmentObject(SavedMealsViewModel())
 }

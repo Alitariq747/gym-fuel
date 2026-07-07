@@ -10,12 +10,21 @@
 		30163AE72FD5565300490A1D /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 30163AE62FD5565300490A1D /* FirebaseCrashlytics */; };
 		30163AE92FD5565D00490A1D /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = 30163AE82FD5565D00490A1D /* FirebasePerformance */; };
 		301C35022F64B626000FF9B2 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 301C35012F64B626000FF9B2 /* FirebaseAppCheck */; };
+		3031017E2FF9473C00CB12BD /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3031017D2FF9473C00CB12BD /* StoreKit.framework */; };
+		30D1A0012FFC000100000001 /* LogEntryAnalysisCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D1A0112FFC000100000001 /* LogEntryAnalysisCards.swift */; };
+		30D1A0022FFC000100000002 /* LogEntryDetailHeroImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D1A0122FFC000100000002 /* LogEntryDetailHeroImage.swift */; };
+		30D1A0032FFC000100000003 /* LogEntryDetailSheet+Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D1A0132FFC000100000003 /* LogEntryDetailSheet+Preview.swift */; };
+		30D1A0042FFC000100000004 /* LogEntryDetailSummaryCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D1A0142FFC000100000004 /* LogEntryDetailSummaryCards.swift */; };
+		30D1A0052FFC000100000005 /* LogEntryEstimatedItemsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D1A0152FFC000100000005 /* LogEntryEstimatedItemsCard.swift */; };
+		30D1A0062FFC000100000006 /* LogEntryGoalFitProgressCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D1A0162FFC000100000006 /* LogEntryGoalFitProgressCard.swift */; };
 		30A54E512FA60D5700590A38 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 30A54E502FA60D5700590A38 /* FirebaseStorage */; };
 		30BA6FA92EE44DB700DD124D /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FA82EE44DB700DD124D /* FirebaseAnalytics */; };
 		30BA6FAB2EE44DB700DD124D /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FAA2EE44DB700DD124D /* FirebaseAuth */; };
 		30BA6FAD2EE44DB700DD124D /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FAC2EE44DB700DD124D /* FirebaseFirestore */; };
 		30C33C8F2F3A164400D4263A /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 30C33C8E2F3A164400D4263A /* GoogleSignIn */; };
 		30C33C912F3A164400D4263A /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 30C33C902F3A164400D4263A /* GoogleSignInSwift */; };
+		30D000012FE7000000000001 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 30D000032FE7000000000003 /* RevenueCat */; };
+		30D000022FE7000000000002 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 30D000042FE7000000000004 /* RevenueCatUI */; };
 		30EAF3DB2F4487E300FBFB87 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 30EAF3DA2F4487E300FBFB87 /* FirebaseFunctions */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +39,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3031017D2FF9473C00CB12BD /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		30D1A0112FFC000100000001 /* LogEntryAnalysisCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymFuel/Views/Components/LogEntryDetail/LogEntryAnalysisCards.swift; sourceTree = "<group>"; };
+		30D1A0122FFC000100000002 /* LogEntryDetailHeroImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymFuel/Views/Components/LogEntryDetail/LogEntryDetailHeroImage.swift; sourceTree = "<group>"; };
+		30D1A0132FFC000100000003 /* LogEntryDetailSheet+Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GymFuel/Views/Components/LogEntryDetail/LogEntryDetailSheet+Preview.swift"; sourceTree = "<group>"; };
+		30D1A0142FFC000100000004 /* LogEntryDetailSummaryCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymFuel/Views/Components/LogEntryDetail/LogEntryDetailSummaryCards.swift; sourceTree = "<group>"; };
+		30D1A0152FFC000100000005 /* LogEntryEstimatedItemsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymFuel/Views/Components/LogEntryDetail/LogEntryEstimatedItemsCard.swift; sourceTree = "<group>"; };
+		30D1A0162FFC000100000006 /* LogEntryGoalFitProgressCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymFuel/Views/Components/LogEntryDetail/LogEntryGoalFitProgressCard.swift; sourceTree = "<group>"; };
 		30BA6F972EE44A5100DD124D /* GymFuel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GymFuel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		30E717732F853A8400C68864 /* GymFuelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymFuelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -74,6 +90,9 @@
 				30A54E512FA60D5700590A38 /* FirebaseStorage in Frameworks */,
 				30163AE72FD5565300490A1D /* FirebaseCrashlytics in Frameworks */,
 				30BA6FAB2EE44DB700DD124D /* FirebaseAuth in Frameworks */,
+				30D000012FE7000000000001 /* RevenueCat in Frameworks */,
+				30D000022FE7000000000002 /* RevenueCatUI in Frameworks */,
+				3031017E2FF9473C00CB12BD /* StoreKit.framework in Frameworks */,
 				30BA6FAD2EE44DB700DD124D /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -110,6 +129,7 @@
 		30EAF3D92F4487E300FBFB87 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3031017D2FF9473C00CB12BD /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -145,6 +165,8 @@
 				30A54E502FA60D5700590A38 /* FirebaseStorage */,
 				30163AE62FD5565300490A1D /* FirebaseCrashlytics */,
 				30163AE82FD5565D00490A1D /* FirebasePerformance */,
+				30D000032FE7000000000003 /* RevenueCat */,
+				30D000042FE7000000000004 /* RevenueCatUI */,
 			);
 			productName = GymFuel;
 			productReference = 30BA6F972EE44A5100DD124D /* GymFuel.app */;
@@ -185,6 +207,11 @@
 				TargetAttributes = {
 					30BA6F962EE44A5100DD124D = {
 						CreatedOnToolsVersion = 16.4;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+						};
 					};
 					30E717722F853A8400C68864 = {
 						CreatedOnToolsVersion = 26.4;
@@ -204,6 +231,7 @@
 			packageReferences = (
 				30BA6FA72EE44DB700DD124D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				30C33C8D2F3A164400D4263A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				30D000052FE7000000000005 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 30BA6F982EE44A5100DD124D /* Products */;
@@ -265,6 +293,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30D1A0012FFC000100000001 /* LogEntryAnalysisCards.swift in Sources */,
+				30D1A0022FFC000100000002 /* LogEntryDetailHeroImage.swift in Sources */,
+				30D1A0032FFC000100000003 /* LogEntryDetailSheet+Preview.swift in Sources */,
+				30D1A0042FFC000100000004 /* LogEntryDetailSummaryCards.swift in Sources */,
+				30D1A0052FFC000100000005 /* LogEntryEstimatedItemsCard.swift in Sources */,
+				30D1A0062FFC000100000006 /* LogEntryGoalFitProgressCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,7 +450,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = GymFuel/GymFuel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 8Q2JY29B23;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -453,7 +487,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = GymFuel/GymFuel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 8Q2JY29B23;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -576,6 +610,14 @@
 				minimumVersion = 9.1.0;
 			};
 		};
+		30D000052FE7000000000005 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -623,6 +665,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 30C33C8D2F3A164400D4263A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		30D000032FE7000000000003 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 30D000052FE7000000000005 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		30D000042FE7000000000004 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 30D000052FE7000000000005 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
 		};
 		30EAF3DA2F4487E300FBFB87 /* FirebaseFunctions */ = {
 			isa = XCSwiftPackageProductDependency;

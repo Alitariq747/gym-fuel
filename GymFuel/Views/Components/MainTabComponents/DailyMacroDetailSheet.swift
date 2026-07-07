@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DailyMacroDetailSheet: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let targetMacros: Macros
     let consumedMacros: Macros
@@ -13,6 +14,10 @@ struct DailyMacroDetailSheet: View {
 
     private var remainingLabel: String {
         remainingCalories < 0 ? "over" : "left"
+    }
+
+    private var progressAnimation: Animation? {
+        reduceMotion ? nil : .easeOut(duration: 0.55)
     }
 
     var body: some View {
@@ -78,12 +83,16 @@ struct DailyMacroDetailSheet: View {
             VStack(spacing: 2) {
                 Text("\(abs(remainingCalories))")
                     .font(.title3.weight(.bold))
+                    .contentTransition(.numericText())
+                    .animation(progressAnimation, value: remainingCalories)
                 Text(remainingLabel)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                    .animation(.easeOut(duration: 0.2), value: remainingLabel)
             }
         }
         .frame(width: 108, height: 108)
+        .animation(progressAnimation, value: progress)
     }
 
     private func summaryTile(_ short: String, symbol: String, current: Double, target: Double) -> some View {
@@ -108,6 +117,8 @@ struct DailyMacroDetailSheet: View {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text("\(Int(current.rounded()))")
                     .font(.headline.weight(.bold))
+                    .contentTransition(.numericText())
+                    .animation(progressAnimation, value: current)
                 Text("/ \(Int(target.rounded()))g")
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
@@ -119,6 +130,7 @@ struct DailyMacroDetailSheet: View {
                         .fill(fillColor.opacity(0.85))
                         .frame(maxWidth: .infinity)
                         .scaleEffect(x: progress, y: 1, anchor: .leading)
+                        .animation(progressAnimation, value: progress)
                 }
                 .frame(height: 6)
         }
@@ -139,6 +151,8 @@ struct DailyMacroDetailSheet: View {
                 .foregroundStyle(.secondary)
             Text("\(value)")
                 .font(.headline.weight(.bold))
+                .contentTransition(.numericText())
+                .animation(progressAnimation, value: value)
             Text("kcal")
                 .font(.caption2)
                 .foregroundStyle(.secondary)

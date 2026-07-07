@@ -119,6 +119,16 @@ extension FirebaseLogEntryService: LogEntryService {
         return try snapshot.documents.map(decodeEntry)
     }
 
+    func saveEntryLocally(_ entry: LogEntry) throws {
+        let data = try encodeEntry(entry)
+        let docRef = entriesCollection(for: entry.userId).document(entry.id)
+        docRef.setData(data, merge: true)
+    }
+
+    func updateEntryLocally(_ entry: LogEntry) throws {
+        try saveEntryLocally(entry)
+    }
+
     func saveEntry(_ entry: LogEntry) async throws {
         let data = try encodeEntry(entry)
         let docRef = entriesCollection(for: entry.userId).document(entry.id)

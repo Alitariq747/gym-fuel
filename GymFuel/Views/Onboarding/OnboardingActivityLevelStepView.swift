@@ -20,7 +20,7 @@ struct OnboardingActivityLevelStepView: View {
     
     var body: some View {
         AdaptiveScrollContainer {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
             Text("🚶")
                 .font(.system(size: 48))
                 .frame(width: 96, height: 96)
@@ -31,6 +31,13 @@ struct OnboardingActivityLevelStepView: View {
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
+
+            Text("This helps LiftEats estimate your daily energy needs and set macro targets that fit how active you are outside workouts.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 12)
             
             Spacer()
             

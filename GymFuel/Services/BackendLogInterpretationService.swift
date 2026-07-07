@@ -11,6 +11,7 @@ enum BackendLogInterpretationError: LocalizedError {
     case decodingFailed
     case networkUnavailable
     case requestTimedOut
+    case subscriptionInactive(String)
     case monthlyQuotaExceeded(String)
     case rateLimited(String)
     case unknown
@@ -33,6 +34,8 @@ enum BackendLogInterpretationError: LocalizedError {
             return "You're offline or the connection is unstable. Please try again."
         case .requestTimedOut:
             return "The request took too long. Please try again."
+        case .subscriptionInactive(let message):
+            return message
         case .monthlyQuotaExceeded(let message):
             return message
         case .rateLimited(let message):
@@ -165,9 +168,12 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
              "interpretation/image-required",
              "interpretation/invalid-goal":
             return .invalidRequest(message ?? "Please check your entry and try again.")
-        case "quota/text-monthly-limit-exceeded",
+        case "quota/ai-scan-monthly-limit-exceeded",
+             "quota/text-monthly-limit-exceeded",
              "quota/image-monthly-limit-exceeded":
             return .monthlyQuotaExceeded(message ?? "You have reached your monthly scan limit.")
+        case "subscription/inactive":
+            return .subscriptionInactive(message ?? "Upgrade to LiftEats Pro to keep logging with AI.")
         case "rate-limit/too-many-interpret-text-requests":
             return .rateLimited(message ?? "Too many requests. Please wait a moment and try again.")
         default:

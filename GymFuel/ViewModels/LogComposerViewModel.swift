@@ -15,15 +15,18 @@ final class LogComposerViewModel: ObservableObject {
     private let interpretationService: LogInterpretationService
     private let logEntryService: LogEntryService
     private let mealImageUploadService: MealImageUploadService
+    private let networkMonitor: NetworkMonitoring
 
     init(
         interpretationService: LogInterpretationService = BackendLogInterpretationService(),
         logEntryService: LogEntryService = FirebaseLogEntryService(),
-        mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService()
+        mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService(),
+        networkMonitor: NetworkMonitoring = NetworkMonitor.shared
     ) {
         self.interpretationService = interpretationService
         self.logEntryService = logEntryService
         self.mealImageUploadService = mealImageUploadService
+        self.networkMonitor = networkMonitor
     }
 
     func clearError() {
@@ -55,6 +58,25 @@ final class LogComposerViewModel: ObservableObject {
         return feedback
     }
 
+    private var offlineAIMessage: String {
+        "You're offline. Reconnect and try again."
+    }
+
+    private func failedEntry(from entry: LogEntry, message: String) -> LogEntry {
+        var failedEntry = entry
+        failedEntry.status = .failed
+        failedEntry.feedback = failureFeedback(message: message)
+        return failedEntry
+    }
+
+    private func saveOfflineFailedEntry(_ entry: LogEntry) throws {
+        try logEntryService.saveEntryLocally(failedEntry(from: entry, message: offlineAIMessage))
+    }
+
+    private func updateFailedEntryLocally(_ entry: LogEntry, message: String) {
+        try? logEntryService.updateEntryLocally(failedEntry(from: entry, message: message))
+    }
+
     func submitText(userId: String, goal: GoalType, loggedAt: Date = .now) async -> Bool {
         let text = draft.trimmedText
         guard !text.isEmpty else {
@@ -68,8 +90,27 @@ final class LogComposerViewModel: ObservableObject {
         errorMessage = nil
         var didSavePendingEntry = false
 
+        FirebaseTelemetryService.logMealAIEvent("submit_started", source: "text")
+        guard networkMonitor.isConnected else {
+            do {
+                try saveOfflineFailedEntry(pendingEntry)
+                draft = LogComposerDraft()
+            } catch {
+                errorMessage = userFacingMessage(for: error)
+            }
+            FirebaseTelemetryService.logMealAIEvent("submit_failed", source: "text")
+            FirebaseTelemetryService.stopPerformanceTrace(
+                trace,
+                attributes: [
+                    "source": "text",
+                    "outcome": "offline",
+                ]
+            )
+            isSubmitting = false
+            return false
+        }
+
         do {
-            FirebaseTelemetryService.logMealAIEvent("submit_started", source: "text")
             try await logEntryService.saveEntry(pendingEntry)
             didSavePendingEntry = true
             draft = LogComposerDraft()
@@ -114,10 +155,7 @@ final class LogComposerViewModel: ObservableObject {
             )
             let message = userFacingMessage(for: error)
             if didSavePendingEntry {
-                var failedEntry = pendingEntry
-                failedEntry.status = .failed
-                failedEntry.feedback = failureFeedback(message: message)
-                try? await logEntryService.updateEntry(failedEntry)
+                updateFailedEntryLocally(pendingEntry, message: message)
             } else {
                 errorMessage = message
             }
@@ -133,9 +171,16 @@ final class LogComposerViewModel: ObservableObject {
     func retryTextEntry(_ entry: LogEntry, goal: GoalType) async -> Bool {
         isSubmitting = true
         errorMessage = nil
+        FirebaseTelemetryService.logMealAIEvent("retry_started", source: "text")
+
+        guard networkMonitor.isConnected else {
+            updateFailedEntryLocally(entry, message: offlineAIMessage)
+            FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "text")
+            isSubmitting = false
+            return false
+        }
 
         do {
-            FirebaseTelemetryService.logMealAIEvent("retry_started", source: "text")
             var retryingEntry = entry
             retryingEntry.status = .analyzing
             retryingEntry.feedback = nil
@@ -167,10 +212,7 @@ final class LogComposerViewModel: ObservableObject {
         } catch {
             FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "text")
             let message = userFacingMessage(for: error)
-            var failedEntry = entry
-            failedEntry.status = .failed
-            failedEntry.feedback = failureFeedback(message: message)
-            try? await logEntryService.updateEntry(failedEntry)
+            updateFailedEntryLocally(entry, message: message)
             isSubmitting = false
             return false
         }
@@ -179,9 +221,16 @@ final class LogComposerViewModel: ObservableObject {
     func retryMealImageEntry(_ entry: LogEntry, imageData: Data, goal: GoalType) async -> LogEntry? {
         isSubmitting = true
         errorMessage = nil
+        FirebaseTelemetryService.logMealAIEvent("retry_started", source: "image")
+
+        guard networkMonitor.isConnected else {
+            updateFailedEntryLocally(entry, message: offlineAIMessage)
+            FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "image")
+            isSubmitting = false
+            return nil
+        }
 
         do {
-            FirebaseTelemetryService.logMealAIEvent("retry_started", source: "image")
             var retryingEntry = entry
             retryingEntry.status = .analyzing
             retryingEntry.feedback = nil
@@ -215,10 +264,7 @@ final class LogComposerViewModel: ObservableObject {
         } catch {
             FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "image")
             let message = userFacingMessage(for: error)
-            var failedEntry = entry
-            failedEntry.status = .failed
-            failedEntry.feedback = failureFeedback(message: message)
-            try? await logEntryService.updateEntry(failedEntry)
+            updateFailedEntryLocally(entry, message: message)
             isSubmitting = false
             return nil
         }
@@ -247,8 +293,27 @@ final class LogComposerViewModel: ObservableObject {
         errorMessage = nil
         var didSavePendingEntry = false
 
+        FirebaseTelemetryService.logMealAIEvent("submit_started", source: "image")
+        guard networkMonitor.isConnected else {
+            do {
+                try saveOfflineFailedEntry(pendingEntry)
+                draft = LogComposerDraft()
+            } catch {
+                errorMessage = userFacingMessage(for: error)
+            }
+            FirebaseTelemetryService.logMealAIEvent("submit_failed", source: "image")
+            FirebaseTelemetryService.stopPerformanceTrace(
+                trace,
+                attributes: [
+                    "source": "image",
+                    "outcome": "offline",
+                ]
+            )
+            isSubmitting = false
+            return nil
+        }
+
         do {
-            FirebaseTelemetryService.logMealAIEvent("submit_started", source: "image")
             try await logEntryService.saveEntry(pendingEntry)
             didSavePendingEntry = true
             draft = LogComposerDraft()
@@ -295,10 +360,7 @@ final class LogComposerViewModel: ObservableObject {
             )
             let message = userFacingMessage(for: error)
             if didSavePendingEntry {
-                var failedEntry = pendingEntry
-                failedEntry.status = .failed
-                failedEntry.feedback = failureFeedback(message: message)
-                try? await logEntryService.updateEntry(failedEntry)
+                updateFailedEntryLocally(pendingEntry, message: message)
             } else {
                 errorMessage = message
             }

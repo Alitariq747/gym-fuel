@@ -78,6 +78,9 @@ struct SignUpView: View {
             }
             .buttonStyle(.plain)
             .disabled(isLoading)
+
+            LegalAgreementText(context: .creatingAccount)
+                .padding(.horizontal, 8)
         }
             .padding()
         }

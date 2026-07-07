@@ -50,15 +50,22 @@ final class LogEntryDetailViewModel: ObservableObject {
                 loggedAt: entry.loggedAt
             )
 
+            var updatedFeedback = reinterpretedEntry.feedback
+            updatedFeedback?.goalType = goal
+
             let updatedEntry = LogEntry(
                 id: entry.id,
                 userId: entry.userId,
+                source: entry.source,
+                status: .succeeded,
                 loggedAt: entry.loggedAt,
                 type: reinterpretedEntry.type,
                 title: reinterpretedEntry.title,
                 rawInput: newRawInput,
                 detail: reinterpretedEntry.detail,
-                feedback: reinterpretedEntry.feedback
+                feedback: updatedFeedback,
+                image: entry.image,
+                imageUploadStatus: entry.imageUploadStatus
             )
 
             try await service.updateEntry(updatedEntry)

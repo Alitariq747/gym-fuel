@@ -18,12 +18,14 @@ enum DayNavigationDirection {
 struct MainTabView: View {
     let profile: UserProfile
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
+    @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @StateObject var composerViewModel = LogComposerViewModel()
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject var timelineViewModel = TimelineViewModel()
     @State private var showProfile = false
     @State private var showSavedMeals = false
     @State private var showStats = false
+    @State private var showSubscriptionPaywall = false
     @State private var showTextLogSheet = false
     @State private var showFutureLoggingToast = false
     @State private var selectedEntry: LogEntry?
@@ -192,6 +194,8 @@ struct MainTabView: View {
                     }
                 },
                 onUseAIAgain: { editedText in
+                    guard canUseAIFeatures() else { return }
+
                     Task {
                         let goalType = profile.goalType ?? GoalType.defaultValue
                         if let updatedEntry = await logEntryDetailViewModel.reinterpretEntry(
@@ -224,6 +228,14 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showStats) {
             NavigationStack { StatsView(profile: profile) }
+                .preferredColorScheme(preferredColorScheme)
+        }
+        .sheet(isPresented: $showSubscriptionPaywall, onDismiss: {
+            Task {
+                await subscriptionViewModel.refreshCustomerInfo()
+            }
+        }) {
+            SubscriptionPaywallSheet()
                 .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showTextLogSheet) {
@@ -393,6 +405,8 @@ struct MainTabView: View {
     }
 
     private func handleCameraTap() {
+        guard canUseAIFeatures() else { return }
+
         dismissComposerKeyboard()
 
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -400,10 +414,23 @@ struct MainTabView: View {
             pendingMealImageSource = nil
             showCameraCapture = false
             showCameraPermissionAlert = true
-        case .authorized, .notDetermined:
+        case .authorized:
             pendingMealImageSource = .camera
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                Task { @MainActor in
+                    if granted {
+                        pendingMealImageSource = .camera
+                    } else {
+                        pendingMealImageSource = nil
+                        showCameraCapture = false
+                        showCameraPermissionAlert = true
+                    }
+                }
+            }
         @unknown default:
             pendingMealImageSource = nil
+            showCameraCapture = false
             showCameraPermissionAlert = true
         }
     }
@@ -411,6 +438,15 @@ struct MainTabView: View {
     private func openAppSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
+    }
+
+    private func canUseAIFeatures() -> Bool {
+        guard subscriptionViewModel.hasPaidEntitlement else {
+            showSubscriptionPaywall = true
+            return false
+        }
+
+        return true
     }
 
     func dismissComposerKeyboard() {
@@ -431,9 +467,11 @@ struct MainTabView: View {
                     handleCameraTap()
                 },
                 onPhotoTap: {
+                    guard canUseAIFeatures() else { return }
                     pendingMealImageSource = .photoLibrary
                 },
                 onTextTap: {
+                    guard canUseAIFeatures() else { return }
                     composerViewModel.clearError()
                     showTextLogSheet = true
                 },
