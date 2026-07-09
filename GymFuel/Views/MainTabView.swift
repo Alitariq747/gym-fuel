@@ -18,14 +18,12 @@ enum DayNavigationDirection {
 struct MainTabView: View {
     let profile: UserProfile
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
-    @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @StateObject var composerViewModel = LogComposerViewModel()
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject var timelineViewModel = TimelineViewModel()
     @State private var showProfile = false
     @State private var showSavedMeals = false
     @State private var showStats = false
-    @State private var showSubscriptionPaywall = false
     @State private var showTextLogSheet = false
     @State private var showFutureLoggingToast = false
     @State private var selectedEntry: LogEntry?
@@ -228,14 +226,6 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $showStats) {
             NavigationStack { StatsView(profile: profile) }
-                .preferredColorScheme(preferredColorScheme)
-        }
-        .sheet(isPresented: $showSubscriptionPaywall, onDismiss: {
-            Task {
-                await subscriptionViewModel.refreshCustomerInfo()
-            }
-        }) {
-            SubscriptionPaywallSheet()
                 .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showTextLogSheet) {
@@ -441,11 +431,6 @@ struct MainTabView: View {
     }
 
     private func canUseAIFeatures() -> Bool {
-        guard subscriptionViewModel.hasPaidEntitlement else {
-            showSubscriptionPaywall = true
-            return false
-        }
-
         return true
     }
 

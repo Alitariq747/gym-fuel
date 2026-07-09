@@ -14,7 +14,6 @@ import FirebaseAppCheck
 struct GymFuelApp: App {
     @StateObject private var authManager = FirebaseAuthManager()
     @StateObject private var profileViewModel = UserProfileViewModel()
-    @StateObject private var subscriptionViewModel = SubscriptionViewModel()
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
 
     private var preferredColorScheme: ColorScheme? {
@@ -24,14 +23,12 @@ struct GymFuelApp: App {
     init() {
         AppCheck.setAppCheckProviderFactory(LiftEatsAppCheckProviderFactory())
         FirebaseApp.configure()
-        SubscriptionService.shared.configureIfNeeded()
     }
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(authManager)
                 .environmentObject(profileViewModel)
-                .environmentObject(subscriptionViewModel)
                 .preferredColorScheme(preferredColorScheme)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)

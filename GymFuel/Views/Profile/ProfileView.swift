@@ -12,7 +12,6 @@ struct ProfileView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
-    @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var draft: UserProfileDraft? = nil
@@ -25,8 +24,6 @@ struct ProfileView: View {
     @State private var showAppleReauthSheet: Bool = false
     @State private var showSavedMealsSheet: Bool = false
     @State private var showGoalFitExplainerSheet: Bool = false
-    @State private var showSubscriptionPaywall: Bool = false
-    @State private var showSubscriptionManagement: Bool = false
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
     @State private var deleteAppleNonce: String?
@@ -149,17 +146,6 @@ struct ProfileView: View {
                                     .disabled(isBusy)
                                     .opacity(isBusy ? 0.6 : 1)
 
-                                ProfileSubscriptionSection(
-                                    currentPlan: subscriptionViewModel.currentPlan,
-                                    isLoading: subscriptionViewModel.isLoading,
-                                    onOpenPaywall: { showSubscriptionPaywall = true },
-                                    onOpenManagement: { showSubscriptionManagement = true },
-                                    onRestorePurchases: {
-                                        Task {
-                                            await subscriptionViewModel.restorePurchases()
-                                        }
-                                    }
-                                )
                                 ProfileAppearanceSection(colorSchemePreference: $colorSchemePreference)
                                 ProfileReminderSection(preferredColorScheme: preferredColorScheme)
                                 ProfileSavedMealsSection(
@@ -276,42 +262,6 @@ struct ProfileView: View {
             GoalFitScoreExplainerSheet(primaryButtonTitle: "Done")
                 .preferredColorScheme(preferredColorScheme)
         }
-        .sheet(isPresented: $showSubscriptionPaywall, onDismiss: {
-            Task {
-                await subscriptionViewModel.refreshCustomerInfo()
-            }
-        }) {
-            SubscriptionPaywallSheet()
-                .preferredColorScheme(preferredColorScheme)
-        }
-        .sheet(isPresented: $showSubscriptionManagement, onDismiss: {
-            Task {
-                await subscriptionViewModel.refreshCustomerInfo()
-            }
-        }) {
-            ProfileSubscriptionManagementSheet()
-                .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.height(330)])
-                .presentationDragIndicator(.visible)
-        }
-        .alert("Subscription unavailable", isPresented: subscriptionErrorBinding) {
-            Button("OK", role: .cancel) {
-                subscriptionViewModel.clearError()
-            }
-        } message: {
-            Text(subscriptionViewModel.errorMessage ?? "Please try again.")
-        }
-    }
-
-    private var subscriptionErrorBinding: Binding<Bool> {
-        Binding(
-            get: { subscriptionViewModel.errorMessage != nil },
-            set: { isPresented in
-                if !isPresented {
-                    subscriptionViewModel.clearError()
-                }
-            }
-        )
     }
 
     private var deleteAccountWarningSheet: some View {
