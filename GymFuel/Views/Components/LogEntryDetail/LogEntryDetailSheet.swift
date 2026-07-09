@@ -75,6 +75,12 @@ struct LogEntryDetailSheet: View {
     private var analysisExplanation: String {
         entry.feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
+    private var rawInputDescription: String {
+        entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    private var shouldShowRawInputDescription: Bool {
+        !isSavedMealEntry && !rawInputDescription.isEmpty
+    }
     private var displayTitle: String {
         let title = entry.title.trimmingCharacters(in: .whitespacesAndNewlines)
         if !title.isEmpty { return title }
@@ -335,12 +341,23 @@ struct LogEntryDetailSheet: View {
                     }
                 }
             } else {
-                Text(displayTitle)
-                    .font(.system(size: 30, weight: .bold, design: .default))
-                    .foregroundStyle(.primary)
-                    .lineLimit(4)
-                    .minimumScaleFactor(0.82)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    if shouldShowRawInputDescription {
+                        Text(rawInputDescription)
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.secondary)
+                            .underline()
+                            .lineLimit(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Text(displayTitle)
+                        .font(.system(size: 30, weight: .bold, design: .default))
+                        .foregroundStyle(.primary)
+                        .lineLimit(4)
+                        .minimumScaleFactor(0.82)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             if let actionErrorMessage, !actionErrorMessage.isEmpty {

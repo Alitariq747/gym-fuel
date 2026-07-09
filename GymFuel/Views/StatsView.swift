@@ -106,6 +106,7 @@ struct StatsView: View {
                     title: "Protein",
                     values: snapshot.dailyStats.map(\.protein),
                     labels: macroWeekdayLabels,
+                    average: snapshot.averageProtein,
                     target: proteinTarget,
                     color: Color.fuelGreen
                 )
@@ -116,6 +117,7 @@ struct StatsView: View {
                     title: "Carbs",
                     values: snapshot.dailyStats.map(\.carbs),
                     labels: macroWeekdayLabels,
+                    average: snapshot.averageCarbs,
                     target: carbsTarget,
                     color: Color.fuelBlue.opacity(0.8)
                 )
@@ -126,6 +128,7 @@ struct StatsView: View {
                     title: "Fat",
                     values: snapshot.dailyStats.map(\.fat),
                     labels: macroWeekdayLabels,
+                    average: snapshot.averageFat,
                     target: fatTarget,
                     color: Color.fuelOrange.opacity(0.75)
                 )
@@ -156,6 +159,7 @@ private struct MacroMiniBarRow: View {
     let title: String
     let values: [Double]
     let labels: [String]
+    let average: Double
     let target: Double
     let color: Color
 
@@ -165,7 +169,7 @@ private struct MacroMiniBarRow: View {
                 Text(title)
                     .font(.caption.weight(.bold))
                 Spacer()
-                Text("Target \(Int(target))g")
+                Text("Avg \(Int(average.rounded()))g · Target \(Int(target))g")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
             }

@@ -28,6 +28,8 @@ struct StatsSnapshot: Equatable {
     var proteinTargetDays: Int
     var averageCalories: Double
     var averageProtein: Double
+    var averageCarbs: Double
+    var averageFat: Double
     var foodLogsThisWeek: Int
     var workoutLogsThisWeek: Int
     var dailyStats: [DailyStatsSnapshot]
@@ -39,6 +41,8 @@ struct StatsSnapshot: Equatable {
         proteinTargetDays: 0,
         averageCalories: 0,
         averageProtein: 0,
+        averageCarbs: 0,
+        averageFat: 0,
         foodLogsThisWeek: 0,
         workoutLogsThisWeek: 0,
         dailyStats: []

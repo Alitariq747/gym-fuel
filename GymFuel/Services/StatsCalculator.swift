@@ -9,7 +9,8 @@ import Foundation
 
 struct StatsCalculator {
     func calculate(
-        entries: [LogEntry],
+        weeklyEntries: [LogEntry],
+        currentStreakEntries: [LogEntry],
         targetMacros: Macros?,
         selectedWeekStart: Date,
         calendar: Calendar = .current
@@ -18,7 +19,7 @@ struct StatsCalculator {
             return .empty
         }
 
-        let weekEntries = entries.filter { entry in
+        let weekEntries = weeklyEntries.filter { entry in
             entry.loggedAt >= selectedWeekStart && entry.loggedAt < selectedWeekEnd
         }
         let loggedDays = Set(weekEntries.map { calendar.startOfDay(for: $0.loggedAt) })
@@ -53,7 +54,7 @@ struct StatsCalculator {
         }
 
         var snapshot = StatsSnapshot.empty
-        snapshot.currentStreakDays = currentStreakDays(from: entries, calendar: calendar)
+        snapshot.currentStreakDays = currentStreakDays(from: currentStreakEntries, calendar: calendar)
         snapshot.daysLoggedThisWeek = loggedDays.count
         snapshot.calorieTargetDays = dailyStats.filter { day in
             guard let target = day.targetCalories, target > 0 else { return false }
@@ -65,6 +66,8 @@ struct StatsCalculator {
         }.count
         snapshot.averageCalories = dailyStats.reduce(0) { $0 + $1.caloriesEaten } / Double(dailyStats.count)
         snapshot.averageProtein = dailyStats.reduce(0) { $0 + $1.protein } / Double(dailyStats.count)
+        snapshot.averageCarbs = dailyStats.reduce(0) { $0 + $1.carbs } / Double(dailyStats.count)
+        snapshot.averageFat = dailyStats.reduce(0) { $0 + $1.fat } / Double(dailyStats.count)
         snapshot.foodLogsThisWeek = foodLogs
         snapshot.workoutLogsThisWeek = workoutLogs
         snapshot.dailyStats = dailyStats

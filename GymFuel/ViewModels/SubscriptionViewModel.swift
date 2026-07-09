@@ -11,14 +11,19 @@ final class SubscriptionViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
 
     private let service: SubscriptionService
+    private let backendSubscriptionService: BackendSubscriptionService
     private var syncedUserId: String?
 
     var hasPaidEntitlement: Bool {
         currentPlan != .free
     }
 
-    init(service: SubscriptionService = .shared) {
+    init(
+        service: SubscriptionService = .shared,
+        backendSubscriptionService: BackendSubscriptionService = .shared
+    ) {
         self.service = service
+        self.backendSubscriptionService = backendSubscriptionService
     }
 
     func configure() {
@@ -87,11 +92,14 @@ final class SubscriptionViewModel: ObservableObject {
 
         do {
             let customerInfo = try await service.restorePurchases()
+            if service.plan(from: customerInfo) == .pro {
+                try await backendSubscriptionService.syncSubscription()
+            }
             update(from: customerInfo)
         } catch {
             errorMessage = AppErrorMessage.message(
                 for: error,
-                fallback: "We couldn't restore purchases. Please try again."
+                fallback: "Subscription restored, but we couldn't sync access yet. Please try Restore again."
             )
         }
 

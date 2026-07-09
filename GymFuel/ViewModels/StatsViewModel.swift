@@ -44,8 +44,10 @@ final class StatsViewModel: ObservableObject {
     }
 
     func loadStats(userId: String, targetMacros: Macros?, calendar: Calendar = .current) async {
-        guard let rangeStart = calendar.date(byAdding: .day, value: -90, to: selectedWeekStart),
-              let selectedWeekEnd = calendar.date(byAdding: .day, value: 7, to: selectedWeekStart) else {
+        let today = calendar.startOfDay(for: .now)
+        guard let selectedWeekEnd = calendar.date(byAdding: .day, value: 7, to: selectedWeekStart),
+              let tomorrow = calendar.date(byAdding: .day, value: 1, to: today),
+              let currentStreakRangeStart = calendar.date(byAdding: .day, value: -90, to: today) else {
             errorMessage = "Failed to compute stats date range."
             return
         }
@@ -54,13 +56,19 @@ final class StatsViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let entries = try await logEntryService.fetchEntries(
+            let weeklyEntries = try await logEntryService.fetchEntries(
                 for: userId,
-                from: rangeStart,
+                from: selectedWeekStart,
                 to: selectedWeekEnd
             )
+            let currentStreakEntries = try await logEntryService.fetchEntries(
+                for: userId,
+                from: currentStreakRangeStart,
+                to: tomorrow
+            )
             snapshot = statsCalculator.calculate(
-                entries: entries,
+                weeklyEntries: weeklyEntries,
+                currentStreakEntries: currentStreakEntries,
                 targetMacros: targetMacros,
                 selectedWeekStart: selectedWeekStart,
                 calendar: calendar
