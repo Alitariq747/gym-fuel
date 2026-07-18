@@ -7,12 +7,16 @@
 
 import SwiftUI
 import AuthenticationServices
+import StoreKit
+import UIKit
 
 struct ProfileView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
+    @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     
     @State private var draft: UserProfileDraft? = nil
     @State private var signOutError: String?
@@ -24,6 +28,7 @@ struct ProfileView: View {
     @State private var showAppleReauthSheet: Bool = false
     @State private var showSavedMealsSheet: Bool = false
     @State private var showGoalFitExplainerSheet: Bool = false
+    @State private var showSubscriptionPaywall: Bool = false
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
     @State private var deleteAppleNonce: String?
@@ -32,6 +37,7 @@ struct ProfileView: View {
 
     private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")
     private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")
+    private let appStoreSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 
     private var isBusy: Bool {
         profileVm.isSaving || isSigningOut || isDeletingAccount
@@ -148,6 +154,20 @@ struct ProfileView: View {
 
                                 ProfileAppearanceSection(colorSchemePreference: $colorSchemePreference)
                                 ProfileReminderSection(preferredColorScheme: preferredColorScheme)
+                                ProfileSubscriptionSection(
+                                    status: subscriptionViewModel.status,
+                                    isLoading: subscriptionViewModel.isLoading,
+                                    onOpenPaywall: {
+                                        subscriptionViewModel.clearError()
+                                        showSubscriptionPaywall = true
+                                    },
+                                    onManageSubscription: {
+                                        subscriptionViewModel.clearError()
+                                        Task {
+                                            await openManageSubscriptions()
+                                        }
+                                    }
+                                )
                                 ProfileSavedMealsSection(
                                     savedMealCount: savedMealsViewModel.savedMeals.count,
                                     onOpen: { showSavedMealsSheet = true }
@@ -223,6 +243,17 @@ struct ProfileView: View {
                 draft = nil
             }
         }
+        .task {
+            await subscriptionViewModel.refreshCustomerInfo()
+        }
+        .sheet(isPresented: $showSubscriptionPaywall, onDismiss: {
+            Task {
+                await subscriptionViewModel.refreshCustomerInfo()
+            }
+        }) {
+            SubscriptionPaywallSheet()
+                .preferredColorScheme(preferredColorScheme)
+        }
         .sheet(isPresented: $showDeleteAccountConfirmation) {
             deleteAccountWarningSheet
                 .preferredColorScheme(preferredColorScheme)
@@ -262,6 +293,32 @@ struct ProfileView: View {
             GoalFitScoreExplainerSheet(primaryButtonTitle: "Done")
                 .preferredColorScheme(preferredColorScheme)
         }
+    }
+
+    @MainActor
+    private func openManageSubscriptions() async {
+        defer {
+            Task {
+                await subscriptionViewModel.refreshCustomerInfo()
+            }
+        }
+
+        guard let windowScene = activeWindowScene() else {
+            openURL(appStoreSubscriptionsURL)
+            return
+        }
+
+        do {
+            try await AppStore.showManageSubscriptions(in: windowScene)
+        } catch {
+            openURL(appStoreSubscriptionsURL)
+        }
+    }
+
+    @MainActor
+    private func activeWindowScene() -> UIWindowScene? {
+        let windowScenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return windowScenes.first(where: { $0.activationState == .foregroundActive }) ?? windowScenes.first
     }
 
     private var deleteAccountWarningSheet: some View {

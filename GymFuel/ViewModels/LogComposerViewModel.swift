@@ -12,6 +12,7 @@ final class LogComposerViewModel: ObservableObject {
     @Published var draft = LogComposerDraft()
     @Published private(set) var isSubmitting = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var shouldPresentSubscriptionPaywall = false
     private let interpretationService: LogInterpretationService
     private let logEntryService: LogEntryService
     private let mealImageUploadService: MealImageUploadService
@@ -31,6 +32,22 @@ final class LogComposerViewModel: ObservableObject {
 
     func clearError() {
         errorMessage = nil
+    }
+
+    func clearSubscriptionPaywallRequest() {
+        shouldPresentSubscriptionPaywall = false
+    }
+
+    private func isSubscriptionInactive(_ error: Error) -> Bool {
+        guard let backendError = error as? BackendLogInterpretationError else {
+            return false
+        }
+
+        if case .subscriptionInactive = backendError {
+            return true
+        }
+
+        return false
     }
 
     private func userFacingMessage(for error: Error, fallback: String? = nil) -> String {
@@ -154,6 +171,9 @@ final class LogComposerViewModel: ObservableObject {
                 ]
             )
             let message = userFacingMessage(for: error)
+            if isSubscriptionInactive(error) {
+                shouldPresentSubscriptionPaywall = true
+            }
             if didSavePendingEntry {
                 updateFailedEntryLocally(pendingEntry, message: message)
             } else {
@@ -212,6 +232,9 @@ final class LogComposerViewModel: ObservableObject {
         } catch {
             FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "text")
             let message = userFacingMessage(for: error)
+            if isSubscriptionInactive(error) {
+                shouldPresentSubscriptionPaywall = true
+            }
             updateFailedEntryLocally(entry, message: message)
             isSubmitting = false
             return false
@@ -264,6 +287,9 @@ final class LogComposerViewModel: ObservableObject {
         } catch {
             FirebaseTelemetryService.logMealAIEvent("retry_failed", source: "image")
             let message = userFacingMessage(for: error)
+            if isSubscriptionInactive(error) {
+                shouldPresentSubscriptionPaywall = true
+            }
             updateFailedEntryLocally(entry, message: message)
             isSubmitting = false
             return nil
@@ -359,6 +385,9 @@ final class LogComposerViewModel: ObservableObject {
                 ]
             )
             let message = userFacingMessage(for: error)
+            if isSubscriptionInactive(error) {
+                shouldPresentSubscriptionPaywall = true
+            }
             if didSavePendingEntry {
                 updateFailedEntryLocally(pendingEntry, message: message)
             } else {

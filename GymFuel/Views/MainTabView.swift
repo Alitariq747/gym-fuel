@@ -18,6 +18,7 @@ enum DayNavigationDirection {
 struct MainTabView: View {
     let profile: UserProfile
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
+    @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @StateObject var composerViewModel = LogComposerViewModel()
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject var timelineViewModel = TimelineViewModel()
@@ -25,6 +26,7 @@ struct MainTabView: View {
     @State private var showSavedMeals = false
     @State private var showStats = false
     @State private var showTextLogSheet = false
+    @State private var showSubscriptionPaywall = false
     @State private var showFutureLoggingToast = false
     @State private var selectedEntry: LogEntry?
     @State var mealImageDraft = MealImageDraft()
@@ -228,6 +230,10 @@ struct MainTabView: View {
             NavigationStack { StatsView(profile: profile) }
                 .preferredColorScheme(preferredColorScheme)
         }
+        .sheet(isPresented: $showSubscriptionPaywall) {
+            SubscriptionPaywallSheet()
+                .preferredColorScheme(preferredColorScheme)
+        }
         .sheet(isPresented: $showTextLogSheet) {
             TextEntrySheet(
                 text: $composerViewModel.draft.text,
@@ -328,6 +334,16 @@ struct MainTabView: View {
             if isSubmitting {
                 dismissComposerKeyboard()
             }
+        }
+        .onChange(of: composerViewModel.shouldPresentSubscriptionPaywall) { _, shouldPresent in
+            guard shouldPresent else { return }
+            presentSubscriptionPaywall()
+            composerViewModel.clearSubscriptionPaywallRequest()
+        }
+        .onChange(of: logEntryDetailViewModel.shouldPresentSubscriptionPaywall) { _, shouldPresent in
+            guard shouldPresent else { return }
+            presentSubscriptionPaywall()
+            logEntryDetailViewModel.clearSubscriptionPaywallRequest()
         }
     }
 
@@ -430,7 +446,21 @@ struct MainTabView: View {
         UIApplication.shared.open(url)
     }
 
-    private func canUseAIFeatures() -> Bool {
+    private func presentSubscriptionPaywall() {
+        dismissComposerKeyboard()
+        showTextLogSheet = false
+        showCameraCapture = false
+        showPhotoLibraryPicker = false
+        pendingMealImageSource = nil
+        showSubscriptionPaywall = true
+    }
+
+    func canUseAIFeatures() -> Bool {
+        guard subscriptionViewModel.hasProAccess else {
+            presentSubscriptionPaywall()
+            return false
+        }
+
         return true
     }
 
@@ -492,6 +522,8 @@ struct MainTabView: View {
     }
 
     private func retryFailedEntry(_ entry: LogEntry) {
+        guard canUseAIFeatures() else { return }
+
         Task {
             if entry.source == .image {
                 guard let imageData = await imageDataForRetryingMealImage(entryId: entry.id) else { return }
@@ -521,6 +553,8 @@ struct MainTabView: View {
 
     private func submitCurrentDraft() async {
         dismissComposerKeyboard()
+        guard canUseAIFeatures() else { return }
+
         let goalType = profile.goalType ?? GoalType.defaultValue
         let loggedAt = loggedAtForSelectedDay()
         _ = await composerViewModel.submitText(

@@ -13,6 +13,7 @@ final class LogEntryDetailViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var aiErrorMessage: String?
     @Published private(set) var actionErrorMessage: String?
+    @Published private(set) var shouldPresentSubscriptionPaywall = false
 
     private let service: LogEntryService
     private let interpretationService: LogInterpretationService
@@ -32,6 +33,23 @@ final class LogEntryDetailViewModel: ObservableObject {
         errorMessage = nil
         aiErrorMessage = nil
         actionErrorMessage = nil
+        shouldPresentSubscriptionPaywall = false
+    }
+
+    func clearSubscriptionPaywallRequest() {
+        shouldPresentSubscriptionPaywall = false
+    }
+
+    private func isSubscriptionInactive(_ error: Error) -> Bool {
+        guard let backendError = error as? BackendLogInterpretationError else {
+            return false
+        }
+
+        if case .subscriptionInactive = backendError {
+            return true
+        }
+
+        return false
     }
 
     func reinterpretEntry(
@@ -72,6 +90,9 @@ final class LogEntryDetailViewModel: ObservableObject {
             isSaving = false
             return updatedEntry
         } catch {
+            if isSubscriptionInactive(error) {
+                shouldPresentSubscriptionPaywall = true
+            }
             setAIError(AppErrorMessage.message(
                 for: error,
                 fallback: "We couldn't reinterpret this entry. Please try again."

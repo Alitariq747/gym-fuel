@@ -10,6 +10,8 @@
 		30163AE72FD5565300490A1D /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 30163AE62FD5565300490A1D /* FirebaseCrashlytics */; };
 		30163AE92FD5565D00490A1D /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = 30163AE82FD5565D00490A1D /* FirebasePerformance */; };
 		301C35022F64B626000FF9B2 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 301C35012F64B626000FF9B2 /* FirebaseAppCheck */; };
+		30285C6830013759007F6824 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30285C6730013759007F6824 /* StoreKit.framework */; };
+		30285C6B30013816007F6824 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 30285C6A30013816007F6824 /* RevenueCat */; };
 		30A54E512FA60D5700590A38 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 30A54E502FA60D5700590A38 /* FirebaseStorage */; };
 		30BA6FA92EE44DB700DD124D /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FA82EE44DB700DD124D /* FirebaseAnalytics */; };
 		30BA6FAB2EE44DB700DD124D /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FAA2EE44DB700DD124D /* FirebaseAuth */; };
@@ -30,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		30285C6730013759007F6824 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		30BA6F972EE44A5100DD124D /* GymFuel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GymFuel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		30E717732F853A8400C68864 /* GymFuelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymFuelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -73,8 +76,10 @@
 				301C35022F64B626000FF9B2 /* FirebaseAppCheck in Frameworks */,
 				30A54E512FA60D5700590A38 /* FirebaseStorage in Frameworks */,
 				30163AE72FD5565300490A1D /* FirebaseCrashlytics in Frameworks */,
+				30285C6B30013816007F6824 /* RevenueCat in Frameworks */,
 				30BA6FAB2EE44DB700DD124D /* FirebaseAuth in Frameworks */,
 				30BA6FAD2EE44DB700DD124D /* FirebaseFirestore in Frameworks */,
+				30285C6830013759007F6824 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -110,6 +115,7 @@
 		30EAF3D92F4487E300FBFB87 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				30285C6730013759007F6824 /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -145,6 +151,7 @@
 				30A54E502FA60D5700590A38 /* FirebaseStorage */,
 				30163AE62FD5565300490A1D /* FirebaseCrashlytics */,
 				30163AE82FD5565D00490A1D /* FirebasePerformance */,
+				30285C6A30013816007F6824 /* RevenueCat */,
 			);
 			productName = GymFuel;
 			productReference = 30BA6F972EE44A5100DD124D /* GymFuel.app */;
@@ -204,6 +211,7 @@
 			packageReferences = (
 				30BA6FA72EE44DB700DD124D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				30C33C8D2F3A164400D4263A /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				30285C6930013816007F6824 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 30BA6F982EE44A5100DD124D /* Products */;
@@ -560,6 +568,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		30285C6930013816007F6824 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.80.3;
+			};
+		};
 		30BA6FA72EE44DB700DD124D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -593,6 +609,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 30BA6FA72EE44DB700DD124D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAppCheck;
+		};
+		30285C6A30013816007F6824 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 30285C6930013816007F6824 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
 		};
 		30A54E502FA60D5700590A38 /* FirebaseStorage */ = {
 			isa = XCSwiftPackageProductDependency;

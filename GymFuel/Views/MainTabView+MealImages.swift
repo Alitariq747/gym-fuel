@@ -58,6 +58,12 @@ extension MainTabView {
 
     func analyzePreparedMealImage() async {
         dismissComposerKeyboard()
+        guard canUseAIFeatures() else {
+            mealImageDraft.reset()
+            selectedPhotoPickerItem = nil
+            return
+        }
+
         guard mealImageDraft.isReadyToSubmit,
               let imageData = mealImageDraft.compressedJPEGData else {
             mealImageDraft.state = .failed("We couldn't prepare that photo. Please try a different image.")
