@@ -2,38 +2,34 @@ import SwiftUI
 
 struct ProfileLiftEatsSection: View {
     let onOpenScoreExplanation: () -> Void
+    let reviewURL: URL
 
     var body: some View {
         VStack(spacing: 12) {
             ProfileSectionHeader(title: "LiftEats", systemImage: "sparkles")
 
-            Button(action: onOpenScoreExplanation) {
-                HStack(spacing: 14) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.fuelOrange.opacity(0.12))
-                            .frame(width: 52, height: 52)
-
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(Color.fuelOrange)
-                    }
-
-                    Text("How score is calculated")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                        .padding(.leading, 4)
+            VStack(spacing: 0) {
+                Button(action: onOpenScoreExplanation) {
+                    actionRow(
+                        title: "How score is calculated",
+                        systemImage: "chart.line.uptrend.xyaxis",
+                        tint: .fuelOrange
+                    )
                 }
-                .contentShape(Rectangle())
-                .padding(16)
+                .buttonStyle(.plain)
+
+                Divider()
+                    .padding(.leading, 82)
+
+                Link(destination: reviewURL) {
+                    actionRow(
+                        title: "Rate LiftEats",
+                        systemImage: "star.fill",
+                        tint: .fuelOrange
+                    )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
             .background(ProfileCardBackground())
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -41,5 +37,31 @@ struct ProfileLiftEatsSection: View {
             )
         }
         .padding(.horizontal)
+    }
+
+    private func actionRow(title: String, systemImage: String, tint: Color) -> some View {
+        HStack(spacing: 14) {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(tint.opacity(0.12))
+                .frame(width: 52, height: 52)
+                .overlay(
+                    Image(systemName: systemImage)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(tint)
+                )
+
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .padding(.leading, 4)
+        }
+        .contentShape(Rectangle())
+        .padding(16)
     }
 }

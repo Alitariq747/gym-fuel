@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileLegalSection: View {
     let privacyURL: URL?
     let termsURL: URL?
+    let supportURL: URL?
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -14,6 +15,8 @@ struct ProfileLegalSection: View {
                 linkRow(title: "Privacy Policy", systemImage: "hand.raised.fill", url: privacyURL)
                 Divider()
                 linkRow(title: "Terms of Service", systemImage: "checkmark.seal.fill", url: termsURL)
+                Divider()
+                linkRow(title: "Contact Support", systemImage: "envelope.fill", url: supportURL)
             }
             .padding(14)
             .background(

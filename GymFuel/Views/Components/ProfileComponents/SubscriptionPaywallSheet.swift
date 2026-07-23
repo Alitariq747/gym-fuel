@@ -5,8 +5,8 @@ struct SubscriptionPaywallSheet: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
 
-    private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")!
-    private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")!
+    private let privacyURL = URL(string: "https://ahmadtariq.co/apps/lifteats/privacy")!
+    private let termsURL = URL(string: "https://ahmadtariq.co/apps/lifteats/terms")!
 
     private var selectedPackage: Package? {
         subscriptionViewModel.selectedPackage

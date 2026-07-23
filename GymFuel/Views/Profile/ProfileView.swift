@@ -35,8 +35,10 @@ struct ProfileView: View {
     @State private var showSaveToast: Bool = false
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
 
-    private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")
-    private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")
+    private let privacyURL = URL(string: "https://ahmadtariq.co/apps/lifteats/privacy")
+    private let termsURL = URL(string: "https://ahmadtariq.co/apps/lifteats/terms")
+    private let supportURL = URL(string: "mailto:support-lifteats@ahmadtariq.co")
+    private let appStoreReviewURL = URL(string: "https://apps.apple.com/app/id6778838787?action=write-review")!
     private let appStoreSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 
     private var isBusy: Bool {
@@ -173,11 +175,13 @@ struct ProfileView: View {
                                     onOpen: { showSavedMealsSheet = true }
                                 )
                                 ProfileLiftEatsSection(
-                                    onOpenScoreExplanation: { showGoalFitExplainerSheet = true }
+                                    onOpenScoreExplanation: { showGoalFitExplainerSheet = true },
+                                    reviewURL: appStoreReviewURL
                                 )
                                 ProfileLegalSection(
                                     privacyURL: privacyURL,
-                                    termsURL: termsURL
+                                    termsURL: termsURL,
+                                    supportURL: supportURL
                                 )
                                   
                                 

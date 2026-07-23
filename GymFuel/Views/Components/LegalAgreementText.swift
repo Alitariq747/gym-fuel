@@ -14,8 +14,8 @@ struct LegalAgreementText: View {
 
     let context: Context
 
-    private let privacyURL = URL(string: "https://alitariq747.github.io/lifteats-legal/privacy-policy")!
-    private let termsURL = URL(string: "https://alitariq747.github.io/lifteats-legal/terms")!
+    private let privacyURL = URL(string: "https://ahmadtariq.co/apps/lifteats/privacy")!
+    private let termsURL = URL(string: "https://ahmadtariq.co/apps/lifteats/terms")!
 
     var body: some View {
         WrappingHStack(horizontalSpacing: 4, verticalSpacing: 2) {
