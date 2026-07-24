@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileSubscriptionSection: View {
     let status: SubscriptionStatus
-    let isLoading: Bool
+    let isSyncingStatus: Bool
     let onOpenPaywall: () -> Void
     let onManageSubscription: () -> Void
 
@@ -33,7 +33,7 @@ struct ProfileSubscriptionSection: View {
 
                     Spacer(minLength: 12)
 
-                    if isLoading {
+                    if isSyncingStatus {
                         ProgressView()
                             .controlSize(.small)
                     } else {
@@ -45,9 +45,13 @@ struct ProfileSubscriptionSection: View {
                             .background(statusTint.opacity(0.12), in: Capsule())
                     }
 
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                    HStack(spacing: 4) {
+                        Text(ProfileSubscriptionCopy.actionLabel(for: status))
+                            .font(.caption2.weight(.semibold))
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                    }
+                    .foregroundStyle(.tertiary)
                 }
                 .contentShape(Rectangle())
                 .padding(16)
@@ -76,7 +80,7 @@ struct ProfileSubscriptionSection: View {
     private var statusTint: Color {
         switch status.state {
         case .free:
-            return Color.fuelBlue
+            return Color.liftEatsCoral
         case .trial:
             return Color.liftEatsCoral
         case .active:
@@ -89,7 +93,7 @@ private enum ProfileSubscriptionCopy {
     static func title(for status: SubscriptionStatus) -> String {
         switch status.state {
         case .free:
-            return "LiftEats Free"
+            return "Go Pro"
         case .trial:
             return "Pro trial active"
         case .active:
@@ -107,17 +111,23 @@ private enum ProfileSubscriptionCopy {
     static func subtitle(for status: SubscriptionStatus) -> String {
         switch status.state {
         case .free:
-            return "Upgrade to unlock AI logging"
+            return "Unlock AI meal and workout logging"
         case .trial:
-            if let expirationDate = status.expirationDate {
-                return "Trial ends \(formattedDate(expirationDate))"
+            if status.isCancelledButActive, let expirationDate = status.expirationDate {
+                return "Trial ends \(formattedDate(expirationDate)) · Won't renew · Tap to resubscribe"
             }
-            return "Trial is active"
+            if let expirationDate = status.expirationDate {
+                return "Trial ends \(formattedDate(expirationDate)) · Tap to manage"
+            }
+            return "Trial active · Tap to manage"
         case .active:
-            if let expirationDate = status.expirationDate {
-                return status.willRenew ? "Renews \(formattedDate(expirationDate))" : "Active until \(formattedDate(expirationDate))"
+            if status.isCancelledButActive, let expirationDate = status.expirationDate {
+                return "Active until \(formattedDate(expirationDate)) · Tap to resubscribe"
             }
-            return "Subscription active"
+            if let expirationDate = status.expirationDate {
+                return "Renews \(formattedDate(expirationDate)) · Tap to manage"
+            }
+            return "Tap to manage"
         }
     }
 
@@ -130,6 +140,10 @@ private enum ProfileSubscriptionCopy {
         case .active:
             return "Pro"
         }
+    }
+
+    static func actionLabel(for status: SubscriptionStatus) -> String {
+        status.hasProAccess ? "Manage" : "Upgrade"
     }
 
     private static func formattedDate(_ date: Date) -> String {

@@ -20,7 +20,8 @@ final class SubscriptionViewModel: ObservableObject {
     @Published private(set) var paywallPackages: [Package] = []
     @Published private(set) var selectedPackageIdentifier: String?
     @Published private(set) var introEligibilityByProductIdentifier: [String: IntroEligibilityStatus] = [:]
-    @Published private(set) var isLoading = false
+    @Published private(set) var isLoadingPackages = false
+    @Published private(set) var isSyncingStatus = false
     @Published private(set) var isPurchasing = false
     @Published private(set) var isRestoring = false
     @Published private(set) var errorMessage: String?
@@ -53,7 +54,7 @@ final class SubscriptionViewModel: ObservableObject {
             return
         }
 
-        isLoading = true
+        isSyncingStatus = true
         errorMessage = nil
 
         do {
@@ -76,11 +77,11 @@ final class SubscriptionViewModel: ObservableObject {
             )
         }
 
-        isLoading = false
+        isSyncingStatus = false
     }
 
     func refreshCustomerInfo(showBackendSyncWarning: Bool = false) async {
-        isLoading = true
+        isSyncingStatus = true
         errorMessage = nil
 
         do {
@@ -98,20 +99,55 @@ final class SubscriptionViewModel: ObservableObject {
             )
         }
 
-        isLoading = false
+        isSyncingStatus = false
     }
 
     func loadPaywallPackages() async {
+        errorMessage = nil
         guard paywallPackages.isEmpty else { return }
 
-        isLoading = true
-        errorMessage = nil
+        isLoadingPackages = true
 
         do {
             let packages = try await service.paywallPackages()
             paywallPackages = packages
             selectedPackageIdentifier = packages.first?.identifier
             introEligibilityByProductIdentifier = await service.trialEligibilityByProductIdentifier(for: packages)
+        } catch PaywallPackagesError.offeringUnavailable {
+            errorMessage = "Subscription options aren't available right now. Please try again later."
+            FirebaseTelemetryService.recordNonFatal(
+                PaywallPackagesError.offeringUnavailable,
+                reason: "paywall_packages_load_failed",
+                metadata: [
+                    "case": "offeringUnavailable",
+                ]
+            )
+        } catch PaywallPackagesError.packagesUnavailable(let offeringIdentifier, let availableProductIdentifiers) {
+            errorMessage = "We couldn't find the subscription options for this offering. Please try again later."
+            #if DEBUG
+            print("paywallPackages: no packages matched in offering '\(offeringIdentifier)'. Available product identifiers: \(availableProductIdentifiers)")
+            #endif
+            FirebaseTelemetryService.recordNonFatal(
+                PaywallPackagesError.packagesUnavailable(
+                    offeringIdentifier: offeringIdentifier,
+                    availableProductIdentifiers: availableProductIdentifiers
+                ),
+                reason: "paywall_packages_load_failed",
+                metadata: [
+                    "case": "packagesUnavailable",
+                    "offering_identifier": offeringIdentifier,
+                    "available_product_identifiers": availableProductIdentifiers.joined(separator: ", "),
+                ]
+            )
+        } catch PaywallPackagesError.timedOut {
+            errorMessage = "Loading subscription options is taking longer than expected. Please check your connection and try again."
+            FirebaseTelemetryService.recordNonFatal(
+                PaywallPackagesError.timedOut,
+                reason: "paywall_packages_load_failed",
+                metadata: [
+                    "case": "timedOut",
+                ]
+            )
         } catch {
             errorMessage = AppErrorMessage.message(
                 for: error,
@@ -119,7 +155,7 @@ final class SubscriptionViewModel: ObservableObject {
             )
         }
 
-        isLoading = false
+        isLoadingPackages = false
     }
 
     func selectPackage(_ package: Package) {
@@ -156,15 +192,18 @@ final class SubscriptionViewModel: ObservableObject {
 
             let purchaseStatus = service.status(from: result.customerInfo)
             guard purchaseStatus.hasProAccess else {
-                applyFreeStatus()
                 errorMessage = "Purchase completed, but Pro access was not activated. Please try Restore Subscription."
                 isPurchasing = false
                 return false
             }
 
-            try await backendSubscriptionService.syncSubscription()
-
             applyStatus(purchaseStatus)
+
+            let didSyncBackend = await syncBackendSubscriptionIfNeeded()
+            if !didSyncBackend {
+                errorMessage = "Your subscription is active, but we couldn't sync AI access yet. Please try Refresh or Restore."
+            }
+
             isPurchasing = false
             return true
         } catch {
@@ -192,9 +231,13 @@ final class SubscriptionViewModel: ObservableObject {
                 return false
             }
 
-            try await backendSubscriptionService.syncSubscription()
-
             applyStatus(restoredStatus)
+
+            let didSyncBackend = await syncBackendSubscriptionIfNeeded()
+            if !didSyncBackend {
+                errorMessage = "Your subscription is active, but we couldn't sync AI access yet. Please try Refresh or Restore."
+            }
+
             isRestoring = false
             return true
         } catch {

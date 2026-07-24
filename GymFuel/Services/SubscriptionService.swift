@@ -12,6 +12,12 @@ enum SubscriptionProductKind: Equatable {
     case unknown
 }
 
+enum PaywallPackagesError: Error {
+    case offeringUnavailable
+    case packagesUnavailable(offeringIdentifier: String, availableProductIdentifiers: [String])
+    case timedOut
+}
+
 enum SubscriptionStatusState: Equatable {
     case free
     case trial
@@ -83,11 +89,26 @@ final class SubscriptionService: NSObject, @unchecked Sendable {
     func paywallPackages() async throws -> [Package] {
         configureIfNeeded()
 
-        let offerings = try await Purchases.shared.offerings()
+        let offerings = try await withThrowingTaskGroup(of: Offerings.self) { group -> Offerings in
+            defer { group.cancelAll() }
+
+            group.addTask {
+                try await Purchases.shared.offerings()
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: 15_000_000_000)
+                throw PaywallPackagesError.timedOut
+            }
+
+            guard let result = try await group.next() else {
+                throw PaywallPackagesError.timedOut
+            }
+            return result
+        }
         let offering = offerings.offering(identifier: RevenueCatConfig.offeringIdentifier) ?? offerings.current
 
         guard let offering else {
-            return []
+            throw PaywallPackagesError.offeringUnavailable
         }
 
         let configuredPackages = [
@@ -99,10 +120,19 @@ final class SubscriptionService: NSObject, @unchecked Sendable {
             return configuredPackages
         }
 
-        return offering.availablePackages.filter {
+        let matchedByProductIdentifier = offering.availablePackages.filter {
             $0.storeProduct.productIdentifier == RevenueCatConfig.proYearlyProductIdentifier ||
             $0.storeProduct.productIdentifier == RevenueCatConfig.proMonthlyProductIdentifier
         }
+
+        if matchedByProductIdentifier.isEmpty {
+            throw PaywallPackagesError.packagesUnavailable(
+                offeringIdentifier: offering.identifier,
+                availableProductIdentifiers: offering.availablePackages.map(\.storeProduct.productIdentifier)
+            )
+        }
+
+        return matchedByProductIdentifier
     }
 
     func trialEligibilityByProductIdentifier(for packages: [Package]) async -> [String: IntroEligibilityStatus] {

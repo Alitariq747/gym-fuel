@@ -14,6 +14,8 @@ struct SubscriptionPaywallSheet: View {
 
     private var features: [(emoji: String, title: String, detail: String)] {
         [
+            ("📊", "500 AI scans a month",
+             "About 16 a day, on both monthly and yearly plans — plenty to log every meal and workout."),
             ("🥗", "Food logging", "Log meals with text or photos in seconds."),
             ("🏋️", "Exercise logging", "Track workouts without breaking your flow."),
             ("⚡️", "Very low friction", "Built for quick logging throughout the day."),
@@ -100,7 +102,7 @@ struct SubscriptionPaywallSheet: View {
                 .frame(width: 88, height: 88)
                 .shadow(color: Color.liftEatsCoral.opacity(0.25), radius: 18, y: 10)
 
-            Text("Access LiftEats Entirely")
+            Text("Unlock LiftEats Pro")
                 .font(.system(size: 32, weight: .heavy, design: .rounded))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
@@ -212,15 +214,31 @@ struct SubscriptionPaywallSheet: View {
 
     @ViewBuilder
     private var packageOptions: some View {
-        if subscriptionViewModel.isLoading {
+        if subscriptionViewModel.isLoadingPackages {
             ProgressView()
                 .padding(.vertical, 28)
         } else if subscriptionViewModel.paywallPackages.isEmpty {
-            Text("Subscription options are unavailable. Please try again.")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.vertical, 20)
+            VStack(spacing: 12) {
+                Text("Subscription options are unavailable. Please try again.")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Button {
+                    Task {
+                        await subscriptionViewModel.loadPaywallPackages()
+                    }
+                } label: {
+                    Text("Retry")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 8)
+                        .background(Color(.secondarySystemBackground), in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 20)
         } else {
             VStack(spacing: 10) {
                 ForEach(subscriptionViewModel.paywallPackages, id: \.identifier) { package in
@@ -321,7 +339,7 @@ struct SubscriptionPaywallSheet: View {
         .buttonStyle(.plain)
         .disabled(
             selectedPackage == nil ||
-            subscriptionViewModel.isLoading ||
+            subscriptionViewModel.isLoadingPackages ||
             subscriptionViewModel.isPurchasing ||
             subscriptionViewModel.isRestoring
         )
@@ -358,9 +376,9 @@ struct SubscriptionPaywallSheet: View {
         let isYearly = package.storeProduct.productIdentifier == RevenueCatConfig.proYearlyProductIdentifier
 
         if subscriptionViewModel.isEligibleForTrial(package) {
-            return "3-day free trial, then \(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal."
+            return "3-day free trial, then \(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings."
         }
 
-        return "\(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal."
+        return "\(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings."
     }
 }

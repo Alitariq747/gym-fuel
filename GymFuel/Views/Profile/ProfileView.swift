@@ -158,7 +158,7 @@ struct ProfileView: View {
                                 ProfileReminderSection(preferredColorScheme: preferredColorScheme)
                                 ProfileSubscriptionSection(
                                     status: subscriptionViewModel.status,
-                                    isLoading: subscriptionViewModel.isLoading,
+                                    isSyncingStatus: subscriptionViewModel.isSyncingStatus,
                                     onOpenPaywall: {
                                         subscriptionViewModel.clearError()
                                         showSubscriptionPaywall = true

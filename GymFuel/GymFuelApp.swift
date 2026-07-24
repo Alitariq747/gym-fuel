@@ -25,6 +25,10 @@ struct GymFuelApp: App {
         AppCheck.setAppCheckProviderFactory(LiftEatsAppCheckProviderFactory())
         FirebaseApp.configure()
         SubscriptionService.shared.configureIfNeeded()
+
+        Task.detached {
+            _ = try? await SubscriptionService.shared.paywallPackages()
+        }
     }
     var body: some Scene {
         WindowGroup {
