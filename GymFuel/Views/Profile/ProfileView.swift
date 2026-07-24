@@ -338,7 +338,7 @@ struct ProfileView: View {
                     .font(.title3.weight(.bold))
                     .multilineTextAlignment(.center)
 
-                Text("This permanently removes your LiftEats account, profile, saved meals, and logged history. This action cannot be undone.")
+                Text("This permanently removes your LiftEats account, profile, saved meals, and logged history. This action cannot be undone.\n\nDeleting your LiftEats account does not cancel an Apple subscription. Manage or cancel your subscription through Apple before deleting your account.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
