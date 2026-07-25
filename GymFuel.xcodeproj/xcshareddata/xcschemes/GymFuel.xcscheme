@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "30BA6F962EE44A5100DD124D"
-               BuildableName = "GymFuel.app"
+               BuildableName = "LiftEats.app"
                BlueprintName = "GymFuel"
                ReferencedContainer = "container:GymFuel.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "30BA6F962EE44A5100DD124D"
-            BuildableName = "GymFuel.app"
+            BuildableName = "LiftEats.app"
             BlueprintName = "GymFuel"
             ReferencedContainer = "container:GymFuel.xcodeproj">
          </BuildableReference>
@@ -68,7 +68,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "30BA6F962EE44A5100DD124D"
-            BuildableName = "GymFuel.app"
+            BuildableName = "LiftEats.app"
             BlueprintName = "GymFuel"
             ReferencedContainer = "container:GymFuel.xcodeproj">
          </BuildableReference>

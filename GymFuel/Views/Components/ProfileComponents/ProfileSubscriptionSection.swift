@@ -25,10 +25,12 @@ struct ProfileSubscriptionSection: View {
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.primary)
 
-                        Text(ProfileSubscriptionCopy.subtitle(for: status))
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if let subtitle = ProfileSubscriptionCopy.subtitle(for: status) {
+                            Text(subtitle)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
 
                     Spacer(minLength: 12)
@@ -36,8 +38,8 @@ struct ProfileSubscriptionSection: View {
                     if isSyncingStatus {
                         ProgressView()
                             .controlSize(.small)
-                    } else {
-                        Text(ProfileSubscriptionCopy.badge(for: status))
+                    } else if let badge = ProfileSubscriptionCopy.badge(for: status) {
+                        Text(badge)
                             .font(.caption.weight(.bold))
                             .foregroundStyle(statusTint)
                             .padding(.horizontal, 10)
@@ -93,7 +95,7 @@ private enum ProfileSubscriptionCopy {
     static func title(for status: SubscriptionStatus) -> String {
         switch status.state {
         case .free:
-            return "Go Pro"
+            return "Get LiftEats Pro"
         case .trial:
             return "Pro trial active"
         case .active:
@@ -108,33 +110,19 @@ private enum ProfileSubscriptionCopy {
         }
     }
 
-    static func subtitle(for status: SubscriptionStatus) -> String {
+    static func subtitle(for status: SubscriptionStatus) -> String? {
         switch status.state {
         case .free:
             return "Unlock AI meal and workout logging"
-        case .trial:
-            if status.isCancelledButActive, let expirationDate = status.expirationDate {
-                return "Trial ends \(formattedDate(expirationDate)) · Won't renew · Tap to resubscribe"
-            }
-            if let expirationDate = status.expirationDate {
-                return "Trial ends \(formattedDate(expirationDate)) · Tap to manage"
-            }
-            return "Trial active · Tap to manage"
-        case .active:
-            if status.isCancelledButActive, let expirationDate = status.expirationDate {
-                return "Active until \(formattedDate(expirationDate)) · Tap to resubscribe"
-            }
-            if let expirationDate = status.expirationDate {
-                return "Renews \(formattedDate(expirationDate)) · Tap to manage"
-            }
-            return "Tap to manage"
+        case .trial, .active:
+            return nil
         }
     }
 
-    static func badge(for status: SubscriptionStatus) -> String {
+    static func badge(for status: SubscriptionStatus) -> String? {
         switch status.state {
         case .free:
-            return "Free"
+            return nil
         case .trial:
             return "Trial"
         case .active:
@@ -144,9 +132,5 @@ private enum ProfileSubscriptionCopy {
 
     static func actionLabel(for status: SubscriptionStatus) -> String {
         status.hasProAccess ? "Manage" : "Upgrade"
-    }
-
-    private static func formattedDate(_ date: Date) -> String {
-        date.formatted(.dateTime.month(.abbreviated).day().year())
     }
 }

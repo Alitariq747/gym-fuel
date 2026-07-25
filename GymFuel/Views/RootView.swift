@@ -13,6 +13,8 @@ struct RootView: View {
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
     @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @StateObject private var savedMealsViewModel = SavedMealsViewModel()
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var didEnterBackground = false
  
         
     
@@ -46,6 +48,26 @@ struct RootView: View {
             } else {
                 await subscriptionViewModel.syncUser(userId: nil)
                 profileViewModel.clear()
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .background:
+                didEnterBackground = true
+            case .active:
+                guard didEnterBackground else { return }
+                didEnterBackground = false
+
+                guard authManager.user != nil else { return }
+                guard !subscriptionViewModel.isSyncingStatus,
+                      !subscriptionViewModel.isPurchasing,
+                      !subscriptionViewModel.isRestoring else { return }
+
+                Task {
+                    await subscriptionViewModel.refreshCustomerInfo()
+                }
+            default:
+                break
             }
         }
     }

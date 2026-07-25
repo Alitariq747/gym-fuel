@@ -301,12 +301,6 @@ struct ProfileView: View {
 
     @MainActor
     private func openManageSubscriptions() async {
-        defer {
-            Task {
-                await subscriptionViewModel.refreshCustomerInfo()
-            }
-        }
-
         guard let windowScene = activeWindowScene() else {
             openURL(appStoreSubscriptionsURL)
             return
@@ -316,6 +310,11 @@ struct ProfileView: View {
             try await AppStore.showManageSubscriptions(in: windowScene)
         } catch {
             openURL(appStoreSubscriptionsURL)
+            return
+        }
+
+        Task {
+            await subscriptionViewModel.refreshCustomerInfo()
         }
     }
 

@@ -15,7 +15,7 @@ struct SubscriptionPaywallSheet: View {
     private var features: [(emoji: String, title: String, detail: String)] {
         [
             ("📊", "500 AI scans a month",
-             "About 16 a day, on both monthly and yearly plans — plenty to log every meal and workout."),
+             "About 16 a day, on both monthly and yearly plans — plenty to log and reinterpret every meal and workout."),
             ("🥗", "Food logging", "Log meals with text or photos in seconds."),
             ("🏋️", "Exercise logging", "Track workouts without breaking your flow."),
             ("⚡️", "Very low friction", "Built for quick logging throughout the day."),
@@ -381,4 +381,9 @@ struct SubscriptionPaywallSheet: View {
 
         return "\(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings."
     }
+}
+
+#Preview("SE") {
+    SubscriptionPaywallSheet()
+        .environmentObject(SubscriptionViewModel())
 }

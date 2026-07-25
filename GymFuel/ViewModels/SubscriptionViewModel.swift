@@ -182,38 +182,39 @@ final class SubscriptionViewModel: ObservableObject {
         isPurchasing = true
         errorMessage = nil
 
+        let result: SubscriptionPurchaseResult
         do {
-            let result = try await service.purchase(package: package)
-
-            if result.userCancelled {
-                isPurchasing = false
-                return false
-            }
-
-            let purchaseStatus = service.status(from: result.customerInfo)
-            guard purchaseStatus.hasProAccess else {
-                errorMessage = "Purchase completed, but Pro access was not activated. Please try Restore Subscription."
-                isPurchasing = false
-                return false
-            }
-
-            applyStatus(purchaseStatus)
-
-            let didSyncBackend = await syncBackendSubscriptionIfNeeded()
-            if !didSyncBackend {
-                errorMessage = "Your subscription is active, but we couldn't sync AI access yet. Please try Refresh or Restore."
-            }
-
-            isPurchasing = false
-            return true
+            result = try await service.purchase(package: package)
         } catch {
             errorMessage = AppErrorMessage.message(
                 for: error,
-                fallback: "Purchase completed, but we couldn't activate access yet. Please try Restore Subscription."
+                fallback: "We couldn't complete the purchase. Please check your connection and try again."
             )
             isPurchasing = false
             return false
         }
+
+        if result.userCancelled {
+            isPurchasing = false
+            return false
+        }
+
+        let purchaseStatus = service.status(from: result.customerInfo)
+        guard purchaseStatus.hasProAccess else {
+            errorMessage = "Purchase completed, but Pro access was not activated. Please try Restore Subscription."
+            isPurchasing = false
+            return false
+        }
+
+        applyStatus(purchaseStatus)
+
+        let didSyncBackend = await syncBackendSubscriptionIfNeeded()
+        if !didSyncBackend {
+            errorMessage = "Your subscription is active, but we couldn't sync AI access yet. Please try Refresh or Restore."
+        }
+
+        isPurchasing = false
+        return true
     }
 
     func restorePurchases() async -> Bool {
