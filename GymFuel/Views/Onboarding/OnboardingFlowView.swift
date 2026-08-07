@@ -62,6 +62,10 @@ private enum OnboardingStep: Hashable {
 }
 
 struct OnboardingFlowView: View {
+    /// Name already supplied by the sign-in provider. Empty when none is available.
+    var prefilledName: String = ""
+    /// Whether to ask for a name. Only email/password accounts have no provider-supplied name.
+    var showsNameStep: Bool = true
     /// Called when the last step finishes successfully.
     let onFinished: (String, Gender, Int, Double, Double, GoalType, NonTrainingActivityLevel) -> Void
 
@@ -72,10 +76,12 @@ struct OnboardingFlowView: View {
 
     // MARK: - Step order + progress
 
-    private let orderedSteps: [OnboardingStep] = [
-        .liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer, .name, .gender, .age, .height, .weight,
-        .activityLevel, .goal, .loggingTips, .summary
-    ]
+    private var orderedSteps: [OnboardingStep] {
+        var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer]
+        if showsNameStep { steps.append(.name) }
+        steps += [.gender, .age, .height, .weight, .activityLevel, .goal, .loggingTips, .summary]
+        return steps
+    }
 
     private var currentIndex: Int {
         orderedSteps.firstIndex(of: step) ?? 0
@@ -141,6 +147,7 @@ struct OnboardingFlowView: View {
         case .name:
             OnboardingNameStepView(
                 onNext: { go(to: .gender, direction: .forward) },
+                onSkip: { go(to: .gender, direction: .forward) },
                 name: $data.name
             )
 
@@ -157,7 +164,7 @@ struct OnboardingFlowView: View {
         case .goalFitScoreExplainer:
             GoalFitScoreExplainerSheet(
                 primaryButtonTitle: "Next",
-                onPrimaryAction: { go(to: .name, direction: .forward) }
+                onPrimaryAction: { go(to: showsNameStep ? .name : .gender, direction: .forward) }
             )
 
         case .gender:
@@ -278,6 +285,11 @@ struct OnboardingFlowView: View {
             .navigationBarBackButtonHidden(true)
             .onAppear {
                 FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: step.analyticsName)
+            }
+            .task(id: prefilledName) {
+                let trimmed = prefilledName.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty, data.name.isEmpty else { return }
+                data.name = trimmed
             }
             .onChange(of: step) { _, newStep in
                 FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: newStep.analyticsName)

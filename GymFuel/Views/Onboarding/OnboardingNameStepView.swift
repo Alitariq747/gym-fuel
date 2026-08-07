@@ -11,6 +11,7 @@ struct OnboardingNameStepView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     let onNext: () -> Void
+    let onSkip: () -> Void
     @Binding var name: String
     
     @State private var errorMessage: String?
@@ -58,8 +59,17 @@ struct OnboardingNameStepView: View {
                     .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
-            
-           
+
+            Button {
+                onSkip()
+            } label: {
+                Text("Skip")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.plain)
+
         }
             .padding()
         }
@@ -92,5 +102,5 @@ struct OnboardingNameStepView: View {
 }
 
 #Preview {
-    OnboardingNameStepView(onNext: { print("next")}, name: .constant(""))
+    OnboardingNameStepView(onNext: { print("next")}, onSkip: { print("skip")}, name: .constant(""))
 }

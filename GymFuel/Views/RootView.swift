@@ -27,7 +27,11 @@ struct RootView: View {
                         MainTabView(profile: profile)
                             .environmentObject(savedMealsViewModel)
                     } else {
-                        OnboardingFlowView { name, gender, age, heightCm, weightKg, goalType, nonTrainingActivityLevel in
+                        OnboardingFlowView(
+                            prefilledName: authManager.user?.displayName ?? "",
+                            showsNameStep: authManager.signInProviderIDs.contains("password")
+                                && (authManager.user?.displayName ?? "").isEmpty
+                        ) { name, gender, age, heightCm, weightKg, goalType, nonTrainingActivityLevel in
                             Task {
                                 guard let uid = authManager.user?.uid else { return }
                                 await profileViewModel.completeOnboarding(for: uid, name: name, gender: gender, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel)

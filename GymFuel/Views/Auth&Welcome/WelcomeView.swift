@@ -135,7 +135,11 @@ struct WelcomeView: View {
             guard let rawNonce = appleNonce else {
                 throw AuthManagerError.unknown
             }
-            try await authManager.signInWithApple(idTokenString: tokenString, rawNonce: rawNonce)
+            try await authManager.signInWithApple(
+                idTokenString: tokenString,
+                rawNonce: rawNonce,
+                fullName: credential.fullName
+            )
         } catch {
             if let authError = error as? AuthManagerError {
                 if authError == .operationCancelled { return }

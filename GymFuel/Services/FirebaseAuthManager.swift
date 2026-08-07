@@ -43,8 +43,13 @@ final class FirebaseAuthManager: ObservableObject {
         }
     }
     
-   
-    
+
+    /// Identifiers of the providers backing the current account, e.g. "password",
+    /// "google.com", "apple.com".
+    var signInProviderIDs: Set<String> {
+        Set(user?.providerData.map(\.providerID) ?? [])
+    }
+
     func signUp(email: String, password: String) async throws {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
@@ -126,7 +131,11 @@ final class FirebaseAuthManager: ObservableObject {
         }
     }
 
-    func signInWithApple(idTokenString: String, rawNonce: String) async throws {
+    func signInWithApple(
+        idTokenString: String,
+        rawNonce: String,
+        fullName: PersonNameComponents? = nil
+    ) async throws {
         let credential = OAuthProvider.credential(
             providerID: .apple,
             idToken: idTokenString,
@@ -135,6 +144,24 @@ final class FirebaseAuthManager: ObservableObject {
 
         do {
             let authResult = try await Auth.auth().signIn(with: credential)
+
+            // Apple only sends the name on the first authorization, so persist it now
+            // instead of asking the user to type it again. Committed before `user` is
+            // published so observers never see a signed-in user with a blank name.
+            if let fullName,
+               (authResult.user.displayName ?? "")
+                   .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                let formatted = PersonNameComponentsFormatter
+                    .localizedString(from: fullName, style: .default)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                if !formatted.isEmpty {
+                    let request = authResult.user.createProfileChangeRequest()
+                    request.displayName = formatted
+                    try? await request.commitChanges()
+                }
+            }
+
             self.user = authResult.user
             FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "apple")
         } catch {
