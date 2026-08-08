@@ -17,6 +17,7 @@ struct ProfileView: View {
     @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @Environment(\.colorScheme) private var colorScheme
     
     @State private var draft: UserProfileDraft? = nil
     @State private var signOutError: String?
@@ -415,9 +416,6 @@ struct ProfileView: View {
     private var canSave: Bool {
         guard let profile = profileVm.profile, let draft else { return false }
 
-        let trimmed = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
-
         return isDirty(draft: draft, profile: profile) && !profileVm.isSaving
     }
 
@@ -520,7 +518,10 @@ struct ProfileView: View {
                 } onCompletion: { result in
                     Task { await handleAppleReauthForDelete(result) }
                 }
+                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                 .frame(height: 48)
+                .frame(maxWidth: .infinity)
+                .id(colorScheme)
 
                 Button("Cancel", role: .cancel) {
                     showAppleReauthSheet = false

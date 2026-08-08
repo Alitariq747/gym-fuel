@@ -55,18 +55,15 @@ struct WelcomeView: View {
                 } onCompletion: { result in
                     Task { await handleAppleSignIn(result) }
                 }
+                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                 .frame(height: 48)
                 .frame(maxWidth: .infinity)
-                .opacity(0.02)
-                .overlay(
-                    socialButtonLabel(
-                        icon: appleIcon,
-                        text: isAppleLoading ? "Connecting…" : "Continue with Apple",
-                        isLoading: isAppleLoading
-                    )
-                    .allowsHitTesting(false)
-                )
                 .disabled(isAppleLoading)
+                // ASAuthorizationAppleIDButton fixes its style at init, so SwiftUI does
+                // not restyle it when the appearance changes. Without a new identity a
+                // light-mode button stays black after a switch to dark, leaving it
+                // invisible against the black background.
+                .id(colorScheme)
 
                 Button {
                     Task { await handleGoogleSignIn() }
@@ -91,12 +88,20 @@ struct WelcomeView: View {
                     onSignUp()
                 } label: {
                     Text("Sign up")
-                        .font(.headline).bold()
-                        .foregroundStyle(.white)
+                        .font(.system(size: 19, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                         .frame(height: 48)
                         .frame(maxWidth: .infinity)
-                        .background(colorScheme == .light ? Color.black : Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(colorScheme == .dark ? Color(.secondarySystemBackground) : .black, lineWidth: 1))
+                        .background(
+                            RoundedRectangle(cornerRadius: buttonCornerRadius)
+                                .fill(socialBackground)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: buttonCornerRadius)
+                                .strokeBorder(socialBorder, lineWidth: 1)
+                        )
                 }
                 .buttonStyle(.plain)
 
@@ -183,6 +188,11 @@ struct WelcomeView: View {
         }
     }
 
+    /// Measured off the native Sign in with Apple button, whose corner radius cannot be
+    /// enlarged from SwiftUI: a 6pt *circular* corner, not a continuous squircle. Every
+    /// custom button on this screen matches it so the stack reads as one control group.
+    private let buttonCornerRadius: CGFloat = 6
+
     private var socialBackground: Color {
         colorScheme == .light ? Color(.systemBackground) : Color(.secondarySystemBackground)
     }
@@ -192,53 +202,38 @@ struct WelcomeView: View {
     }
 
     private var googleIcon: some View {
-        Text("G")
-            .font(.title3.weight(.bold))
-            .foregroundStyle(.white)
-            .frame(width: 26, height: 26)
-            .background(Color.liftEatsCoral, in: Circle())
-    }
-
-    private var appleIcon: some View {
-        let bg = colorScheme == .dark ? Color.white.opacity(0.9) : Color.black
-        let fg = colorScheme == .dark ? Color.black : Color.white
-        return Image(systemName: "applelogo")
-            .font(.headline.weight(.semibold))
-            .foregroundStyle(fg)
-            .frame(width: 26, height: 26)
-            .background(bg, in: Circle())
+        Image("GoogleLogo")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 18, height: 18)
     }
 
     private func socialButtonLabel(icon: some View, text: String, isLoading: Bool) -> some View {
-        ZStack {
-            HStack(spacing: 10) {
+        HStack(spacing: 8) {
+            if isLoading {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(width: 18, height: 18)
+            } else {
                 icon
-
-                Spacer()
-
-                if isLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Color.clear
-                        .frame(width: 16, height: 16)
-                }
             }
 
             Text(text)
-                .font(.headline)
+                .font(.system(size: 19, weight: .medium))
                 .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
         .frame(height: 48)
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: buttonCornerRadius)
                 .fill(socialBackground)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(socialBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: buttonCornerRadius)
+                .strokeBorder(socialBorder, lineWidth: 1)
         )
     }
 }
