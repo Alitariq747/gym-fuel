@@ -71,8 +71,6 @@ struct OnboardingFlowView: View {
 
     @State private var data = OnboardingData()
     @State private var step: OnboardingStep = .liftEatsIntro
-    @State private var showSubscriptionPaywall = false
-    @State private var shouldFinishAfterPaywallDismiss = false
 
     // MARK: - Step order + progress
 
@@ -223,16 +221,10 @@ struct OnboardingFlowView: View {
                     weightKg: weight,
                     goalType: goalType,
                     activityLevel: activityLevel,
-                    onStartTracking: presentPaywallBeforeFinishing
+                    onStartTracking: finishOnboarding
                 )
             }
         }
-    }
-
-    private func presentPaywallBeforeFinishing() {
-        FirebaseTelemetryService.logOnboardingEvent("paywall_presented", step: step.analyticsName)
-        shouldFinishAfterPaywallDismiss = true
-        showSubscriptionPaywall = true
     }
 
     private func finishOnboarding() {
@@ -293,14 +285,6 @@ struct OnboardingFlowView: View {
             }
             .onChange(of: step) { _, newStep in
                 FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: newStep.analyticsName)
-            }
-            .sheet(isPresented: $showSubscriptionPaywall, onDismiss: {
-                if shouldFinishAfterPaywallDismiss {
-                    shouldFinishAfterPaywallDismiss = false
-                    finishOnboarding()
-                }
-            }) {
-                SubscriptionPaywallSheet()
             }
         }
     }

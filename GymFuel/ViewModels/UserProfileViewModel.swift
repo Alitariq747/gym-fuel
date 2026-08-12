@@ -64,7 +64,6 @@ final class UserProfileViewModel: ObservableObject {
                 for: error,
                 fallback: "We couldn't finish setting up your profile. Please try again."
             )
-            self.profile = nil
         }
         isLoading = false
     }

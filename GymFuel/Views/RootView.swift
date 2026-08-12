@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+/// The onboarding answers held in memory while the profile save is in flight,
+/// so a failed save can be retried without re-asking the user.
+private struct PendingOnboarding {
+    let name: String
+    let gender: Gender
+    let age: Int
+    let heightCm: Double
+    let weightKg: Double
+    let goalType: GoalType
+    let activityLevel: NonTrainingActivityLevel
+}
+
 struct RootView: View {
     
     @EnvironmentObject private var authManager: FirebaseAuthManager
@@ -15,6 +27,49 @@ struct RootView: View {
     @StateObject private var savedMealsViewModel = SavedMealsViewModel()
     @Environment(\.scenePhase) private var scenePhase
     @State private var didEnterBackground = false
+    @State private var showPostOnboardingPaywall = false
+    @State private var isFinishingOnboarding = false
+    @State private var pendingOnboarding: PendingOnboarding?
+
+    private var onboardingSaveFailed: Binding<Bool> {
+        Binding(
+            get: {
+                pendingOnboarding != nil
+                    && !isFinishingOnboarding
+                    && profileViewModel.errorMessage != nil
+            },
+            set: { presented in
+                if !presented { profileViewModel.errorMessage = nil }
+            }
+        )
+    }
+
+    @MainActor
+    private func saveOnboarding(_ pending: PendingOnboarding) {
+        guard let uid = authManager.user?.uid else { return }
+
+        pendingOnboarding = pending
+        isFinishingOnboarding = true
+
+        Task {
+            await profileViewModel.completeOnboarding(
+                for: uid, name: pending.name, gender: pending.gender,
+                heightCm: pending.heightCm, age: pending.age, weightKg: pending.weightKg,
+                goalType: pending.goalType, nonTrainingActivityLevel: pending.activityLevel
+            )
+
+            isFinishingOnboarding = false
+
+            if profileViewModel.profile?.isOnboardingComplete == true {
+                pendingOnboarding = nil
+
+                if !subscriptionViewModel.hasProAccess {
+                    FirebaseTelemetryService.logOnboardingEvent("paywall_presented")
+                    showPostOnboardingPaywall = true
+                }
+            }
+        }
+    }
  
         
     
@@ -32,10 +87,32 @@ struct RootView: View {
                             showsNameStep: authManager.signInProviderIDs.contains("password")
                                 && (authManager.user?.displayName ?? "").isEmpty
                         ) { name, gender, age, heightCm, weightKg, goalType, nonTrainingActivityLevel in
-                            Task {
-                                guard let uid = authManager.user?.uid else { return }
-                                await profileViewModel.completeOnboarding(for: uid, name: name, gender: gender, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel)
+                            saveOnboarding(
+                                PendingOnboarding(
+                                    name: name, gender: gender, age: age,
+                                    heightCm: heightCm, weightKg: weightKg,
+                                    goalType: goalType, activityLevel: nonTrainingActivityLevel
+                                )
+                            )
+                        }
+                        .overlay {
+                            if isFinishingOnboarding {
+                                AppLoadingView()
+                                    .ignoresSafeArea()
+                                    .transition(.opacity)
                             }
+                        }
+                        .animation(.easeInOut(duration: 0.2), value: isFinishingOnboarding)
+                        .alert(
+                            "We couldn't finish setting up your profile",
+                            isPresented: onboardingSaveFailed
+                        ) {
+                            Button("Try Again") {
+                                if let pending = pendingOnboarding { saveOnboarding(pending) }
+                            }
+                            Button("Cancel", role: .cancel) { }
+                        } message: {
+                            Text(profileViewModel.errorMessage ?? "Please try again.")
                         }
                     }
                 } else if profileViewModel.isLoading {
@@ -43,6 +120,9 @@ struct RootView: View {
                 } else {
                     AppLoadingView()
                 }
+        }
+        .sheet(isPresented: $showPostOnboardingPaywall) {
+            SubscriptionPaywallSheet()
         }
         .task(id: authManager.user?.uid) {
             if let user = authManager.user {
