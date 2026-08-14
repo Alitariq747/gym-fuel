@@ -29,6 +29,7 @@ struct ProfileView: View {
     @State private var showAppleReauthSheet: Bool = false
     @State private var showSavedMealsSheet: Bool = false
     @State private var showGoalFitExplainerSheet: Bool = false
+    @State private var showNutritionSourcesSheet: Bool = false
     @State private var showSubscriptionPaywall: Bool = false
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
@@ -182,7 +183,8 @@ struct ProfileView: View {
                                 ProfileLegalSection(
                                     privacyURL: privacyURL,
                                     termsURL: termsURL,
-                                    supportURL: supportURL
+                                    supportURL: supportURL,
+                                    onOpenNutritionSources: { showNutritionSourcesSheet = true }
                                 )
                                   
                                 
@@ -296,6 +298,10 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showGoalFitExplainerSheet) {
             GoalFitScoreExplainerSheet(primaryButtonTitle: "Done")
+                .preferredColorScheme(preferredColorScheme)
+        }
+        .sheet(isPresented: $showNutritionSourcesSheet) {
+            NutritionSourcesView(primaryButtonTitle: "Done")
                 .preferredColorScheme(preferredColorScheme)
         }
     }

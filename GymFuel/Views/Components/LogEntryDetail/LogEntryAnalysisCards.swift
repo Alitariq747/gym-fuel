@@ -3,6 +3,7 @@ import SwiftUI
 struct LiftEatsAnalysisCard: View {
     let explanation: String
     @Environment(\.colorScheme) private var colorScheme
+    @State private var showNutritionSources = false
 
     private var cardBackground: Color {
         colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
@@ -30,11 +31,40 @@ struct LiftEatsAnalysisCard: View {
                 .font(.subheadline)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Divider()
+
+            Button {
+                showNutritionSources = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "books.vertical.fill")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.fuelBlue)
+                        .frame(width: 24, height: 24)
+                        .background(Color.fuelBlue.opacity(colorScheme == .dark ? 0.18 : 0.12), in: Circle())
+
+                    Text("AI estimate · How this works & sources")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    Spacer(minLength: 4)
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(cardStroke, lineWidth: 1))
+        .sheet(isPresented: $showNutritionSources) {
+            NutritionSourcesView()
+        }
     }
 }
 

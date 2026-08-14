@@ -65,6 +65,7 @@ struct GoalFitScoreExplainerSheet: View {
                     scoreHero
                     factorList
                     scoringGuardrail
+                    NutritionSourcesLinkButton(title: "Where these factors come from")
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 18)

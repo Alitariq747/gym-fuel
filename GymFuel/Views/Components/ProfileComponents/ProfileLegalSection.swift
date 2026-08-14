@@ -4,6 +4,7 @@ struct ProfileLegalSection: View {
     let privacyURL: URL?
     let termsURL: URL?
     let supportURL: URL?
+    let onOpenNutritionSources: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -12,6 +13,8 @@ struct ProfileLegalSection: View {
             ProfileSectionHeader(title: "Legal", systemImage: "doc.text")
 
             VStack(spacing: 10) {
+                buttonRow(title: "Nutrition Sources & Methodology", systemImage: "books.vertical.fill", action: onOpenNutritionSources)
+                Divider()
                 linkRow(title: "Privacy Policy", systemImage: "hand.raised.fill", url: privacyURL)
                 Divider()
                 linkRow(title: "Terms of Service", systemImage: "checkmark.seal.fill", url: termsURL)
@@ -32,8 +35,8 @@ struct ProfileLegalSection: View {
         .opacity(0.92)
     }
 
-    private func linkRow(title: String, systemImage: String, url: URL?) -> some View {
-        let rowContent = HStack {
+    private func rowContent(title: String, systemImage: String) -> some View {
+        HStack {
             HStack(spacing: 10) {
                 Image(systemName: systemImage)
                     .font(.subheadline.weight(.semibold))
@@ -53,15 +56,24 @@ struct ProfileLegalSection: View {
                 .padding(.leading, 6)
         }
         .contentShape(Rectangle())
+    }
 
-        return Group {
+    private func linkRow(title: String, systemImage: String, url: URL?) -> some View {
+        Group {
             if let url {
                 Link(destination: url) {
-                    rowContent
+                    rowContent(title: title, systemImage: systemImage)
                 }
             } else {
-                rowContent
+                rowContent(title: title, systemImage: systemImage)
             }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func buttonRow(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            rowContent(title: title, systemImage: systemImage)
         }
         .buttonStyle(.plain)
     }

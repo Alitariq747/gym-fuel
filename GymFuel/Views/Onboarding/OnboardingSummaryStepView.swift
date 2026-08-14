@@ -65,6 +65,8 @@ struct OnboardingSummaryStepView: View {
             .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .onboardingSummaryAppearance(isVisible: hasAppeared, order: 2)
 
+            NutritionSourcesLinkButton(title: "How these targets are calculated")
+                .onboardingSummaryAppearance(isVisible: hasAppeared, order: 3)
 
             Spacer()
 
@@ -77,7 +79,7 @@ struct OnboardingSummaryStepView: View {
                     .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
-            .onboardingSummaryAppearance(isVisible: hasAppeared, order: 3)
+            .onboardingSummaryAppearance(isVisible: hasAppeared, order: 4)
         }
             .padding()
         }
