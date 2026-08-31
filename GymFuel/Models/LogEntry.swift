@@ -22,12 +22,24 @@ enum LogEntrySource: String, Codable, Equatable, Hashable, Sendable {
     case text
     case image
     case savedMeal
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = LogEntrySource(rawValue: rawValue) ?? .text
+    }
 }
 
 enum LogEntryStatus: String, Codable, Equatable, Hashable, Sendable {
     case analyzing
     case failed
     case succeeded
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = LogEntryStatus(rawValue: rawValue) ?? .succeeded
+    }
 }
 
 struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {

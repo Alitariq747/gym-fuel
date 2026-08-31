@@ -7,16 +7,6 @@
 
 import SwiftUI
 
-private struct OnboardingData {
-    var name: String = ""
-    var gender: Gender = .preferNotToSay
-    var age: Int? = nil
-    var heightCm: Double? = nil
-    var weightKg: Double? = nil
-    var goalType: GoalType? = nil
-    var nonTrainingActivityLevel: NonTrainingActivityLevel? = nil
-}
-
 private enum OnboardingStep: Hashable {
     case name
     case liftEatsIntro
@@ -67,9 +57,9 @@ struct OnboardingFlowView: View {
     /// Whether to ask for a name. Only email/password accounts have no provider-supplied name.
     var showsNameStep: Bool = true
     /// Called when the last step finishes successfully.
-    let onFinished: (String, Gender, Int, Double, Double, GoalType, NonTrainingActivityLevel) -> Void
+    let onFinished: (OnboardingAnswers) -> Void
 
-    @State private var data = OnboardingData()
+    @State private var data = OnboardingAnswers()
     @State private var step: OnboardingStep = .liftEatsIntro
 
     // MARK: - Step order + progress
@@ -228,19 +218,18 @@ struct OnboardingFlowView: View {
     }
 
     private func finishOnboarding() {
+        // Guard that every required answer is present before finishing. The summary
+        // step only renders once these are set, so this is a safety net.
         guard
-            let age = data.age,
-            let height = data.heightCm,
-            let weight = data.weightKg,
-            let goalType = data.goalType,
-            let activityLevel = data.nonTrainingActivityLevel
+            data.age != nil,
+            data.heightCm != nil,
+            data.weightKg != nil,
+            data.goalType != nil,
+            data.nonTrainingActivityLevel != nil
         else { return }
 
         FirebaseTelemetryService.logOnboardingEvent("finish_tapped", step: step.analyticsName)
-        onFinished(
-            data.name, data.gender, age, height, weight,
-            goalType, activityLevel
-        )
+        onFinished(data)
     }
 
 
@@ -291,8 +280,8 @@ struct OnboardingFlowView: View {
 }
 
 #Preview {
-    OnboardingFlowView { name, gender, age, height, weight, goalType, activityLevel in
-        print("Finished onboarding with:", name, gender, age, height, weight, goalType, activityLevel)
+    OnboardingFlowView { answers in
+        print("Finished onboarding with:", answers)
     }
     .environmentObject(SubscriptionViewModel())
 }

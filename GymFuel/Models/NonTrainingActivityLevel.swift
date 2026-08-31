@@ -16,7 +16,13 @@ enum NonTrainingActivityLevel: String, CaseIterable, Codable {
     case mostlySitting = "mostly_sitting"
     case somewhatActive = "somewhat_active"
     case physicallyDemanding = "physically_demanding"
-    
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = NonTrainingActivityLevel(rawValue: rawValue) ?? .mostlySitting
+    }
+
     var displayName: String {
         switch self {
         case .mostlySitting:

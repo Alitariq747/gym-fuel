@@ -13,8 +13,6 @@ final class TimelineViewModel: ObservableObject {
     @Published var selectedDate: Date = .now
     @Published private(set) var timeline: DayTimeline = DayTimeline(date: .now)
     @Published private(set) var isLoading: Bool = false
-    @Published private(set) var loggedDaysInVisibleMonth: Set<Date> = []
-    @Published private(set) var isLoadingLoggedDays: Bool = false
     @Published private(set) var errorMessage: String?
     var consumedMacros: Macros {
         timeline.entries.reduce(.zero) { partial, entry in
@@ -104,31 +102,6 @@ final class TimelineViewModel: ObservableObject {
             }
         }
         replaceObservation(cancellation)
-    }
-
-    func loadLoggedDaysInVisibleMonth(
-        containing date: Date,
-        userId: String,
-        calendar: Calendar = .current
-    ) async {
-        guard let monthInterval = calendar.dateInterval(of: .month, for: date) else { return }
-
-        isLoadingLoggedDays = true
-        defer { isLoadingLoggedDays = false }
-
-        do {
-            let entries = try await service.fetchEntries(
-                for: userId,
-                from: monthInterval.start,
-                to: monthInterval.end
-            )
-            loggedDaysInVisibleMonth = Set(entries.map { calendar.startOfDay(for: $0.loggedAt) })
-        } catch {
-            errorMessage = AppErrorMessage.message(
-                for: error,
-                fallback: "We couldn't load your logged days."
-            )
-        }
     }
 
     func goToPreviousDay(userId: String, calendar: Calendar = .current) async {

@@ -10,7 +10,7 @@ import SwiftUI
 struct ProfileEditorView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
-    @Binding var draft: UserProfileDraft
+    @Binding var draft: UserProfile
     let email: String?
 
     private var preferredColorScheme: ColorScheme? {

@@ -12,6 +12,12 @@ enum GoalType: String, CaseIterable, Codable, Equatable {
     case maintain = "maintain"
     case cut = "cut"
 
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = GoalType(rawValue: rawValue) ?? .maintain
+    }
+
     var displayName: String {
         switch self {
         case .leanBulk:

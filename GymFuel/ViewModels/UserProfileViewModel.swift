@@ -49,13 +49,20 @@ final class UserProfileViewModel: ObservableObject {
         isLoading = false
     }
     
-    func completeOnboarding(for uid: String, name: String, gender: Gender, heightCm: Double, age: Int, weightKg: Double, goalType: GoalType, nonTrainingActivityLevel: NonTrainingActivityLevel) async {
-        
+    func completeOnboarding(for uid: String, answers: OnboardingAnswers) async {
+
         isLoading = true
         errorMessage = nil
-        
+
+        guard let profile = answers.toProfile(id: uid) else {
+            FirebaseTelemetryService.logOnboardingEvent("complete_failed")
+            self.errorMessage = "We couldn't finish setting up your profile. Please try again."
+            isLoading = false
+            return
+        }
+
         do {
-            let updatedProfile = try await service.updateProfile(for: uid, name: name, heightCm: heightCm, age: age, weightKg: weightKg, goalType: goalType, nonTrainingActivityLevel: nonTrainingActivityLevel, isOnboardingComplete: true, gender: gender)
+            let updatedProfile = try await service.updateProfile(profile)
             self.profile = updatedProfile
             FirebaseTelemetryService.logOnboardingEvent("complete_succeeded")
         } catch {
@@ -74,17 +81,20 @@ final class UserProfileViewModel: ObservableObject {
         errorMessage = nil
     }
     
-    func saveProfileEdits(for uid: String, draft: UserProfileDraft) async {
+    func saveProfileEdits(for uid: String, draft: UserProfile) async {
         isSaving = true
         defer { isSaving = false }
         errorMessage = nil
-        
+
         do {
             guard let currentProfile = self.profile else { return }
-            let onboarding = currentProfile.isOnboardingComplete
-            
-            let updatedProfile = try await service.updateProfile(for: uid, name: draft.name, heightCm: draft.heightCm, age: draft.age, weightKg: draft.weightKg, goalType: draft.goalType, nonTrainingActivityLevel: draft.nonTrainingActivityLevel, isOnboardingComplete: onboarding, gender: draft.gender)
-            
+
+            var profile = draft
+            profile.id = uid
+            profile.isOnboardingComplete = currentProfile.isOnboardingComplete
+
+            let updatedProfile = try await service.updateProfile(profile)
+
             self.profile = updatedProfile
         } catch {
             self.errorMessage = AppErrorMessage.message(

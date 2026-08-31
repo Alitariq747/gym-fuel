@@ -12,6 +12,12 @@ enum Gender: String, CaseIterable, Codable, Equatable {
     case female = "female"
     case preferNotToSay = "prefer_not_to_say"
 
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = Gender(rawValue: rawValue) ?? .preferNotToSay
+    }
+
     var displayName: String {
         switch self {
         case .male:
@@ -35,19 +41,12 @@ enum Gender: String, CaseIterable, Codable, Equatable {
     }
 }
 
-struct UserProfile: Identifiable, Equatable {
-    let id: String         
-    var name: String
-    var heightCm: Double?   
-    var age: Int?
-    var weightKg: Double?
-    var goalType: GoalType?
-    var nonTrainingActivityLevel: NonTrainingActivityLevel?
-    var isOnboardingComplete: Bool
-    var gender: Gender
-}
-
-struct UserProfileDocument: Codable, Equatable {
+/// The single source of truth for a user's profile — used both in-app and as the
+/// Firestore document body. `id` is the Firestore document ID and is never written
+/// as a field (it is excluded from `CodingKeys`); callers set it from the snapshot's
+/// `documentID` after decoding.
+struct UserProfile: Codable, Identifiable, Equatable {
+    var id: String = ""
     var name: String
     var heightCm: Double?
     var age: Int?
@@ -56,87 +55,75 @@ struct UserProfileDocument: Codable, Equatable {
     var nonTrainingActivityLevel: NonTrainingActivityLevel?
     var isOnboardingComplete: Bool
     var gender: Gender
-}
 
-extension UserProfile {
-    init(id: String, document: UserProfileDocument) {
-        self.id = id
-        self.name = document.name
-        self.heightCm = document.heightCm
-        self.age = document.age
-        self.weightKg = document.weightKg
-        self.goalType = document.goalType
-        self.nonTrainingActivityLevel = document.nonTrainingActivityLevel
-        self.isOnboardingComplete = document.isOnboardingComplete
-        self.gender = document.gender
+    /// Firestore field names. `id` is intentionally omitted so the document
+    /// identifier is never persisted as a field.
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case heightCm
+        case age
+        case weightKg
+        case goalType
+        case nonTrainingActivityLevel
+        case isOnboardingComplete
+        case gender
     }
 
-    var document: UserProfileDocument {
-        UserProfileDocument(
-            name: name,
-            heightCm: heightCm,
-            age: age,
-            weightKg: weightKg,
-            goalType: goalType,
-            nonTrainingActivityLevel: nonTrainingActivityLevel,
-            isOnboardingComplete: isOnboardingComplete,
-            gender: gender
-        )
-    }
-}
-
-let dummyProfile = UserProfile(id: "1111", name: "Ali", heightCm: 175, age: 38, weightKg: 83, goalType: .leanBulk, nonTrainingActivityLevel: .mostlySitting, isOnboardingComplete: true, gender: .male)
-
-struct UserProfileDraft: Equatable {
-    let id: String
-    var name: String
-    var heightCm: Double?
-    var age: Int?
-    var weightKg: Double?
-    var goalType: GoalType?
-    var nonTrainingActivityLevel: NonTrainingActivityLevel?
-    var isOnboardingComplete: Bool
-    var gender: Gender
-    
-    init(from profile: UserProfile) {
-        self.id = profile.id
-        self.name = profile.name
-        self.gender = profile.gender
-        self.heightCm = profile.heightCm
-        self.age = profile.age
-        self.weightKg = profile.weightKg
-        self.goalType = profile.goalType
-        self.nonTrainingActivityLevel = profile.nonTrainingActivityLevel
-        self.isOnboardingComplete = profile.isOnboardingComplete
-    }
-    
+    /// Trims user-entered text. Call before persisting.
     mutating func normalize() {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
-    func applying(to profile: UserProfile) -> UserProfile {
-        UserProfile(
-            id: profile.id,
+}
+
+/// In-memory onboarding answers. Never persisted. Every answer the user actively
+/// provides during onboarding is optional because it may not have been given yet.
+/// (`name` and `gender` keep non-optional defaults so the step views can bind to
+/// them directly, matching the previous onboarding data flow.)
+struct OnboardingAnswers {
+    var name: String = ""
+    var gender: Gender = .preferNotToSay
+    var age: Int? = nil
+    var heightCm: Double? = nil
+    var weightKg: Double? = nil
+    var goalType: GoalType? = nil
+    var nonTrainingActivityLevel: NonTrainingActivityLevel? = nil
+
+    /// Builds a completed profile, or `nil` if any required answer is missing.
+    func toProfile(id: String) -> UserProfile? {
+        guard
+            let age,
+            let heightCm,
+            let weightKg,
+            let goalType,
+            let nonTrainingActivityLevel
+        else { return nil }
+
+        return UserProfile(
+            id: id,
             name: name,
             heightCm: heightCm,
             age: age,
             weightKg: weightKg,
             goalType: goalType,
             nonTrainingActivityLevel: nonTrainingActivityLevel,
-            isOnboardingComplete: isOnboardingComplete,
+            isOnboardingComplete: true,
             gender: gender
         )
     }
 }
 
 #if DEBUG
-extension UserProfileDraft {
-    static var preview: UserProfileDraft {
-        var d = UserProfileDraft(from: dummyProfile)
-
-        d.name = "Ahmad (Preview) "
-
-        return d
-    }
+extension UserProfile {
+    static let preview = UserProfile(
+        id: "preview",
+        name: "Ahmad (Preview)",
+        heightCm: 175,
+        age: 38,
+        weightKg: 83,
+        goalType: .leanBulk,
+        nonTrainingActivityLevel: .mostlySitting,
+        isOnboardingComplete: true,
+        gender: .male
+    )
 }
 #endif

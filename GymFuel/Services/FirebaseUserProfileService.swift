@@ -19,9 +19,10 @@ final class FirebaseUserProfileService: @unchecked Sendable {
         return db.collection("users").document(uid)
     }
     
-    private func decodeProfileDocument(from snapshot: DocumentSnapshot) throws -> UserProfile {
-        let document = try snapshot.data(as: UserProfileDocument.self)
-        return UserProfile(id: snapshot.documentID, document: document)
+    private func decodeProfile(from snapshot: DocumentSnapshot) throws -> UserProfile {
+        var profile = try snapshot.data(as: UserProfile.self)
+        profile.id = snapshot.documentID
+        return profile
     }
     
     func fetchProfile(for uid: String) async throws -> UserProfile {
@@ -46,12 +47,12 @@ final class FirebaseUserProfileService: @unchecked Sendable {
            }
         
         if snapshot.exists {
-            return try decodeProfileDocument(from: snapshot)
+            return try decodeProfile(from: snapshot)
         } else {
             // create a default profile
             let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil, age: nil, weightKg: nil, goalType: nil, nonTrainingActivityLevel: nil, isOnboardingComplete: false, gender: .preferNotToSay)
-            
-            var data = try Firestore.Encoder().encode(defaultProfile.document)
+
+            var data = try Firestore.Encoder().encode(defaultProfile)
             data["createdAt"] = FieldValue.serverTimestamp()
             data["updatedAt"] = FieldValue.serverTimestamp()
             
@@ -71,25 +72,15 @@ final class FirebaseUserProfileService: @unchecked Sendable {
           
        }
     
-    func updateProfile(for uid: String, name: String, heightCm: Double?, age: Int?, weightKg: Double?, goalType: GoalType?, nonTrainingActivityLevel: NonTrainingActivityLevel?, isOnboardingComplete: Bool, gender: Gender) async throws -> UserProfile {
-        let docRef = profileDocument(for: uid)
-        
-        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        let profile = UserProfile(
-            id: uid,
-            name: trimmedName,
-            heightCm: heightCm,
-            age: age,
-            weightKg: weightKg,
-            goalType: goalType,
-            nonTrainingActivityLevel: nonTrainingActivityLevel,
-            isOnboardingComplete: isOnboardingComplete,
-            gender: gender
-        )
-        var data = try Firestore.Encoder().encode(profile.document)
+    func updateProfile(_ profile: UserProfile) async throws -> UserProfile {
+        let docRef = profileDocument(for: profile.id)
+
+        var normalized = profile
+        normalized.normalize()
+
+        var data = try Firestore.Encoder().encode(normalized)
         data["updatedAt"] = FieldValue.serverTimestamp()
-        
+
         try await withCheckedThrowingContinuation {( continuation: CheckedContinuation<Void,Error>) in
             docRef.setData(data, merge: true) { error in
                     if let error = error {
@@ -99,7 +90,7 @@ final class FirebaseUserProfileService: @unchecked Sendable {
                     }
             }
         }
-        return profile
+        return normalized
     }
     
   

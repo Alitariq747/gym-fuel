@@ -55,6 +55,19 @@ final class FirebaseLogEntryService: @unchecked Sendable {
         )
     }
 
+    private func decodeEntry(skippingFailuresFrom snapshot: QueryDocumentSnapshot) -> LogEntry? {
+        do {
+            return try decodeEntry(from: snapshot)
+        } catch {
+            FirebaseTelemetryService.recordNonFatal(
+                error,
+                reason: "log_entry_decode_failed",
+                metadata: ["documentID": snapshot.documentID]
+            )
+            return nil
+        }
+    }
+
     private func encodeEntry(_ entry: LogEntry) throws -> [String: Any] {
         let document = LogEntryDocument(
             userId: entry.userId,
@@ -91,12 +104,8 @@ extension FirebaseLogEntryService: LogEntryService {
 
                 guard let snapshot else { return }
 
-                do {
-                    let entries = try snapshot.documents.map(self.decodeEntry)
-                    onChange(.success(entries))
-                } catch {
-                    onChange(.failure(error))
-                }
+                let entries = snapshot.documents.compactMap { self.decodeEntry(skippingFailuresFrom: $0) }
+                onChange(.success(entries))
             }
 
         let box = ListenerCancellationBox(listener: listener)
@@ -116,7 +125,7 @@ extension FirebaseLogEntryService: LogEntryService {
             .order(by: "loggedAt", descending: false)
             .getDocuments()
 
-        return try snapshot.documents.map(decodeEntry)
+        return snapshot.documents.compactMap { decodeEntry(skippingFailuresFrom: $0) }
     }
 
     func saveEntryLocally(_ entry: LogEntry) throws {

@@ -7,18 +7,6 @@
 
 import SwiftUI
 
-/// The onboarding answers held in memory while the profile save is in flight,
-/// so a failed save can be retried without re-asking the user.
-private struct PendingOnboarding {
-    let name: String
-    let gender: Gender
-    let age: Int
-    let heightCm: Double
-    let weightKg: Double
-    let goalType: GoalType
-    let activityLevel: NonTrainingActivityLevel
-}
-
 struct RootView: View {
     
     @EnvironmentObject private var authManager: FirebaseAuthManager
@@ -29,7 +17,7 @@ struct RootView: View {
     @State private var didEnterBackground = false
     @State private var showPostOnboardingPaywall = false
     @State private var isFinishingOnboarding = false
-    @State private var pendingOnboarding: PendingOnboarding?
+    @State private var pendingOnboarding: OnboardingAnswers?
 
     private var onboardingSaveFailed: Binding<Bool> {
         Binding(
@@ -45,18 +33,14 @@ struct RootView: View {
     }
 
     @MainActor
-    private func saveOnboarding(_ pending: PendingOnboarding) {
+    private func saveOnboarding(_ answers: OnboardingAnswers) {
         guard let uid = authManager.user?.uid else { return }
 
-        pendingOnboarding = pending
+        pendingOnboarding = answers
         isFinishingOnboarding = true
 
         Task {
-            await profileViewModel.completeOnboarding(
-                for: uid, name: pending.name, gender: pending.gender,
-                heightCm: pending.heightCm, age: pending.age, weightKg: pending.weightKg,
-                goalType: pending.goalType, nonTrainingActivityLevel: pending.activityLevel
-            )
+            await profileViewModel.completeOnboarding(for: uid, answers: answers)
 
             isFinishingOnboarding = false
 
@@ -86,14 +70,8 @@ struct RootView: View {
                             prefilledName: authManager.user?.displayName ?? "",
                             showsNameStep: authManager.signInProviderIDs.contains("password")
                                 && (authManager.user?.displayName ?? "").isEmpty
-                        ) { name, gender, age, heightCm, weightKg, goalType, nonTrainingActivityLevel in
-                            saveOnboarding(
-                                PendingOnboarding(
-                                    name: name, gender: gender, age: age,
-                                    heightCm: heightCm, weightKg: weightKg,
-                                    goalType: goalType, activityLevel: nonTrainingActivityLevel
-                                )
-                            )
+                        ) { answers in
+                            saveOnboarding(answers)
                         }
                         .overlay {
                             if isFinishingOnboarding {

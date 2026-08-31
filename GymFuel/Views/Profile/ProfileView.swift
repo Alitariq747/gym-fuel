@@ -19,7 +19,7 @@ struct ProfileView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var colorScheme
     
-    @State private var draft: UserProfileDraft? = nil
+    @State private var draft: UserProfile? = nil
     @State private var signOutError: String?
     @State private var isSigningOut: Bool = false
     @State private var showSignOutConfirmation: Bool = false
@@ -51,7 +51,7 @@ struct ProfileView: View {
         AppColorSchemePreference(rawValue: colorSchemePreference)?.colorScheme
     }
 
-    private var draftBinding: Binding<UserProfileDraft>? {
+    private var draftBinding: Binding<UserProfile>? {
         guard draft != nil else { return nil }
 
         return Binding(
@@ -62,7 +62,11 @@ struct ProfileView: View {
 
                 // The binding is only exposed when draft exists, so this fallback
                 // should never be reached in practice.
-                return UserProfileDraft(from: self.profileVm.profile ?? dummyProfile)
+                return self.profileVm.profile ?? UserProfile(
+                    id: "", name: "", heightCm: nil, age: nil, weightKg: nil,
+                    goalType: nil, nonTrainingActivityLevel: nil,
+                    isOnboardingComplete: false, gender: .preferNotToSay
+                )
             },
             set: { self.draft = $0 }
         )
@@ -100,7 +104,7 @@ struct ProfileView: View {
                                                         await profileVm.saveProfileEdits(for: uid, draft: draft)
 
                                                         if let updated = profileVm.profile {
-                                                            self.draft = UserProfileDraft(from: updated)
+                                                            self.draft = updated
                                                         }
 
                                                         if profileVm.errorMessage == nil {
@@ -245,7 +249,7 @@ struct ProfileView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task(id: profileVm.profile?.id) {
             if let profile = profileVm.profile {
-                draft = UserProfileDraft(from: profile)
+                draft = profile
             } else {
                 draft = nil
             }
@@ -425,7 +429,7 @@ struct ProfileView: View {
         return isDirty(draft: draft, profile: profile) && !profileVm.isSaving
     }
 
-    private func isDirty(draft: UserProfileDraft, profile: UserProfile) -> Bool {
+    private func isDirty(draft: UserProfile, profile: UserProfile) -> Bool {
 
         if draft.name.trimmingCharacters(in: .whitespacesAndNewlines) != profile.name { return true }
         if draft.gender != profile.gender { return true }

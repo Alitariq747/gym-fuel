@@ -112,7 +112,6 @@ struct MainTabView: View {
             VStack(spacing: 20) {
                 MainTabHeaderView(
                     selectedDate: timelineViewModel.selectedDate,
-                    loggedDays: timelineViewModel.loggedDaysInVisibleMonth,
                     canNavigateToNextDate: canNavigateToNextDate,
                     navigationDirection: dayNavigationDirection,
                     onPreviousDateTap: {
@@ -314,16 +313,6 @@ struct MainTabView: View {
         .task(id: profile.id) {
             await timelineViewModel.loadTimeline(
                 for: timelineViewModel.selectedDate,
-                userId: profile.id
-            )
-            await timelineViewModel.loadLoggedDaysInVisibleMonth(
-                containing: timelineViewModel.selectedDate,
-                userId: profile.id
-            )
-        }
-        .task(id: timelineViewModel.selectedDate) {
-            await timelineViewModel.loadLoggedDaysInVisibleMonth(
-                containing: timelineViewModel.selectedDate,
                 userId: profile.id
             )
         }

@@ -29,6 +29,19 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
         return SavedMeal(id: snapshot.documentID, userId: document.userId, name: document.name, description: document.description, macros: document.macros, createdAt: document.createdAt, lastUsedAt: document.lastUsedAt)
     }
 
+    private func decodeSavedMeal(skippingFailuresFrom snapshot: QueryDocumentSnapshot) -> SavedMeal? {
+        do {
+            return try decodeSavedMeal(from: snapshot)
+        } catch {
+            FirebaseTelemetryService.recordNonFatal(
+                error,
+                reason: "saved_meal_decode_failed",
+                metadata: ["documentID": snapshot.documentID]
+            )
+            return nil
+        }
+    }
+
     private func encodeSavedMeal(_ meal: SavedMeal) throws -> [String: Any] {
         try Firestore.Encoder().encode(
             SavedMealDocument(userId: meal.userId, name: meal.name, description: meal.description, macros: meal.macros, createdAt: meal.createdAt, lastUsedAt: meal.lastUsedAt)
@@ -57,7 +70,7 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
                 }
         }
 
-        return try snapshot.documents.map(decodeSavedMeal)
+        return snapshot.documents.compactMap { decodeSavedMeal(skippingFailuresFrom: $0) }
     }
 
     func saveMeal(_ meal: SavedMeal) async throws {

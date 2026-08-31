@@ -2,7 +2,6 @@ import SwiftUI
 
 struct MainTabHeaderView: View {
     let selectedDate: Date
-    let loggedDays: Set<Date>
     let canNavigateToNextDate: Bool
     let navigationDirection: DayNavigationDirection
     let onPreviousDateTap: () -> Void
@@ -22,22 +21,6 @@ struct MainTabHeaderView: View {
 
     private var chipShadow: Color {
         colorScheme == .dark ? Color.clear : Color.black.opacity(0.08)
-    }
-
-    private var calendar: Calendar {
-        .current
-    }
-
-    private var hasLogsOnSelectedDate: Bool {
-        loggedDays.contains(calendar.startOfDay(for: selectedDate))
-    }
-
-    private var dateChipBackground: Color {
-        hasLogsOnSelectedDate ? Color.fuelGreen.opacity(0.12) : chipBackground
-    }
-
-    private var dateChipStroke: Color {
-        hasLogsOnSelectedDate ? Color.fuelGreen.opacity(0.22) : chipStroke
     }
 
     private var dateChangeTransition: AnyTransition {
@@ -86,15 +69,15 @@ struct MainTabHeaderView: View {
                     Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
                         .id(selectedDate)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(hasLogsOnSelectedDate ? Color.fuelGreen : .primary)
+                        .foregroundStyle(.primary)
                         .transition(dateChangeTransition)
                 }
                 .frame(minWidth: compact ? 50 : 58)
                 .clipped()
                 .padding(.horizontal, compact ? 8 : 12)
                 .padding(.vertical, compact ? 8 : 9)
-                .background(dateChipBackground, in: Capsule())
-                .overlay(Capsule().stroke(dateChipStroke, lineWidth: 1))
+                .background(chipBackground, in: Capsule())
+                .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
                 .shadow(color: chipShadow, radius: 10, y: 4)
                 .animation(.easeInOut(duration: 0.24), value: selectedDate)
 
@@ -153,7 +136,6 @@ struct MainTabHeaderView: View {
 #Preview {
     MainTabHeaderView(
         selectedDate: .now,
-        loggedDays: [],
         canNavigateToNextDate: false,
         navigationDirection: .previous,
         onPreviousDateTap: {},
