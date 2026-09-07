@@ -85,15 +85,26 @@ at any volume — price segmentation does not rescue the home market.
 | `GoalType.leanBulk.displayName` | "Lean Bulk" | "Gain" |
 | `GoalType.cut.displayName` | "Cut" | "Lose fat" |
 | `GoalType.maintain.displayName` | "Maintain" | "Maintain" |
-| Entitlement id | `ai_scans` | `pro` |
+| Entitlement id | `ai_scans` | **unchanged — decided 7 September, closed** |
 
-Display strings only. **Do not change the `GoalType` enum raw values**
-(`lean_bulk`, `maintain`, `cut`) — they are persisted on every
-`logEntry.feedback` and in `users/{uid}`, and `normalizeGoal` in the AI service
-already accepts several aliases for each. A raw-value change is a migration that
-buys nothing.
+`GoalType.detail` copy also drops the lifting register while keeping the meaning,
+and `GoalType.symbolName` still returns `figure.strengthtraining.traditional` for
+`.leanBulk` — a barbell glyph sitting on the goal picker.
 
-`GoalType.detail` copy also drops the lifting register while keeping the meaning.
+**The raw values are no longer protected, but still not worth renaming alone.**
+Firestore held no user documents as of 7 September, so `lean_bulk` / `maintain` /
+`cut` are safe to change until the first real user. What makes it interesting is
+not the persistence: `goal.rawValue` is what reaches the AI service
+(`BackendLogInterpretationService.swift:121`), and the prompt hard-codes the tokens
+and frames `lean_bulk` as *"carbs that support training and recovery"*
+(`logEntryPrompt.js:55,76`). The lifting register is in the model's reasoning on
+every estimate, where display strings cannot reach it. **The fix is the prompt
+language, not the token** — rename only while already editing those lines. See
+`build-order.md` Step 2.
+
+**`ai_scans` does not relax with it.** Entitlement lookup is client-side against
+RevenueCat, so the risk is builds in the wild rather than stored rows, and an empty
+`users` collection does not prove no such install exists.
 
 ### 2. The food wedge — `Phase 1`
 
@@ -149,10 +160,11 @@ in `DailyStatsSnapshot`, `StatsActivitySummaryRow`, the exercise branch in
 
 **Two things that are not free:**
 
-- **Existing entries.** `type: food|exercise` discriminates the shared
-  `logEntries` collection. **Do not migrate.** Keep `LogEntryType` and the *read*
-  path so historical entries still render; remove every write path and the AI
-  branch. Delete the read path later once it is cold.
+- ~~**Existing entries.**~~ **No longer a constraint.** `type: food|exercise`
+  discriminates the shared `logEntries` collection, and the plan was to keep
+  `LogEntryType` and the *read* path so historical entries still render. Firestore
+  has no documents, so there is nothing to render: delete the read path with the
+  write paths, in one pass, owing no later cleanup.
 - **`NonTrainingActivityLevel` stops making sense** — it is named "non-training"
   precisely because training was counted separately. Rename to activity level.
   Low stakes: under the adaptive engine the multiplier is only a **seed** for the
@@ -241,7 +253,7 @@ then the server-side call is removed from `normalizeLogEntryFeedback`.
 | Monthly | $5.99 | $7.99 |
 | Yearly | $49.99 | $54.99 |
 | Trial | 3 days | **14 days** |
-| Entitlement | `ai_scans` | `pro` |
+| Entitlement | `ai_scans` | `ai_scans` — unchanged, closed |
 
 The trial length is a product constraint, not a benchmark: an adaptive coach
 cannot demonstrate itself before the first check-in. The trial must span at least
@@ -263,6 +275,40 @@ Grandfather existing subscribers.
 (`gymfuel-ai-service/src/ai/imageRecognizer.js:27`). At $49.99/yr the net is
 $3.54/mo against a 500-scan quota; a heavy annual subscriber is near break-even
 before infrastructure.
+
+### 7. Retention surfaces — `Phase 6`, after approval
+
+Added 7 September. Three features, held back deliberately: each adds a new target,
+a new entitlement or a new review surface, and none of them helps a listing with no
+installs. Detail and sequencing live in `build-order.md` steps 12–14.
+
+**Reminders that read the app's state.** The `ReminderService` note under *Noted,
+not scheduled* is now scheduled. Two halves, split across the launch boundary:
+
+- **Step 3a, in the launch build.** Reminders default to `.quiet` and the
+  permission ask is buried in Settings, so effectively nobody has them. An
+  onboarding opt-in fixes a leak; intelligence added to a feature nobody switches
+  on is worth nothing. It also makes the "Smart reminders" line already on the
+  paywall (`SubscriptionPaywallSheet.swift:25`) true rather than aspirational.
+- **Step 12, after approval.** Local notification content is fixed at *schedule*
+  time and a Notification Service Extension only intercepts push — so intelligence
+  means rescheduling on every state change, not deciding late. Ranked: the weekly
+  check-in nudge, streak protection, and suppressing a nudge when the window
+  already has an entry.
+
+**HealthKit, body mass only — `Step 13`.** Read
+`HKQuantityTypeIdentifier.bodyMass` into `weighIns`, whose `source` field already
+anticipates it. This attacks the engine's weakest link directly: a user with a
+smart scale contributes every weigh-in after the first without opening the app,
+and Phase 3's success criterion is a second weigh-in. **Read only — no write
+back**, so `NSHealthShareUsageDescription` is the only usage string. Request the
+one type, with a purpose string naming the actual use.
+
+**Widgets — `Step 14`.** The passive half of the loop. The app writes a small
+`TodaySnapshot` to an App Group container on every timeline change; the widget
+reads that and nothing else. **No Firebase in the extension** — a widget process
+reaching Firestore means its own auth, a cold start and a read per refresh. Tap is
+a `widgetURL` deep link. Read-only, so no App Intents are required.
 
 ---
 
@@ -301,6 +347,10 @@ previous one has proven the funnel converts.
 | **3** | Weigh-ins, trend weight, adaptive targets, weekly check-in | The spine |
 | **4** | Day-aware goal-fit score | After 3 |
 | **5** | Exercise sweep + dead code | Any time after 1 |
+| **6** | State-aware reminders · HealthKit body mass · widgets | After approval |
+
+The onboarding notification opt-in is the one piece of Phase 6 that ships with the
+listing — `build-order.md` Step 3a. It is a leak, not a feature.
 
 Phase 2 is the largest distribution lever we have and costs no engineering — 70
 Custom Product Pages and up to 1,440 indexable characters across ten US-indexed
@@ -343,18 +393,37 @@ From `product-as-built.md`, all verified as unreferenced:
 - Sets, reps, load, progression, or anything resembling a training log.
 - Social, feed, friends, coach marketplace.
 - Urdu or Hindi App Store localisations.
-- Renaming `GoalType` raw values.
-- Migrating historical `logEntries` or `goalFitScore` values.
+- **Renaming the `ai_scans` entitlement.** The one migration-shaped constraint that
+  survives the empty Firestore — it is about builds in the wild, not stored rows.
+- ~~Renaming `GoalType` raw values~~ — no longer prohibited, just not worth doing
+  on its own. See §1.
+- ~~Migrating historical `logEntries` or `goalFitScore` values~~ — there is no
+  history to migrate. See §3.
+- **HealthKit active energy, workouts, or steps** — as an input *and* as displayed
+  context. Decided 7 September. Expenditure is derived as
+  `meanDailyIntake + (trendΔkg × 7700) / days`, which **already contains every
+  calorie the user burned**, measured from the scale rather than estimated. An
+  imported burn figure either double-counts it or replaces a measured number with a
+  worse one — Apple Watch active energy runs ±20–30 %. This is the calorie rebate
+  of §3 arriving through a door marked "more accurate". HealthKit is `bodyMass`,
+  read-only, and nothing else.
+- **App Intents, Siri, Shortcuts, and Control Center controls.** Decided
+  7 September — too much lift for this stack. Widgets do not need them: a
+  read-only widget uses a `widgetURL` deep link, and only in-widget buttons would
+  require an intent. Revisit if Apple Intelligence surfaces start mattering for
+  discovery.
+- **Push notifications and APNs.** Parked, not rejected — there is no push
+  entitlement today and Step 12 does not need one.
 
 ---
 
 ## Noted, not scheduled
 
-- **Reminders are timeline-blind.** `ReminderService` fires fixed wall-clock times
-  from a three-mode enum and never reads the timeline, so the 8:30 PM "log your
-  latest meal" fires identically whether the user logged nothing or six times.
-  Cheap retention win once the check-in exists — a reminder that knows about the
-  weekly weigh-in is worth more than one that nags about meals.
+- ~~**Reminders are timeline-blind.**~~ **Now scheduled** — §7 above, and
+  `build-order.md` Steps 3a and 12. The diagnosis held: `ReminderService` fires
+  fixed wall-clock times from a three-mode enum and never reads the timeline. The
+  thing it missed is that the mode defaults to `.quiet`, so the reminders were not
+  merely dumb, they were off.
 - **`SavedMealsPickerSheet` is unreachable on older days.** It hangs off the
   `LogActionDock` bookmark button, which hides outside the today−7d…today window.
 - **Saved meals are severed from their origin.** `SaveLoggedMealSheet` drops
