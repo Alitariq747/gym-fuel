@@ -81,7 +81,8 @@ at any volume — price segmentation does not rescue the home market.
 
 | Surface | Now | After |
 |---|---|---|
-| App name | LiftEats | **OPEN — blocks Phase 1, see Open decisions** |
+| App name | LiftEats | **`Circa: Food & Calorie Journal`** — decided 8 September |
+| Subtitle | *(none)* | **`AI macro tracker, no weighing`** — decided 8 September |
 | `GoalType.leanBulk.displayName` | "Lean Bulk" | "Gain" |
 | `GoalType.cut.displayName` | "Cut" | "Lose fat" |
 | `GoalType.maintain.displayName` | "Maintain" | "Maintain" |
@@ -434,15 +435,21 @@ From `product-as-built.md`, all verified as unreferenced:
 
 ## Open decisions
 
-1. **The app name — decide this week.** Blocks Phase 1, and waiting produces no
-   new information. `LiftEats` hard-codes the lifting signal into
-   the highest-weight ASO field, against an audience we just widened. Rename cost
-   is near zero now (too few ratings to display a score) and rises monthly. Needs:
-   a name carrying the food thesis, free on the App Store, with a usable handle.
-   **Owner: Ahmad.**
+1. ~~**The app name.**~~ **Closed 8 September — `Circa: Food & Calorie Journal`,
+   subtitle `AI macro tracker, no weighing`.** Full reasoning and the competitive
+   check are in `store-copy.md`. Two follow-ups it created:
+   - **Trademark, unresolved.** Circa Lighting, Circa Resort & Casino and Circa
+     Sports are real companies. The App Store name is clear — a registered mark is
+     a separate question. **Run a USPTO search on classes 9 and 42 before
+     submitting.** Owner: Ahmad.
+   - **Keywords are stale.** The agnostic name means `desi` now appears nowhere in
+     the listing, and `macros` duplicates the subtitle's *macro*. Proposed fix is in
+     `store-copy.md` under Keywords, awaiting sign-off.
 2. **Beachhead cuisine.** Brief assumes desi. Swap is mechanical — dish names,
    keywords, portion set — if a different community fits better. Thesis and
-   structure are unchanged either way.
+   structure are unchanged either way. **Lower stakes now than when this was
+   written:** the name no longer encodes a cuisine, so a swap costs keywords and
+   screenshots rather than a rename.
 3. **`/api/log-entry/analyze`** — delete or wire up (Phase 5).
 
 ---
@@ -454,10 +461,18 @@ From `product-as-built.md`, all verified as unreferenced:
 - **Diaspora targeting is load-bearing.** In-region App Store revenue will not
   cover dollar-denominated inference. If acquisition skews to the home market the
   unit economics invert.
-- **The niche is not empty.** Calorify, Loqma, Khana AI and NutriScan are already
-  there — all small, all hand-curating databases, which is the capped approach we
-  avoid. HealthifyMe (40M users, 12-year database) is a genuine moat: another
-  reason to aim diaspora, not India.
+- **The niche is not empty — and it is filling faster than this brief assumed.**
+  Measured against the App Store on 8 September, the desi calorie set is now at
+  least six apps: MasalaFit (8 ratings, May 2026), Kalorist (4), Calorify (2,
+  July 2026), Khana AI (0, July 2026), RotiCal (0), MyFitFoods (1, September 2026).
+  Three launched in the last four months. HealthifyMe (40M users, 12-year database)
+  remains a genuine moat: another reason to aim diaspora, not India.
+
+  **But nobody has won it.** Every entrant is under ten ratings, and on searches
+  like "roti calories" and "biryani calories" a **zero-rating app currently ranks
+  first**. The window is open and closing at the same time — whoever reaches ~50
+  ratings first takes those terms. This argues for shipping sooner, not for
+  abandoning the angle.
 - **Founder-audience fit degrades.** Ahmad is a lifter and writes for lifters
   instinctively. Writing for general home cooks is a different muscle, untested.
 

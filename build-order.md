@@ -85,7 +85,7 @@ Nothing below starts clean without these. None need me.
 
 | Decision | Blocks | Note |
 |---|---|---|
-| **App name** | Steps 8–10 | Brand word must be **≤ 11 chars** to fit `: Desi Food Tracker`. Check the name is free on the App Store and the handle is available. |
+| ~~**App name**~~ | — | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. **Still owed: a USPTO search on classes 9 and 42**, and the handles. |
 | **Beachhead cuisine** | Steps 6, 9, 10 | Brief assumes desi. Swap is mechanical if not. |
 | **Confirm pricing** | Step 9 | $7.99/mo, $54.99/yr, 14-day trial. |
 
@@ -343,9 +343,14 @@ at log time, scores going stale when the goal changes, and `logSavedMeal` writin
 
 ## Step 8 — Rename · S
 
-- App name in Xcode: `CFBundleDisplayName` (home screen) **and** the App Store
-  Connect name. These are two separate fields; changing one is a common miss.
+The name is **`Circa`** — `CFBundleDisplayName` on the home screen, and
+`Circa: Food & Calorie Journal` in App Store Connect.
+
+- Both fields, not one. These are separate; changing only one is a common miss, and
+  a mismatch between the store name and the app name gets flagged in review.
 - Sweep user-facing strings for "LiftEats".
+- **The bundle identifier stays `com.ahmad.GymFuel`.** Renaming the app does not
+  touch it, nobody sees it, and changing it would be a new app record.
 
 **Done when** nothing user-facing carries the old name.
 

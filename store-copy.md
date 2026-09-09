@@ -6,8 +6,11 @@ Paste-ready App Store Connect metadata. The argument behind it is in
 Written 5 September 2026. Revised 7 September: lifting removed from all
 user-facing copy, exercise bullets deleted, "aloo gobi" retained as the lead demo (see Screenshot captions), app name reduced to a placeholder pending the rename decision.
 
-**Blocked on one decision.** The brand word is undecided (see `project-brief.md`
-→ Open decisions). Everything below is final except `[BRAND]`.
+Revised 8 September: **the name is decided — `Circa`.** Name and subtitle set, and
+the name is now genuinely cuisine-agnostic, which resolves the contradiction this
+deck previously carried (it declared the name agnostic while proposing
+`[BRAND]: Desi Food Tracker`). **The keywords field now needs a pass — see the note
+under Keywords.**
 
 ---
 
@@ -25,25 +28,60 @@ subtitle.
 
 ## The fields
 
-### App Name — limit 30
+### App Name — 29 / 30
 
 ```
-[BRAND]: Desi Food Tracker
+Circa: Food & Calorie Journal
 ```
 
-The suffix `: Desi Food Tracker` is **19 characters**, so **the new brand word must
-be 11 characters or fewer.** (`LiftEats` is 8 and would fit, but see the rename
-decision.) Highest search weight of any field.
+Highest search weight of any field. Decided 8 September.
+
+**Why `Circa`.** It means *approximately* — which is the product. Every other
+candidate needed the subtitle to explain the idea; this one carries it in the name.
+It is also cuisine-agnostic, which the beachhead strategy requires: cuisines are
+delivered by keywords, screenshots and Custom Product Pages, never by the name.
+
+**Why `Journal` and not `Tracker` or `Counter`.** Softer competition. In the top
+six for "calorie journal" the weakest app has **0 ratings**; for "food journal",
+407. Compare "calorie counter" at 14,972 and "macro tracker" at 7,856. With no
+ratings we cannot enter the hard lanes, so the title takes the soft one and the
+subtitle picks up *tracker* separately.
+
+**Collisions checked.** Four other `Circa` apps exist — Games, Lifestyle, Social.
+One shares the category, `Circa: Health Intelligence`, at 0 ratings with a
+different job. No meaningful clash.
+
+> **Still open: the trademark.** Circa Lighting, Circa Resort & Casino and Circa
+> Sports are real companies. A different class does not block an app, but the odds
+> of a registered mark are higher here than for an invented word. **Run a USPTO
+> search on classes 9 and 42 before submitting.**
 
 ### Subtitle — 29 / 30
 
 ```
-Calorie counter, home cooking
+AI macro tracker, no weighing
 ```
 
 Shares **no word** with the app name — Apple indexes them together and duplicates
-are wasted characters. Name carries *desi / food / tracker*; subtitle carries
-*calorie / counter / home / cooking*.
+are wasted characters. Name carries *circa / food / calorie / journal*; subtitle
+carries *AI / macro / tracker / weighing*.
+
+**Why not `No weighing, no food database`** (the alternative, also 29): it repeats
+**food**, which the title already owns, so four characters buy nothing. And its one
+distinctive word is worthless in search — the top six for "food database" bottoms
+out at **0 ratings**, not because the term is winnable but because nobody types it.
+It is a sentence you say to a person, not a query.
+
+The version above adds four fresh words instead of two. That matters more than it
+sounds: Apple builds search phrases by *combining* indexed words, so distinct words
+multiply into long-tail phrases ("calorie macro journal", "AI food journal") while
+duplicates multiply nothing.
+
+> **The trade, and where it goes instead.** `No weighing, no food database` is the
+> better *conversion* line — it says why we are different in five words, and the
+> subtitle is visible in search results. Run it as **promotional text**, which is
+> editable any time with no review, and promote it into the subtitle at a later
+> submission if it converts.
 
 ### Keywords — 100 / 100 in the primary locale
 
@@ -51,8 +89,32 @@ are wasted characters. Name carries *desi / food / tracker*; subtitle carries
 roti,kunna,biryani,karahi,daal,halal,pakistani,indian,curry,protein,macros,bulk,deficit,homemade,gym
 ```
 
-No spaces after commas — a space costs a character. Nothing repeats the name or
-subtitle. Apple adds plurals and the category automatically.
+No spaces after commas — a space costs a character. Apple adds plurals and the
+category automatically.
+
+> ### ⚠ This field is now stale — decide before submitting
+>
+> The string above was written against the old name and subtitle. Two things broke
+> when those changed on 8 September, and **neither is fixed below — this needs your
+> call, not mine.**
+>
+> **1. `macros` is now a duplicate.** The subtitle carries *macro*, and Apple stems
+> plurals automatically (as this section itself notes). Seven characters buying
+> nothing.
+>
+> **2. `desi` is missing entirely.** It was never in this field because the old name
+> carried it. The new name is agnostic, so the highest-value cuisine term is now
+> nowhere in the listing. Calorify, Khana AI, MasalaFit and RotiCal all put *Desi*
+> in their **app names**, which outranks our keywords on those searches — being
+> absent from the field altogether concedes the term completely.
+>
+> **3. `home` and `cooking` are now free**, since the old subtitle released them.
+>
+> Proposed replacement — swaps `macros` for `desi`, 98/100 with 2 spare:
+>
+> ```
+> roti,kunna,biryani,karahi,daal,halal,pakistani,indian,curry,protein,desi,bulk,deficit,homemade,gym
+> ```
 
 Keywords are invisible to users, which is why goal and gym terms stay here even
 though lifting is off the surface: ranking for them costs nothing and catches the
@@ -72,6 +134,11 @@ Sits above the description on the product page. **Rotate weekly against creator
 posts** to find the hook that converts, then promote the winner into the subtitle
 at the next submission.
 
+**First thing to test here: `No weighing, no food database`** — the subtitle that
+lost on ranking grounds but wins on conversion. This field costs nothing to change
+and needs no review, so it is where that line earns its place before it takes a
+subtitle slot.
+
 ### Description — ~1,830 / 4,000
 
 Only the first three lines show before the fold on iPhone, which is why the aloo
@@ -81,9 +148,9 @@ than absence.
 ```
 Search "aloo gobi" in a normal calorie app and you get forty entries, from 80 to 400 calories. None of them are how your mum makes it.
 
-[BRAND] doesn't have a food database. You say what you ate — "two roti, chicken karahi, half a katori rice" — and it works out the calories and macros from the description. Then it shows you every assumption it made, so you can fix the ones that are wrong.
+Circa doesn't have a food database. You say what you ate — "two roti, chicken karahi, half a katori rice" — and it works out the calories and macros from the description. Then it shows you every assumption it made, so you can fix the ones that are wrong.
 
-That's the whole difference. Other apps hand you a number and hope you trust it. [BRAND] shows its working.
+That's the whole difference. Other apps hand you a number and hope you trust it. Circa shows its working.
 
 WHAT IT'S GOOD AT
 
@@ -103,7 +170,7 @@ SAVED MEALS
 
 The things you eat every week — your shake, your breakfast, your usual order — saved once, logged in a tap.
 
-[BRAND] PRO
+Circa PRO
 
 [Trial length, price and renewal terms — must match App Store Connect exactly.]
 
@@ -235,9 +302,16 @@ the creator push around that, not against it.
 
 ## Cuisine reach
 
-The name and subtitle are deliberately cuisine-agnostic — "calorie counter, home
-cooking" covers kunna, jollof, adobo and tagine equally. Only the keywords and
-screenshots are desi-specific, and both are cheap to change.
+The name and subtitle are deliberately cuisine-agnostic — `Circa: Food & Calorie
+Journal` covers kunna, jollof, adobo and tagine equally, because it names no
+cuisine at all. Only the keywords and screenshots are desi-specific, and both are
+cheap to change. **As of 8 September this is finally true**; the deck previously
+claimed agnosticism while proposing `Desi Food Tracker` in the name.
+
+**What that costs, stated plainly.** Calorify, Khana AI, MasalaFit and RotiCal all
+put *Desi* in their **app names** — the highest-weight field. Carrying it in
+keywords instead means ranking below them on desi searches. The trade is reach:
+Arabic, West African or any other cuisine can be added later with no rename.
 
 This matters because App Store metadata is served by **device language, not
 storefront**, and the only English variants App Store Connect offers are U.S.,
