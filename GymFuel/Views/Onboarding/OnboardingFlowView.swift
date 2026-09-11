@@ -19,6 +19,7 @@ private enum OnboardingStep: Hashable {
     case activityLevel
     case goal
     case loggingTips
+    case notifications
     case summary
 
     var analyticsName: String {
@@ -45,6 +46,8 @@ private enum OnboardingStep: Hashable {
             return "goal"
         case .loggingTips:
             return "logging_tips"
+        case .notifications:
+            return "notifications"
         case .summary:
             return "summary"
         }
@@ -67,7 +70,7 @@ struct OnboardingFlowView: View {
     private var orderedSteps: [OnboardingStep] {
         var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer]
         if showsNameStep { steps.append(.name) }
-        steps += [.gender, .age, .height, .weight, .activityLevel, .goal, .loggingTips, .summary]
+        steps += [.gender, .age, .height, .weight, .activityLevel, .goal, .loggingTips, .notifications, .summary]
         return steps
     }
 
@@ -194,7 +197,14 @@ struct OnboardingFlowView: View {
 
         case .loggingTips:
             OnboardingLoggingTipsStepView(
-                onNext: { go(to: .summary, direction: .forward) }
+                onNext: { go(to: .notifications, direction: .forward) }
+            )
+
+        case .notifications:
+            OnboardingNotificationsStepView(
+                stepPosition: currentIndex + 1,
+                stepCount: orderedSteps.count,
+                onFinished: { go(to: .summary, direction: .forward) }
             )
 
         case .summary:
