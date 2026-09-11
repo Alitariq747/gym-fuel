@@ -56,6 +56,8 @@ find the number in under a second, that is the failure.
 | `card` | `#FFFFFF` | — | Raised surfaces |
 | `sunken` | `#EFEBDF` | — | Recessed panels (check-in prompt, notes) |
 | `mediaWell` | `#EAE6DA` | — | Photo placeholder ground |
+| `well` ‡ | `#F1EDE2` | — | Icon well behind a text entry's glyph — takes a `cardBorder` hairline |
+| `barTrack` ‡ | `#E8E4D8` | — | The unfilled part of a macro bar |
 | `dotted` | `#9A9488` | — | The certainty rule |
 | `dangerGround` | `#FCF6F3` / border `#E8CFC7` | — | Failure card |
 
@@ -81,8 +83,17 @@ Same row order as the light table above, so the two can be read side by side.
 | `card` | `#1F1D18` | — | Raised surfaces |
 | `sunken` | `#211F19` | — | Recessed panels |
 | `mediaWell` | `#262319` | — | Photo ground |
+| `well` ‡ | `#1F1D18` | — | Icon well — same value as `card` in dark |
+| `barTrack` ‡ | `#332F26` | — | The unfilled part of a macro bar |
 | `dotted` | `#6B6659` | — | The certainty rule |
 | `dangerGround` / border | `#241A16` † / `#3D2721` † | — | Failure card |
+
+‡ **Read off the canvas 11 September**, when the component kit was built. Both
+appear on drawn screens in both themes — the bar track on every macro row, the
+well behind every text entry's glyph — but neither had been lifted into this table,
+so the kit had nowhere to reach for them. They are measurements, not new
+decisions. (`well` resolves to the same value as `card` in dark and differs only
+on paper; it is still its own token, because the two have different borders.)
 
 † **Derived 10 September**, when the palette was implemented. The artboards never
 needed a dark failure state or a dark in-card divider, so these four had no

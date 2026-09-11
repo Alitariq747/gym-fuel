@@ -71,6 +71,12 @@ extension Color {
     static let circaSunken = circaAdaptive(light: 0xEFEBDF, dark: 0x211F19)
     /// The ground a photo or its placeholder sits on.
     static let circaMediaWell = circaAdaptive(light: 0xEAE6DA, dark: 0x262319)
+    /// The ground behind a text entry's glyph. Distinct from `circaMediaWell`:
+    /// this one takes a `circaCardBorder` hairline, a photo well never does.
+    static let circaWell = circaAdaptive(light: 0xF1EDE2, dark: 0x1F1D18)
+    /// The unfilled part of a macro bar. Lighter than `circaRule` in both
+    /// themes — a bar track read as a divider is the drift this prevents.
+    static let circaBarTrack = circaAdaptive(light: 0xE8E4D8, dark: 0x332F26)
 
     // Lines.
     /// Section dividers, between-block rules.

@@ -55,7 +55,7 @@ fresh session reads this file, not the chat history.
 - [ ] **0** · Decisions — name, cuisine, pricing
 - [ ] **1** · Paywall: trial length from StoreKit
 - [ ] **2** · Vocabulary
-- [ ] **2a** · Design system — `CircaTheme.swift` + the component kit
+- [x] **2a** · Design system — `CircaTheme.swift` + the component kit
 - [ ] **3** · Remove exercise and lifting logic
 - [ ] **3a** · Notification opt-in in onboarding
 - [ ] **4** · The adaptive engine
