@@ -52,7 +52,7 @@ Step 3a, which is a leak, not a feature.
 Tick each step as it lands. **This is the source of truth for where we are** — a
 fresh session reads this file, not the chat history.
 
-- [ ] **0** · Decisions — name, cuisine, pricing
+- [x] **0** · Decisions — name, cuisine, pricing
 - [ ] **1** · Paywall: trial length from StoreKit
 - [ ] **2** · Vocabulary
 - [x] **2a** · Design system — `CircaTheme.swift` + the component kit
@@ -71,8 +71,8 @@ fresh session reads this file, not the chat history.
 - [ ] **13** · HealthKit body mass · *post-approval*
 - [ ] **14** · Widgets · *post-approval*
 
-One branch per step (`git checkout -b step-3-remove-exercise`), one commit at the
-end, fresh session for the next one.
+Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
+and nothing here commits on your behalf. Fresh session for the next step.
 
 ---
 
@@ -97,15 +97,15 @@ migrating historical `goalFitScore`. Each is marked at its own site below.
 
 ---
 
-## Step 0 — Your decisions
+## Step 0 — Your decisions · **closed 11 September**
 
-Nothing below starts clean without these. None need me.
+All three are made. Nothing downstream is waiting on you any more.
 
-| Decision | Blocks | Note |
-|---|---|---|
-| ~~**App name**~~ | — | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. **Still owed: a USPTO search on classes 9 and 42**, and the handles. |
-| **Beachhead cuisine** | Steps 6, 9, 10 | Brief assumes desi. Swap is mechanical if not. |
-| **Confirm pricing** | Step 9 | $7.99/mo, $54.99/yr, 14-day trial. |
+| Decision | Note |
+|---|---|
+| ~~**App name**~~ | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. **Still owed: a USPTO search on classes 9 and 42**, and the handles. Neither blocks a build. |
+| ~~**Beachhead cuisine**~~ | **Decided 11 September: there is no single beachhead — the product is cuisine-agnostic.** Cuisines are *lanes*, not an identity: the default listing carries none in particular, and a cuisine reaches its audience through its own Custom Product Page in Step 11. The name and subtitle were already agnostic, so nothing about them changes. What does change is **Step 6's portion reference set**, which spreads across cuisines instead of being 200 desi dishes. |
+| ~~**Confirm pricing**~~ | **Decided 11 September: unchanged — $5.99/mo, $49.99/yr, 3-day trial.** The $7.99 / $54.99 / 14-day move in `project-brief.md` §6 is **deferred, not rejected**; revisit after approval. This is what closes Step 9's items 2 and 3 and takes the urgency out of Step 1. |
 
 ---
 
@@ -120,12 +120,17 @@ that file currently references `introductoryDiscount` or `subscriptionPeriod` �
 
 **Files** `SubscriptionPaywallSheet.swift`
 
-**Done when** the paywall renders "14-day" from StoreKit alone, with no trial
-length literal anywhere in the file.
+**Done when** the paywall renders the trial length from StoreKit alone, with no
+trial length literal anywhere in the file. With the offer frozen at 3 days it
+should still read "3-day" — but read, not typed.
 
-> **Cannot be cut.** It is harmless while the offer really is 3 days. The moment
-> Step 9 changes it to 14, the paywall contradicts App Store Connect — a 3.1.2
-> metadata-mismatch rejection.
+> **Still not cut — but no longer urgent.** Step 0 froze the trial at 3 days, so
+> the literal and the configured offer now agree and the 3.1.2 rejection risk is
+> gone for this submission.
+>
+> It stays in for two reasons. `CLAUDE.md` forbids a hardcoded trial length
+> outright, and the risk comes back **silently** the day the offer changes — by
+> which point nobody remembers there is a string to update. It is an S. Pay it now.
 
 The rest of the subscription layer was re-verified against the codebase on
 7 September and needs no work: entitlement checks, restore, price rendering, the
@@ -412,6 +417,14 @@ Client and AI service together; coordinate the schema change.
 - **Portion reference set** — 100–200 dishes you can verify, in household measures
   (katori, roti vs paratha, a plate of biryani, home-cooking oil). A JSON file plus
   prompt instructions. **Not a `foods` collection.**
+
+  > **Spread it across cuisines** — Step 0 closed cuisine-agnostic on 11 September.
+  > The examples above are desi because the brief was; they are no longer the
+  > shape of the set. What generalises is the **household measure**, not the dish
+  > list — a katori, a cup, a ladle, a piece, a home-sized pour of oil — so build
+  > the set around measures several cuisines share and verify dishes across them.
+  > Still 100–200 you can actually check; still server-side, so it extends without
+  > a build.
 - **Move image analysis off `gpt-5.4`** (`src/ai/imageRecognizer.js:27`) and stop
   routing exercise text through the vision path.
 - **Goal framing in the prompt.** `logEntryPrompt.js:76` tells the model that
@@ -496,9 +509,12 @@ All of this ships with the version. Copy is written and paste-ready in
 `store-copy.md`.
 
 1. Name, subtitle, keywords, description, promotional text.
-2. **Intro offer 3 days → 14 days** on both products. Verify the paywall reads it
-   dynamically — that is Step 1.
-3. Price change to $7.99 / $54.99. Grandfather existing subscribers.
+2. ~~Intro offer 3 days → 14 days~~ — **not this submission** (Step 0, 11 Sep).
+   The trial stays at 3 days, so there is nothing to change in App Store Connect.
+   Verify only that the paywall and the configured offer still say the same thing.
+3. ~~Price change to $7.99 / $54.99~~ — **not this submission** (Step 0, 11 Sep).
+   Prices stay at $5.99 / $49.99. Grandfathering is a problem for the day the
+   change actually happens, which is after approval at the earliest.
 4. **Cross-localization** — two secondary locales, properly. Arabic first: it is
    one of the nine US-indexed secondaries *and* the Gulf localisation we want.
    +160 indexable chars each. **Do not paste the same text into nine slots** —
@@ -682,7 +698,7 @@ come off those screens).
 
 | When | What |
 |---|---|
-| Now | The name, and confirmation of the cuisine |
+| Now | ~~The name, and confirmation of the cuisine~~ — **all of Step 0 closed 11 September.** Only the USPTO search and the handles are still outstanding, and neither blocks a build. |
 | Before Step 4 | Nothing — I can build and seed test data myself |
 | Before Step 9 | App Store Connect access, or you run the metadata changes |
 | Before Step 10 | A device to shoot on, and real-looking data to shoot |

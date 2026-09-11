@@ -256,6 +256,12 @@ then the server-side call is removed from `normalizeLogEntryFeedback`.
 | Trial | 3 days | **14 days** |
 | Entitlement | `ai_scans` | `ai_scans` — unchanged, closed |
 
+> **Decided 11 September: launch ships the "Now" column.** $5.99 / $49.99, 3-day
+> trial. The "Proposed" column is **deferred, not rejected** — the reasoning below
+> still stands, the timing does not. Revisit after approval, when there are
+> conversion numbers to argue with instead of benchmarks. `build-order.md` Step 0
+> is where this is locked; Step 9's items 2 and 3 are struck through accordingly.
+
 The trial length is a product constraint, not a benchmark: an adaptive coach
 cannot demonstrate itself before the first check-in. The trial must span at least
 one, ideally two.
