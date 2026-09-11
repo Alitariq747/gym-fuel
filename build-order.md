@@ -53,7 +53,7 @@ Tick each step as it lands. **This is the source of truth for where we are** —
 fresh session reads this file, not the chat history.
 
 - [x] **0** · Decisions — name, cuisine, pricing
-- [ ] **1** · Paywall: trial length from StoreKit
+- [x] **1** · Paywall: trial length from StoreKit
 - [ ] **2** · Vocabulary
 - [x] **2a** · Design system — `CircaTheme.swift` + the component kit
 - [ ] **3** · Remove exercise and lifting logic

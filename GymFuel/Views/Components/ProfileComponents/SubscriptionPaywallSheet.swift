@@ -347,8 +347,11 @@ struct SubscriptionPaywallSheet: View {
     }
 
     private var continueButtonTitle: String {
-        guard let selectedPackage else { return "Continue" }
-        return subscriptionViewModel.isEligibleForTrial(selectedPackage) ? "Start 3-day free trial" : "Continue"
+        guard let selectedPackage,
+              let trialLength = trialLengthText(for: selectedPackage)
+        else { return "Continue" }
+
+        return "Start \(trialLength) free trial"
     }
 
     private var renewalFooter: some View {
@@ -359,9 +362,29 @@ struct SubscriptionPaywallSheet: View {
             .padding(.horizontal, 8)
     }
 
+    private func trialLengthText(for package: Package) -> String? {
+        guard subscriptionViewModel.isEligibleForTrial(package),
+              let discount = package.storeProduct.introductoryDiscount,
+              discount.paymentMode == .freeTrial
+        else { return nil }
+
+        let period = discount.subscriptionPeriod
+        let count = period.value * discount.numberOfPeriods
+
+        let unit: String
+        switch period.unit {
+        case .day: unit = "day"
+        case .week: unit = "week"
+        case .month: unit = "month"
+        case .year: unit = "year"
+        }
+
+        return "\(count)-\(unit)"
+    }
+
     private func packageSubtitle(for package: Package) -> String {
-        if subscriptionViewModel.isEligibleForTrial(package) {
-            return "3-day free trial available"
+        if let trialLength = trialLengthText(for: package) {
+            return "\(trialLength) free trial available"
         }
 
         return billingText(for: package)
@@ -375,8 +398,8 @@ struct SubscriptionPaywallSheet: View {
     private func footerText(for package: Package) -> String {
         let isYearly = package.storeProduct.productIdentifier == RevenueCatConfig.proYearlyProductIdentifier
 
-        if subscriptionViewModel.isEligibleForTrial(package) {
-            return "3-day free trial, then \(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings."
+        if let trialLength = trialLengthText(for: package) {
+            return "\(trialLength) free trial, then \(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings."
         }
 
         return "\(package.localizedPriceString) \(isYearly ? "per year" : "per month"). Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings."
