@@ -20,6 +20,22 @@ decisions ──► all UI work ──► screenshots ──► submit ──►
 nothing can be submitted until they exist. Every step before them is really a race
 to unblock a photoshoot.
 
+**The redesign is inside this sequence, not beside it.** The app is being rebuilt
+visually as well as functionally — the whole system is specified in `design.md`
+and drawn on the canvas linked there. It threads through in three parts, and the
+ordering is not optional:
+
+1. **Step 2a lands the tokens first**, so no screen is ever built twice.
+2. **Every step after it builds its own screens in the new language.** Steps 3,
+   3a, 4, 5 and 6 each touch or create surfaces; each one ships them looking
+   like `design.md`, not like the current build. This is not extra scope on those
+   steps — it is the same work done once instead of twice.
+3. **Step 7a sweeps the screens no other step rebuilds** — auth, settings, the
+   saved-meal sheets, the explainers. It is the last thing before screenshots
+   because it is the last thing that changes what a screenshot shows.
+
+Do not schedule "the redesign" as a phase. There isn't one.
+
 **Custom Product Pages come after approval.** They need no build and get their own
 review, so they are genuinely post-launch work — but they need the new screenshots,
 so they cannot start early either.
@@ -39,12 +55,14 @@ fresh session reads this file, not the chat history.
 - [ ] **0** · Decisions — name, cuisine, pricing
 - [ ] **1** · Paywall: trial length from StoreKit
 - [ ] **2** · Vocabulary
+- [ ] **2a** · Design system — `CircaTheme.swift` + the component kit
 - [ ] **3** · Remove exercise and lifting logic
 - [ ] **3a** · Notification opt-in in onboarding
 - [ ] **4** · The adaptive engine
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
 - [ ] **7** · Day-aware goal-fit score · *first to cut*
+- [ ] **7a** · Visual sweep — the screens no other step rebuilds
 - [ ] **8** · Rename
 - [ ] **9** · App Store Connect metadata
 - [ ] **10** · Screenshots and submit
@@ -152,6 +170,65 @@ buys nothing. **Not scheduled here; carry it into Step 6.**
 > RevenueCat dashboard breaks entitlement lookups for every user still on an older
 > build — and old builds live in the wild for months. It is a cosmetic, internal
 > change with a real revenue-breaking failure mode. **Keep `ai_scans`.**
+
+---
+
+## Step 2a — Design system · M
+
+**Everything visual after this point depends on it, so it goes before anything
+that draws a screen.** Step 3a is the first step that *creates* a surface; if the
+tokens are not in place by then, that screen gets built twice.
+
+The system is specified in `design.md` — palettes with computed contrast ratios,
+the type pairing, radii, spacing, and the ten rules. This step turns the tokens
+into Swift and the repeated shapes into views. It does not redesign any screen.
+
+**Two files.**
+
+~~`CircaTheme.swift`~~ — **done 10 September**, at `GymFuel/Design/CircaTheme.swift`.
+Fifteen adaptive colour tokens, the paper gradient, eight fonts, and the metrics.
+Read it before writing the kit; it is short, and its doc comments carry the two
+rules that constrain everything else — dark is a designed twin rather than an
+inversion, and fonts are built on **text styles** so Dynamic Type works without
+per-screen effort. The fonts are `.circaTitle`, `.circaEntryTitle`, `.circaRow`,
+`.circaBody`, `.circaCaption`, `.circaMono`, `.circaMonoValue`, `.circaMonoLarge`.
+
+`CircaComponents.swift` — **this is what Step 2a still owes.** The primitives
+every screen repeats:
+
+- the card, the section label (mono, uppercase, tracked), the hairline
+- **the certainty rule** — one modifier with three states: estimated (dotted),
+  known (none), pending (the rule alone, nothing above it). Rule 1 in `design.md`,
+  and the reason nothing jumps when an estimate lands
+- the four button tiers, with the dark-mode inversion of the primary built in
+- the macro bar row, the entry row, the restyled `LogActionDock`
+- the AX3 behaviour, once, where the row goes vertical — not re-solved per screen
+
+> ### Eight, not twenty
+>
+> **Extract only what genuinely repeats, or what carries a rule.** Anything that
+> appears on one screen stays inline on that screen.
+>
+> The failure mode here is not under-building. It is wrapping every element in a
+> `CircaSomething` until there is an abstraction layer nobody can read and every
+> screen is fighting it. Eight components for thirty-three screens is the right
+> order of magnitude; twenty is a warning sign.
+>
+> The certainty rule is the clearest example of what *does* earn a component: it
+> is not styling, it is a three-state rule, and thirty call sites implementing it
+> by hand means one of them eventually shows a spinner or a zero instead of the
+> pending rule — and the whole point, that nothing jumps when the number lands,
+> quietly dies.
+
+**Files** new `CircaComponents.swift`. `CircaTheme.swift` already exists. Existing
+screens are not touched in this step.
+
+**Done when** a scratch view can be built entirely from the kit, it looks like the
+canvas in both themes, and it holds at AX3 without truncation.
+
+> `Color.liftEatsCoral` (`Extras/AppColor.swift`) and the four `Fuel*` colorsets
+> are the old system. Leave them until Step 7a — deleting them now breaks every
+> screen that has not been rebuilt yet.
 
 ---
 
@@ -264,6 +341,33 @@ discover problems.
 **Done when** logging a week of weigh-ins and meals produces a check-in that
 visibly moves next week's targets, and explains why.
 
+> ### ⚠ Settle the sign in step 3 before writing it
+>
+> The expenditure formula, as written both above and in `project-brief.md` §4,
+> does not balance. Worked through with a real losing week:
+>
+> ```
+> meanDailyIntake  = 2369
+> trendDeltaKg     = −0.4     (losing, so negative)
+> days             = 7
+>
+> 2369 + (−0.4 × 7700) / 7  =  2369 − 440  =  1929
+> ```
+>
+> That says you burned **less** than you ate while losing weight. It should be
+> **2809** — expenditure is above intake whenever the trend is falling.
+>
+> So one of two things is true, and it needs deciding rather than discovering:
+> either `trendDeltaKg` is meant to be *kg lost* (positive when losing), in which
+> case the field name is the bug — or the operator is wrong and it should be
+> `meanDailyIntake − (trendDeltaKg × 7700) / days`.
+>
+> **Why this is worth a callout.** A sign error here does not crash and does not
+> look wrong. It produces a check-in screen that reads perfectly and moves every
+> target in the wrong direction — targets rising during a cut, falling during a
+> gain — and the user blames themselves before they blame the app. It is also the
+> one number Shot 05 promises. Fix it in both files at the same time.
+
 ### Two things to leave in place for later steps
 
 Neither is extra work now; both are expensive to retrofit.
@@ -341,6 +445,36 @@ at log time, scores going stale when the goal changes, and `logSavedMeal` writin
 
 ---
 
+## Step 7a — Visual sweep · M
+
+The screens no other step rebuilds. By here, Steps 3, 3a, 4, 5 and 6 have shipped
+their own surfaces in the new language; this is the remainder, and it is the last
+thing that changes what a screenshot shows.
+
+**Scope, from `design.md`'s inventory:**
+
+- **Auth** — Welcome, Sign up, Sign in, reset password. Four screens, one pattern.
+- **Settings** — the hub, targets, reminders, appearance, delete account. Weight
+  is **shown, never edited** — it comes from weigh-ins or the trend stops being a
+  measurement.
+- **Saved meals** — picker, list, add, edit.
+- **Explainers** — the goal-fit sheet, nutrition sources.
+- **Onboarding metric steps** — gender, age, height, weight, activity. One
+  template, five screens; the canvas draws it once as `Onboarding · weight`.
+- **Day picker and menu** — the two-scale nav model. Day and Week only, no Month.
+
+Then delete the old system: `Color.liftEatsCoral`, the four `Fuel*` colorsets, and
+any remaining emoji in view code (the paywall carried eight, the summary step four).
+
+**Done when** no screen in the app still renders from the old palette, and a walk
+from launch to paywall to settings looks like one app in both themes.
+
+> **Not on the cut list.** Everything above the line in *If time runs short* can
+> go; this cannot. Shots 01–06 are taken from these screens, and a listing that
+> mixes two visual systems reads as abandoned rather than minimal.
+
+---
+
 ## Step 8 — Rename · S
 
 The name is **`Circa`** — `CFBundleDisplayName` on the home screen, and
@@ -375,7 +509,8 @@ All of this ships with the version. Copy is written and paste-ready in
 ## Step 10 — Screenshots and submit · M
 
 Six captions, in `store-copy.md`. Shots 04 and 05 need Step 3 shipped; 02, 03 and
-06 need Step 4.
+06 need Step 4. **All six need Step 7a** — a shot of a half-converted screen is
+worse than no shot.
 
 > **Shot 05 — "They move as your weight moves" — must not ship unless Step 4 did.**
 > It is the one caption that promises something the build might not contain.
@@ -536,8 +671,10 @@ Cut in this order. Everything above the line still makes a coherent launch.
 
 Steps 12–14 are not on this list. They are after approval either way.
 
-**Never cut:** Step 1 (rejection risk the moment the trial changes), Step 3's
-rebate removal (corrupts the engine), or Step 4 (it is the reason anyone pays).
+**Never cut:** Step 1 (rejection risk the moment the trial changes), Step 2a
+(everything after it assumes the tokens exist), Step 3's rebate removal (corrupts
+the engine), Step 4 (it is the reason anyone pays), or Step 7a (the screenshots
+come off those screens).
 
 ---
 

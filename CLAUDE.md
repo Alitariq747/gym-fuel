@@ -14,6 +14,7 @@ An iOS calorie tracker, mid-repositioning. Two things a fresh session gets wrong
 | `build-order.md` | What we're building now, in order, with progress checkboxes. **Start here.** |
 | `project-brief.md` | Scope — especially what is explicitly *out* |
 | `store-copy.md` | Exact App Store strings, with character counts |
+| `design.md` | The visual system and its rules. A **spec** — the build does not look like this yet |
 | `repositioning-strategy.md` | Why we're doing this. Rarely needed mid-build |
 | `product-as-built.md` | What the code does today |
 
@@ -61,6 +62,9 @@ Each one is a real failure mode, not a style preference.
   includes importing one.** HealthKit active energy, workouts and steps are out —
   as an input *and* as displayed context. HealthKit is `bodyMass`, read-only.
 - **Don't hardcode a trial length or a price** — read both from StoreKit.
+- **Don't let weight be edited anywhere except a weigh-in.** Same failure class as
+  the calorie rebate: the trend the whole adaptive engine rests on stops being a
+  measurement the moment it can be typed. Settings shows weight; it never edits it.
 
 ## Relaxed — but only until the first user
 
