@@ -182,7 +182,7 @@ struct OnboardingFlowView: View {
 
         case .activityLevel:
             OnboardingActivityLevelStepView(
-                selectedLevel: $data.nonTrainingActivityLevel,
+                selectedLevel: $data.activityLevel,
                 onNext: { go(to: .goal, direction: .forward) }
             )
 
@@ -202,7 +202,7 @@ struct OnboardingFlowView: View {
                let height = data.heightCm,
                let weight = data.weightKg,
                let goalType = data.goalType,
-               let activityLevel = data.nonTrainingActivityLevel {
+               let activityLevel = data.activityLevel {
                 OnboardingSummaryStepView(
                     name: data.name,
                     gender: data.gender,
@@ -225,7 +225,7 @@ struct OnboardingFlowView: View {
             data.heightCm != nil,
             data.weightKg != nil,
             data.goalType != nil,
-            data.nonTrainingActivityLevel != nil
+            data.activityLevel != nil
         else { return }
 
         FirebaseTelemetryService.logOnboardingEvent("finish_tapped", step: step.analyticsName)

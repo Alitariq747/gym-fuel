@@ -24,7 +24,7 @@ struct liftEatsIntro: View {
                     .lineSpacing(0)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("The same meal can support different goals in different ways. LiftEats scores your food based on what you’re trying to do: cut, maintain, or lean bulk")
+                Text("The same meal can support different goals in different ways. LiftEats scores your food based on what you’re trying to do: lose fat, maintain, or gain")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -63,9 +63,9 @@ struct liftEatsIntro: View {
                         .foregroundStyle(.secondary)
 
                     VStack(spacing: 8) {
-                        GoalScoreRow(goal: .cut, title: "Cut", score: "62", tint: .liftEatsCoral)
+                        GoalScoreRow(goal: .cut, title: "Lose fat", score: "62", tint: .liftEatsCoral)
                         GoalScoreRow(goal: .maintain, title: "Maintain", score: "76", tint: .orange)
-                        GoalScoreRow(goal: .leanBulk, title: "Lean bulk", score: "91", tint: .green)
+                        GoalScoreRow(goal: .leanBulk, title: "Gain", score: "91", tint: .green)
                     }
                 }
             }

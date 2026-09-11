@@ -7,7 +7,7 @@ struct MacroTargetCalculator {
               let weightKg = profile.weightKg else { return nil }
 
         let goal = profile.goalType ?? .defaultValue
-        let activity = profile.nonTrainingActivityLevel ?? .somewhatActive
+        let activity = profile.activityLevel ?? .somewhatActive
         let bmr = restingCalories(
             gender: profile.gender,
             age: age,
@@ -42,7 +42,7 @@ struct MacroTargetCalculator {
     }
 }
 
-private extension NonTrainingActivityLevel {
+private extension ActivityLevel {
     var multiplier: Double {
         switch self {
         case .mostlySitting: return 1.35

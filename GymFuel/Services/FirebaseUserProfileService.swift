@@ -50,7 +50,7 @@ final class FirebaseUserProfileService: @unchecked Sendable {
             return try decodeProfile(from: snapshot)
         } else {
             // create a default profile
-            let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil, age: nil, weightKg: nil, goalType: nil, nonTrainingActivityLevel: nil, isOnboardingComplete: false, gender: .preferNotToSay)
+            let defaultProfile = UserProfile(id: uid, name: "", heightCm: nil, age: nil, weightKg: nil, goalType: nil, activityLevel: nil, isOnboardingComplete: false, gender: .preferNotToSay)
 
             var data = try Firestore.Encoder().encode(defaultProfile)
             data["createdAt"] = FieldValue.serverTimestamp()

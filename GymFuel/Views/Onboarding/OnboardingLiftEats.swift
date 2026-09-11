@@ -112,7 +112,7 @@ struct OnboardingLiftEats: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text("This meal is easy to repeat and keeps calories controlled, but the score stays moderate because it is light on protein and total fuel for a muscle-focused goal. LiftEats weighs that tradeoff instead of judging the meal as good or bad.")
+            Text("This meal is easy to repeat and keeps calories controlled, but the score stays moderate because it is light on protein and total calories for a goal of gaining weight. LiftEats weighs that tradeoff instead of judging the meal as good or bad.")
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -157,7 +157,7 @@ struct OnboardingLiftEats: View {
                 }
                 .font(.headline.weight(.bold))
 
-                Text("Adding a higher-protein side and a bit more training fuel could move the same breakfast from light to goal-ready.")
+                Text("Adding a higher-protein side and a few more calories could move the same breakfast from light to goal-ready.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

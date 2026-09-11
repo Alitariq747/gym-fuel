@@ -1,5 +1,5 @@
 //
-//  NonTrainingActivityLevel.swift
+//  ActivityLevel.swift
 //  GymFuel
 //
 //  Created by Ahmad Ali Tariq on 11/12/2025.
@@ -9,10 +9,10 @@
 
 import Foundation
 
-/// User's general activity level *outside* of training.
-/// Used to adjust baseline TDEE, especially on rest days.
+/// How active the user's ordinary day is, before anything they eat is considered.
+/// Used to adjust baseline TDEE.
 
-enum NonTrainingActivityLevel: String, CaseIterable, Codable {
+enum ActivityLevel: String, CaseIterable, Codable {
     case mostlySitting = "mostly_sitting"
     case somewhatActive = "somewhat_active"
     case physicallyDemanding = "physically_demanding"
@@ -20,7 +20,7 @@ enum NonTrainingActivityLevel: String, CaseIterable, Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawValue = try container.decode(String.self)
-        self = NonTrainingActivityLevel(rawValue: rawValue) ?? .mostlySitting
+        self = ActivityLevel(rawValue: rawValue) ?? .mostlySitting
     }
 
     var displayName: String {
@@ -52,7 +52,7 @@ enum NonTrainingActivityLevel: String, CaseIterable, Codable {
         case .somewhatActive:
             return "On your feet often, but not heavy physical labor."
         case .physicallyDemanding:
-            return "Daily work includes lifting, carrying, or long active hours."
+            return "Daily work involves carrying, climbing, or long hours on your feet."
         }
     }
 }

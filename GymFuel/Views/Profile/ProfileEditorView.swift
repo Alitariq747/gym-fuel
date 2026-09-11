@@ -60,7 +60,7 @@ struct ProfileEditorView: View {
     }
 
     private var activityLevelTitle: String {
-        draft.nonTrainingActivityLevel?.shortDisplayName ?? "Set"
+        draft.activityLevel?.shortDisplayName ?? "Set"
     }
 
     // Height
@@ -271,7 +271,7 @@ struct ProfileEditorView: View {
                 showGoalSheet = true
             }
             Divider()
-            rowButton(title: "Non-training Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.nonTrainingActivityLevel == nil) {
+            rowButton(title: "Daily Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.activityLevel == nil) {
                 showActivitySheet = true
             }
         }
@@ -382,7 +382,7 @@ struct ProfileEditorView: View {
                     dismiss: { showActivitySheet = false }
                 )
 
-                ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
+                ForEach(ActivityLevel.allCases, id: \.self) { level in
                     activityOptionRow(level)
                 }
                 Spacer(minLength: 0)
@@ -392,9 +392,9 @@ struct ProfileEditorView: View {
         .background(Color(.systemGroupedBackground))
     }
 
-    private func activityOptionRow(_ level: NonTrainingActivityLevel) -> some View {
+    private func activityOptionRow(_ level: ActivityLevel) -> some View {
         Button {
-            draft.nonTrainingActivityLevel = level
+            draft.activityLevel = level
             showActivitySheet = false
         } label: {
             HStack(alignment: .top, spacing: 14) {
@@ -413,12 +413,12 @@ struct ProfileEditorView: View {
             }
             .padding(14)
             .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.nonTrainingActivityLevel == level ? Color.fuelBlue : Color.gray.opacity(0.24), lineWidth: draft.nonTrainingActivityLevel == level ? 2 : 1))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.activityLevel == level ? Color.fuelBlue : Color.gray.opacity(0.24), lineWidth: draft.activityLevel == level ? 2 : 1))
         }
         .buttonStyle(.plain)
     }
 
-    private func activityEmoji(for level: NonTrainingActivityLevel) -> String {
+    private func activityEmoji(for level: ActivityLevel) -> String {
         switch level {
         case .mostlySitting: return "🪑"
         case .somewhatActive: return "🏃"

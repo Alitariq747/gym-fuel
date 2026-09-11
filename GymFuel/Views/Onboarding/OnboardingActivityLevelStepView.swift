@@ -9,13 +9,13 @@ import SwiftUI
 
 /// Step: What is your general activity level outside of workouts?
 struct OnboardingActivityLevelStepView: View {
-    @Binding var selectedLevel: NonTrainingActivityLevel?
+    @Binding var selectedLevel: ActivityLevel?
     @Environment(\.colorScheme) private var colorScheme
     
     
     let onNext: () -> Void
     
-    @State private var tempSelection: NonTrainingActivityLevel = .mostlySitting
+    @State private var tempSelection: ActivityLevel = .mostlySitting
     @State private var errorMessage: String?
     
     var body: some View {
@@ -32,7 +32,7 @@ struct OnboardingActivityLevelStepView: View {
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
 
-            Text("This helps LiftEats estimate your daily energy needs and set macro targets that fit how active you are outside workouts.")
+            Text("This helps LiftEats estimate your daily energy needs and set macro targets that fit how active you are day to day.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -42,7 +42,7 @@ struct OnboardingActivityLevelStepView: View {
             Spacer()
             
             VStack(spacing: 12) {
-                ForEach(NonTrainingActivityLevel.allCases, id: \.self) { level in
+                ForEach(ActivityLevel.allCases, id: \.self) { level in
                     activityOption(level)
                 }
             }
@@ -77,7 +77,7 @@ struct OnboardingActivityLevelStepView: View {
         }
     }
     
-    private func activityOption(_ level: NonTrainingActivityLevel) -> some View {
+    private func activityOption(_ level: ActivityLevel) -> some View {
         Button {
             tempSelection = level
             errorMessage = nil
@@ -106,7 +106,7 @@ struct OnboardingActivityLevelStepView: View {
         .buttonStyle(.plain)
     }
 
-    private func activityEmoji(for level: NonTrainingActivityLevel) -> String {
+    private func activityEmoji(for level: ActivityLevel) -> String {
         switch level {
         case .mostlySitting: return "🪑"
         case .somewhatActive: return "🏃"

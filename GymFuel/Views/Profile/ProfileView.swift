@@ -64,7 +64,7 @@ struct ProfileView: View {
                 // should never be reached in practice.
                 return self.profileVm.profile ?? UserProfile(
                     id: "", name: "", heightCm: nil, age: nil, weightKg: nil,
-                    goalType: nil, nonTrainingActivityLevel: nil,
+                    goalType: nil, activityLevel: nil,
                     isOnboardingComplete: false, gender: .preferNotToSay
                 )
             },
@@ -437,7 +437,7 @@ struct ProfileView: View {
         if draft.heightCm != profile.heightCm { return true }
         if draft.weightKg != profile.weightKg { return true }
         if draft.goalType != profile.goalType { return true }
-        if draft.nonTrainingActivityLevel != profile.nonTrainingActivityLevel { return true }
+        if draft.activityLevel != profile.activityLevel { return true }
         return false
     }
 

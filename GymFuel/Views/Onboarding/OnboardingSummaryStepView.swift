@@ -7,7 +7,7 @@ struct OnboardingSummaryStepView: View {
     let heightCm: Double
     let weightKg: Double
     let goalType: GoalType
-    let activityLevel: NonTrainingActivityLevel
+    let activityLevel: ActivityLevel
     let onStartTracking: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -21,7 +21,7 @@ struct OnboardingSummaryStepView: View {
             age: age,
             weightKg: weightKg,
             goalType: goalType,
-            nonTrainingActivityLevel: activityLevel,
+            activityLevel: activityLevel,
             isOnboardingComplete: false,
             gender: gender
         )
@@ -43,7 +43,7 @@ struct OnboardingSummaryStepView: View {
                     .font(.title2.weight(.bold))
                     .multilineTextAlignment(.center)
 
-                Text("Built around your goal, training, and daily activity.")
+                Text("Built around your goal, your body, and how you spend your day.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

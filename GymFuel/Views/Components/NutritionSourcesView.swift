@@ -35,7 +35,7 @@ struct NutritionSourcesView: View {
             Daily target
             resting energy × activity factor + goal offset
             """,
-            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). Goal offsets are +250 kcal for Lean Bulk, 0 for Maintain, and −300 kcal for Cut — deliberately moderate rates of change.",
+            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). Goal offsets are +250 kcal for Gain, 0 for Maintain, and −300 kcal for Lose fat — deliberately moderate rates of change.",
             sourceIDs: ["mifflin", "iom"]
         ),
         NutritionMethod(
@@ -44,10 +44,10 @@ struct NutritionSourcesView: View {
             emoji: "💪",
             title: "Your protein, carb, and fat split",
             tint: .fuelBlue,
-            body: "Protein is set at 1.8 g per kg of body weight, raised to 2.2 g/kg on a Cut, where higher intakes help protect lean mass in a calorie deficit. Fat is set at 0.8 g/kg, raised to 0.9 g/kg on Lean Bulk. Carbohydrate fills whatever calories remain.",
+            body: "Protein is set at 1.8 g per kg of body weight, raised to 2.2 g/kg when losing fat, where higher intakes help protect lean mass in a calorie deficit. Fat is set at 0.8 g/kg, raised to 0.9 g/kg when gaining. Carbohydrate fills whatever calories remain.",
             formula: """
-            protein g = weight kg × 1.8   (2.2 on Cut)
-            fat g     = weight kg × 0.8   (0.9 on Lean Bulk)
+            protein g = weight kg × 1.8   (2.2 when losing fat)
+            fat g     = weight kg × 0.8   (0.9 when gaining)
             carbs g   = (target kcal − protein kcal − fat kcal) ÷ 4
             """,
             footnote: "Calories per gram use the Atwater factors: 4 kcal for protein, 4 for carbohydrate, 9 for fat.",

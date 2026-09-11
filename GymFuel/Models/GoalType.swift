@@ -21,33 +21,33 @@ enum GoalType: String, CaseIterable, Codable, Equatable {
     var displayName: String {
         switch self {
         case .leanBulk:
-            return "Lean Bulk"
+            return "Gain"
         case .maintain:
             return "Maintain"
         case .cut:
-            return "Cut"
+            return "Lose fat"
         }
     }
 
     var detail: String {
         switch self {
         case .leanBulk:
-            return "Build muscle with a controlled calorie surplus, so weight gain stays more intentional and not excessively fast."
+            return "Gain weight steadily on a controlled calorie surplus, so it goes on gradually rather than all at once."
         case .maintain:
-            return "Stay around your current body weight while keeping nutrition balanced enough to support recovery, performance, and consistency."
+            return "Stay around your current weight, with nutrition balanced enough to keep your energy steady day to day."
         case .cut:
-            return "Lose fat with tighter calorie control while still keeping nutrition strong enough to support recovery and muscle retention."
+            return "Lose weight with tighter calorie control, keeping protein high enough that most of what you lose is fat."
         }
     }
 
     var symbolName: String {
         switch self {
         case .leanBulk:
-            return "figure.strengthtraining.traditional"
+            return "arrow.up.right"
         case .maintain:
-            return "scale.3d"
+            return "arrow.left.and.right"
         case .cut:
-            return "flame.fill"
+            return "arrow.down.right"
         }
     }
 }

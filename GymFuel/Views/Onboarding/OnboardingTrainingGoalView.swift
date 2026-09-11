@@ -24,7 +24,7 @@ struct OnboardingTrainingGoalStepView: View {
                 .frame(width: 96, height: 96)
                 .background(Color.fuelOrange.opacity(0.14), in: Circle())
             
-            Text("Choose your Training Goal")
+            Text("Choose your goal")
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)

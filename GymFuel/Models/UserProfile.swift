@@ -52,7 +52,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var age: Int?
     var weightKg: Double?
     var goalType: GoalType?
-    var nonTrainingActivityLevel: NonTrainingActivityLevel?
+    var activityLevel: ActivityLevel?
     var isOnboardingComplete: Bool
     var gender: Gender
 
@@ -64,7 +64,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
         case age
         case weightKg
         case goalType
-        case nonTrainingActivityLevel
+        case activityLevel
         case isOnboardingComplete
         case gender
     }
@@ -86,7 +86,7 @@ struct OnboardingAnswers {
     var heightCm: Double? = nil
     var weightKg: Double? = nil
     var goalType: GoalType? = nil
-    var nonTrainingActivityLevel: NonTrainingActivityLevel? = nil
+    var activityLevel: ActivityLevel? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
     func toProfile(id: String) -> UserProfile? {
@@ -95,7 +95,7 @@ struct OnboardingAnswers {
             let heightCm,
             let weightKg,
             let goalType,
-            let nonTrainingActivityLevel
+            let activityLevel
         else { return nil }
 
         return UserProfile(
@@ -105,7 +105,7 @@ struct OnboardingAnswers {
             age: age,
             weightKg: weightKg,
             goalType: goalType,
-            nonTrainingActivityLevel: nonTrainingActivityLevel,
+            activityLevel: activityLevel,
             isOnboardingComplete: true,
             gender: gender
         )
@@ -121,7 +121,7 @@ extension UserProfile {
         age: 38,
         weightKg: 83,
         goalType: .leanBulk,
-        nonTrainingActivityLevel: .mostlySitting,
+        activityLevel: .mostlySitting,
         isOnboardingComplete: true,
         gender: .male
     )
