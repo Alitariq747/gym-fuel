@@ -167,16 +167,6 @@ struct MainTabView: View {
                             }
                         }
                     },
-                onSaveCaloriesBurned: { caloriesBurned in
-                    Task {
-                        if let updatedEntry = await logEntryDetailViewModel.updateCaloriesBurned(
-                            for: entry,
-                            to: caloriesBurned
-                            ) {
-                                await handleUpdatedEntry(updatedEntry)
-                        }
-                    }
-                },
                 onSaveLoggedAt: { loggedAt in
                     Task {
                         if let updatedEntry = await logEntryDetailViewModel.updateLoggedAt(for: entry, to: loggedAt) {
@@ -364,8 +354,7 @@ struct MainTabView: View {
             if let targetMacros {
                 DailyMacroDetailSheet(
                     targetMacros: targetMacros,
-                    consumedMacros: consumedMacros,
-                    burnedCalories: timelineViewModel.burnedCalories
+                    consumedMacros: consumedMacros
                 )
             }
 

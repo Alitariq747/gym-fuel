@@ -378,7 +378,7 @@ struct ProfileEditorView: View {
             VStack(alignment: .leading, spacing: 14) {
                 pickerSheetHeader(
                     title: "Daily movement",
-                    subtitle: "Outside workouts, how active is your normal day?",
+                    subtitle: "Outside exercise, how active is your normal day?",
                     dismiss: { showActivitySheet = false }
                 )
 

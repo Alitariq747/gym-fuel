@@ -76,7 +76,7 @@ struct ProfileReminderSection: View {
                             .font(.title2.weight(.bold))
                             .multilineTextAlignment(.center)
 
-                        Text("Choose how often LiftEats reminds you to log meals or workouts.")
+                        Text("Choose how often LiftEats reminds you to log meals.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)

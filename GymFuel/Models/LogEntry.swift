@@ -48,7 +48,6 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     var source: LogEntrySource
     var status: LogEntryStatus
     var loggedAt: Date
-    let type: LogEntryType
     var title: String
     var rawInput: String
     var detail: String?
@@ -62,7 +61,6 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
         source: LogEntrySource = .text,
         status: LogEntryStatus = .succeeded,
         loggedAt: Date = Date(),
-        type: LogEntryType,
         title: String,
         rawInput: String,
         detail: String? = nil,
@@ -75,7 +73,6 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.source = source
         self.status = status
         self.loggedAt = loggedAt
-        self.type = type
         self.title = title
         self.rawInput = rawInput
         self.detail = detail

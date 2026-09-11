@@ -23,8 +23,7 @@ struct StatsCalculator {
             entry.loggedAt >= selectedWeekStart && entry.loggedAt < selectedWeekEnd
         }
         let loggedDays = Set(weekEntries.map { calendar.startOfDay(for: $0.loggedAt) })
-        let foodLogs = weekEntries.filter { $0.type == .food }.count
-        let workoutLogs = weekEntries.filter { $0.type == .exercise }.count
+        let foodLogs = weekEntries.count
         let dailyStats = (0..<7).compactMap { dayOffset -> DailyStatsSnapshot? in
             guard let date = calendar.date(byAdding: .day, value: dayOffset, to: selectedWeekStart) else {
                 return nil
@@ -38,11 +37,9 @@ struct StatsCalculator {
                     fat: partial.fat + macros.fat
                 )
             }
-            let caloriesBurned = dayEntries.reduce(0) { $0 + ($1.feedback?.estimatedCalories ?? 0) }
             return DailyStatsSnapshot(
                 date: date,
                 caloriesEaten: foodMacros.calories,
-                caloriesBurned: caloriesBurned,
                 protein: foodMacros.protein,
                 carbs: foodMacros.carbs,
                 fat: foodMacros.fat,
@@ -69,7 +66,6 @@ struct StatsCalculator {
         snapshot.averageCarbs = dailyStats.reduce(0) { $0 + $1.carbs } / Double(dailyStats.count)
         snapshot.averageFat = dailyStats.reduce(0) { $0 + $1.fat } / Double(dailyStats.count)
         snapshot.foodLogsThisWeek = foodLogs
-        snapshot.workoutLogsThisWeek = workoutLogs
         snapshot.dailyStats = dailyStats
         return snapshot
     }

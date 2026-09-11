@@ -3,7 +3,6 @@ import SwiftUI
 struct TimelineEntryLeadingVisual: View {
     let entry: LogEntry
     let state: TimelineEntryRowState
-    let exerciseSymbol: String
     let width: CGFloat
     let height: CGFloat
 
@@ -18,10 +17,8 @@ struct TimelineEntryLeadingVisual: View {
 
     @ViewBuilder
     private var content: some View {
-        if entry.type == .exercise {
-            leadingSymbol(exerciseSymbol)
-        } else if let localPreviewData = state.localPreviewData,
-                  let previewImage = UIImage(data: localPreviewData) {
+        if let localPreviewData = state.localPreviewData,
+           let previewImage = UIImage(data: localPreviewData) {
             mealImageVisual {
                 Image(uiImage: previewImage)
                     .resizable()
@@ -37,7 +34,7 @@ struct TimelineEntryLeadingVisual: View {
                     height: height
                 )
             }
-        } else if entry.type == .food && !state.isAnalyzingTextEntry {
+        } else if !state.isAnalyzingTextEntry {
             leadingSymbol(entry.source == .savedMeal ? "bookmark" : "square.and.pencil")
         }
     }

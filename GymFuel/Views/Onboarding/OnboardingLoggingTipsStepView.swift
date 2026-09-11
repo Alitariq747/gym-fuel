@@ -34,33 +34,6 @@ struct OnboardingLoggingTipsStepView: View {
         )
     ]
 
-    private let workoutExamples: [LoggingTipExample] = [
-        .init(
-            vagueLabel: "Too vague",
-            helpfulLabel: "More helpful",
-            simpleTitle: "leg day",
-            refinedTitle: "Leg day, 70 min, high intensity, 22 total sets",
-            simpleConfidence: 35,
-            refinedConfidence: 89,
-            simpleCalories: 210,
-            refinedCalories: 520,
-            simpleImageName: "leg_day_simple",
-            refinedImageName: "leg_day_refined"
-        ),
-        .init(
-            vagueLabel: "Too vague",
-            helpfulLabel: "More helpful",
-            simpleTitle: "walk",
-            refinedTitle: "Incline treadmill walk, 25 min, moderate intensity",
-            simpleConfidence: 40,
-            refinedConfidence: 86,
-            simpleCalories: 120,
-            refinedCalories: 230,
-            simpleImageName: "walk_simple",
-            refinedImageName: "walk_refined"
-        )
-    ]
-
     var body: some View {
         VStack(spacing: 14) {
             ScrollView(showsIndicators: false) {
@@ -70,9 +43,6 @@ struct OnboardingLoggingTipsStepView: View {
 
                     examplesSection(title: "Meals", symbol: "fork.knife", examples: mealExamples)
                         .loggingTipEntrance(isVisible: hasAppeared, delay: 0.14, reduceMotion: reduceMotion)
-
-                    examplesSection(title: "Workouts", symbol: "dumbbell.fill", examples: workoutExamples)
-                        .loggingTipEntrance(isVisible: hasAppeared, delay: 0.28, reduceMotion: reduceMotion)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
@@ -102,7 +72,7 @@ struct OnboardingLoggingTipsStepView: View {
             .buttonStyle(.plain)
             .padding(.horizontal, 16)
             .padding(.bottom, 4)
-            .loggingTipEntrance(isVisible: hasAppeared, delay: 0.42, reduceMotion: reduceMotion)
+            .loggingTipEntrance(isVisible: hasAppeared, delay: 0.28, reduceMotion: reduceMotion)
         }
         .onAppear {
             hasAppeared = false
@@ -130,7 +100,7 @@ struct OnboardingLoggingTipsStepView: View {
             .lineSpacing(-2)
             .minimumScaleFactor(0.8)
 
-            Text("Add portions, brands, cooking style, duration, intensity, and sets so LiftEats can judge meals and workouts more accurately.")
+            Text("Add portions, brands, and cooking style so LiftEats can judge meals more accurately.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

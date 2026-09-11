@@ -3,22 +3,15 @@ import SwiftUI
 struct TimelineEntryMetricsView: View {
     let entry: LogEntry
     let state: TimelineEntryRowState
-    let exerciseSymbol: String
     let showRevealedCalories: Bool
     let showRevealedProtein: Bool
     let showRevealedCarbs: Bool
     let showRevealedFat: Bool
     let showRevealedGoalFit: Bool
 
-    private var exerciseEstimate: ExerciseEstimate? {
-        state.feedback?.exercise
-    }
-
     var body: some View {
-        if entry.type == .exercise {
-            exerciseMetricRows()
-        } else if let macros = state.feedback?.macros, entry.type == .food,
-                  showRevealedCalories || showRevealedProtein || showRevealedCarbs || showRevealedFat {
+        if let macros = state.feedback?.macros,
+           showRevealedCalories || showRevealedProtein || showRevealedCarbs || showRevealedFat {
             foodMetricRows(macros)
         }
     }
@@ -48,35 +41,6 @@ struct TimelineEntryMetricsView: View {
             .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
         }
         .padding(.top, 1)
-    }
-
-    @ViewBuilder
-    private func exerciseMetricRows() -> some View {
-        if showRevealedCalories || exerciseEstimate != nil {
-            VStack(alignment: .leading, spacing: 6) {
-                if showRevealedCalories, let estimatedCalories = state.feedback?.estimatedCalories {
-                    primaryMetricStat(symbol: "flame.fill", value: "\(Int(estimatedCalories.rounded())) Burned", color: .primary)
-                }
-                if let exerciseEstimate {
-                    HStack(spacing: 7) {
-                        exerciseSecondaryMetricStat(
-                            symbol: exerciseSymbol,
-                            value: displayActivityType(exerciseEstimate.activityType)
-                        )
-                        exerciseSecondaryMetricStat(
-                            symbol: "clock.fill",
-                            value: "\(exerciseEstimate.durationMinutes) min"
-                        )
-                        exerciseSecondaryMetricStat(
-                            symbol: intensitySymbol(for: exerciseEstimate.intensity),
-                            value: displayIntensity(exerciseEstimate.intensity)
-                        )
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
-                }
-            }
-            .padding(.top, 1)
-        }
     }
 
     @ViewBuilder
@@ -110,21 +74,6 @@ struct TimelineEntryMetricsView: View {
     }
 
     @ViewBuilder
-    private func exerciseSecondaryMetricStat(symbol: String, value: String) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: symbol)
-                .font(.caption2.weight(.regular))
-                .foregroundStyle(.primary)
-                .frame(width: 14, height: 14)
-            Text(value)
-                .font(.caption2.weight(.regular))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.78)
-        }
-    }
-
-    @ViewBuilder
     private func goalFitScoreBadge(score: Int) -> some View {
         let color = scoreColor(for: score)
         let symbolName = state.feedback?.goalType?.symbolName ?? GoalType.defaultValue.symbolName
@@ -142,55 +91,6 @@ struct TimelineEntryMetricsView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .stroke(color.opacity(0.14), lineWidth: 1)
-        }
-    }
-
-    private func displayActivityType(_ value: String) -> String {
-        switch value {
-        case "walking":
-            return "Walking"
-        case "running":
-            return "Running"
-        case "cycling":
-            return "Cycling"
-        case "strength_training":
-            return "Strength"
-        case "hiit":
-            return "HIIT"
-        case "swimming":
-            return "Swimming"
-        case "sports":
-            return "Sports"
-        case "rowing":
-            return "Rowing"
-        case "hiking":
-            return "Hiking"
-        case "yoga":
-            return "Yoga"
-        default:
-            return "Exercise"
-        }
-    }
-
-    private func displayIntensity(_ value: String) -> String {
-        switch value {
-        case "low":
-            return "Low"
-        case "high":
-            return "High"
-        default:
-            return "Moderate"
-        }
-    }
-
-    private func intensitySymbol(for value: String) -> String {
-        switch value {
-        case "low":
-            return "gauge.low"
-        case "high":
-            return "gauge.high"
-        default:
-            return "gauge.medium"
         }
     }
 

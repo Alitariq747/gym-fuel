@@ -17,7 +17,6 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
         let description: String?
         let macros: Macros
         let createdAt: Date
-        let lastUsedAt: Date?
     }
 
     private func savedMealsCollection(for userId: String) -> CollectionReference {
@@ -26,7 +25,7 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
 
     private func decodeSavedMeal(from snapshot: QueryDocumentSnapshot) throws -> SavedMeal {
         let document = try snapshot.data(as: SavedMealDocument.self)
-        return SavedMeal(id: snapshot.documentID, userId: document.userId, name: document.name, description: document.description, macros: document.macros, createdAt: document.createdAt, lastUsedAt: document.lastUsedAt)
+        return SavedMeal(id: snapshot.documentID, userId: document.userId, name: document.name, description: document.description, macros: document.macros, createdAt: document.createdAt)
     }
 
     private func decodeSavedMeal(skippingFailuresFrom snapshot: QueryDocumentSnapshot) -> SavedMeal? {
@@ -44,7 +43,7 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
 
     private func encodeSavedMeal(_ meal: SavedMeal) throws -> [String: Any] {
         try Firestore.Encoder().encode(
-            SavedMealDocument(userId: meal.userId, name: meal.name, description: meal.description, macros: meal.macros, createdAt: meal.createdAt, lastUsedAt: meal.lastUsedAt)
+            SavedMealDocument(userId: meal.userId, name: meal.name, description: meal.description, macros: meal.macros, createdAt: meal.createdAt)
         )
     }
 

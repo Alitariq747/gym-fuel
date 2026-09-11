@@ -27,63 +27,9 @@ struct TimelineEntryRow: View {
         TimelineEntryRowState(entry: entry, localPreviewData: localPreviewData)
     }
 
-    private var exerciseEstimate: ExerciseEstimate? {
-        rowState.feedback?.exercise
-    }
-    private var exerciseSymbol: String {
-        if let activityType = exerciseEstimate?.activityType {
-            switch activityType {
-            case "walking":
-                return "figure.walk"
-            case "running":
-                return "figure.run"
-            case "cycling":
-                return "bicycle"
-            case "swimming":
-                return "figure.pool.swim"
-            case "hiking":
-                return "figure.hiking"
-            case "yoga":
-                return "figure.mind.and.body"
-            case "rowing":
-                return "figure.rower"
-            case "hiit":
-                return "bolt.heart.fill"
-            case "sports":
-                return "figure.soccer"
-            case "strength_training":
-                return "dumbbell.fill"
-            default:
-                break
-            }
-        }
-
-        let title = entry.title.lowercased()
-
-        if title.contains("run") || title.contains("treadmill") {
-            return "figure.run"
-        }
-        if title.contains("walk") || title.contains("hike") {
-            return "figure.walk"
-        }
-        if title.contains("cycle") || title.contains("bike") {
-            return "bicycle"
-        }
-        if title.contains("swim") {
-            return "figure.pool.swim"
-        }
-        if title.contains("yoga") || title.contains("stretch") {
-            return "figure.mind.and.body"
-        }
-        if title.contains("box") {
-            return "figure.boxing"
-        }
-        return "dumbbell.fill"
-    }
-
     private func applyImmediateRevealState() {
         showRevealedTitle = true
-        showRevealedCalories = rowState.hasConsumedMacros || rowState.hasBurnedCalories
+        showRevealedCalories = rowState.hasConsumedMacros
         showRevealedProtein = rowState.hasConsumedMacros
         showRevealedCarbs = rowState.hasConsumedMacros
         showRevealedFat = rowState.hasConsumedMacros
@@ -178,7 +124,6 @@ struct TimelineEntryRow: View {
                 TimelineEntryLeadingVisual(
                     entry: entry,
                     state: rowState,
-                    exerciseSymbol: exerciseSymbol,
                     width: leadingMediaWidth,
                     height: leadingMediaHeight
                 )
@@ -218,7 +163,6 @@ struct TimelineEntryRow: View {
                         TimelineEntryMetricsView(
                             entry: entry,
                             state: rowState,
-                            exerciseSymbol: exerciseSymbol,
                             showRevealedCalories: showRevealedCalories,
                             showRevealedProtein: showRevealedProtein,
                             showRevealedCarbs: showRevealedCarbs,

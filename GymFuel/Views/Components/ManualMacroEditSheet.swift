@@ -1,14 +1,7 @@
 import SwiftUI
 
 struct ManualMacroEditSheet: View {
-    private enum Mode {
-        case food(Macros)
-        case exercise(Double)
-    }
-
-    private let mode: Mode
     var onSaveMacros: ((Macros) -> Void)? = nil
-    var onSaveCaloriesBurned: ((Double) -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
     @State private var caloriesText: String
@@ -18,7 +11,6 @@ struct ManualMacroEditSheet: View {
     @FocusState private var isInputFocused: Bool
 
     init(initialMacros: Macros, onSave: ((Macros) -> Void)? = nil) {
-        self.mode = .food(initialMacros)
         self.onSaveMacros = onSave
         _caloriesText = State(initialValue: Self.string(initialMacros.calories))
         _proteinText = State(initialValue: Self.string(initialMacros.protein))
@@ -26,44 +18,26 @@ struct ManualMacroEditSheet: View {
         _fatText = State(initialValue: Self.string(initialMacros.fat))
     }
 
-    init(initialCaloriesBurned: Double, onSave: ((Double) -> Void)? = nil) {
-        self.mode = .exercise(initialCaloriesBurned)
-        self.onSaveCaloriesBurned = onSave
-        _caloriesText = State(initialValue: Self.string(initialCaloriesBurned))
-        _proteinText = State(initialValue: "")
-        _carbsText = State(initialValue: "")
-        _fatText = State(initialValue: "")
-    }
-
     var body: some View {
         NavigationStack {
             AdaptiveScrollContainer {
                 VStack(alignment: .leading, spacing: 18) {
-                Text(isExerciseEditor ? "Edit Calories Burned" : "Edit Macros")
+                Text("Edit Macros")
                     .font(.title3.weight(.bold))
                 Text(editorSubtitle)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                if isExerciseEditor {
-                    macroBox("Calories Burned", suffix: "kcal", text: $caloriesText)
-                } else {
-                    LazyVGrid(columns: gridColumns, spacing: 12) {
-                        macroBox("Calories", suffix: "kcal", text: $caloriesText)
-                        macroBox("Protein", suffix: "g", text: $proteinText)
-                        macroBox("Carbs", suffix: "g", text: $carbsText)
-                        macroBox("Fat", suffix: "g", text: $fatText)
-                    }
+                LazyVGrid(columns: gridColumns, spacing: 12) {
+                    macroBox("Calories", suffix: "kcal", text: $caloriesText)
+                    macroBox("Protein", suffix: "g", text: $proteinText)
+                    macroBox("Carbs", suffix: "g", text: $carbsText)
+                    macroBox("Fat", suffix: "g", text: $fatText)
                 }
                 Spacer(minLength: 0)
                 Button {
                     isInputFocused = false
-                    if let updatedMacros {
-                        onSaveMacros?(updatedMacros)
-                    } else if let updatedCaloriesBurned {
-                        onSaveCaloriesBurned?(updatedCaloriesBurned)
-                    } else {
-                        return
-                    }
+                    guard let updatedMacros else { return }
+                    onSaveMacros?(updatedMacros)
 
                     dismiss()
                 } label: {
@@ -75,7 +49,7 @@ struct ManualMacroEditSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(Color.liftEatsCoral, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .disabled(updatedMacros == nil && updatedCaloriesBurned == nil)
+                .disabled(updatedMacros == nil)
             }
                 .padding()
             }
@@ -85,29 +59,16 @@ struct ManualMacroEditSheet: View {
         .presentationContentInteraction(.scrolls)
     }
 
-    private var isExerciseEditor: Bool {
-        if case .exercise = mode { return true }
-        return false
-    }
-
     private var editorSubtitle: String {
-        isExerciseEditor ?
-            "Adjust the calorie burn estimate manually." :
-            "Adjust the nutrition values manually."
+        "Adjust the nutrition values manually."
     }
 
     private var updatedMacros: Macros? {
-        guard !isExerciseEditor else { return nil }
         guard let calories = Double(caloriesText),
               let protein = Double(proteinText),
               let carbs = Double(carbsText),
               let fat = Double(fatText) else { return nil }
         return Macros(calories: calories, protein: protein, carbs: carbs, fat: fat)
-    }
-
-    private var updatedCaloriesBurned: Double? {
-        guard isExerciseEditor else { return nil }
-        return Double(caloriesText)
     }
 
     private var gridColumns: [GridItem] {

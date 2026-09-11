@@ -9,13 +9,11 @@ import SwiftUI
 
 struct StatsActivitySummaryRow: View {
     let foodLogs: Int
-    let workoutLogs: Int
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 12) {
             statTile(title: "Meals", value: "\(foodLogs)", emoji: "🥗")
-            statTile(title: "Workouts", value: "\(workoutLogs)", emoji: "🏋️")
         }
     }
 
@@ -55,6 +53,6 @@ struct StatsActivitySummaryRow: View {
 }
 
 #Preview {
-    StatsActivitySummaryRow(foodLogs: 18, workoutLogs: 3)
+    StatsActivitySummaryRow(foodLogs: 18)
         .padding()
 }

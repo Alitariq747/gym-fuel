@@ -77,7 +77,6 @@ final class LogEntryDetailViewModel: ObservableObject {
                 source: entry.source,
                 status: .succeeded,
                 loggedAt: entry.loggedAt,
-                type: reinterpretedEntry.type,
                 title: reinterpretedEntry.title,
                 rawInput: newRawInput,
                 detail: reinterpretedEntry.detail,
@@ -109,31 +108,12 @@ final class LogEntryDetailViewModel: ObservableObject {
                     explanation: "",
                     assumptions: [],
                     confidence: nil,
-                    estimatedCalories: nil,
                     macros: macros,
                     goalFitScore: nil,
                     estimatedItems: nil
                 )
             } else {
                 updated.feedback?.macros = macros
-            }
-        }
-    }
-
-    func updateCaloriesBurned(for entry: LogEntry, to caloriesBurned: Double) async -> LogEntry? {
-        await updateEntry(entry) { updated in
-            if updated.feedback == nil {
-                updated.feedback = LogEntryFeedback(
-                    explanation: "",
-                    assumptions: [],
-                    confidence: nil,
-                    estimatedCalories: caloriesBurned,
-                    macros: nil,
-                    goalFitScore: nil,
-                    estimatedItems: nil
-                )
-            } else {
-                updated.feedback?.estimatedCalories = caloriesBurned
             }
         }
     }

@@ -16,10 +16,6 @@ struct CaloriesStatsCard: View {
         return Int(target).formatted()
     }
 
-    private var totalCaloriesBurned: Double {
-        snapshot.dailyStats.reduce(0) { $0 + $1.caloriesBurned }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
@@ -49,7 +45,7 @@ struct CaloriesStatsCard: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Calories")
                 .font(.headline.weight(.bold))
-            Text("Eaten, burned, and target by day")
+            Text("Eaten and target by day")
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
         }
@@ -81,7 +77,6 @@ struct CaloriesStatsCard: View {
         HStack(spacing: 12) {
             legendItem(color: Color.fuelBlue.opacity(0.8), title: "Eaten")
             legendItem(color: Color.fuelRed.opacity(0.85), title: "Over")
-            legendItem(color: Color.fuelOrange.opacity(0.65), title: "Burned")
             HStack(spacing: 5) {
                 Capsule()
                     .stroke(Color.primary.opacity(0.28), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
@@ -97,7 +92,6 @@ struct CaloriesStatsCard: View {
         HStack(spacing: 8) {
             summaryItem("Avg", "\(Int(snapshot.averageCalories).formatted())")
             summaryItem("Target days", "\(snapshot.calorieTargetDays) / 7")
-            summaryItem("Burned", "\(Int(totalCaloriesBurned).formatted())")
         }
     }
 

@@ -14,7 +14,6 @@ struct SavedMeal: Codable, Identifiable, Equatable {
     var description: String?
     var macros: Macros
     var createdAt: Date
-    var lastUsedAt: Date?
 
     init(
         id: String,
@@ -22,8 +21,7 @@ struct SavedMeal: Codable, Identifiable, Equatable {
         name: String,
         description: String? = nil,
         macros: Macros,
-        createdAt: Date = Date(),
-        lastUsedAt: Date? = nil
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.userId = userId
@@ -31,7 +29,6 @@ struct SavedMeal: Codable, Identifiable, Equatable {
         self.description = description
         self.macros = macros
         self.createdAt = createdAt
-        self.lastUsedAt = lastUsedAt
     }
 }
 

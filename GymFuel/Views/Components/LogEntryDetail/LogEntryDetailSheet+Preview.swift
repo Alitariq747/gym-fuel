@@ -12,7 +12,6 @@ private struct PreviewSavedMealService: SavedMealService {
         LogEntryDetailSheet(
             entry: LogEntry(
                 userId: "preview",
-                type: .food,
                 title: "Chicken Bowl",
                 rawInput: "Chicken bowl with some salad and fruits with one cup of boiled rice",
                 feedback: LogEntryFeedback(
@@ -22,7 +21,6 @@ private struct PreviewSavedMealService: SavedMealService {
                         "Salad dressing was assumed to be light and not separately logged.",
                     ],
                     confidence: 0.72,
-                    estimatedCalories: nil,
                     macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
                     goalFitScore: 78,
                     estimatedItems: [

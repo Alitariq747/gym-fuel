@@ -15,9 +15,8 @@ struct SubscriptionPaywallSheet: View {
     private var features: [(emoji: String, title: String, detail: String)] {
         [
             ("📊", "500 AI scans a month",
-             "About 16 a day, on both monthly and yearly plans — plenty to log and reinterpret every meal and workout."),
+             "About 16 a day, on both monthly and yearly plans — plenty to log and reinterpret every meal."),
             ("🥗", "Food logging", "Log meals with text or photos in seconds."),
-            ("🏋️", "Exercise logging", "Track workouts without breaking your flow."),
             ("⚡️", "Very low friction", "Built for quick logging throughout the day."),
             ("🎯", "Goal-based insights", "See feedback shaped around your current goal."),
             ("🏆", "Meal scoring", "Understand how each meal fits your plan."),

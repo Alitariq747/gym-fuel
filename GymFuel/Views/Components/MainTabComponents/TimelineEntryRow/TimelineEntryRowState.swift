@@ -49,24 +49,18 @@ struct TimelineEntryRowState {
     }
 
     var hasConsumedMacros: Bool {
-        entry.type == .food && feedback?.macros != nil
-    }
-
-    var hasBurnedCalories: Bool {
-        entry.type == .exercise && feedback?.estimatedCalories != nil
+        feedback?.macros != nil
     }
 
     var hasGoalFitScore: Bool {
-        entry.type == .food && feedback?.goalFitScore != nil
+        feedback?.goalFitScore != nil
     }
 
     var isMealImageEntry: Bool {
         let rawInput = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        return entry.type == .food && (
-            imageStoragePath != nil ||
+        return imageStoragePath != nil ||
             localPreviewData != nil ||
             entry.imageUploadStatus != nil ||
             rawInput == "Meal image"
-        )
     }
 }

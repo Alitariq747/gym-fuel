@@ -65,19 +65,8 @@ struct NutritionSourcesView: View {
             sourceIDs: ["schoenfeld", "issn", "iom"]
         ),
         NutritionMethod(
-            id: "exercise",
-            index: "04",
-            emoji: "🏃",
-            title: "Exercise calories",
-            tint: .purple,
-            body: "Calories burned are estimated from the activity type, duration, and intensity you log, combined with typical adult body-size assumptions. These follow the metabolic equivalent (MET) values published in the Compendium of Physical Activities.",
-            formula: nil,
-            footnote: "Burn estimates vary considerably between individuals. Treat them as a rough guide, not a measurement.",
-            sourceIDs: ["ainsworth"]
-        ),
-        NutritionMethod(
             id: "ai",
-            index: "05",
+            index: "04",
             emoji: "🤖",
             title: "Food estimates and LiftEats Analysis",
             tint: .cyan,
@@ -118,12 +107,6 @@ struct NutritionSourcesView: View {
             shortLabel: "Schoenfeld BJ, Aragon AA. J Int Soc Sports Nutr. 2018;15:10",
             citation: "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/29497353/")
-        ),
-        NutritionSource(
-            id: "ainsworth",
-            shortLabel: "Ainsworth BE, et al. 2011 Compendium of Physical Activities. Med Sci Sports Exerc. 2011;43(8):1575–1581",
-            citation: "Ainsworth BE, Haskell WL, Herrmann SD, et al. 2011 Compendium of Physical Activities: a second update of codes and MET values. Med Sci Sports Exerc. 2011;43(8):1575–1581.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/21681120/")
         ),
         NutritionSource(
             id: "fao",
@@ -205,7 +188,7 @@ struct NutritionSourcesView: View {
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
 
-                Text("Every target, score, and estimate in LiftEats traces back to published nutrition and exercise science. Here is exactly what we use, and where it came from.")
+                Text("Every target, score, and estimate in LiftEats traces back to published nutrition science. Here is exactly what we use, and where it came from.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

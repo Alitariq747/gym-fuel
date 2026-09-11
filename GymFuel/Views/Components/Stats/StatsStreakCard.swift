@@ -57,7 +57,7 @@ struct StatsStreakCard: View {
     private var weeklyDayIndicators: some View {
         HStack(spacing: 6) {
             ForEach(snapshot.dailyStats) { day in
-                let hasLogged = day.caloriesEaten > 0 || day.caloriesBurned > 0 || day.protein > 0 || day.carbs > 0 || day.fat > 0
+                let hasLogged = day.caloriesEaten > 0 || day.protein > 0 || day.carbs > 0 || day.fat > 0
                 Text(day.date.formatted(.dateTime.weekday(.narrow)))
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(hasLogged ? Color.white : Color.secondary)

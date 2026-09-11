@@ -113,7 +113,7 @@ private enum ProfileSubscriptionCopy {
     static func subtitle(for status: SubscriptionStatus) -> String? {
         switch status.state {
         case .free:
-            return "Unlock AI meal and workout logging"
+            return "Unlock AI meal logging"
         case .trial, .active:
             return nil
         }

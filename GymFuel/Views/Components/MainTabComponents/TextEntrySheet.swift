@@ -36,7 +36,7 @@ struct TextEntrySheet: View {
                 .padding(.bottom, 10)
 
                 VStack(spacing: 22) {
-                    Text("DESCRIBE YOUR MEAL OR WORKOUT")
+                    Text("DESCRIBE YOUR MEAL")
                         .font(.system(size: 17, weight: .bold))
                         .tracking(0.2)
                         .multilineTextAlignment(.center)
@@ -51,7 +51,7 @@ struct TextEntrySheet: View {
                                     .multilineTextAlignment(.center)
                                     .frame(maxWidth: .infinity)
 
-                                Text("e.g Heavy leg day lasting more than 1 hour and 30 minutes.")
+                                Text("e.g Two rotis with a katori of chicken curry and a spoon of ghee")
                                     .font(.system(size: 18, weight: .medium))
                                     .foregroundStyle(Color.primary.opacity(0.18))
                                     .multilineTextAlignment(.center)

@@ -94,30 +94,6 @@ final class SavedMealsViewModel: ObservableObject {
             savedMeals.insert(meal, at: 0)
         }
     }
-
-    func isSavedMeal(name: String, description: String?, macros: Macros) -> Bool {
-        let fingerprintValue = fingerprint(name: name, description: description ?? "", macros: macros)
-        return savedMeals.contains { fingerprint(for: $0) == fingerprintValue }
-    }
-
-    func fingerprint(for savedMeal: SavedMeal) -> String {
-        fingerprint(
-            name: savedMeal.name,
-            description: savedMeal.description ?? "",
-            macros: savedMeal.macros
-        )
-    }
-
-    private func fingerprint(name: String, description: String, macros: Macros) -> String {
-        let normalizedName = name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let normalizedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let calories = Int(round(macros.calories))
-        let protein = Int(round(macros.protein))
-        let carbs = Int(round(macros.carbs))
-        let fat = Int(round(macros.fat))
-
-        return "\(normalizedName)|\(normalizedDescription)|\(calories)|\(protein)|\(carbs)|\(fat)"
-    }
 }
 extension SavedMealsViewModel {
     func _setSavedMealsForPreview(_ meals: [SavedMeal]) {

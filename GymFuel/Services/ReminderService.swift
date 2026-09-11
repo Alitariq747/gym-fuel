@@ -140,15 +140,15 @@ final class ReminderService {
         let messages = [
             (
                 title: "Quick LiftEats check-in",
-                body: "Log your latest meal or workout while it’s still fresh."
+                body: "Log your latest meal while it’s still fresh."
             ),
             (
                 title: "Keep your day on track",
-                body: "A quick meal or workout log keeps your progress accurate."
+                body: "A quick meal log keeps your progress accurate."
             ),
             (
                 title: "Small log, useful insight",
-                body: "Add what you ate or trained and let LiftEats do the rest."
+                body: "Add what you ate and let LiftEats do the rest."
             ),
         ]
         let message = messages[contentIndex % messages.count]

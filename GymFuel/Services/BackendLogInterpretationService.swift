@@ -82,7 +82,6 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
     }
 
     private struct TextInterpretationResponse: Codable {
-        var type: LogEntryType
         var rawInput: String?
         var title: String
         var detail: String?
@@ -103,7 +102,6 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         LogEntry(
             userId: userId,
             loggedAt: loggedAt,
-            type: response.type,
             title: response.title,
             rawInput: rawText,
             detail: response.detail,
@@ -238,17 +236,8 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             recordUnexpectedEmptyAIResponse(route: route, statusCode: statusCode)
         }
 
-        let fallbackTitle: String
-        let fallbackExplanation: String
-
-        switch response.type {
-        case .food:
-            fallbackTitle = "Logged meal"
-            fallbackExplanation = "Estimated nutrition based on the logged entry."
-        case .exercise:
-            fallbackTitle = "Logged exercise"
-            fallbackExplanation = "Estimated calorie burn based on the logged activity."
-        }
+        let fallbackTitle = "Logged meal"
+        let fallbackExplanation = "Estimated nutrition based on the logged entry."
 
         var normalizedResponse = response
         normalizedResponse.title = trimmedTitle.isEmpty ? fallbackTitle : trimmedTitle

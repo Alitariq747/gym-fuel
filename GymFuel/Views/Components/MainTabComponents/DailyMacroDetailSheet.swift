@@ -6,10 +6,9 @@ struct DailyMacroDetailSheet: View {
 
     let targetMacros: Macros
     let consumedMacros: Macros
-    let burnedCalories: Double
 
     private var remainingCalories: Int {
-        Int((targetMacros.calories - consumedMacros.calories + burnedCalories).rounded())
+        Int((targetMacros.calories - consumedMacros.calories).rounded())
     }
 
     private var remainingLabel: String {
@@ -28,7 +27,7 @@ struct DailyMacroDetailSheet: View {
 
                 calorieProgressRing
 
-                calorieMeta("Burned", value: Int(burnedCalories.rounded()), alignment: .trailing)
+                calorieMeta("Target", value: Int(targetMacros.calories.rounded()), alignment: .trailing)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
 
@@ -71,7 +70,7 @@ struct DailyMacroDetailSheet: View {
 
     private var calorieProgressRing: some View {
         let progress = min(max(consumedMacros.calories / max(targetMacros.calories, 1), 0), 1)
-        let ringColor: Color = consumedMacros.calories > (targetMacros.calories + burnedCalories) ? .fuelRed : .fuelOrange
+        let ringColor: Color = consumedMacros.calories > targetMacros.calories ? .fuelRed : .fuelOrange
 
         return ZStack {
             Circle()
@@ -188,7 +187,6 @@ struct DailyMacroDetailSheet: View {
 #Preview {
     DailyMacroDetailSheet(
         targetMacros: Macros(calories: 2400, protein: 170, carbs: 250, fat: 70),
-        consumedMacros: Macros(calories: 1480, protein: 212, carbs: 80, fat: 26),
-        burnedCalories: 320
+        consumedMacros: Macros(calories: 1480, protein: 212, carbs: 80, fat: 26)
     )
 }

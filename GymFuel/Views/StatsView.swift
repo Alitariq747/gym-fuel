@@ -59,10 +59,7 @@ struct StatsView: View {
                 } else {
                     VStack(spacing: 12) {
                         StatsStreakCard(snapshot: snapshot)
-                        StatsActivitySummaryRow(
-                            foodLogs: snapshot.foodLogsThisWeek,
-                            workoutLogs: snapshot.workoutLogsThisWeek
-                        )
+                        StatsActivitySummaryRow(foodLogs: snapshot.foodLogsThisWeek)
                         CaloriesStatsCard(snapshot: snapshot)
                         macroSection
                     }

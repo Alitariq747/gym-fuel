@@ -9,11 +9,9 @@ struct LogEntryDetailSheet: View {
     var onClearAIError: (() -> Void)? = nil
     var onClearActionError: (() -> Void)? = nil
     var onSaveMacros: ((Macros) -> Void)? = nil
-    var onSaveCaloriesBurned: ((Double) -> Void)? = nil
     var onSaveLoggedAt: ((Date) -> Void)? = nil
     var onDeleteEntry: (() -> Void)? = nil
     var onUseAIAgain: ((String) -> Void)? = nil
-    var onSaveMeal: ((String, String?, Macros) -> Void)? = nil
 
     @State private var showManualEditSheet = false
     @State private var showTimeEditSheet = false
@@ -27,14 +25,13 @@ struct LogEntryDetailSheet: View {
     @FocusState private var isRawInputFocused: Bool
     
     private var canEditManually: Bool {
-        entry.feedback?.macros != nil || entry.feedback?.estimatedCalories != nil
+        entry.feedback?.macros != nil
     }
     private var isSavedMealEntry: Bool {
         entry.source == .savedMeal
     }
     private var saveableMealMacros: Macros? {
         guard entry.status == .succeeded,
-              entry.type == .food,
               let macros = entry.feedback?.macros
         else {
             return nil
@@ -86,10 +83,10 @@ struct LogEntryDetailSheet: View {
         if !title.isEmpty { return title }
 
         let rawInput = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        return rawInput.isEmpty ? entry.type.displayName : rawInput
+        return rawInput.isEmpty ? "Meal" : rawInput
     }
     private var isImageMealEntry: Bool {
-        entry.type == .food && entry.source == .image
+        entry.source == .image
     }
 
     var body: some View {
@@ -102,10 +99,8 @@ struct LogEntryDetailSheet: View {
                         DetailHeroImage(entry: entry)
                     }
 
-                    if let macros = entry.feedback?.macros, entry.type == .food {
+                    if let macros = entry.feedback?.macros {
                         DetailMacroSummaryCard(macros: macros)
-                    } else if entry.type == .exercise {
-                        DetailExerciseSummaryCard(entry: entry)
                     }
 
                     if let score = entry.feedback?.goalFitScore {
@@ -194,11 +189,6 @@ struct LogEntryDetailSheet: View {
                 ManualMacroEditSheet(
                     initialMacros: macros,
                     onSave: onSaveMacros
-                )
-            } else if let estimatedCalories = entry.feedback?.estimatedCalories {
-                ManualMacroEditSheet(
-                    initialCaloriesBurned: estimatedCalories,
-                    onSave: onSaveCaloriesBurned
                 )
             }
         }

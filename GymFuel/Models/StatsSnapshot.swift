@@ -11,7 +11,6 @@ struct DailyStatsSnapshot: Identifiable, Equatable {
     var id: Date { date }
     let date: Date
     var caloriesEaten: Double
-    var caloriesBurned: Double
     var protein: Double
     var carbs: Double
     var fat: Double
@@ -31,7 +30,6 @@ struct StatsSnapshot: Equatable {
     var averageCarbs: Double
     var averageFat: Double
     var foodLogsThisWeek: Int
-    var workoutLogsThisWeek: Int
     var dailyStats: [DailyStatsSnapshot]
 
     static let empty = StatsSnapshot(
@@ -44,7 +42,6 @@ struct StatsSnapshot: Equatable {
         averageCarbs: 0,
         averageFat: 0,
         foodLogsThisWeek: 0,
-        workoutLogsThisWeek: 0,
         dailyStats: []
     )
 }

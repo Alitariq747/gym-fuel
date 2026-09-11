@@ -24,7 +24,6 @@ final class FirebaseLogEntryService: @unchecked Sendable {
         var source: LogEntrySource
         var status: LogEntryStatus
         var loggedAt: Date
-        var type: LogEntryType
         var title: String
         var rawInput: String
         var detail: String?
@@ -45,7 +44,6 @@ final class FirebaseLogEntryService: @unchecked Sendable {
             source: document.source,
             status: document.status,
             loggedAt: document.loggedAt,
-            type: document.type,
             title: document.title,
             rawInput: document.rawInput,
             detail: document.detail,
@@ -74,7 +72,6 @@ final class FirebaseLogEntryService: @unchecked Sendable {
             source: entry.source,
             status: entry.status,
             loggedAt: entry.loggedAt,
-            type: entry.type,
             title: entry.title,
             rawInput: entry.rawInput,
             detail: entry.detail,

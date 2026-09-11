@@ -228,8 +228,7 @@ struct EditSavedMealSheet: View {
             name: trimmedName,
             description: finalDescription,
             macros: Macros(calories: calories, protein: protein, carbs: carbs, fat: fat),
-            createdAt: meal.createdAt,
-            lastUsedAt: meal.lastUsedAt
+            createdAt: meal.createdAt
         )
 
         Task {

@@ -62,7 +62,6 @@ final class LogComposerViewModel: ObservableObject {
             explanation: message,
             assumptions: [],
             confidence: nil,
-            estimatedCalories: nil,
             macros: nil,
             goalFitScore: nil,
             estimatedItems: nil
@@ -143,7 +142,6 @@ final class LogComposerViewModel: ObservableObject {
                 source: .text,
                 status: .succeeded,
                 loggedAt: pendingEntry.loggedAt,
-                type: interpretedEntry.type,
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
@@ -185,7 +183,7 @@ final class LogComposerViewModel: ObservableObject {
     }
 
     private func makePendingTextEntry(text: String, userId: String, loggedAt: Date) -> LogEntry {
-        LogEntry(userId: userId, source: .text, status: .analyzing, loggedAt: loggedAt, type: .food, title: "Analyzing entry", rawInput: text)
+        LogEntry(userId: userId, source: .text, status: .analyzing, loggedAt: loggedAt, title: "Analyzing entry", rawInput: text)
     }
 
     func retryTextEntry(_ entry: LogEntry, goal: GoalType) async -> Bool {
@@ -218,7 +216,6 @@ final class LogComposerViewModel: ObservableObject {
                 source: .text,
                 status: .succeeded,
                 loggedAt: entry.loggedAt,
-                type: interpretedEntry.type,
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
@@ -271,7 +268,6 @@ final class LogComposerViewModel: ObservableObject {
                 source: .image,
                 status: .succeeded,
                 loggedAt: entry.loggedAt,
-                type: interpretedEntry.type,
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
@@ -309,7 +305,6 @@ final class LogComposerViewModel: ObservableObject {
             source: .image,
             status: .analyzing,
             loggedAt: loggedAt,
-            type: .food,
             title: "Analyzing meal image",
             rawInput: "Meal image",
             imageUploadStatus: .localOnly
@@ -355,7 +350,6 @@ final class LogComposerViewModel: ObservableObject {
                 source: .image,
                 status: .succeeded,
                 loggedAt: pendingEntry.loggedAt,
-                type: interpretedEntry.type,
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
@@ -406,7 +400,6 @@ final class LogComposerViewModel: ObservableObject {
             userId: userId,
             source: .savedMeal,
             loggedAt: loggedAt,
-            type: .food,
             title: meal.name,
             rawInput: meal.description ?? meal.name,
             detail: meal.description,
@@ -414,7 +407,6 @@ final class LogComposerViewModel: ObservableObject {
                 explanation: "Saved meal logged directly.",
                 assumptions: [],
                 confidence: nil,
-                estimatedCalories: nil,
                 macros: meal.macros,
                 goalFitScore: nil,
                 estimatedItems: nil

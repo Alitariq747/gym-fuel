@@ -25,11 +25,6 @@ final class TimelineViewModel: ObservableObject {
             )
         }
     }
-    var burnedCalories: Double {
-        timeline.entries.reduce(0) { partial, entry in
-            partial + (entry.feedback?.estimatedCalories ?? 0)
-        }
-    }
 
     private let service: LogEntryService
     private let hapticFeedbackService: HapticFeedbackProviding
