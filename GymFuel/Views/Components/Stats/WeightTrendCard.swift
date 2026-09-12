@@ -27,6 +27,9 @@ struct WeightTrendCard: View {
     let windowStart: Date
     let windowEnd: Date
     let onWeighIn: () -> Void
+    /// Non-nil only while Apple Health is available and not yet connected, so
+    /// the prompt removes itself the moment it is used.
+    var onConnectHealth: (() -> Void)? = nil
 
     @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 160
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -52,6 +55,13 @@ struct WeightTrendCard: View {
 
                 Button("Weigh in", action: onWeighIn)
                     .buttonStyle(.circa(.secondary))
+
+                if let onConnectHealth {
+                    // The cheapest possible second weigh-in: a scale that
+                    // already writes to Health.
+                    Button("Sync from Apple Health", action: onConnectHealth)
+                        .buttonStyle(.circa(.link, height: 32))
+                }
 
                 // One tap from the number to the method and its citations.
                 Button("How the trend is calculated") { isSourcesPresented = true }

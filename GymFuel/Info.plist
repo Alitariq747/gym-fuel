@@ -17,5 +17,7 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>LiftEats reads your body weight from Apple Health so your weigh-in trend and calorie targets stay up to date without you entering it twice. Nothing is written back to Health.</string>
 </dict>
 </plist>

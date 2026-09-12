@@ -12,6 +12,7 @@ struct RootView: View {
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @EnvironmentObject private var profileViewModel: UserProfileViewModel
     @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
+    @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @StateObject private var savedMealsViewModel = SavedMealsViewModel()
     @Environment(\.scenePhase) private var scenePhase
     @State private var didEnterBackground = false
@@ -30,6 +31,16 @@ struct RootView: View {
                 if !presented { profileViewModel.errorMessage = nil }
             }
         )
+    }
+
+    /// Pulls anything new out of Apple Health and reflects the newest weight in
+    /// memory, so `targetMacros` recomputes without waiting for a profile
+    /// refetch. No-ops entirely unless the user has connected Health.
+    @MainActor
+    private func importHealthWeight(for uid: String) async {
+        if let kg = await healthWeightSync.syncIfConnected(userId: uid) {
+            profileViewModel.applyWeighIn(kg: kg)
+        }
     }
 
     @MainActor
@@ -107,6 +118,7 @@ struct RootView: View {
                 await subscriptionViewModel.syncUser(userId: user.uid)
                 await profileViewModel.loadProfile(for: user.uid)
                 await savedMealsViewModel.loadSavedMeals(userId: user.uid)
+                await importHealthWeight(for: user.uid)
             } else {
                 await subscriptionViewModel.syncUser(userId: nil)
                 profileViewModel.clear()
@@ -120,7 +132,13 @@ struct RootView: View {
                 guard didEnterBackground else { return }
                 didEnterBackground = false
 
-                guard authManager.user != nil else { return }
+                guard let uid = authManager.user?.uid else { return }
+
+                // A scale that synced overnight should be on the trend before
+                // the user looks at it. Ahead of the subscription guard below
+                // on purpose: an in-flight purchase must not swallow the import.
+                Task { await importHealthWeight(for: uid) }
+
                 guard !subscriptionViewModel.isSyncingStatus,
                       !subscriptionViewModel.isPurchasing,
                       !subscriptionViewModel.isRestoring else { return }
@@ -143,4 +161,5 @@ struct RootView: View {
         .environmentObject(UserProfileViewModel())
         .environmentObject(SubscriptionViewModel())
         .environmentObject(SavedMealsViewModel())
+        .environmentObject(HealthWeightSyncService())
 }

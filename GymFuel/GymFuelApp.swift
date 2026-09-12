@@ -15,6 +15,7 @@ struct GymFuelApp: App {
     @StateObject private var authManager = FirebaseAuthManager()
     @StateObject private var profileViewModel = UserProfileViewModel()
     @StateObject private var subscriptionViewModel = SubscriptionViewModel()
+    @StateObject private var healthWeightSync = HealthWeightSyncService()
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
 
     private var preferredColorScheme: ColorScheme? {
@@ -36,6 +37,7 @@ struct GymFuelApp: App {
                 .environmentObject(authManager)
                 .environmentObject(profileViewModel)
                 .environmentObject(subscriptionViewModel)
+                .environmentObject(healthWeightSync)
                 .preferredColorScheme(preferredColorScheme)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)

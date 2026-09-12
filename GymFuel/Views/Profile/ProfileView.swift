@@ -162,6 +162,20 @@ struct ProfileView: View {
 
                                 ProfileAppearanceSection(colorSchemePreference: $colorSchemePreference)
                                 ProfileReminderSection(preferredColorScheme: preferredColorScheme)
+                                ProfileHealthSection(
+                                    userId: profileVm.profile?.id ?? "",
+                                    preferredColorScheme: preferredColorScheme,
+                                    onWeightImported: { kg in
+                                        profileVm.applyWeighIn(kg: kg)
+                                        // The draft is seeded once per uid, so
+                                        // an import landing while this screen is
+                                        // open would otherwise leave a stale
+                                        // weight in it — and `saveProfileEdits`
+                                        // writes the whole draft, which would
+                                        // put the old weight back.
+                                        draft?.weightKg = kg
+                                    }
+                                )
                                 ProfileSubscriptionSection(
                                     status: subscriptionViewModel.status,
                                     isSyncingStatus: subscriptionViewModel.isSyncingStatus,

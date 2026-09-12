@@ -59,7 +59,7 @@ fresh session reads this file, not the chat history.
 - [x] **3** · Remove exercise and lifting logic
 - [x] **3a** · Notification opt-in in onboarding
 - [x] **4a** · Adaptive engine, part one — weigh-ins and the trend
-- [ ] **4a2** · Apple Health body mass → `weighIns`
+- [x] **4a2** · Apple Health body mass → `weighIns`
 - [ ] **4b** · Adaptive engine, part two — expenditure, phases, the check-in
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend

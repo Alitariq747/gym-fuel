@@ -12,6 +12,7 @@ struct StatsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
+    @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
     private let macroTargetCalculator = MacroTargetCalculator()
@@ -73,7 +74,8 @@ struct StatsView: View {
                         unit: BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms,
                         windowStart: window.start,
                         windowEnd: window.end,
-                        onWeighIn: { isWeighInPresented = true }
+                        onWeighIn: { isWeighInPresented = true },
+                        onConnectHealth: showsHealthPrompt ? { Task { await connectHealth() } } : nil
                     )
                 }
 
@@ -110,6 +112,21 @@ struct StatsView: View {
                 )
             }
         }
+    }
+
+    /// Offered only while Health can supply weigh-ins and has not been asked to.
+    private var showsHealthPrompt: Bool {
+        healthWeightSync.isAvailable && !healthWeightSync.isConnected
+    }
+
+    /// Same two follow-ups the manual weigh-in already runs — reflect the weight
+    /// in the caller's profile, then redraw the chart — so an import lands
+    /// without closing the sheet.
+    private func connectHealth() async {
+        if let kg = await healthWeightSync.connect(userId: profile.id) {
+            onWeighIn(kg)
+        }
+        await viewModel.loadWeightTrend(userId: profile.id)
     }
 
     private var topControlsRow: some View {
