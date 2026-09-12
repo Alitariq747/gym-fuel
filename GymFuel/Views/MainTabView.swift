@@ -216,8 +216,13 @@ struct MainTabView: View {
             }
         }
         .sheet(isPresented: $showStats) {
-            NavigationStack { StatsView(profile: profile) }
-                .preferredColorScheme(preferredColorScheme)
+            NavigationStack {
+                StatsView(
+                    profile: profile,
+                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) }
+                )
+            }
+            .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showSubscriptionPaywall) {
             SubscriptionPaywallSheet()

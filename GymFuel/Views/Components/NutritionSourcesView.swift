@@ -74,6 +74,17 @@ struct NutritionSourcesView: View {
             formula: nil,
             footnote: "The analysis discusses protein, fat, carbohydrate, fibre, sugar, sodium, and cooking method qualitatively only. It never fabricates exact values for nutrients it cannot estimate, and it does not give medical advice. Reference nutrient data comes from USDA FoodData Central; general dietary framing follows the Dietary Guidelines for Americans.",
             sourceIDs: ["usda", "dga"]
+        ),
+        NutritionMethod(
+            id: "trend",
+            index: "05",
+            emoji: "⚖️",
+            title: "Your weight trend",
+            tint: .fuelBlue,
+            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with an exponential moving average, weighting the newest reading at 25% and everything before it at 75%, so it moves slower than the scale on purpose.",
+            formula: "trend = 0.25 × today's weigh-in\n      + 0.75 × previous trend",
+            footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is scored or streaked.",
+            sourceIDs: ["zheng", "jmirScale"]
         )
     ]
 
@@ -125,6 +136,18 @@ struct NutritionSourcesView: View {
             shortLabel: "Dietary Guidelines for Americans, 2020–2025",
             citation: "U.S. Departments of Agriculture and Health and Human Services. Dietary Guidelines for Americans, 2020–2025. 9th ed.",
             url: URL(string: "https://www.dietaryguidelines.gov")
+        ),
+        NutritionSource(
+            id: "zheng",
+            shortLabel: "Zheng Y, et al. Obesity. 2015;23(2):256–265",
+            citation: "Zheng Y, Klem ML, Sereika SM, Danford CA, Ewing LJ, Burke LE. Self-weighing in weight management: a systematic literature review. Obesity (Silver Spring). 2015;23(2):256–265.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/25521523/")
+        ),
+        NutritionSource(
+            id: "jmirScale",
+            shortLabel: "Self-Weighing Frequency Cohort. J Med Internet Res. 2021;23(6):e25529",
+            citation: "Frequency of Self-Weighing and Weight Change: Cohort Study With 10,000 Smart Scale Users. J Med Internet Res. 2021;23(6):e25529.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/34075879/")
         )
     ]
 
@@ -289,7 +312,7 @@ struct NutritionSourcesView: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Last reviewed August 2026")
+            Text("Last reviewed September 2026")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }

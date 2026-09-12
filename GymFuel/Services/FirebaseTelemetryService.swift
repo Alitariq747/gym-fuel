@@ -50,6 +50,14 @@ enum FirebaseTelemetryService {
         ])
     }
 
+  
+    static func logWeighInEvent(_ action: String, source: String) {
+        logEvent("weigh_in_event", parameters: [
+            "action": action,
+            "source": source,
+        ])
+    }
+
     static func logSavedMealEvent(_ action: String) {
         logEvent("saved_meal_event", parameters: [
             "action": action,

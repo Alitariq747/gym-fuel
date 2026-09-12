@@ -7,72 +7,90 @@
 
 import SwiftUI
 
-private enum WeightEditUnit: String, CaseIterable {
-    case kilograms
-    case pounds
-}
-
-/// Edit: Update the user's weight (stored in kilograms).
+/// Records a weigh-in. **The only way weight enters the app after onboarding.**
+///
+/// Two properties this screen has to hold, and the reasons they are not
+/// negotiable:
+///
+/// - **0.1 precision.** The trend is an exponential moving average over these
+///   values. At whole-kilogram resolution it cannot represent a 0.3 kg week, so
+///   the line would be noise rather than a direction.
+/// - **One source of truth.** `enteredKg` is the only stored value; both wheels
+///   read and write it through computed bindings. The previous version kept two
+///   integer pickers in sync with each other through a pair of `onChange`
+///   handlers, which was merely lossy at whole kilograms and would drift at
+///   tenths.
 struct EditWeightSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Binding var weightKg: Double?
 
-    @State private var selectedUnit: WeightEditUnit = .kilograms
+    /// The account the weigh-in belongs to.
+    let userId: String
+    /// Called with the saved weight so the caller can reflect it without a refetch.
+    let onWeighIn: (Double) -> Void
 
-    @State private var selectedKg: Int = 75
-    @State private var selectedLbs: Int = 165
+    @StateObject private var viewModel = WeighInViewModel()
 
+    /// Persisted, unlike the old `@State`. A weigh-in is meant to be weekly or
+    /// better; making a pounds user re-pick pounds every time is friction on the
+    /// exact loop the trend depends on.
+    @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
+
+    @State private var enteredKg: Double
     @State private var errorMessage: String?
-    @State private var didInitialize = false
 
-    private let kgRange = Array(30...200)
-    private let lbsRange = Array(66...440)
+    private var unit: BodyWeightUnit {
+        BodyWeightUnit(rawValue: unitRawValue) ?? .kilograms
+    }
+
+    init(userId: String, initialWeightKg: Double?, onWeighIn: @escaping (Double) -> Void) {
+        self.userId = userId
+        self.onWeighIn = onWeighIn
+
+        let seed = (initialWeightKg ?? 75) > 0 ? (initialWeightKg ?? 75) : 75
+        _enteredKg = State(initialValue: BodyWeight.clampedToRange(seed))
+    }
 
     var body: some View {
         AdaptiveScrollContainer {
             VStack(spacing: 20) {
-            header
+                header
 
-            WeightUnitSegmentedControl(selectedUnit: $selectedUnit)
+                WeightUnitSegmentedControl(unitRawValue: $unitRawValue)
 
-            summaryCard
-            inputCard
+                summaryCard
+                inputCard
 
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                if let message = errorMessage ?? viewModel.errorMessage {
+                    Text(message)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Spacer(minLength: 0)
             }
-
-            Spacer(minLength: 0)
-        }
             .padding()
             .frame(maxWidth: .infinity, alignment: .top)
         }
-        .navigationTitle("Weight")
+        .navigationTitle("Weigh in")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 toolbarIconButton(systemImage: "xmark", action: { dismiss() })
             }
             ToolbarItem(placement: .topBarTrailing) {
-                toolbarIconButton(systemImage: "checkmark", action: handleDone)
+                if viewModel.isSaving {
+                    ProgressView()
+                } else {
+                    toolbarIconButton(systemImage: "checkmark", action: handleDone)
+                }
             }
         }
-        .onAppear { initializeFromBindingIfNeeded() }
-        .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
-        .onChange(of: selectedKg) { _, newValue in
-            guard selectedUnit == .kilograms else { return }
-            syncLbsFromKg(Double(newValue))
-        }
-        .onChange(of: selectedLbs) { _, _ in
-            guard selectedUnit == .pounds else { return }
-            syncKgFromLbs()
-        }
+        .interactiveDismissDisabled(viewModel.isSaving)
     }
 
     // MARK: - UI
+
     private func toolbarIconButton(systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
@@ -86,14 +104,15 @@ struct EditWeightSheet: View {
 
     private var header: some View {
         VStack(spacing: 14) {
-            Text("💪")
-                .font(.system(size: 48))
+            Image(systemName: "scalemass")
+                .font(.system(size: 40, weight: .regular))
+                .foregroundStyle(Color.fuelOrange)
                 .frame(width: 96, height: 96)
                 .background(Color.fuelOrange.opacity(0.14), in: Circle())
                 .shadow(color: Color.fuelOrange.opacity(0.12), radius: 18, y: 10)
                 .padding(.top, 12)
 
-            Text("Update your weight to keep your macros and fueling targets accurate.")
+            Text("Weigh in under the same conditions each time — first thing in the morning is easiest to repeat.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -122,32 +141,36 @@ struct EditWeightSheet: View {
         )
     }
 
+    /// Two adjacent wheels rather than one 0.1-step wheel: a single wheel over
+    /// 30.0–200.0 kg is 1,701 rows, and scrolling 75 → 120 is unusable.
     private var inputCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(selectedUnit == .kilograms ? "Weight (kg)" : "Weight (lbs)")
+            Text(unit == .kilograms ? "Weight (kg)" : "Weight (lbs)")
                 .font(.headline)
 
-            if selectedUnit == .kilograms {
-                Picker("Kilograms", selection: $selectedKg) {
-                    ForEach(kgRange, id: \.self) { kg in
-                        Text("\(kg) kg").tag(kg)
+            HStack(spacing: 0) {
+                Picker("", selection: wholeBinding) {
+                    ForEach(wholeRange, id: \.self) { value in
+                        Text("\(value)").tag(value)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 160)
+                .frame(maxWidth: .infinity)
                 .clipped()
-                .labelsHidden()
-            } else {
-                Picker("Pounds", selection: $selectedLbs) {
-                    ForEach(lbsRange, id: \.self) { lbs in
-                        Text("\(lbs) lbs").tag(lbs)
+                .accessibilityLabel(unit == .kilograms ? "Kilograms" : "Pounds")
+
+                Picker("", selection: tenthBinding) {
+                    ForEach(tenthRange, id: \.self) { value in
+                        Text(".\(value)").tag(value)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 160)
+                .frame(maxWidth: .infinity)
                 .clipped()
-                .labelsHidden()
+                .accessibilityLabel("Decimal")
             }
+            .frame(height: 160)
+            .labelsHidden()
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -163,101 +186,105 @@ struct EditWeightSheet: View {
 
     // MARK: - Derived values
 
-    private var computedWeightKg: Double {
-        switch selectedUnit {
-        case .kilograms:
-            return Double(selectedKg)
-        case .pounds:
-            return Double(selectedLbs) * 0.45359237
+    /// The value shown on the wheels, in the selected unit.
+    private var displayedValue: Double {
+        unit == .kilograms ? enteredKg : BodyWeight.pounds(fromKilograms: enteredKg)
+    }
+
+    /// Both bounds derive from the kilogram range, so a value near either end no
+    /// longer shifts when the unit is switched. The old `30...200` kg and
+    /// `66...440` lb ranges were not mirrors of each other.
+    private var wholeRange: [Int] {
+        let lower: Double
+        let upper: Double
+        if unit == .kilograms {
+            lower = BodyWeight.minimumKilograms
+            upper = BodyWeight.maximumKilograms
+        } else {
+            lower = BodyWeight.pounds(fromKilograms: BodyWeight.minimumKilograms)
+            upper = BodyWeight.pounds(fromKilograms: BodyWeight.maximumKilograms)
         }
+        return Array(Int(lower.rounded(.up))...Int(upper.rounded(.down)))
+    }
+
+    /// Pounds step in 0.2 — a finer step would imply precision no bathroom scale
+    /// offers, and 0.2 lb survives the kilogram round trip exactly.
+    private var tenthRange: [Int] {
+        unit == .kilograms ? Array(0...9) : [0, 2, 4, 6, 8]
+    }
+
+    private var wholeBinding: Binding<Int> {
+        Binding(
+            get: { BodyWeight.decompose(displayedValue).whole },
+            set: { setDisplayed(whole: $0, tenth: BodyWeight.decompose(displayedValue).tenth) }
+        )
+    }
+
+    private var tenthBinding: Binding<Int> {
+        Binding(
+            get: { BodyWeight.decompose(displayedValue).tenth },
+            set: { setDisplayed(whole: BodyWeight.decompose(displayedValue).whole, tenth: $0) }
+        )
+    }
+
+    /// The single write path into `enteredKg`. Both wheels funnel through here,
+    /// so there is no feedback loop to drift.
+    private func setDisplayed(whole: Int, tenth: Int) {
+        let value = BodyWeight.recompose(whole: whole, tenth: tenth)
+        let kg = unit == .kilograms ? value : BodyWeight.kilograms(fromPounds: value)
+        enteredKg = BodyWeight.clampedToRange(BodyWeight.roundedForStorage(kg))
     }
 
     private var primaryWeightText: String {
-        switch selectedUnit {
-        case .kilograms:
-            return "\(selectedKg) kg"
-        case .pounds:
-            return "\(selectedLbs) lbs"
-        }
+        BodyWeight.displayString(kilograms: enteredKg, unit: unit)
     }
 
     private var secondaryWeightText: String {
-        let kg = computedWeightKg
-        let lbs = kg / 0.45359237
-
-        if selectedUnit == .kilograms {
-            return "≈ \(Int(lbs.rounded())) lbs"
-        } else {
-            return "≈ \(Int(kg.rounded())) kg"
-        }
-    }
-
-    // MARK: - Init / Sync
-
-    private func initializeFromBindingIfNeeded() {
-        guard !didInitialize else { return }
-        didInitialize = true
-
-        if let existing = weightKg, existing > 0 {
-            let kg = Int(existing.rounded())
-            selectedKg = min(max(kg, kgRange.first ?? kg), kgRange.last ?? kg)
-            syncLbsFromKg(existing)
-        } else {
-            syncLbsFromKg(Double(selectedKg))
-        }
-    }
-
-    private func syncPickersForUnitSwitch() {
-        if selectedUnit == .kilograms {
-            syncKgFromLbs()
-        } else {
-            syncLbsFromKg(Double(selectedKg))
-        }
-    }
-
-    private func syncLbsFromKg(_ kg: Double) {
-        let lbs = Int((kg / 0.45359237).rounded())
-        selectedLbs = min(max(lbs, lbsRange.first ?? lbs), lbsRange.last ?? lbs)
-    }
-
-    private func syncKgFromLbs() {
-        let kg = Int((Double(selectedLbs) * 0.45359237).rounded())
-        selectedKg = min(max(kg, kgRange.first ?? kg), kgRange.last ?? kg)
+        let other: BodyWeightUnit = unit == .kilograms ? .pounds : .kilograms
+        return "≈ " + BodyWeight.displayString(kilograms: enteredKg, unit: other)
     }
 
     // MARK: - Done
 
     private func handleDone() {
-        let kg = computedWeightKg
-        guard kg > 0 else {
+        errorMessage = nil
+        viewModel.clearError()
+
+        guard enteredKg > 0 else {
             errorMessage = "Please select a valid weight."
             return
         }
-        errorMessage = nil
-        weightKg = kg
-        dismiss()
+
+        let kg = BodyWeight.roundedForStorage(enteredKg)
+
+        Task {
+            let saved = await viewModel.recordWeighIn(userId: userId, weightKg: kg)
+            guard saved else { return }
+            onWeighIn(kg)
+            dismiss()
+        }
     }
 }
 
 private struct WeightUnitSegmentedControl: View {
-    @Binding var selectedUnit: WeightEditUnit
+    @Binding var unitRawValue: String
 
     var body: some View {
         HStack(spacing: 0) {
-            segment(title: "kg", unit: .kilograms)
-            segment(title: "lbs", unit: .pounds)
+            segment(unit: .kilograms)
+            segment(unit: .pounds)
         }
         .padding(4)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
-    private func segment(title: String, unit: WeightEditUnit) -> some View {
-        let isSelected = (selectedUnit == unit)
+    private func segment(unit: BodyWeightUnit) -> some View {
+        let isSelected = unitRawValue == unit.rawValue
 
         return Button {
-            selectedUnit = unit
+            unitRawValue = unit.rawValue
         } label: {
-            Text(title)
+            Text(unit.shortLabel)
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
@@ -268,9 +295,12 @@ private struct WeightUnitSegmentedControl: View {
                 .foregroundStyle(isSelected ? .primary : .secondary)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 
 #Preview {
-    EditWeightSheet(weightKg: .constant(83))
+    NavigationStack {
+        EditWeightSheet(userId: "preview", initialWeightKg: 83.4, onWeighIn: { _ in })
+    }
 }

@@ -12,9 +12,21 @@ struct StatsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
+    @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
+    @State private var isWeighInPresented = false
     private let macroTargetCalculator = MacroTargetCalculator()
-    init(profile: UserProfile, viewModel: StatsViewModel = StatsViewModel()) {
+    /// Reports a saved weigh-in so the caller can refresh the profile it owns.
+    /// Passed in rather than reached for through `@EnvironmentObject`: this view
+    /// is itself presented as a sheet, and this is the one write path in the
+    /// feature — not somewhere to depend on environment propagation.
+    private let onWeighIn: (Double) -> Void
+    init(
+        profile: UserProfile,
+        viewModel: StatsViewModel = StatsViewModel(),
+        onWeighIn: @escaping (Double) -> Void = { _ in }
+    ) {
         self.profile = profile
+        self.onWeighIn = onWeighIn
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     private var targetMacros: Macros? {
@@ -52,6 +64,19 @@ struct StatsView: View {
                     onNext: { viewModel.goToNextWeek() }
                 )
 
+                // Outside the error branch on purpose: the weight trend loads
+                // independently of the food stats, so neither failure should be
+                // able to hide the other.
+                if let window = viewModel.trendWindow() {
+                    WeightTrendCard(
+                        series: viewModel.weightTrend,
+                        unit: BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms,
+                        windowStart: window.start,
+                        windowEnd: window.end,
+                        onWeighIn: { isWeighInPresented = true }
+                    )
+                }
+
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .font(.footnote)
@@ -69,6 +94,21 @@ struct StatsView: View {
         }
         .task(id: viewModel.selectedWeekStart) {
             await viewModel.loadStats(userId: profile.id, targetMacros: targetMacros)
+        }
+        .task(id: viewModel.selectedWeekStart) {
+            await viewModel.loadWeightTrend(userId: profile.id)
+        }
+        .sheet(isPresented: $isWeighInPresented) {
+            NavigationStack {
+                EditWeightSheet(
+                    userId: profile.id,
+                    initialWeightKg: viewModel.weightTrend.latest?.weightKg ?? profile.weightKg,
+                    onWeighIn: { kg in
+                        onWeighIn(kg)
+                        Task { await viewModel.loadWeightTrend(userId: profile.id) }
+                    }
+                )
+            }
         }
     }
 

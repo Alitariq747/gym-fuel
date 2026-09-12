@@ -23,13 +23,16 @@ final class UserProfileViewModel: ObservableObject {
        
        private let service: FirebaseUserProfileService
        private let macroTargetCalculator: MacroTargetCalculator
-       
+       private let weighInService: WeighInService
+
        init(
            service: FirebaseUserProfileService = .shared,
-           macroTargetCalculator: MacroTargetCalculator = MacroTargetCalculator()
+           macroTargetCalculator: MacroTargetCalculator = MacroTargetCalculator(),
+           weighInService: WeighInService = FirebaseWeighInService()
        ) {
            self.service = service
            self.macroTargetCalculator = macroTargetCalculator
+           self.weighInService = weighInService
        }
     
     func loadProfile(for uid: String) async {
@@ -65,6 +68,7 @@ final class UserProfileViewModel: ObservableObject {
             let updatedProfile = try await service.updateProfile(profile)
             self.profile = updatedProfile
             FirebaseTelemetryService.logOnboardingEvent("complete_succeeded")
+            await seedFirstWeighIn(for: uid, weightKg: profile.weightKg)
         } catch {
             FirebaseTelemetryService.logOnboardingEvent("complete_failed")
             self.errorMessage = AppErrorMessage.message(
@@ -75,6 +79,40 @@ final class UserProfileViewModel: ObservableObject {
         isLoading = false
     }
     
+    /// Reflects a weigh-in in memory so `targetMacros` recomputes immediately and
+    /// `ProfileView.isDirty` does not report unsaved changes for a value that is
+    /// already saved. The durable write is the weigh-in's own, not this.
+    func applyWeighIn(kg: Double) {
+        profile?.weightKg = kg
+    }
+
+    /// Records the onboarding weight as day zero of the trend.
+    ///
+    /// Without it a user needs two weigh-ins before the chart shows anything —
+    /// at weekly cadence, week three. With it, their first weigh-in draws a line.
+    /// The seed is self-reported and so weaker than a real weigh-in, but at
+    /// alpha 0.25 a half-kilo of seed error is largely gone within three
+    /// readings.
+    ///
+    /// Deliberately best-effort: onboarding has already succeeded by this point,
+    /// and failing it over a seed row would be worse than starting the chart a
+    /// week late.
+    private func seedFirstWeighIn(for uid: String, weightKg: Double?) async {
+        guard let weightKg, weightKg > 0 else { return }
+
+        let weighIn = WeighIn(weightKg: BodyWeight.roundedForStorage(weightKg), source: .manual)
+
+        do {
+            try await weighInService.saveWeighIn(weighIn, for: uid)
+        } catch {
+            FirebaseTelemetryService.recordNonFatal(
+                error,
+                reason: "onboarding_weigh_in_seed_failed",
+                metadata: ["dateKey": weighIn.dateKey]
+            )
+        }
+    }
+
     func clear() {
         profile = nil
         isLoading = false

@@ -58,7 +58,9 @@ fresh session reads this file, not the chat history.
 - [x] **2a** · Design system — `CircaTheme.swift` + the component kit
 - [x] **3** · Remove exercise and lifting logic
 - [x] **3a** · Notification opt-in in onboarding
-- [ ] **4** · The adaptive engine
+- [x] **4a** · Adaptive engine, part one — weigh-ins and the trend
+- [ ] **4a2** · Apple Health body mass → `weighIns`
+- [ ] **4b** · Adaptive engine, part two — expenditure, phases, the check-in
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
 - [ ] **7** · Day-aware goal-fit score · *first to cut*
@@ -331,12 +333,41 @@ path can reach the paywall and the permission prompt at the same time.
 
 ## Step 4 — The adaptive engine · L
 
+> ### Split into 4a / 4a2 / 4b — 12 September
+>
+> One L-sized step with six items, three collections, a calculator rewrite and a
+> new screen, whose payoff could not be observed until three weeks of seeded data
+> existed. Split by **time-to-value**, not by size:
+>
+> - **4a — weigh-ins and the trend. Done 12 September.** Items 1, 2 and the
+>   weight surface. Works from two data points, changes no targets, and makes no
+>   coaching claim — so it adds almost no App Store review risk to a live app.
+> - **4a2 — Apple Health body mass.** Was Step 13, pulled forward: it is the
+>   supply line for the engine's only scarce input, and a user with a smart scale
+>   then contributes every weigh-in without opening the app. **Not currently
+>   enabled** — no entitlement, no usage string, no code, and the live privacy
+>   policy states the app does not use HealthKit. Kept separate so that review
+>   surface lands in one reviewable chunk.
+> - **4b — the coach.** Items 3, 4, 5, 6: expenditure, phases, rate-based
+>   targets, the check-in. **The sign callout below belongs entirely to 4b** —
+>   4a does no energy arithmetic at all, which is part of why it was safe to ship
+>   first.
+>
+> Full plan, including the App Store 1.4.1 and 5.1.3 framing and the citations
+> added to the Sources screen: `~/.claude/plans/lets-split-into-two-polymorphic-metcalfe.md`
+
 The biggest step and the riskiest, so it goes early while there is runway to
 discover problems.
 
-1. `weighIns` collection + service; `EditWeightSheet` writes both the history row
-   and `UserProfile.weightKg`.
-2. Trend weight — EMA, `alpha ≈ 0.25`.
+1. ~~`weighIns` collection + service; `EditWeightSheet` writes both the history row
+   and `UserProfile.weightKg`.~~ **Done in 4a.** Written sequentially, history
+   first — not batched: a batch fails atomically, so a rules rejection on the
+   profile half would discard a correct weigh-in.
+2. ~~Trend weight — EMA, `alpha ≈ 0.25`.~~ **Done in 4a.** Per *observation*, not
+   per day — gaps are skipped rather than carried forward or interpolated.
+   **4b must revisit that**: `trendDeltaKgPerWeek` divides by elapsed days, and a
+   time-unaware average feeding a time-aware rate is where a plausible-looking
+   wrong number comes from.
 3. Expenditure — `meanDailyIntake + (trendDeltaKg × 7700) / days`.
 4. `phases` collection — goal, start weight, goal rate.
 5. `MacroTargetCalculator` — rate-based, replacing the flat `+250 / −300` at

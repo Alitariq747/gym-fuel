@@ -435,7 +435,8 @@ struct ProfileView: View {
         if draft.gender != profile.gender { return true }
         if draft.age != profile.age { return true }
         if draft.heightCm != profile.heightCm { return true }
-        if draft.weightKg != profile.weightKg { return true }
+        // Weight is deliberately absent: this screen displays it but cannot edit
+        // it, so it can never be the reason there are changes to save.
         if draft.goalType != profile.goalType { return true }
         if draft.activityLevel != profile.activityLevel { return true }
         return false

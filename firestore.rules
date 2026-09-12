@@ -85,6 +85,33 @@ service cloud.firestore {
         allow delete: if isOwner(uid);
       }
 
+      // One document per local calendar day, keyed "yyyy-MM-dd". `dateKey` is
+      // asserted against the document ID the same way dailyMacroTargets does —
+      // the path already carries the owner, so there is no `userId` field here.
+      //
+      // Deliberately no range check on `weightKg`. A rule stricter than the
+      // client is the failure documented above: it fails silently, and this is
+      // the one write the whole trend rests on.
+      match /weighIns/{dateKey} {
+        allow read: if isOwner(uid);
+
+        allow create, update: if isOwner(uid)
+          && onlyAllowedKeys([
+            "dateKey",
+            "weightKg",
+            "loggedAt",
+            "source",
+            "createdAt",
+            "updatedAt"
+          ])
+          && request.resource.data.dateKey == dateKey;
+
+        // Nothing in the app deletes a weigh-in: the sheet only ever writes
+        // today's key, and same-day corrections overwrite. Relax this when the
+        // check-in screen gains an edit affordance.
+        allow delete: if false;
+      }
+
       match /dailyMacroTargets/{dateKey} {
         allow read: if isOwner(uid);
 

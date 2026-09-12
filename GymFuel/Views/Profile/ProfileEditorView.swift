@@ -71,12 +71,10 @@ struct ProfileEditorView: View {
         return "\(Int(cm.rounded())) cm"
     }
     
-    // Weight
-    @State private var isEditWeightPresented = false
-    
+    // Weight — displayed, never edited here. See `bodyMetricsCard`.
     private var weightPrimaryText: String {
-        guard let kg = draft.weightKg, kg > 0 else { return "Set" }
-        return "\(Int(kg.rounded())) kg"
+        guard let kg = draft.weightKg, kg > 0 else { return "—" }
+        return BodyWeight.displayString(kilograms: kg, unit: .kilograms)
     }
     
     var body: some View {
@@ -107,12 +105,6 @@ struct ProfileEditorView: View {
             }
             .preferredColorScheme(preferredColorScheme)
             .presentationDetents([.large])
-        }
-        .sheet(isPresented: $isEditWeightPresented) {
-            NavigationStack {
-                EditWeightSheet(weightKg: $draft.weightKg)
-            }
-            .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showGoalSheet) {
             goalPickerSheet
@@ -208,14 +200,19 @@ struct ProfileEditorView: View {
                 isEditHeightPresented = true
             }
             Divider()
-            rowButton(
-                title: "Weight",
-                systemImage: "number",
-                value: weightPrimaryText,
-                isPlaceholder: weightPrimaryText == "Set"
-            ) {
-                isEditWeightPresented = true
+            // Read-only on purpose. Weight comes from weigh-ins only — if it can
+            // be edited here, the trend the adaptive engine rests on stops being
+            // a measurement. Recording one lives on the Week screen, beside the
+            // chart it feeds.
+            HStack {
+                rowLabel("Weight", systemImage: "scalemass")
+                Spacer()
+                Text(weightPrimaryText)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(weightPrimaryText == "—" ? .secondary : .primary)
             }
+            .padding(.vertical, 2)
+            .accessibilityElement(children: .combine)
         }
         .padding(14)
         .background(cardBackground)
