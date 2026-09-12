@@ -1,0 +1,118 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function onlyAllowedKeys(allowed) {
+      return request.resource.data.keys().hasOnly(allowed);
+    }
+
+    function isValidTimestamp(value) {
+      return value is timestamp;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+
+      // NOTE: `activityLevel`, not `nonTrainingActivityLevel`. The field was
+      // renamed in Swift in commit 883ee7a ("gym vocab removed") and the rules
+      // were not updated. Because `onlyAllowedKeys` uses hasOnly(), every profile
+      // write carrying the new name was rejected — which meant onboarding could
+      // not complete at all.
+      allow create, update: if isOwner(uid)
+        && onlyAllowedKeys([
+          "name",
+          "heightCm",
+          "age",
+          "weightKg",
+          "goalType",
+          "activityLevel",
+          "isOnboardingComplete",
+          "gender",
+          "createdAt",
+          "updatedAt"
+        ]);
+
+      allow delete: if false;
+
+      match /logEntries/{entryId} {
+        allow read: if isOwner(uid);
+
+        allow create, update: if isOwner(uid)
+          && onlyAllowedKeys([
+            "id",
+            "userId",
+            "source",
+            "status",
+            "loggedAt",
+            "type",
+            "title",
+            "rawInput",
+            "detail",
+            "feedback",
+            "image",
+            "imageUploadStatus",
+            "createdAt",
+            "updatedAt"
+          ])
+          && request.resource.data.userId == uid;
+
+        allow delete: if isOwner(uid);
+      }
+
+      match /savedMeals/{mealId} {
+        allow read: if isOwner(uid);
+
+        allow create, update: if isOwner(uid)
+          && onlyAllowedKeys([
+            "id",
+            "userId",
+            "name",
+            "description",
+            "macros",
+            "createdAt",
+            "updatedAt"
+          ])
+          && request.resource.data.userId == uid;
+
+        allow delete: if isOwner(uid);
+      }
+
+      match /dailyMacroTargets/{dateKey} {
+        allow read: if isOwner(uid);
+
+        allow create, update: if isOwner(uid)
+          && onlyAllowedKeys([
+            "dateKey",
+            "targetMacros",
+            "goalType",
+            "calculatorVersion",
+            "createdAt",
+            "updatedAt"
+          ])
+          && request.resource.data.dateKey == dateKey;
+
+        allow delete: if false;
+      }
+    }
+
+    match /usageQuotas/{uid} {
+      allow read, write: if false;
+
+      match /monthly/{period} {
+        allow read, write: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
