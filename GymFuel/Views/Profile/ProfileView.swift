@@ -456,6 +456,7 @@ struct ProfileView: View {
         // Weight is deliberately absent: this screen displays it but cannot edit
         // it, so it can never be the reason there are changes to save.
         if draft.goalType != profile.goalType { return true }
+        if draft.resolvedPace != profile.resolvedPace { return true }
         if draft.activityLevel != profile.activityLevel { return true }
         return false
     }

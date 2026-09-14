@@ -219,6 +219,7 @@ struct MainTabView: View {
             NavigationStack {
                 StatsView(
                     profile: profile,
+                    targetMacros: profileViewModel.targetMacros,
                     onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) }
                 )
             }

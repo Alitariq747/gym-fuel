@@ -55,6 +55,8 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var activityLevel: ActivityLevel?
     var isOnboardingComplete: Bool
     var gender: Gender
+    /// As stored. Read `resolvedPace` instead — see `GoalPace.resolved`.
+    var goalPace: GoalPace? = nil
 
     /// Firestore field names. `id` is intentionally omitted so the document
     /// identifier is never persisted as a field.
@@ -67,6 +69,13 @@ struct UserProfile: Codable, Identifiable, Equatable {
         case activityLevel
         case isOnboardingComplete
         case gender
+        case goalPace
+    }
+
+    /// The pace to use: `nil` for Maintain, `.steady` when missing or not
+    /// offered for the goal.
+    var resolvedPace: GoalPace? {
+        GoalPace.resolved(goalPace, for: goalType)
     }
 
     /// Trims user-entered text. Call before persisting.
@@ -87,6 +96,7 @@ struct OnboardingAnswers {
     var weightKg: Double? = nil
     var goalType: GoalType? = nil
     var activityLevel: ActivityLevel? = nil
+    var goalPace: GoalPace? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
     func toProfile(id: String) -> UserProfile? {
@@ -107,7 +117,8 @@ struct OnboardingAnswers {
             goalType: goalType,
             activityLevel: activityLevel,
             isOnboardingComplete: true,
-            gender: gender
+            gender: gender,
+            goalPace: GoalPace.resolved(goalPace, for: goalType)
         )
     }
 }

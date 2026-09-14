@@ -62,7 +62,7 @@ fresh session reads this file, not the chat history.
 - [x] **4a** · Adaptive engine, part one — weigh-ins and the trend
 - [x] **4a2** · Apple Health body mass → `weighIns`
 - [x] **4b1** · The trend and the seeder — expenditure pieces removed
-- [ ] **4b2** · Pick a pace — onboarding, Settings, starting targets
+- [x] **4b2** · Pick a pace — onboarding, Settings, starting targets
 - [ ] **4b3** · Phases and the pace rule
 - [ ] **4b4** · The weekly check-in
 - [ ] **5** · Food wedge, client
@@ -392,9 +392,15 @@ path can reach the paywall and the permission prompt at the same time.
 > - **4b2 — pick a pace.** A pace step in onboarding, a Pace row in Settings, and
 >   a starting target that follows the chosen pace. Item 5. No new collection.
 > - **4b3 — phases and the pace rule.** The `phases` collection and the pure pace
->   rule with full tests. Item 4. Visible only in the debug section.
+>   rule with full tests. Item 4. Also an optional **target weight** row in
+>   Settings, copied onto each phase, and the **full targets** saved on each phase
+>   (decisions 10 and 11). Visible only in the debug section, apart from the
+>   Settings row.
 > - **4b4 — the weekly check-in.** Item 6: the Week-screen card, the check-in
 >   screen, accept or reject, plus the next-due date Steps 12 and 14 both read off.
+>   Also **full targets saved on each check-in**, past weeks on the Week screen
+>   showing the target they had, and the check-in **offering Maintain once the
+>   target weight is reached** (decisions 10 and 11).
 >
 > Split again on 14 September: the old 4b2 was too big for one session, so each
 > part now ends with something you can tap.
@@ -403,6 +409,9 @@ path can reach the paywall and the permission prompt at the same time.
 > (includes the App Store 1.4.1 and 5.1.3 framing) · 4b1 as originally built
 > `~/.claude/plans/yes-write-the-4b1-sorted-lamport.md` — **superseded wherever
 > it describes expenditure** · **4b2–4b4 `~/.claude/plans/calm-launching-planet.md`**
+>
+> Decisions 10 and 11 came after that plan was written. **Where the plan and this
+> file disagree, this file wins.**
 
 Still the step that decides whether the app coaches at all, so it still goes
 early.
@@ -422,15 +431,18 @@ early.
    14 September** in favour of the pace check. Built and unit-tested in 4b1;
    removed 14 September.
 4. `phases` collection — goal, start date, start weight, goal pace (% bodyweight
-   per week, stored as a magnitude), and the running calorie adjustment the pace
-   check has made. **4b3.**
+   per week, stored as a magnitude), the running calorie adjustment the pace
+   check has made, the optional target weight, and the full targets (calories,
+   protein, carbs, fat) the phase started with. **4b3.**
 5. Pace and targets — the user picks a pace preset in onboarding and can change it
    in Settings; the starting target follows that pace; the pace check moves it in
    steps from there. Lose fat: Gentle 0.5 % · Steady 0.75 % · Faster 1.0 % a week.
    Gain: Slow 0.25 % · Steady 0.5 % a week. Maintain: no pace, ±0.5 kg band.
    **4b2.**
 6. `checkIns` collection + the weekly check-in screen, where the user accepts or
-   rejects a suggested change. **4b4.**
+   rejects a suggested change. Each check-in saves the full targets before and
+   after. Once the target weight is reached, the check-in offers a switch to
+   Maintain. **4b4.**
 
 **Done when** two weeks of seeded weigh-ins moving slower than the goal pace
 produce a check-in that moves next week's target by one step and says why in one
@@ -449,6 +461,16 @@ sentence — and one week of the same data changes nothing.
 | 7 | **Calorie floor 1,200 for women, 1,500 for men and prefer not to say**, and never below protein + fat calories. |
 | 8 | **The calorie adjustment carries across a pace or goal change** — it corrects the formula for this person, not for the goal. |
 | 9 | **Extra guards:** weigh-ins must span at least 10 days, and Maintain does not step if the trend is already heading back into the band. |
+| 10 | **Optional target weight, set in Settings only** — never in onboarding. Stored on the profile (`targetWeightKg`) and copied onto each phase, like pace. Maintain has none. It never touches `weightKg` — only a weigh-in does. Once the trend reaches it, the check-in **offers** a switch to Maintain, and the user accepts or rejects it like any other change (decision 2). **4b3** saves it; **4b4** offers the switch. |
+| 11 | **Full targets are saved on phases and check-ins** — calories, protein, carbs and fat. A phase saves the targets it started with; a check-in saves the targets before and after. Past weeks on the Week screen show the target saved for that week, not today's. Today's target is still worked out live (`formula + adjustment`), and there is no daily targets record. **4b3** saves them on phases; **4b4** on check-ins, and wires up the Week screen. |
+
+> **Decision 10 details — agreed 14 September:**
+> - **"Reached" means the trend weight** gets there, not a single weigh-in.
+> - **Settings only accepts a sensible target:** below today's weight for Lose
+>   fat, above it for Gain, and never in the underweight range.
+> - **No finish date is ever shown.**
+>
+> New fields go into `firestore.rules` in the session that first writes them.
 
 > **Trial note.** The first check-in that can change a target is day 14 at the
 > earliest, so the launch's 3-day trial shows the trend and a check-in but never a
@@ -467,6 +489,7 @@ user.
 | **Too slow, or the wrong way** | Step toward the goal: −100 kcal on a cut, +100 on a gain | Small steps cannot overshoot |
 | **Too fast** | Step back: +100 kcal on a cut, −100 on a gain | Stops a pace faster than the user chose |
 | **Maintain** | Step only if the trend leaves ±0.5 kg of the phase start weight, and not if it is already heading back | Maintain has no pace |
+| **Target weight reached** | If a target weight is set and the trend reaches it (at or below on a cut, at or above on a gain), offer a switch to Maintain instead of a step | The goal is done — stepping further would carry the user past it |
 | **How often** | At most one decision per 14 days — accepting and rejecting both start the wait | Each step needs time to show, and nobody is asked the same question weekly |
 | **Food logging** | Step only if food was logged on most days (about 5 in 7); otherwise keep the target and say so neutrally | If the target isn't being eaten, lowering it helps nobody. Counts logged days; never reads calories. |
 | **Floor** | Never below 1,200 kcal (women) or 1,500 kcal (men, prefer not to say), and never below protein + fat calories | Safety, and keeps the macros adding up. Needs a source on the Sources screen. |
@@ -476,10 +499,11 @@ lost about 0.1 kg a week over the last two weeks, so your target is now 1,900 kc
 down from 2,000."*
 
 **Where the step lives and the starting offset are both decided** (decisions 5
-and 6 above). The adjustment lives on the phase and the target stays a synchronous
-`formula + adjustment`, so no screen waits on a stored target and
-`dailyMacroTargets` stays unused. The Sources screen's method 01 footnote changes
-with the offset in 4b2.
+and 6 above). The adjustment lives on the phase and today's target stays a
+synchronous `formula + adjustment`, so no screen waits on a stored target and
+`dailyMacroTargets` stays unused. Saved targets (decision 11) are history only —
+read for past weeks, never for today. The Sources screen's method 01 footnote
+changes with the offset in 4b2.
 
 ### App Store — what the pace check asks of review
 

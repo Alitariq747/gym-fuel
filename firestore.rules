@@ -36,6 +36,7 @@ service cloud.firestore {
           "activityLevel",
           "isOnboardingComplete",
           "gender",
+          "goalPace",
           "createdAt",
           "updatedAt"
         ]);

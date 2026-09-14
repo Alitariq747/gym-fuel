@@ -33,10 +33,17 @@ struct NutritionSourcesView: View {
                 −  78   if prefer not to say
 
             Daily target
-            resting energy × activity factor + goal offset
+            resting energy × activity factor + pace change
+
+            pace change = kg a week × 7,700 ÷ 7
+                (a loss takes off at most 1,000 kcal)
+
+            never below 1,200 kcal (women),
+            1,500 kcal (men, prefer not to say),
+            or your protein + fat calories
             """,
-            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). Goal offsets are +250 kcal for Gain, 0 for Maintain, and −300 kcal for Lose fat — deliberately moderate rates of change.",
-            sourceIDs: ["mifflin", "iom"]
+            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). The pace you pick sets the change: Lose fat is 0.5%, 0.75%, or 1% of your body weight a week, Gain is 0.25% or 0.5%, and Maintain has no change. 7,700 kcal per kilogram is a common planning estimate, not a measurement of your body — how much energy a kilogram of change takes varies from person to person. The lowest targets sit at the bottom of the calorie levels commonly prescribed for weight loss, and the target never drops below what your protein and fat alone need.",
+            sourceIDs: ["mifflin", "iom", "helms", "iraki", "hall", "nhlbi", "jensen"]
         ),
         NutritionMethod(
             id: "macros",
@@ -94,6 +101,36 @@ struct NutritionSourcesView: View {
             shortLabel: "Mifflin MD, et al. Am J Clin Nutr. 1990;51(2):241–247",
             citation: "Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241–247.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/2305711/")
+        ),
+        NutritionSource(
+            id: "helms",
+            shortLabel: "Helms ER, et al. J Int Soc Sports Nutr. 2014;11:20",
+            citation: "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/24864135/")
+        ),
+        NutritionSource(
+            id: "iraki",
+            shortLabel: "Iraki J, et al. Sports (Basel). 2019;7(7):154",
+            citation: "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition recommendations for bodybuilders in the off-season: a narrative review. Sports (Basel). 2019;7(7):154.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/31247944/")
+        ),
+        NutritionSource(
+            id: "hall",
+            shortLabel: "Hall KD. Int J Obes. 2008;32(3):573–576",
+            citation: "Hall KD. What is the required energy deficit per unit weight loss? Int J Obes (Lond). 2008;32(3):573–576.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/17848938/")
+        ),
+        NutritionSource(
+            id: "nhlbi",
+            shortLabel: "NHLBI. Clinical Guidelines on Overweight and Obesity in Adults, 1998",
+            citation: "National Heart, Lung, and Blood Institute. Clinical Guidelines on the Identification, Evaluation, and Treatment of Overweight and Obesity in Adults: The Evidence Report. Obes Res. 1998;6 Suppl 2:51S–209S.",
+            url: URL(string: "https://www.ncbi.nlm.nih.gov/books/NBK2003/")
+        ),
+        NutritionSource(
+            id: "jensen",
+            shortLabel: "Jensen MD, et al. Circulation. 2014;129(25 Suppl 2):S102–S138",
+            citation: "Jensen MD, Ryan DH, Apovian CM, et al. 2013 AHA/ACC/TOS guideline for the management of overweight and obesity in adults. Circulation. 2014;129(25 Suppl 2):S102–S138.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/24222017/")
         ),
         NutritionSource(
             id: "iom",
