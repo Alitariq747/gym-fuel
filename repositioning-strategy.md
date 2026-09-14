@@ -5,7 +5,8 @@ The *argument*. What we're building and in what order lives in
 deliberately does not duplicate the plan, so the two can't drift.
 
 Written 5 September 2026. Revised 7 September for the drop-lifting and
-scrap-exercise decisions — see Revision notes at the end.
+scrap-exercise decisions, and 14 September for the pace check — see Revision
+notes at the end.
 
 ---
 
@@ -201,23 +202,33 @@ display" — and trading price for audience is correct while that holds.
 
 ### Why the retention half is worth building regardless
 
-Adaptive expenditure measures real TDEE from the interaction between logged intake
-and trend weight, then moves next week's targets to hit a chosen rate. It is what
-MacroFactor, Carbon and RP all sell, and it is pure arithmetic — unlike scans, it
+A **pace check** compares how fast the user's weight is actually moving with the
+pace they chose, and nudges the calorie target in small steps until the two match.
+Once a week it asks one question — *on pace, too slow, or too fast?* — and gives
+an answer a normal person can follow. It is pure arithmetic: unlike scans, it
 costs nothing per user.
+
+Every adaptive coach sells some form of this. MacroFactor goes further and
+estimates the user's energy expenditure from logged intake and weight. That model
+rests on their own 748-user, 100-day validation study, depends on complete food
+logs, and presents a health measurement App Store 1.4.1 expects to be validated.
+We have none of that data, and our users describe food in a sentence rather than
+weighing it. **The pace check was chosen instead on 14 September** — full
+reasoning in `build-order.md` Step 4.
 
 A 16-week cut for an 85 kg user, illustrative:
 
-| Week | Static target (today) | Adaptive target |
+| Week | Static target (today) | With the pace check |
 |---|---|---|
 | 0–4 | 2200 | 2200 |
-| 4–8 | 2200 | 2120 |
-| 8–12 | 2200 | 2040 |
-| 12–16 | 2200 | 1960 |
+| 4–8 | 2200 | 2100 |
+| 8–12 | 2200 | 2000 |
+| 12–16 | 2200 | 1900 |
 
 The static column is what the app does now: the same target in week 16 as week 1,
-so when expenditure falls the loss stalls and the user concludes the app is wrong.
-Each step in the adaptive column is one weekly check-in.
+so when the body needs less the loss stalls and the user concludes the app is
+wrong. Each step in the right-hand column is one 100 kcal move at a check-in where
+the pace had slipped below the goal; the check-ins in between changed nothing.
 
 ---
 
@@ -267,10 +278,12 @@ best customers are our least profitable, which is backwards.
 **Three changes:**
 
 1. **Trial to 14 days.** Not a benchmark call — an adaptive coach cannot
-   demonstrate itself in 3 days, because the value arrives at the first check-in.
-   The trial must span at least one, ideally two. (Benchmarks agree: sub-4-day
-   trials convert at ~25.5% median against ~42.5% for 17–32 day trials.)
-2. **Reprice to $7.99/mo and $54.99/yr** once the engine ships. Lower than the
+   demonstrate itself in 3 days. The pace check needs 14 days of weigh-ins before
+   it can move a target, so the value arrives at day 14 at the earliest — which a
+   14-day trial only just reaches, and a shorter one never shows. (Benchmarks
+   agree: sub-4-day trials convert at ~25.5% median against ~42.5% for 17–32 day
+   trials.)
+2. **Reprice to $7.99/mo and $54.99/yr** once the pace check ships. Lower than the
    $9.99 originally proposed here, because dropping the lifting surface means
    anchoring against Cal AI and Yazio rather than MacroFactor. Grandfather
    existing subscribers.
@@ -308,12 +321,22 @@ story. It does not cost us the position: three of the four are hand-curating sma
 databases, the capped approach we specifically avoid. HealthifyMe *is* a moat —
 one more reason to aim diaspora rather than India.
 
-**Adaptive targets need adherent users.** The expenditure estimate is only as good
-as the intake log feeding it. Systematic under-logging — which AI photo estimation
-is prone to, by a commonly cited 150–400 kcal on calorie-dense meals — biases
-expenditure downward and the app prescribes too little. We need visible confidence
-handling and a way to flag "your log and your weight disagree", which the
-`confidence` and `assumptions[]` fields are already shaped for.
+**Adaptive targets need weigh-ins and a sensible start.** Revised 14 September.
+The original risk here was an expenditure estimate biased by under-logging — AI
+photo estimation is prone to a commonly cited 150–400 kcal on calorie-dense meals.
+The pace check retires most of that: it reads weight, and counts logged days
+without ever reading their calories. Three risks remain:
+
+- **No weigh-ins, no coaching.** Fewer than six in a fortnight and the target
+  never moves. Apple Health body mass (Step 4a2) is the main defence.
+- **It is slow by design.** At most 100 kcal a fortnight means a starting target
+  that is 300 kcal wrong takes six weeks to correct — so the starting offset and
+  the activity multiplier matter more than they would under an expenditure engine.
+- **Partial logging still fools the logging check.** A day with breakfast logged
+  and dinner forgotten counts as logged, so the pace check can lower a target the
+  user is already over. It goes wrong more slowly than a biased expenditure
+  estimate — 100 kcal a fortnight, stopped by the floor — but in the same
+  direction. `confidence` and `assumptions[]` remain the fields to build on.
 
 **Founder-audience fit degrades.** Ahmad is a lifter and writes for lifters
 instinctively. Writing for general home cooks is a different muscle, and untested.
@@ -327,8 +350,8 @@ becomes a rejection risk the moment the offer changes to 14 days. Step 1 of
 
 ## Revision notes
 
-Three conclusions in the 5 September version were superseded and have been
-corrected in place rather than deleted, so the reasoning stays legible:
+Conclusions in earlier versions that were superseded have been corrected in place
+rather than deleted, so the reasoning stays legible:
 
 - **The ceiling argument (§03)** was the wrong objection. Market size was never
   the problem; incumbency is.
@@ -337,6 +360,11 @@ corrected in place rather than deleted, so the reasoning stays legible:
   surface" once it was clear "lifter" is a costume the goal-driven use case wears.
 - **Pricing (§05)** came down from $9.99/$69.99 to $7.99/$54.99 as a direct
   consequence of the above.
+- **The adaptive engine (§03, §05 and the risks)** was re-scoped on 14 Sep from an
+  expenditure estimate to a pace check. The retention argument is unchanged —
+  targets that move are still the depth — but the mechanism no longer claims a
+  health measurement we cannot validate, and no longer depends on a complete food
+  log.
 
 Also decided after this document was first written, and recorded in
 `project-brief.md` rather than here: exercise logging is removed entirely, the
@@ -350,6 +378,8 @@ Store metadata cannot segment cuisines by country in English.
 - [LiftEats — App Store listing](https://apps.apple.com/us/app/lifteats/id6778838787)
 - [MacroFactor 2025 Annual Report](https://macrofactor.com/annual-report-2025/) — user counts
 - [Sensor Tower — MacroFactor](https://app.sensortower.com/overview/1553503471?country=US)
+- [MacroFactor — How accurate is the expenditure algorithm?](https://macrofactor.com/algorithm-accuracy/) — the 748-user validation study
+- [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/) — 1.4.1 and 4.1
 - [Latka — Cal AI revenue](https://getlatka.com/companies/calai.app)
 - [Inc. — Cal AI's $40M and the MyFitnessPal sale](https://www.inc.com/ben-sherry/he-built-an-ai-app-in-high-school-made-40m-and-sold-to-myfitnesspal-now-hes-aiming-even-bigger/91307748)
 - [Growthcurve — the Cal AI growth playbook](https://growthcurve.co/three-engines-and-an-exit-the-cal-ai-growth-playbook)

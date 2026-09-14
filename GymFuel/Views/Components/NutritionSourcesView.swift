@@ -81,8 +81,8 @@ struct NutritionSourcesView: View {
             emoji: "⚖️",
             title: "Your weight trend",
             tint: .fuelBlue,
-            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with an exponential moving average, weighting the newest reading at 25% and everything before it at 75%, so it moves slower than the scale on purpose.",
-            formula: "trend = 0.25 × today's weigh-in\n      + 0.75 × previous trend",
+            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with a weighted average that fades with time: a weigh-in counts for half as much once it is a week old, and for almost nothing after a month. So the line moves slower than the scale on purpose, and a gap in your weigh-ins loosens the line's hold on the past instead of passing unnoticed.",
+            formula: "gap   = days since your last weigh-in\ndecay = 0.5 ^ (gap ÷ 7)\n\ntrend = (1 − decay) × this weigh-in\n      + decay × previous trend",
             footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is scored or streaked.",
             sourceIDs: ["zheng", "jmirScale"]
         )

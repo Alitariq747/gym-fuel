@@ -204,6 +204,10 @@ struct ProfileView: View {
                                     supportURL: supportURL,
                                     onOpenNutritionSources: { showNutritionSourcesSheet = true }
                                 )
+
+                                #if DEBUG
+                                ProfileDebugSection(userId: profileVm.profile?.id ?? "")
+                                #endif
                                   
                                 
                                 if let signOutError {
