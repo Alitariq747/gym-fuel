@@ -7,7 +7,40 @@ struct MacroTargetCalculator {
     /// The most a pace may take off the daily target.
     static let maxDailyDeficit: Double = 1_000
 
-    func targetMacros(for profile: UserProfile) -> Macros? {
+    /// The two numbers the pace check needs beside today's target.
+    struct CalorieBounds: Equatable {
+        /// Resting × activity + pace, before any check-in adjustment or floor.
+        let base: Double
+        /// The lowest target allowed: the gender floor, or protein + fat
+        /// calories if that is higher.
+        let floor: Double
+    }
+
+    /// - Parameter calorieAdjustment: the running change the weekly check-in has
+    ///   made, from the current phase. Applied before the floor, so no
+    ///   adjustment can take the target below it.
+    func targetMacros(for profile: UserProfile, calorieAdjustment: Double = 0) -> Macros? {
+        guard let bounds = calorieBounds(for: profile),
+              let weightKg = profile.weightKg else { return nil }
+
+        let goal = profile.goalType ?? .defaultValue
+        let protein = weightKg * goal.proteinPerKg
+        let fat = weightKg * goal.fatPerKg
+        let proteinAndFatCalories = (protein * 4) + (fat * 9)
+
+        // Base + pace + adjustment, then the floors, then carbs take what is left.
+        let targetCalories = max(bounds.base + calorieAdjustment, bounds.floor)
+        let carbs = max(targetCalories - proteinAndFatCalories, 0) / 4
+
+        return Macros(
+            calories: targetCalories.rounded(),
+            protein: protein.rounded(),
+            carbs: carbs.rounded(),
+            fat: fat.rounded()
+        )
+    }
+
+    func calorieBounds(for profile: UserProfile) -> CalorieBounds? {
         guard let age = profile.age,
               let heightCm = profile.heightCm,
               let weightKg = profile.weightKg else { return nil }
@@ -20,21 +53,12 @@ struct MacroTargetCalculator {
             heightCm: heightCm,
             weightKg: weightKg
         )
-        let protein = weightKg * goal.proteinPerKg
-        let fat = weightKg * goal.fatPerKg
-        let proteinAndFatCalories = (protein * 4) + (fat * 9)
+        let proteinAndFatCalories = (weightKg * goal.proteinPerKg * 4) + (weightKg * goal.fatPerKg * 9)
 
-        // Base + pace, then the floors, then carbs take what is left.
-        let pacedCalories = (bmr * activity.multiplier)
-            + paceOffset(goal: goal, pace: profile.resolvedPace, weightKg: weightKg)
-        let targetCalories = max(pacedCalories, profile.gender.calorieFloor, proteinAndFatCalories)
-        let carbs = max(targetCalories - proteinAndFatCalories, 0) / 4
-
-        return Macros(
-            calories: targetCalories.rounded(),
-            protein: protein.rounded(),
-            carbs: carbs.rounded(),
-            fat: fat.rounded()
+        return CalorieBounds(
+            base: (bmr * activity.multiplier)
+                + paceOffset(goal: goal, pace: profile.resolvedPace, weightKg: weightKg),
+            floor: max(profile.gender.calorieFloor, proteinAndFatCalories)
         )
     }
 

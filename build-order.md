@@ -63,7 +63,7 @@ fresh session reads this file, not the chat history.
 - [x] **4a2** · Apple Health body mass → `weighIns`
 - [x] **4b1** · The trend and the seeder — expenditure pieces removed
 - [x] **4b2** · Pick a pace — onboarding, Settings, starting targets
-- [ ] **4b3** · Phases and the pace rule
+- [x] **4b3** · Phases and the pace rule
 - [ ] **4b4** · The weekly check-in
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
@@ -540,6 +540,29 @@ Nothing here is user-visible.
   expenditure formulas, and `repositioning-strategy.md` ("Why the retention half is
   worth building") still describes adaptive expenditure. **Do not build from
   either.**
+
+### Finishing 4b3 — done 14 September
+
+Plan: `~/.claude/plans/yes-to-all-four-nifty-parrot.md`. Decided while planning:
+
+- **Changing only the target weight updates the current phase in place** — no new
+  phase, so it cannot reset the 14-day wait or the check-in clock.
+- **A cleared target weight is written as `FieldValue.delete()`** in
+  `updateProfile`. A merge write cannot clear a field, and a target weight can't be
+  resolved on read like pace can: checked against today's weight, a reached target
+  would vanish.
+- **"Target weight reached" is a result of the pure pace rule** (`.targetReached`).
+  4b4 only builds the offer.
+- **No offline phase write.** Nothing writes a phase offline in 4b3; 4b4 adds its
+  own offline branch for check-ins.
+- **The current phase is the newest by `startedAt`**, not by key. The same in normal
+  use; it lets the debug seeder backdate a phase on an account that already has
+  `phases/{today}`.
+- **The rule steps from the formula's base, not today's target** — an adjustment
+  below `floor − base` does nothing, so a step up from a floored target still moves
+  it. `PaceCheckCalculator.Input` takes base and floor calories.
+- **Sources method 06 is "Your target weight"** (BMI 18.5, WHO Tech Rep Ser 894).
+  4b4's check-in method becomes **07**.
 
 ### Two things to leave in place for later steps
 

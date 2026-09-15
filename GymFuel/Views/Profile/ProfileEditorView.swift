@@ -71,6 +71,15 @@ struct ProfileEditorView: View {
         draft.resolvedPace?.displayName ?? "Set"
     }
 
+    // target weight — optional, hidden for Maintain. Never touches `weightKg`.
+    @State private var showTargetWeightSheet = false
+
+    private var targetWeightTitle: String {
+        guard let kg = draft.resolvedTargetWeightKg else { return "Not set" }
+        let unit = BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms
+        return BodyWeight.displayString(kilograms: kg, unit: unit)
+    }
+
     private func paceDetail(_ pace: GoalPace) -> String {
         guard let kg = draft.weightKg, kg > 0 else { return "" }
         let unit = BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms
@@ -113,6 +122,13 @@ struct ProfileEditorView: View {
         .onAppear {
             syncAgeTextFromDraft()
         }
+        .onChange(of: draft.heightCm) { _, heightCm in
+            // A shorter height can move the underweight line above the target.
+            if let target = draft.targetWeightKg, let heightCm,
+               target < TargetWeight.lowestHealthyKg(heightCm: heightCm) {
+                draft.targetWeightKg = nil
+            }
+        }
         .sheet(isPresented: $isEditHeightPresented) {
             NavigationStack {
                 EditHeightSheet(heightCm: $draft.heightCm)
@@ -131,6 +147,17 @@ struct ProfileEditorView: View {
                 .preferredColorScheme(preferredColorScheme)
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showTargetWeightSheet) {
+            EditTargetWeightSheet(
+                targetWeightKg: $draft.targetWeightKg,
+                goal: draft.goalType ?? .defaultValue,
+                currentWeightKg: draft.weightKg,
+                heightCm: draft.heightCm
+            )
+            .preferredColorScheme(preferredColorScheme)
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showActivitySheet) {
             activityPickerSheet
@@ -293,6 +320,15 @@ struct ProfileEditorView: View {
                     showPaceSheet = true
                 }
                 Divider()
+                rowButton(
+                    title: "Target weight",
+                    systemImage: "flag",
+                    value: targetWeightTitle,
+                    isPlaceholder: draft.resolvedTargetWeightKg == nil
+                ) {
+                    showTargetWeightSheet = true
+                }
+                Divider()
             }
             rowButton(title: "Daily Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.activityLevel == nil) {
                 showActivitySheet = true
@@ -322,9 +358,17 @@ struct ProfileEditorView: View {
 
     private func goalOptionRow(_ goal: GoalType) -> some View {
         Button {
+            let previousGoal = draft.goalType
             draft.goalType = goal
             // A pace from the old goal may not exist for the new one.
             draft.goalPace = GoalPace.resolved(draft.goalPace, for: goal)
+            // Nor may a target: wrong side for the new goal, or any target on
+            // Maintain. Only on an actual change — re-tapping the same goal must
+            // not clear a target the trend has already reached.
+            if goal != previousGoal,
+               !TargetWeight.isValid(draft.targetWeightKg, goal: goal, currentWeightKg: draft.weightKg, heightCm: draft.heightCm) {
+                draft.targetWeightKg = nil
+            }
             showGoalSheet = false
         } label: {
             HStack(alignment: .top, spacing: 14) {

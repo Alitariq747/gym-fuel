@@ -92,6 +92,17 @@ struct NutritionSourcesView: View {
             formula: "gap   = days since your last weigh-in\ndecay = 0.5 ^ (gap ÷ 7)\n\ntrend = (1 − decay) × this weigh-in\n      + decay × previous trend",
             footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is scored or streaked.",
             sourceIDs: ["zheng", "jmirScale"]
+        ),
+        NutritionMethod(
+            id: "targetWeight",
+            index: "06",
+            emoji: "📍",
+            title: "Your target weight",
+            tint: .fuelGreen,
+            body: "A target weight is optional, and you set it in Settings. It has to sit on the side your goal is heading — below your current weight when losing fat, above it when gaining — and it can never be in the underweight range, which is a body mass index (BMI) below 18.5. We never show a date for reaching it: weight does not change in a straight line.",
+            formula: "BMI = weight kg ÷ (height m)²\n\nlowest target = 18.5 × (height m)²",
+            footnote: "BMI is a screening measure for populations, not a diagnosis, and it cannot tell muscle from fat. We use it for one thing only: a lower limit, so the app never helps you aim for a weight classed as underweight.",
+            sourceIDs: ["who"]
         )
     ]
 
@@ -185,6 +196,12 @@ struct NutritionSourcesView: View {
             shortLabel: "Self-Weighing Frequency Cohort. J Med Internet Res. 2021;23(6):e25529",
             citation: "Frequency of Self-Weighing and Weight Change: Cohort Study With 10,000 Smart Scale Users. J Med Internet Res. 2021;23(6):e25529.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/34075879/")
+        ),
+        NutritionSource(
+            id: "who",
+            shortLabel: "WHO. Obesity: Preventing and Managing the Global Epidemic. Tech Rep Ser 894, 2000",
+            citation: "World Health Organization. Obesity: preventing and managing the global epidemic. Report of a WHO consultation. World Health Organ Tech Rep Ser. 2000;894:i–xii, 1–253.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/11234459/")
         )
     ]
 

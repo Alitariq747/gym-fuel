@@ -97,6 +97,37 @@ struct MacroTargetCalculatorTests {
         #expect(calories(unsaid) == 1_500)
     }
 
+    @Test("A check-in adjustment moves calories, and carbs follow")
+    func adjustmentMovesTarget() throws {
+        let profile = person(goal: .maintain)
+        let plain = try #require(calculator.targetMacros(for: profile))
+        let adjusted = try #require(calculator.targetMacros(for: profile, calorieAdjustment: -200))
+
+        #expect(adjusted.calories == plain.calories - 200)
+        #expect(adjusted.carbs == plain.carbs - 50)
+        #expect(adjusted.protein == plain.protein)
+        #expect(adjusted.fat == plain.fat)
+    }
+
+    @Test("No adjustment can take the target below the floor")
+    func adjustmentRespectsFloor() {
+        let profile = person(gender: .female, age: 40, heightCm: 155, weightKg: 50, goal: .cut, pace: .faster)
+        #expect(calculator.targetMacros(for: profile, calorieAdjustment: -300)?.calories == 1_200)
+    }
+
+    @Test("Calorie bounds are the base before the floor, and the higher floor")
+    func calorieBounds() throws {
+        let bounds = try #require(calculator.calorieBounds(for: person(goal: .cut, pace: .steady)))
+        #expect(abs(bounds.base - 1_743) < 1)
+        // 176 g protein × 4 + 64 g fat × 9 = 1,280, under the 1,500 floor.
+        #expect(bounds.floor == 1_500)
+
+        let heavy = try #require(
+            calculator.calorieBounds(for: person(gender: .female, age: 40, heightCm: 165, weightKg: 120, goal: .cut, pace: .faster))
+        )
+        #expect(abs(heavy.floor - 1_920) < 1e-9)
+    }
+
     @Test("Carbs are never negative")
     func carbsNeverNegative() {
         for goal in GoalType.allCases {
