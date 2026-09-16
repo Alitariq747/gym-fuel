@@ -184,6 +184,29 @@ final class UserProfileViewModel: ObservableObject {
         }
     }
 
+    /// Puts the cached phase in memory before the profile arrives, so the first
+    /// screen already shows the check-in's adjustment instead of jumping when
+    /// `loadPhase` finishes.
+    ///
+    /// Cache only: no network wait, and offline it is the same data `loadPhase`
+    /// would find. Never plans or writes — an empty cache proves nothing.
+    func loadCachedPhase(for uid: String) async {
+        guard phase == nil, let cached = await phaseService.fetchCachedPhase(for: uid) else { return }
+        // `loadPhase` may have answered while the cache read was in flight.
+        guard phase == nil else { return }
+        phase = cached
+    }
+
+    /// Reflects a check-in answer in memory so `targetMacros` moves at once. The
+    /// durable write is the check-in's own batch, not this.
+    func applyCheckInDecision(_ update: PhaseDecisionUpdate) {
+        guard phase?.startDateKey == update.phaseKey else { return }
+        if let calorieAdjustment = update.calorieAdjustment {
+            phase?.calorieAdjustment = calorieAdjustment
+        }
+        phase?.lastStepDecisionDateKey = update.decisionDateKey
+    }
+
     func clear() {
         profile = nil
         phase = nil

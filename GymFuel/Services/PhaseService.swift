@@ -18,6 +18,10 @@ protocol PhaseService: Sendable {
     /// The phase in force: the most recently started one.
     func fetchCurrentPhase(for userId: String) async throws -> PhaseFetch
 
+    /// The phase in force as the local cache has it — no network, so it can
+    /// land before the first screen. `nil` for an empty cache or any error.
+    func fetchCachedPhase(for userId: String) async -> Phase?
+
     /// Writes the whole document, **replacing** any phase with the same key — so
     /// a same-day switch to Maintain cannot leave the old pace behind.
     func startPhase(_ phase: Phase, for userId: String) async throws

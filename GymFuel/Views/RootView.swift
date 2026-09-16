@@ -115,6 +115,9 @@ struct RootView: View {
         }
         .task(id: authManager.user?.uid) {
             if let user = authManager.user {
+                // First, and cache only: the phase's adjustment is in memory
+                // before the profile shows the first target.
+                await profileViewModel.loadCachedPhase(for: user.uid)
                 await subscriptionViewModel.syncUser(userId: user.uid)
                 await profileViewModel.loadProfile(for: user.uid)
                 await profileViewModel.loadPhase(for: user.uid)

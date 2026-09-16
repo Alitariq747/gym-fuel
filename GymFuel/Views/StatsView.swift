@@ -12,32 +12,55 @@ private struct StatsLoadKey: Hashable {
     let targetMacros: Macros?
 }
 
+private struct PresentedCheckIn: Identifiable {
+    let dueDateKey: String
+    var id: String { dueDateKey }
+}
+
 struct StatsView: View {
     let profile: UserProfile
     /// The same target the Day screen shows — passed in, never recalculated
     /// here, so the two screens cannot disagree.
     let targetMacros: Macros?
+    /// The phase in force. Decides when a weekly check-in is due.
+    let phase: Phase?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
+    @StateObject private var checkInViewModel: CheckInViewModel
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
+    @State private var presentedCheckIn: PresentedCheckIn?
     /// Reports a saved weigh-in so the caller can refresh the profile it owns.
     /// Passed in rather than reached for through `@EnvironmentObject`: this view
     /// is itself presented as a sheet, and this is the one write path in the
     /// feature — not somewhere to depend on environment propagation.
     private let onWeighIn: (Double) -> Void
+    /// Reports a check-in answer so the caller can move the phase it owns. Passed
+    /// in for the same reason as `onWeighIn`.
+    private let onCheckInDecision: (PhaseDecisionUpdate) -> Void
     init(
         profile: UserProfile,
         targetMacros: Macros?,
+        phase: Phase? = nil,
         viewModel: StatsViewModel = StatsViewModel(),
-        onWeighIn: @escaping (Double) -> Void = { _ in }
+        checkInViewModel: CheckInViewModel = CheckInViewModel(),
+        onWeighIn: @escaping (Double) -> Void = { _ in },
+        onCheckInDecision: @escaping (PhaseDecisionUpdate) -> Void = { _ in }
     ) {
         self.profile = profile
         self.targetMacros = targetMacros
+        self.phase = phase
         self.onWeighIn = onWeighIn
+        self.onCheckInDecision = onCheckInDecision
         _viewModel = StateObject(wrappedValue: viewModel)
+        _checkInViewModel = StateObject(wrappedValue: checkInViewModel)
+    }
+    /// The open check-in, offered on the current week only.
+    private var openCheckInDueDateKey: String? {
+        guard !viewModel.canGoToNextWeek() else { return nil }
+        return checkInViewModel.openDueDateKey(for: phase)
     }
     private var snapshot: StatsSnapshot {
         viewModel.snapshot
@@ -70,6 +93,13 @@ struct StatsView: View {
                     onPrevious: { viewModel.goToPreviousWeek() },
                     onNext: { viewModel.goToNextWeek() }
                 )
+
+                if let dueDateKey = openCheckInDueDateKey {
+                    CheckInCard {
+                        checkInViewModel.reset()
+                        presentedCheckIn = PresentedCheckIn(dueDateKey: dueDateKey)
+                    }
+                }
 
                 // Outside the error branch on purpose: the weight trend loads
                 // independently of the food stats, so neither failure should be
@@ -107,6 +137,20 @@ struct StatsView: View {
         }
         .task(id: viewModel.selectedWeekStart) {
             await viewModel.loadWeightTrend(userId: profile.id)
+        }
+        // A new phase starts its check-ins again from its own first day.
+        .task(id: phase?.startDateKey) {
+            await checkInViewModel.loadLatest(userId: profile.id)
+        }
+        .sheet(item: $presentedCheckIn) { checkIn in
+            CheckInView(
+                userId: profile.id,
+                profile: profile,
+                phase: phase,
+                dueDateKey: checkIn.dueDateKey,
+                viewModel: checkInViewModel,
+                onDecision: onCheckInDecision
+            )
         }
         .sheet(isPresented: $isWeighInPresented) {
             NavigationStack {

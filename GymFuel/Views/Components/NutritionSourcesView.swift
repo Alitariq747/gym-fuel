@@ -103,6 +103,29 @@ struct NutritionSourcesView: View {
             formula: "BMI = weight kg ÷ (height m)²\n\nlowest target = 18.5 × (height m)²",
             footnote: "BMI is a screening measure for populations, not a diagnosis, and it cannot tell muscle from fat. We use it for one thing only: a lower limit, so the app never helps you aim for a weight classed as underweight.",
             sourceIDs: ["who"]
+        ),
+        NutritionMethod(
+            id: "checkIn",
+            index: "07",
+            emoji: "🗓️",
+            title: "Your weekly check-in",
+            tint: .fuelOrange,
+            body: "Every 7 days from the day you set your goal and pace, the check-in asks one question: is your weight moving at the pace you chose? It draws a best-fit straight line through your weigh-ins from the last two to three weeks and compares its slope with your goal pace. Anywhere within half of your goal pace, either way, counts as on pace. Slower than that, and it suggests a target 100 kcal closer to your goal; faster, 100 kcal back. You choose whether to use it.",
+            formula: """
+            reads a pace once there are
+                14+ days since your goal or last change
+                6+ weigh-ins, spread over 10+ days
+
+            pace    = slope of the best-fit line × 7
+            on pace = within ±50% of your goal pace
+
+            step    = 100 kcal
+            at most one change every 14 days
+            steps when food is logged on most days
+            never below the lowest target in 01
+            """,
+            footnote: "Nothing changes without you: you choose whether to use a suggestion, and keeping your target starts the same 14-day wait. The check-in reads your weigh-ins and whether food was logged — never how much you ate. On Maintain it steps only when your trend moves more than 0.5 kg from where you started and is not already heading back.",
+            sourceIDs: ["helms", "iraki", "jensen", "zheng"]
         )
     ]
 

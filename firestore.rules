@@ -144,6 +144,41 @@ service cloud.firestore {
         allow delete: if false;
       }
 
+      // One document per weekly check-in, keyed by the "yyyy-MM-dd" day it fell
+      // due. Due dates only exist inside a phase (start + 7, + 14, …) and phase
+      // keys only move forward, so a new phase never collides with an old record;
+      // `phaseStartDateKey` says which phase a record belongs to.
+      //
+      // Update is allowed so a retried save overwrites rather than fails. No
+      // delete: a check-in is the record of a target changing.
+      match /checkIns/{dueDateKey} {
+        allow read: if isOwner(uid);
+
+        allow create, update: if isOwner(uid)
+          && onlyAllowedKeys([
+            "dueDateKey",
+            "phaseStartDateKey",
+            "decision",
+            "response",
+            "paceKgPerWeek",
+            "goalKgPerWeek",
+            "weighInCount",
+            "windowDays",
+            "loggedDays",
+            "averageLoggedCalories",
+            "suggestedDelta",
+            "targetsBefore",
+            "targetsAfter",
+            "completedDateKey",
+            "completedAt",
+            "createdAt",
+            "updatedAt"
+          ])
+          && request.resource.data.dueDateKey == dueDateKey;
+
+        allow delete: if false;
+      }
+
       match /dailyMacroTargets/{dateKey} {
         allow read: if isOwner(uid);
 

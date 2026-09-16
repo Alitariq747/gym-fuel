@@ -64,7 +64,9 @@ fresh session reads this file, not the chat history.
 - [x] **4b1** · The trend and the seeder — expenditure pieces removed
 - [x] **4b2** · Pick a pace — onboarding, Settings, starting targets
 - [x] **4b3** · Phases and the pace rule
-- [ ] **4b4** · The weekly check-in
+- [x] **4b4a** · The weekly check-in — card, screen, accept or reject
+- [ ] **4b4b** · Target weight reached — offer Maintain
+- [ ] **4b4c** · Past weeks show their own target
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
 - [ ] **7** · Day-aware goal-fit score · *first to cut*
@@ -396,22 +398,28 @@ path can reach the paywall and the permission prompt at the same time.
 >   Settings, copied onto each phase, and the **full targets** saved on each phase
 >   (decisions 10 and 11). Visible only in the debug section, apart from the
 >   Settings row.
-> - **4b4 — the weekly check-in.** Item 6: the Week-screen card, the check-in
->   screen, accept or reject, plus the next-due date Steps 12 and 14 both read off.
->   Also **full targets saved on each check-in**, past weeks on the Week screen
->   showing the target they had, and the check-in **offering Maintain once the
->   target weight is reached** (decisions 10 and 11).
+> - **4b4a — the weekly check-in.** Item 6: the Week-screen card, the check-in
+>   screen, accept or reject, the next-due date Steps 12 and 14 both read off, and
+>   **full targets saved on each check-in** (decision 11). Meets Step 4's *Done
+>   when* on its own.
+> - **4b4b — target weight reached, offer Maintain.** The check-in offers a switch
+>   to Maintain once the trend reaches the target weight; declining clears the
+>   target (decisions 10 and 12).
+> - **4b4c — past weeks show their own target.** The Week screen reads the targets
+>   saved on phases and check-ins for past weeks (decision 11).
 >
 > Split again on 14 September: the old 4b2 was too big for one session, so each
-> part now ends with something you can tap.
+> part now ends with something you can tap. **4b4 was split into three on 15
+> September** — see *Decided 15 September* below.
 >
 > Plans: 4a `~/.claude/plans/lets-split-into-two-polymorphic-metcalfe.md`
 > (includes the App Store 1.4.1 and 5.1.3 framing) · 4b1 as originally built
 > `~/.claude/plans/yes-write-the-4b1-sorted-lamport.md` — **superseded wherever
 > it describes expenditure** · **4b2–4b4 `~/.claude/plans/calm-launching-planet.md`**
 >
-> Decisions 10 and 11 came after that plan was written. **Where the plan and this
-> file disagree, this file wins.**
+> Decisions 10 and 11 came after that plan was written; the plan was brought up to
+> date on 15 September, including the 4b4 split. **Where the plan and this file
+> disagree, this file wins.**
 
 Still the step that decides whether the app coaches at all, so it still goes
 early.
@@ -441,12 +449,12 @@ early.
    **4b2.**
 6. `checkIns` collection + the weekly check-in screen, where the user accepts or
    rejects a suggested change. Each check-in saves the full targets before and
-   after. Once the target weight is reached, the check-in offers a switch to
-   Maintain. **4b4.**
+   after. **4b4a.** Once the target weight is reached, the check-in offers a
+   switch to Maintain. **4b4b.**
 
 **Done when** two weeks of seeded weigh-ins moving slower than the goal pace
 produce a check-in that moves next week's target by one step and says why in one
-sentence — and one week of the same data changes nothing.
+sentence — and one week of the same data changes nothing. **Met by 4b4a.**
 
 ### Decided 14 September
 
@@ -461,8 +469,8 @@ sentence — and one week of the same data changes nothing.
 | 7 | **Calorie floor 1,200 for women, 1,500 for men and prefer not to say**, and never below protein + fat calories. |
 | 8 | **The calorie adjustment carries across a pace or goal change** — it corrects the formula for this person, not for the goal. |
 | 9 | **Extra guards:** weigh-ins must span at least 10 days, and Maintain does not step if the trend is already heading back into the band. |
-| 10 | **Optional target weight, set in Settings only** — never in onboarding. Stored on the profile (`targetWeightKg`) and copied onto each phase, like pace. Maintain has none. It never touches `weightKg` — only a weigh-in does. Once the trend reaches it, the check-in **offers** a switch to Maintain, and the user accepts or rejects it like any other change (decision 2). **4b3** saves it; **4b4** offers the switch. |
-| 11 | **Full targets are saved on phases and check-ins** — calories, protein, carbs and fat. A phase saves the targets it started with; a check-in saves the targets before and after. Past weeks on the Week screen show the target saved for that week, not today's. Today's target is still worked out live (`formula + adjustment`), and there is no daily targets record. **4b3** saves them on phases; **4b4** on check-ins, and wires up the Week screen. |
+| 10 | **Optional target weight, set in Settings only** — never in onboarding. Stored on the profile (`targetWeightKg`) and copied onto each phase, like pace. Maintain has none. It never touches `weightKg` — only a weigh-in does. Once the trend reaches it, the check-in **offers** a switch to Maintain, and the user accepts or rejects it like any other change (decision 2). **4b3** saves it; **4b4b** offers the switch, and declining clears it (decision 12). |
+| 11 | **Full targets are saved on phases and check-ins** — calories, protein, carbs and fat. A phase saves the targets it started with; a check-in saves the targets before and after. Past weeks on the Week screen show the target saved for that week, not today's. Today's target is still worked out live (`formula + adjustment`), and there is no daily targets record. **4b3** saves them on phases; **4b4a** on check-ins; **4b4c** wires up the Week screen. |
 
 > **Decision 10 details — agreed 14 September:**
 > - **"Reached" means the trend weight** gets there, not a single weigh-in.
@@ -552,8 +560,8 @@ Plan: `~/.claude/plans/yes-to-all-four-nifty-parrot.md`. Decided while planning:
   resolved on read like pace can: checked against today's weight, a reached target
   would vanish.
 - **"Target weight reached" is a result of the pure pace rule** (`.targetReached`).
-  4b4 only builds the offer.
-- **No offline phase write.** Nothing writes a phase offline in 4b3; 4b4 adds its
+  4b4b only builds the offer.
+- **No offline phase write.** Nothing writes a phase offline in 4b3; 4b4a adds its
   own offline branch for check-ins.
 - **The current phase is the newest by `startedAt`**, not by key. The same in normal
   use; it lets the debug seeder backdate a phase on an account that already has
@@ -562,7 +570,99 @@ Plan: `~/.claude/plans/yes-to-all-four-nifty-parrot.md`. Decided while planning:
   below `floor − base` does nothing, so a step up from a floored target still moves
   it. `PaceCheckCalculator.Input` takes base and floor calories.
 - **Sources method 06 is "Your target weight"** (BMI 18.5, WHO Tech Rep Ser 894).
-  4b4's check-in method becomes **07**.
+  4b4a's check-in method becomes **07**.
+- **Tapped 15 September:** every 4b3 check except the seeded "Run pace check"
+  readouts. Those are deferred; 4b4a's taps use the same seeded accounts.
+
+### Decided 15 September — 4b4 in three parts
+
+Decisions 10 and 11 landed on 4b4 after its plan was written, which made it bigger
+than 4b3. Split so each part ends with something you can tap, and the riskiest
+write gets a session of its own:
+
+| Part | Builds | Why it sits here |
+|---|---|---|
+| **4b4a** | The check-in: schedule, record, Week card, check-in screen, **Use** / **Keep my target** / **Done**, full targets before and after | Meets Step 4's *Done when* on its own |
+| **4b4b** | Target weight reached → offer Maintain | Changes the goal, starts a phase and clears the target weight — the riskiest write in Step 4 |
+| **4b4c** | Past weeks on the Week screen show the target saved for them | Read-only, so last: it sees every kind of record 4b4a and 4b4b write |
+
+| # | Decision |
+|---|---|
+| 12 | **Declining the Maintain offer clears the target weight.** The button says so, declining starts the 14-day wait like any rejection (decision 2), and pace steps resume after it. A new target can be set in Settings. Why: the pace rule checks *target reached* before pace, so a target kept after being reached would block every step. **4b4b.** |
+
+**Engineering calls — each part's plan confirms or overturns its own:**
+
+- **`checkIns/{dueDateKey}`, with `phaseStartDateKey` on each record.** Due dates
+  exist only inside the current phase (start + 7, + 14, …) and phase keys only move
+  forward, so a new phase's due dates never collide with an old record. The next due
+  date comes from the current phase plus the newest check-in — one read, no replay,
+  as *Two things to leave in place* asks. **4b4a.**
+- **Full targets are two maps, `targetsBefore` and `targetsAfter`** (calories,
+  protein, carbs, fat), plus `suggestedDelta`, so a rejected suggestion is still on
+  record. After equals before unless accepted. Replaces the plan's
+  `previousCalories` / `newCalories`. **4b4a.**
+- **A check-in also saves `completedDateKey`**, not just `completedAt`. 4b4c places a
+  target change on the day it happened, and Step 4's day rules already use date
+  keys. Cheap now; a migration later. **4b4a.**
+- **Use / Keep my target write one batch:** the check-in, plus the phase's
+  `calorieAdjustment` (Use only) and `lastStepDecisionDateKey` (both). Absolute
+  values, so a retry cannot step twice. The phase half is an update, so it fails
+  rather than creating a partial phase. Offline, the batch commits into the cache
+  without waiting, as weigh-ins do. **4b4a.**
+- **Until 4b4b lands, a reached target shows as no change with Done.** **4b4a.**
+- **The launch flicker is fixed in 4b4a.** Once adjustments are non-zero, the Day
+  target visibly jumps when the phase loads after the profile. No network wait
+  before the first screen, and offline must still show the adjusted target; the
+  approach is for the 4b4a plan.
+- **Accepting or declining the Maintain offer reuses the Settings save**, not a
+  batch. Accept: the profile saved as Maintain with pace and target weight cleared,
+  which already starts the Maintain phase with the adjustment carried; then the
+  check-in, best effort. Decline: the profile saved with the target cleared, which
+  updates the phase in place; then the 4b4a batch. Every partial state recovers — a
+  missing phase is repaired at the next launch, and a missing record only loses
+  history. **Online only,** because the Settings save already waits for the server;
+  offline, the buttons say they need a connection. **4b4b.**
+- **A past day's target is the newest saved target on or before it:** a phase's
+  `startTargets` (from `startDateKey`) or a check-in's `targetsAfter` (from
+  `completedDateKey`), the later instant winning on the same day. The current week
+  keeps today's live target, so Week still matches Day. Days before the first phase
+  show no target. How a week whose target changed mid-week labels its one headline
+  number is for the 4b4c plan. **4b4c.**
+
+**Seeding:** 4b4a needs nothing new — the seeded phase starts 27 days back, so the
+day-21 check-in is open, and "phase 7 days ago" gives a due check-in without enough
+data. 4b4b adds a *target reached* account; 4b4c adds a check-in accepted in a past
+week.
+
+**Noticed, not scheduled:** a phase's `startWeightKg` is `profile.weightKg` — the
+latest single weigh-in, not the trend (`PhasePlanner`). A Maintain phase started
+straight after a noisy reading centres its ±0.5 kg band in the wrong place. True of
+a Settings switch today and of 4b4b's accept; raise it in the 4b4b plan if it should
+change.
+
+### Finishing 4b4a — built 15 September
+
+Plan: `~/.claude/plans/lets-plan-4b4a-calm-perlis.md`. Decided while planning:
+
+- **Launch flicker:** the phase is read from the local cache before the profile
+  loads (`loadCachedPhase`), then from the server as before. The only jump left is
+  a fresh install with an empty cache.
+- **The newest check-in is read when the Week screen opens**, not at launch.
+  `CheckInSchedule.nextDueDateKey` is what Steps 12 and 14 call.
+- **Done saves a record too** (`acknowledged`), so a "not enough data" card goes
+  away until the next due date.
+- **The decision date is the day the user answers**, not the due date.
+- **Days logged and average calories** use the pace check's window, or the last 7
+  days when there is none. The average counts logged days only.
+- **Before an answer a step is only suggested;** after **Use** the sentence says
+  "your target is now". The sentence is never stored — `CheckInCopy` rebuilds it.
+- **Stale guard:** an answer is written only while the phase in memory still equals
+  the one the rule ran against.
+- **The check-in is a sheet** from the Week screen.
+- **Sources method 07 "Your weekly check-in"** reuses Helms, Iraki, Jensen and
+  Zheng — no new references.
+- **Not stored yet:** `trendKg`, `targetWeightKg`. 4b4b adds both.
+- **Not yet tapped.** Deploy `firestore.rules` first — the `checkIns` rule is new.
 
 ### Two things to leave in place for later steps
 

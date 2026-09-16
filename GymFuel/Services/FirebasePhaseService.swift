@@ -74,6 +74,18 @@ extension FirebasePhaseService: PhaseService {
         )
     }
 
+    func fetchCachedPhase(for userId: String) async -> Phase? {
+        do {
+            let snapshot: QuerySnapshot = try await phasesCollection(for: userId)
+                .order(by: "startedAt", descending: true)
+                .limit(to: 1)
+                .getDocuments(source: .cache)
+            return snapshot.documents.first.flatMap { decodePhase(from: $0) }
+        } catch {
+            return nil
+        }
+    }
+
     /// - Important: the completion fires only on **server acknowledgement**.
     ///   Awaiting this while offline never resumes.
     func startPhase(_ phase: Phase, for userId: String) async throws {

@@ -58,6 +58,14 @@ enum FirebaseTelemetryService {
         ])
     }
 
+    /// No weights and no calories — only what was shown and what was chosen.
+    static func logCheckInEvent(_ action: String, decision: String) {
+        logEvent("check_in_event", parameters: [
+            "action": action,
+            "decision": decision,
+        ])
+    }
+
     static func logSavedMealEvent(_ action: String) {
         logEvent("saved_meal_event", parameters: [
             "action": action,

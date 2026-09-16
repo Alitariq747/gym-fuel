@@ -220,7 +220,9 @@ struct MainTabView: View {
                 StatsView(
                     profile: profile,
                     targetMacros: profileViewModel.targetMacros,
-                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) }
+                    phase: profileViewModel.phase,
+                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) },
+                    onCheckInDecision: { update in profileViewModel.applyCheckInDecision(update) }
                 )
             }
             .preferredColorScheme(preferredColorScheme)

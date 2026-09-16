@@ -120,7 +120,7 @@ struct OnboardingPaceStepView: View {
 
     private var footer: some View {
         VStack(spacing: 12) {
-            Text("A starting point.\nChange it any time in Settings.")
+            Text("A starting point. Your weekly check-in\nsuggests small changes as you go.")
                 .font(.circaMono)
                 .foregroundStyle(Color.circaInk3)
                 .multilineTextAlignment(.center)
