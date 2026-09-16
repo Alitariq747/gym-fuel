@@ -204,22 +204,6 @@ struct ProfileView: View {
                                     supportURL: supportURL,
                                     onOpenNutritionSources: { showNutritionSourcesSheet = true }
                                 )
-
-                                #if DEBUG
-                                ProfileDebugSection(
-                                    userId: profileVm.profile?.id ?? "",
-                                    profile: profileVm.profile,
-                                    phase: profileVm.phase,
-                                    onSeeded: {
-                                        guard let uid = authManager.user?.uid else { return }
-                                        await profileVm.loadProfile(for: uid)
-                                        await profileVm.loadPhase(for: uid)
-                                        // The seeder rewrote goal, pace and weight;
-                                        // a stale draft would put them back on Save.
-                                        draft = profileVm.profile
-                                    }
-                                )
-                                #endif
                                   
                                 
                                 if let signOutError {
@@ -468,8 +452,6 @@ struct ProfileView: View {
         // Weight is deliberately absent: this screen displays it but cannot edit
         // it, so it can never be the reason there are changes to save.
         if draft.goalType != profile.goalType { return true }
-        if draft.resolvedPace != profile.resolvedPace { return true }
-        if draft.resolvedTargetWeightKg != profile.resolvedTargetWeightKg { return true }
         if draft.activityLevel != profile.activityLevel { return true }
         return false
     }

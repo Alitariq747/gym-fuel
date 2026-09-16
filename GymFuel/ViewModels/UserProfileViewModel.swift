@@ -16,36 +16,23 @@ final class UserProfileViewModel: ObservableObject {
        @Published private(set) var isLoading: Bool = false
        @Published var errorMessage: String?
        @Published private(set) var isSaving: Bool = false
-       /// The goal-and-pace stretch in force. `nil` until `loadPhase` finishes,
-       /// and targets simply read an adjustment of 0 until then.
-       @Published private(set) var phase: Phase?
-       /// Today's target: the formula plus the current phase's adjustment.
        var targetMacros: Macros? {
            guard let profile else { return nil }
-           return macroTargetCalculator.targetMacros(
-               for: profile,
-               calorieAdjustment: phase?.calorieAdjustment ?? 0
-           )
+           return macroTargetCalculator.targetMacros(for: profile)
        }
-
+       
        private let service: FirebaseUserProfileService
        private let macroTargetCalculator: MacroTargetCalculator
        private let weighInService: WeighInService
-       private let phaseService: PhaseService
-       private let phasePlanner: PhasePlanner
 
        init(
            service: FirebaseUserProfileService = .shared,
            macroTargetCalculator: MacroTargetCalculator = MacroTargetCalculator(),
-           weighInService: WeighInService = FirebaseWeighInService(),
-           phaseService: PhaseService = FirebasePhaseService(),
-           phasePlanner: PhasePlanner = PhasePlanner()
+           weighInService: WeighInService = FirebaseWeighInService()
        ) {
            self.service = service
            self.macroTargetCalculator = macroTargetCalculator
            self.weighInService = weighInService
-           self.phaseService = phaseService
-           self.phasePlanner = phasePlanner
        }
     
     func loadProfile(for uid: String) async {
@@ -82,7 +69,6 @@ final class UserProfileViewModel: ObservableObject {
             self.profile = updatedProfile
             FirebaseTelemetryService.logOnboardingEvent("complete_succeeded")
             await seedFirstWeighIn(for: uid, weightKg: profile.weightKg)
-            await loadPhase(for: uid)
         } catch {
             FirebaseTelemetryService.logOnboardingEvent("complete_failed")
             self.errorMessage = AppErrorMessage.message(
@@ -127,66 +113,8 @@ final class UserProfileViewModel: ObservableObject {
         }
     }
 
-    /// Reads the current phase, then starts or updates one if the profile no
-    /// longer matches it.
-    ///
-    /// Separate from `loadProfile` so it never holds up the first screen. Runs
-    /// again after every profile save, reading fresh rather than trusting memory:
-    /// planning against a phase that simply hadn't loaded yet would start a new
-    /// one and drop the carried adjustment.
-    ///
-    /// **Never sets `errorMessage`.** `RootView`'s onboarding failure alert reads
-    /// it, and a phase write failing must not tell someone their profile failed.
-    /// Failures are non-fatals; the next launch retries.
-    func loadPhase(for uid: String, now: Date = .now) async {
-        let fetch: PhaseFetch
-        do {
-            fetch = try await phaseService.fetchCurrentPhase(for: uid)
-        } catch {
-            FirebaseTelemetryService.recordNonFatal(error, reason: "phase_load_failed", metadata: [:])
-            return
-        }
-
-        phase = fetch.phase
-
-        // Only a server read can prove a phase is missing or stale. An empty
-        // offline cache would otherwise start a fresh phase at adjustment 0.
-        guard fetch.isFromServer,
-              let profile,
-              profile.isOnboardingComplete
-        else { return }
-
-        let plan = phasePlanner.plan(
-            profile: profile,
-            current: fetch.phase,
-            todayKey: DateKey.key(for: now),
-            now: now
-        )
-
-        do {
-            switch plan {
-            case .keep:
-                break
-            case .start(let newPhase):
-                try await phaseService.startPhase(newPhase, for: uid)
-                phase = newPhase
-            case .updateTargetWeight(let targetWeightKg):
-                guard let current = fetch.phase else { return }
-                try await phaseService.updateTargetWeight(
-                    targetWeightKg,
-                    phaseKey: current.startDateKey,
-                    for: uid
-                )
-                phase?.targetWeightKg = targetWeightKg
-            }
-        } catch {
-            FirebaseTelemetryService.recordNonFatal(error, reason: "phase_sync_failed", metadata: [:])
-        }
-    }
-
     func clear() {
         profile = nil
-        phase = nil
         isLoading = false
         errorMessage = nil
     }
@@ -206,7 +134,6 @@ final class UserProfileViewModel: ObservableObject {
             let updatedProfile = try await service.updateProfile(profile)
 
             self.profile = updatedProfile
-            await loadPhase(for: uid)
         } catch {
             self.errorMessage = AppErrorMessage.message(
                 for: error,

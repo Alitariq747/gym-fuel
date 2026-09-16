@@ -36,8 +36,6 @@ service cloud.firestore {
           "activityLevel",
           "isOnboardingComplete",
           "gender",
-          "goalPace",
-          "targetWeightKg",
           "createdAt",
           "updatedAt"
         ]);
@@ -111,36 +109,6 @@ service cloud.firestore {
         // Nothing in the app deletes a weigh-in: the sheet only ever writes
         // today's key, and same-day corrections overwrite. Relax this when the
         // check-in screen gains an edit affordance.
-        allow delete: if false;
-      }
-
-      // One document per goal-and-pace stretch, keyed by the "yyyy-MM-dd" day it
-      // started. `startDateKey` is asserted against the document ID, as on
-      // weighIns. A same-day pace change overwrites the document; a later one
-      // starts a new document.
-      //
-      // No delete: a phase is the history a check-in's target change is read
-      // against, and the calorie adjustment on it is carried forward.
-      match /phases/{startDateKey} {
-        allow read: if isOwner(uid);
-
-        allow create, update: if isOwner(uid)
-          && onlyAllowedKeys([
-            "startDateKey",
-            "goalType",
-            "goalPace",
-            "pacePercentPerWeek",
-            "startWeightKg",
-            "targetWeightKg",
-            "startTargets",
-            "calorieAdjustment",
-            "lastStepDecisionDateKey",
-            "startedAt",
-            "createdAt",
-            "updatedAt"
-          ])
-          && request.resource.data.startDateKey == startDateKey;
-
         allow delete: if false;
       }
 

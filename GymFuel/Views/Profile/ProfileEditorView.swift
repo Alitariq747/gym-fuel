@@ -63,29 +63,6 @@ struct ProfileEditorView: View {
         draft.activityLevel?.shortDisplayName ?? "Set"
     }
 
-    // pace — hidden for Maintain, which has none
-    @State private var showPaceSheet = false
-    @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
-
-    private var paceTitle: String {
-        draft.resolvedPace?.displayName ?? "Set"
-    }
-
-    // target weight — optional, hidden for Maintain. Never touches `weightKg`.
-    @State private var showTargetWeightSheet = false
-
-    private var targetWeightTitle: String {
-        guard let kg = draft.resolvedTargetWeightKg else { return "Not set" }
-        let unit = BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms
-        return BodyWeight.displayString(kilograms: kg, unit: unit)
-    }
-
-    private func paceDetail(_ pace: GoalPace) -> String {
-        guard let kg = draft.weightKg, kg > 0 else { return "" }
-        let unit = BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms
-        return pace.aboutPerWeekText(for: draft.goalType ?? .defaultValue, weightKg: kg, unit: unit)
-    }
-
     // Height
     @State private var isEditHeightPresented = false
 
@@ -122,13 +99,6 @@ struct ProfileEditorView: View {
         .onAppear {
             syncAgeTextFromDraft()
         }
-        .onChange(of: draft.heightCm) { _, heightCm in
-            // A shorter height can move the underweight line above the target.
-            if let target = draft.targetWeightKg, let heightCm,
-               target < TargetWeight.lowestHealthyKg(heightCm: heightCm) {
-                draft.targetWeightKg = nil
-            }
-        }
         .sheet(isPresented: $isEditHeightPresented) {
             NavigationStack {
                 EditHeightSheet(heightCm: $draft.heightCm)
@@ -141,23 +111,6 @@ struct ProfileEditorView: View {
                 .preferredColorScheme(preferredColorScheme)
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showPaceSheet) {
-            pacePickerSheet
-                .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showTargetWeightSheet) {
-            EditTargetWeightSheet(
-                targetWeightKg: $draft.targetWeightKg,
-                goal: draft.goalType ?? .defaultValue,
-                currentWeightKg: draft.weightKg,
-                heightCm: draft.heightCm
-            )
-            .preferredColorScheme(preferredColorScheme)
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showActivitySheet) {
             activityPickerSheet
@@ -315,21 +268,6 @@ struct ProfileEditorView: View {
                 showGoalSheet = true
             }
             Divider()
-            if draft.resolvedPace != nil {
-                rowButton(title: "Pace", systemImage: "speedometer", value: paceTitle, isPlaceholder: false) {
-                    showPaceSheet = true
-                }
-                Divider()
-                rowButton(
-                    title: "Target weight",
-                    systemImage: "flag",
-                    value: targetWeightTitle,
-                    isPlaceholder: draft.resolvedTargetWeightKg == nil
-                ) {
-                    showTargetWeightSheet = true
-                }
-                Divider()
-            }
             rowButton(title: "Daily Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.activityLevel == nil) {
                 showActivitySheet = true
             }
@@ -358,17 +296,7 @@ struct ProfileEditorView: View {
 
     private func goalOptionRow(_ goal: GoalType) -> some View {
         Button {
-            let previousGoal = draft.goalType
             draft.goalType = goal
-            // A pace from the old goal may not exist for the new one.
-            draft.goalPace = GoalPace.resolved(draft.goalPace, for: goal)
-            // Nor may a target: wrong side for the new goal, or any target on
-            // Maintain. Only on an actual change — re-tapping the same goal must
-            // not clear a target the trend has already reached.
-            if goal != previousGoal,
-               !TargetWeight.isValid(draft.targetWeightKg, goal: goal, currentWeightKg: draft.weightKg, heightCm: draft.heightCm) {
-                draft.targetWeightKg = nil
-            }
             showGoalSheet = false
         } label: {
             HStack(alignment: .top, spacing: 14) {
@@ -385,48 +313,6 @@ struct ProfileEditorView: View {
             .padding(14)
             .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.goalType == goal ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: draft.goalType == goal ? 2 : 1))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var pacePickerSheet: some View {
-        AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 14) {
-                pickerSheetHeader(
-                    title: "Choose your pace",
-                    subtitle: "Your calorie target follows the pace you pick.",
-                    dismiss: { showPaceSheet = false }
-                )
-                ForEach(GoalPace.options(for: draft.goalType ?? .defaultValue), id: \.self) { pace in
-                    paceOptionRow(pace)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(18)
-        }
-        .background(Color(.systemGroupedBackground))
-    }
-
-    private func paceOptionRow(_ pace: GoalPace) -> some View {
-        let isSelected = draft.resolvedPace == pace
-
-        return Button {
-            draft.goalPace = pace
-            showPaceSheet = false
-        } label: {
-            HStack(alignment: .top, spacing: 14) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(pace.displayName)
-                        .font(.headline.weight(.semibold))
-                    Text(paceDetail(pace))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
-            .padding(14)
-            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(isSelected ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: isSelected ? 2 : 1))
         }
         .buttonStyle(.plain)
     }

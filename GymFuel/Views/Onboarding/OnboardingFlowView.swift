@@ -18,7 +18,6 @@ private enum OnboardingStep: Hashable {
     case weight
     case activityLevel
     case goal
-    case pace
     case loggingTips
     case notifications
     case summary
@@ -45,8 +44,6 @@ private enum OnboardingStep: Hashable {
             return "activity_level"
         case .goal:
             return "goal"
-        case .pace:
-            return "pace"
         case .loggingTips:
             return "logging_tips"
         case .notifications:
@@ -73,16 +70,8 @@ struct OnboardingFlowView: View {
     private var orderedSteps: [OnboardingStep] {
         var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer]
         if showsNameStep { steps.append(.name) }
-        steps += [.gender, .age, .height, .weight, .activityLevel, .goal]
-        if goalHasPaces { steps.append(.pace) }
-        steps += [.loggingTips, .notifications, .summary]
+        steps += [.gender, .age, .height, .weight, .activityLevel, .goal, .loggingTips, .notifications, .summary]
         return steps
-    }
-
-    /// Maintain has no pace, so it skips the pace step.
-    private var goalHasPaces: Bool {
-        guard let goal = data.goalType else { return false }
-        return !GoalPace.options(for: goal).isEmpty
     }
 
     private var currentIndex: Int {
@@ -203,20 +192,8 @@ struct OnboardingFlowView: View {
         case .goal:
             OnboardingTrainingGoalStepView(
                 selectedGoal: $data.goalType,
-                onFinish: { go(to: goalHasPaces ? .pace : .loggingTips, direction: .forward) }
+                onFinish: { go(to: .loggingTips, direction: .forward) }
             )
-
-        case .pace:
-            if let goal = data.goalType, let weight = data.weightKg {
-                OnboardingPaceStepView(
-                    goal: goal,
-                    weightKg: weight,
-                    selectedPace: $data.goalPace,
-                    stepPosition: currentIndex + 1,
-                    stepCount: orderedSteps.count,
-                    onNext: { go(to: .loggingTips, direction: .forward) }
-                )
-            }
 
         case .loggingTips:
             OnboardingLoggingTipsStepView(
@@ -244,7 +221,6 @@ struct OnboardingFlowView: View {
                     weightKg: weight,
                     goalType: goalType,
                     activityLevel: activityLevel,
-                    goalPace: data.goalPace,
                     onStartTracking: finishOnboarding
                 )
             }

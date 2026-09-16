@@ -117,7 +117,6 @@ struct RootView: View {
             if let user = authManager.user {
                 await subscriptionViewModel.syncUser(userId: user.uid)
                 await profileViewModel.loadProfile(for: user.uid)
-                await profileViewModel.loadPhase(for: user.uid)
                 await savedMealsViewModel.loadSavedMeals(userId: user.uid)
                 await importHealthWeight(for: user.uid)
             } else {

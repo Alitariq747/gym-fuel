@@ -7,22 +7,15 @@
 
 import SwiftUI
 
-private struct StatsLoadKey: Hashable {
-    let weekStart: Date
-    let targetMacros: Macros?
-}
-
 struct StatsView: View {
     let profile: UserProfile
-    /// The same target the Day screen shows — passed in, never recalculated
-    /// here, so the two screens cannot disagree.
-    let targetMacros: Macros?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
+    private let macroTargetCalculator = MacroTargetCalculator()
     /// Reports a saved weigh-in so the caller can refresh the profile it owns.
     /// Passed in rather than reached for through `@EnvironmentObject`: this view
     /// is itself presented as a sheet, and this is the one write path in the
@@ -30,14 +23,15 @@ struct StatsView: View {
     private let onWeighIn: (Double) -> Void
     init(
         profile: UserProfile,
-        targetMacros: Macros?,
         viewModel: StatsViewModel = StatsViewModel(),
         onWeighIn: @escaping (Double) -> Void = { _ in }
     ) {
         self.profile = profile
-        self.targetMacros = targetMacros
         self.onWeighIn = onWeighIn
         _viewModel = StateObject(wrappedValue: viewModel)
+    }
+    private var targetMacros: Macros? {
+        macroTargetCalculator.targetMacros(for: profile)
     }
     private var snapshot: StatsSnapshot {
         viewModel.snapshot
@@ -100,9 +94,7 @@ struct StatsView: View {
             }
             .padding()
         }
-        // Keyed on the target too: a weigh-in here changes it, and the macro
-        // numbers should follow without switching weeks.
-        .task(id: StatsLoadKey(weekStart: viewModel.selectedWeekStart, targetMacros: targetMacros)) {
+        .task(id: viewModel.selectedWeekStart) {
             await viewModel.loadStats(userId: profile.id, targetMacros: targetMacros)
         }
         .task(id: viewModel.selectedWeekStart) {

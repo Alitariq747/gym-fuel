@@ -40,11 +40,10 @@ Do not schedule "the redesign" as a phase. There isn't one.
 review, so they are genuinely post-launch work — but they need the new screenshots,
 so they cannot start early either.
 
-**Retention work comes after approval too.** Steps 12 and 14 each add a new target
-or a new review surface, and neither helps a listing with no installs. Retention
-matters once there is someone to retain. Two exceptions ship in the launch build:
-Step 3a, which is a leak, not a feature, and Apple Health body mass (Step 13),
-pulled forward into 4a2 because it feeds the pace check.
+**Retention work comes after approval too.** Steps 12–14 each add a new target, a
+new entitlement, or a new review surface, and none of them helps a listing with no
+installs. Retention matters once there is someone to retain. The one exception is
+Step 3a, which is a leak, not a feature.
 
 ---
 
@@ -61,10 +60,7 @@ fresh session reads this file, not the chat history.
 - [x] **3a** · Notification opt-in in onboarding
 - [x] **4a** · Adaptive engine, part one — weigh-ins and the trend
 - [x] **4a2** · Apple Health body mass → `weighIns`
-- [x] **4b1** · The trend and the seeder — expenditure pieces removed
-- [x] **4b2** · Pick a pace — onboarding, Settings, starting targets
-- [x] **4b3** · Phases and the pace rule
-- [ ] **4b4** · The weekly check-in
+- [ ] **4b** · Adaptive engine, part two — pace check, phases, the check-in
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
 - [ ] **7** · Day-aware goal-fit score · *first to cut*
@@ -74,7 +70,7 @@ fresh session reads this file, not the chat history.
 - [ ] **10** · Screenshots and submit
 - [ ] **11** · After approval — CPPs, creator outreach
 - [ ] **12** · State-aware reminders · *post-approval*
-- [x] **13** · HealthKit body mass — done early as 4a2
+- [ ] **13** · HealthKit body mass · *post-approval*
 - [ ] **14** · Widgets · *post-approval*
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
@@ -335,7 +331,7 @@ path can reach the paywall and the permission prompt at the same time.
 
 ---
 
-## Step 4 — The adaptive engine · M
+## Step 4 — The adaptive engine · L
 
 > ### Re-scoped 14 September — a pace check, not an expenditure engine
 >
@@ -372,208 +368,72 @@ path can reach the paywall and the permission prompt at the same time.
 > is textbook and sold in several forms; this rule, these screens and this copy
 > are ours.
 
-> ### How Step 4 is split
+> ### Split into 4a / 4a2 / 4b — 12 September
+>
+> One L-sized step with six items, three collections, a calculator rewrite and a
+> new screen, whose payoff could not be observed until three weeks of seeded data
+> existed. Split by **time-to-value**, not by size:
 >
 > - **4a — weigh-ins and the trend. Done 12 September.** Items 1, 2 and the
 >   weight surface. Works from two data points, changes no targets, and makes no
 >   coaching claim — so it adds almost no App Store review risk to a live app.
-> - **4a2 — Apple Health body mass. Done 12 September** (commit `a6cd0f6`). Was
->   Step 13, pulled forward: weigh-ins are the pace check's only input, and a
->   smart scale fills them in. `com.apple.developer.healthkit` is in
->   `GymFuel.entitlements` and `NSHealthShareUsageDescription` in `Info.plist`. It
->   reads `bodyMass` only, never writes, and imports on connect and every time the
->   app opens — no background delivery, so scale readings arrive at the next open.
->   **The live privacy policy still says the app does not use HealthKit;** it is
->   updated with the terms before submission (see *What I need from you*).
-> - **4b1 — the trend and the seeder.** Built 12–13 September: the time-aware
->   trend (7-day half-life), the expenditure calculator, and the debug seeder. The
->   trend and the seeder stayed; the expenditure pieces were removed 14 September.
->   Nothing user-visible. See *Finishing 4b1* below.
-> - **4b2 — pick a pace.** A pace step in onboarding, a Pace row in Settings, and
->   a starting target that follows the chosen pace. Item 5. No new collection.
-> - **4b3 — phases and the pace rule.** The `phases` collection and the pure pace
->   rule with full tests. Item 4. Also an optional **target weight** row in
->   Settings, copied onto each phase, and the **full targets** saved on each phase
->   (decisions 10 and 11). Visible only in the debug section, apart from the
->   Settings row.
-> - **4b4 — the weekly check-in.** Item 6: the Week-screen card, the check-in
->   screen, accept or reject, plus the next-due date Steps 12 and 14 both read off.
->   Also **full targets saved on each check-in**, past weeks on the Week screen
->   showing the target they had, and the check-in **offering Maintain once the
->   target weight is reached** (decisions 10 and 11).
+> - **4a2 — Apple Health body mass.** Was Step 13, pulled forward: it is the
+>   supply line for the engine's only scarce input, and a user with a smart scale
+>   then contributes every weigh-in without opening the app. **Not currently
+>   enabled** — no entitlement, no usage string, no code, and the live privacy
+>   policy states the app does not use HealthKit. Kept separate so that review
+>   surface lands in one reviewable chunk.
+> - **4b — the coach.** Items 4, 5, 6: phases, pace and targets, the check-in.
+>   Not yet built. The pace check replaced the expenditure engine on 14 September
+>   — see the callout above.
 >
-> Split again on 14 September: the old 4b2 was too big for one session, so each
-> part now ends with something you can tap.
->
-> Plans: 4a `~/.claude/plans/lets-split-into-two-polymorphic-metcalfe.md`
-> (includes the App Store 1.4.1 and 5.1.3 framing) · 4b1 as originally built
-> `~/.claude/plans/yes-write-the-4b1-sorted-lamport.md` — **superseded wherever
-> it describes expenditure** · **4b2–4b4 `~/.claude/plans/calm-launching-planet.md`**
->
-> Decisions 10 and 11 came after that plan was written. **Where the plan and this
-> file disagree, this file wins.**
+> Full plan, including the App Store 1.4.1 and 5.1.3 framing and the citations
+> added to the Sources screen: `~/.claude/plans/lets-split-into-two-polymorphic-metcalfe.md`
 
-Still the step that decides whether the app coaches at all, so it still goes
-early.
+The biggest step and the riskiest, so it goes early while there is runway to
+discover problems.
 
 1. ~~`weighIns` collection + service; `EditWeightSheet` writes both the history row
    and `UserProfile.weightKg`.~~ **Done in 4a.** Written sequentially, history
    first — not batched: a batch fails atomically, so a rules rejection on the
    profile half would discard a correct weigh-in.
-2. ~~Trend weight — EMA, `alpha ≈ 0.25`.~~ **Done in 4a, revised in 4b1.** 4a
-   smoothed per *observation*, so a 30-day gap and a 1-day gap did identical
-   arithmetic — harmless while the trend was only drawn, wrong once
-   `trendDeltaKgPerWeek` divides by elapsed days. **4b1 replaced the fixed alpha
-   with a 7-day half-life**: `decay = 0.5 ^ (gapDays / 7)`. Still one point per
-   observation — gaps are still never carried forward or interpolated; only the
-   weight given to each reading changes.
+2. ~~Trend weight — EMA, `alpha ≈ 0.25`.~~ **Done in 4a.** Per *observation*, not
+   per day — gaps are skipped rather than carried forward or interpolated.
+   **4b must revisit that**: `trendDeltaKgPerWeek` divides by elapsed days, and a
+   time-unaware average feeding a time-aware rate is where a plausible-looking
+   wrong number comes from.
 3. ~~Expenditure — `meanDailyIntake − (trendDeltaKg × 7700) / days`.~~ **Dropped
-   14 September** in favour of the pace check. Built and unit-tested in 4b1;
-   removed 14 September.
+   14 September** in favour of the pace check.
 4. `phases` collection — goal, start date, start weight, goal pace (% bodyweight
    per week, stored as a magnitude), the running calorie adjustment the pace
    check has made, the optional target weight, and the full targets (calories,
-   protein, carbs, fat) the phase started with. **4b3.**
+   protein, carbs, fat) the phase started with.
 5. Pace and targets — the user picks a pace preset in onboarding and can change it
    in Settings; the starting target follows that pace; the pace check moves it in
    steps from there. Lose fat: Gentle 0.5 % · Steady 0.75 % · Faster 1.0 % a week.
    Gain: Slow 0.25 % · Steady 0.5 % a week. Maintain: no pace, ±0.5 kg band.
-   **4b2.**
 6. `checkIns` collection + the weekly check-in screen, where the user accepts or
    rejects a suggested change. Each check-in saves the full targets before and
-   after. Once the target weight is reached, the check-in offers a switch to
-   Maintain. **4b4.**
+   after.
 
 **Done when** two weeks of seeded weigh-ins moving slower than the goal pace
 produce a check-in that moves next week's target by one step and says why in one
 sentence — and one week of the same data changes nothing.
 
-### Decided 14 September
-
-| # | Decision |
-|---|---|
-| 1 | **Pace is picked in onboarding**, right after the goal, and **changed in Settings**, as named presets (item 5). Maintain skips the step. Each preset shows "about X kg a week" for the user's weight. |
-| 2 | **The user accepts or rejects** a suggested change at the check-in. Rejecting starts the same 14-day wait as accepting, so the same question is not asked every week. |
-| 3 | **A check-in is due every 7 days from the day the goal or pace started.** No weekday setting. Missed weeks collapse into one check-in. |
-| 4 | **The check-in shows days logged and average logged calories as context only** — never an input, no colours. Keeps `store-copy.md`'s "what you averaged" true. |
-| 5 | **Pace is stored on the profile (`goalPace`) and copied onto each phase.** Goal and pace save in one write, and targets stay a plain calculation. |
-| 6 | **The starting offset comes from the pace:** `kg per week × 7,700 ÷ 7`, with the deficit capped at 1,000 kcal a day — worded as a planning estimate, never "you burn". |
-| 7 | **Calorie floor 1,200 for women, 1,500 for men and prefer not to say**, and never below protein + fat calories. |
-| 8 | **The calorie adjustment carries across a pace or goal change** — it corrects the formula for this person, not for the goal. |
-| 9 | **Extra guards:** weigh-ins must span at least 10 days, and Maintain does not step if the trend is already heading back into the band. |
-| 10 | **Optional target weight, set in Settings only** — never in onboarding. Stored on the profile (`targetWeightKg`) and copied onto each phase, like pace. Maintain has none. It never touches `weightKg` — only a weigh-in does. Once the trend reaches it, the check-in **offers** a switch to Maintain, and the user accepts or rejects it like any other change (decision 2). **4b3** saves it; **4b4** offers the switch. |
-| 11 | **Full targets are saved on phases and check-ins** — calories, protein, carbs and fat. A phase saves the targets it started with; a check-in saves the targets before and after. Past weeks on the Week screen show the target saved for that week, not today's. Today's target is still worked out live (`formula + adjustment`), and there is no daily targets record. **4b3** saves them on phases; **4b4** on check-ins, and wires up the Week screen. |
-
-> **Decision 10 details — agreed 14 September:**
-> - **"Reached" means the trend weight** gets there, not a single weigh-in.
-> - **Settings only accepts a sensible target:** below today's weight for Lose
->   fat, above it for Gain, and never in the underweight range.
-> - **No finish date is ever shown.**
->
-> New fields go into `firestore.rules` in the session that first writes them.
-
-> **Trial note.** The first check-in that can change a target is day 14 at the
-> earliest, so the launch's 3-day trial shows the trend and a check-in but never a
-> target moving. Pricing and trial length stay as decided in Step 0.
-
-### The pace check
-
-Starting values. Each is tunable in the 4b3 plan; none is a claim shown to the
-user.
-
-| Rule | Starting value | Why |
-|---|---|---|
-| **Measure the pace** | Best-fit straight line through the raw weigh-ins of the last 14–21 days | Trend endpoints lag at the start of a phase — tested 13 September, they undercount a steady loss by about a third in exactly the weeks a check-in matters. The 7-day trend line stays on the chart. |
-| **Enough data** | 14+ days since the phase started or the last accept/reject, 6+ weigh-ins, spanning 10+ days | Less than that is mostly water weight, and bunched readings can't make a slope |
-| **About right** | Within ±50% of goal pace, same direction → no change | Deliberately wide: small misses are noise |
-| **Too slow, or the wrong way** | Step toward the goal: −100 kcal on a cut, +100 on a gain | Small steps cannot overshoot |
-| **Too fast** | Step back: +100 kcal on a cut, −100 on a gain | Stops a pace faster than the user chose |
-| **Maintain** | Step only if the trend leaves ±0.5 kg of the phase start weight, and not if it is already heading back | Maintain has no pace |
-| **Target weight reached** | If a target weight is set and the trend reaches it (at or below on a cut, at or above on a gain), offer a switch to Maintain instead of a step | The goal is done — stepping further would carry the user past it |
-| **How often** | At most one decision per 14 days — accepting and rejecting both start the wait | Each step needs time to show, and nobody is asked the same question weekly |
-| **Food logging** | Step only if food was logged on most days (about 5 in 7); otherwise keep the target and say so neutrally | If the target isn't being eaten, lowering it helps nobody. Counts logged days; never reads calories. |
-| **Floor** | Never below 1,200 kcal (women) or 1,500 kcal (men, prefer not to say), and never below protein + fat calories | Safety, and keeps the macros adding up. Needs a source on the Sources screen. |
-
-The user reads it as one sentence: *"You aimed to lose about 0.4 kg a week and
-lost about 0.1 kg a week over the last two weeks, so your target is now 1,900 kcal,
-down from 2,000."*
-
-**Where the step lives and the starting offset are both decided** (decisions 5
-and 6 above). The adjustment lives on the phase and today's target stays a
-synchronous `formula + adjustment`, so no screen waits on a stored target and
-`dailyMacroTargets` stays unused. Saved targets (decision 11) are history only —
-read for past weeks, never for today. The Sources screen's method 01 footnote
-changes with the offset in 4b2.
-
-### App Store — what the pace check asks of review
-
-- **No expenditure or metabolism number appears anywhere.** The check-in shows
-  weigh-ins, a pace and a target, and calls the target a starting point.
-- **Citations owed under 1.4.1:** the pace ranges and the calorie floor.
-  Self-weighing is already on the Sources screen from 4a.
-- **Copy stays non-judgemental:** no "failed", no red, no streak for hitting a
-  target (`design.md` rule 5).
-
-### The sign still matters
-
-Pace is signed — negative means losing — and goal pace is stored as a magnitude,
-with its sign taken from `goalType`. Otherwise a stored `0.75` on a cut reads as a
-gain goal and the pace check steps the target the wrong way while reading
-perfectly. Settled 12 September; the expenditure worked example that forced it is
-retired with the formula.
-
-### Finishing 4b1 — done 14 September
-
-Nothing here is user-visible.
-
-- **Kept:** `WeightTrendCalculator` (7-day half-life) and its tests · the Sources
-  trend-method copy · `DebugDataSeeder` and `ProfileDebugSection`.
-- **Removed:** `ExpenditureCalculator.swift`, `DailyIntake.swift`,
-  `ExpenditureCalculatorTests.swift`.
-- **Changed:** the debug section's *Estimate expenditure* row is gone rather than
-  replaced — a pace readout needs the pace rule, which is 4b3's. The seeder now
-  writes one of three scenarios, at −0.1, −0.4 and −0.8 kg a week against an
-  assumed "Lose fat" goal of −0.4 (Gentle: 0.5 % at 83 kg), which 4b3's pace check
-  should answer with *step the target down*, *no change* and *step it up*. It
-  writes no goal yet: `phases` arrives in 4b3.
-- **Stale outside this file:** `project-brief.md` §4 still specifies the
-  expenditure formulas, and `repositioning-strategy.md` ("Why the retention half is
-  worth building") still describes adaptive expenditure. **Do not build from
-  either.**
-
-### Finishing 4b3 — done 14 September
-
-Plan: `~/.claude/plans/yes-to-all-four-nifty-parrot.md`. Decided while planning:
-
-- **Changing only the target weight updates the current phase in place** — no new
-  phase, so it cannot reset the 14-day wait or the check-in clock.
-- **A cleared target weight is written as `FieldValue.delete()`** in
-  `updateProfile`. A merge write cannot clear a field, and a target weight can't be
-  resolved on read like pace can: checked against today's weight, a reached target
-  would vanish.
-- **"Target weight reached" is a result of the pure pace rule** (`.targetReached`).
-  4b4 only builds the offer.
-- **No offline phase write.** Nothing writes a phase offline in 4b3; 4b4 adds its
-  own offline branch for check-ins.
-- **The current phase is the newest by `startedAt`**, not by key. The same in normal
-  use; it lets the debug seeder backdate a phase on an account that already has
-  `phases/{today}`.
-- **The rule steps from the formula's base, not today's target** — an adjustment
-  below `floor − base` does nothing, so a step up from a floored target still moves
-  it. `PaceCheckCalculator.Input` takes base and floor calories.
-- **Sources method 06 is "Your target weight"** (BMI 18.5, WHO Tech Rep Ser 894).
-  4b4's check-in method becomes **07**.
-
 ### Two things to leave in place for later steps
 
 Neither is extra work now; both are expensive to retrofit.
 
-- **Keep `source: manual | healthKit` on `weighIns`.** Now in use: 4a2 writes
-  `healthKit`, and the import never overwrites a `manual` row.
-- **`checkIns/{dueDateKey}` must cheaply answer "when is the next one due."**
+- **Keep `source: manual | healthKit` on `weighIns`** even though nothing writes
+  `healthKit` until Step 13. Adding a discriminator to a collection that already
+  has rows is worse than carrying an unused case for a few months.
+- **`checkIns/{weekStart}` must cheaply answer "when is the next one due."**
   Step 12 schedules the weekly nudge off that date, and Step 14's widget may show
   it. If the only way to derive it is replaying the whole collection, both steps
   get harder than they need to be.
+
+> Needs a way to seed data for testing — a week of realistic weigh-ins and logs.
+> Worth building a debug seeder rather than tapping through it by hand.
 
 ---
 
@@ -737,9 +597,9 @@ then.
 
 # Retention — after approval
 
-Two features still held back until the listing is live. Ordered by cost, cheapest
-first: Step 12 adds no target and no entitlement, Step 14 adds a whole target.
-Step 13 was pulled forward into the launch build as 4a2.
+Three features, all deliberately held back until the listing is live. Ordered by
+cost, cheapest first: Step 12 adds no target and no entitlement, Step 13 adds an
+entitlement, Step 14 adds a whole target.
 
 **App Intents, Siri, Shortcuts and Control Center controls are out.** Decided
 7 September — too much lift for this stack, and widgets do not need them. See
@@ -788,24 +648,43 @@ notification fires on the right day carrying the user's actual trend.
 
 ---
 
-## Step 13 — HealthKit body mass · done early as 4a2
+## Step 13 — HealthKit body mass · M
 
-Pulled forward into the launch build on 12 September (commit `a6cd0f6`) — see
-Step 4. The rules this section set are the rules the code follows:
+Aimed squarely at the engine's weakest link. Step 4's success criterion is "≥40 %
+of trialists log a second weigh-in" — a smart scale that already syncs to Health
+makes every weigh-in after the first free, with the app closed.
 
-- **Read `bodyMass` only. Nothing else, in either direction.** No write, no active
-  energy, no workouts, no steps — `NSHealthShareUsageDescription` only.
-- **The earliest sample of the day wins** — the morning reading.
-- **A manual weigh-in is never overwritten** by a Health sample for the same day.
-- **A denied read is invisible** — iOS reports it as no data, so no screen says
-  "you denied this".
-- **iPad has no HealthKit** — every surface hides itself when Health is unavailable.
+**Read `HKQuantityTypeIdentifier.bodyMass`. Nothing else, in either direction.**
 
-Imports run on connect and on every app open. There is no background delivery.
+- **No write.** Decided 7 September. `NSHealthShareUsageDescription` only — do not
+  add `NSHealthUpdateUsageDescription` for a write path that does not exist.
+- **No active energy, no workouts, no steps.** Not as an input, not as displayed
+  context. See `project-brief.md` — this is the calorie rebate under a new name.
+- Requesting a single type keeps the purpose string narrow, which is what review
+  wants. Vague HealthKit strings and unused requested types both draw rejections.
+  Cite the actual use: reading weight so targets can track the real trend without
+  re-entry.
 
-**Files** `HealthKitWeightService.swift` · `HealthWeightSyncService.swift` ·
-`WeighInImportPlanner.swift` (+ tests) · `ProfileHealthSection.swift` ·
-`Info.plist` · `GymFuel.entitlements`
+**Four things that need deciding in the step, not after it:**
+
+- **Which sample wins a day.** `weighIns/{yyyy-MM-dd}` is one row per day; Health
+  may hold several. Morning is the trending convention — pick a rule and write it
+  down.
+- **Manual vs Health precedence** for the same date. Neither should silently
+  clobber the other.
+- **Read denial is invisible.** iOS does not report denied *read* authorization —
+  denied and "no data" both return empty. No "you denied this" UI is possible;
+  handle empty as the normal case.
+- **iPad has no HealthKit.** Guard on `HKHealthStore.isHealthDataAvailable()`.
+
+Foreground fetch on app open is enough. A weigh-in does not need to land within
+minutes, so background delivery and observer queries can wait.
+
+**Files** new `HealthKitWeightService.swift` · the weigh-in service from Step 4 ·
+`Info.plist` · `GymFuel.entitlements` · `ProfileEditorView.swift`
+
+**Done when** a weight written in Health appears as a weigh-in and moves the trend,
+and a day logged both ways produces one row, not two.
 
 ---
 
@@ -853,12 +732,11 @@ Cut in this order. Everything above the line still makes a coherent launch.
 4. **Step 3a** — last, and reluctantly. It is an S, so cutting it saves little, and
    the cost is launching with reminders off for every user until Step 12.
 
-Steps 12 and 14 are not on this list. They are after approval either way, and
-Step 13 already shipped as 4a2.
+Steps 12–14 are not on this list. They are after approval either way.
 
 **Never cut:** Step 1 (rejection risk the moment the trial changes), Step 2a
-(everything after it assumes the tokens exist), Step 3's rebate removal (defeats
-the pace check), Step 4 (it is the reason anyone pays), or Step 7a (the screenshots
+(everything after it assumes the tokens exist), Step 3's rebate removal (corrupts
+the engine), Step 4 (it is the reason anyone pays), or Step 7a (the screenshots
 come off those screens).
 
 ---
@@ -871,7 +749,6 @@ come off those screens).
 | Before Step 4 | Nothing — I can build and seed test data myself |
 | Before Step 9 | App Store Connect access, or you run the metadata changes |
 | Before Step 10 | A device to shoot on, and real-looking data to shoot |
-| Before Step 10 | The live privacy policy and terms updated for the revamp, including Apple Health (App Store 5.1.3) — once the app is final, before submission |
 | Step 11 | Creator list |
-| ~~Before Step 13~~ | ~~HealthKit capability enabled on the App ID~~ — **done 12 September, in 4a2** |
+| Before Step 13 | HealthKit capability enabled on the App ID |
 | Before Step 14 | An App Group registered, with the bundle identifier settled in Step 8 |

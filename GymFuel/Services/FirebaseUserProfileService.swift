@@ -118,12 +118,6 @@ final class FirebaseUserProfileService: @unchecked Sendable {
 
         var data = try Firestore.Encoder().encode(normalized)
         data["updatedAt"] = FieldValue.serverTimestamp()
-        // A merge write skips nil fields, so it could never clear a target
-        // weight. Delete it explicitly. (Pace gets away without this because it
-        // is always read through `GoalPace.resolved`; a target weight can't be.)
-        if normalized.targetWeightKg == nil {
-            data["targetWeightKg"] = FieldValue.delete()
-        }
 
         try await withCheckedThrowingContinuation {( continuation: CheckedContinuation<Void,Error>) in
             docRef.setData(data, merge: true) { error in

@@ -55,11 +55,6 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var activityLevel: ActivityLevel?
     var isOnboardingComplete: Bool
     var gender: Gender
-    /// As stored. Read `resolvedPace` instead — see `GoalPace.resolved`.
-    var goalPace: GoalPace? = nil
-    /// Optional, set in Settings only. As stored — read `resolvedTargetWeightKg`.
-    /// Never touches `weightKg`: only a weigh-in does.
-    var targetWeightKg: Double? = nil
 
     /// Firestore field names. `id` is intentionally omitted so the document
     /// identifier is never persisted as a field.
@@ -72,23 +67,6 @@ struct UserProfile: Codable, Identifiable, Equatable {
         case activityLevel
         case isOnboardingComplete
         case gender
-        case goalPace
-        case targetWeightKg
-    }
-
-    /// The pace to use: `nil` for Maintain, `.steady` when missing or not
-    /// offered for the goal.
-    var resolvedPace: GoalPace? {
-        GoalPace.resolved(goalPace, for: goalType)
-    }
-
-    /// The target weight to use: `nil` for Maintain, which has none.
-    ///
-    /// Resolved by goal only — never against today's weight. A target the trend
-    /// has already reached must still read as set, or the check-in could never
-    /// notice it was reached.
-    var resolvedTargetWeightKg: Double? {
-        (goalType ?? .defaultValue) == .maintain ? nil : targetWeightKg
     }
 
     /// Trims user-entered text. Call before persisting.
@@ -109,7 +87,6 @@ struct OnboardingAnswers {
     var weightKg: Double? = nil
     var goalType: GoalType? = nil
     var activityLevel: ActivityLevel? = nil
-    var goalPace: GoalPace? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
     func toProfile(id: String) -> UserProfile? {
@@ -130,8 +107,7 @@ struct OnboardingAnswers {
             goalType: goalType,
             activityLevel: activityLevel,
             isOnboardingComplete: true,
-            gender: gender,
-            goalPace: GoalPace.resolved(goalPace, for: goalType)
+            gender: gender
         )
     }
 }

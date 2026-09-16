@@ -8,7 +8,6 @@ struct OnboardingSummaryStepView: View {
     let weightKg: Double
     let goalType: GoalType
     let activityLevel: ActivityLevel
-    let goalPace: GoalPace?
     let onStartTracking: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -24,14 +23,9 @@ struct OnboardingSummaryStepView: View {
             goalType: goalType,
             activityLevel: activityLevel,
             isOnboardingComplete: false,
-            gender: gender,
-            goalPace: goalPace
+            gender: gender
         )
         return MacroTargetCalculator().targetMacros(for: profile) ?? .zero
-    }
-
-    private var resolvedPace: GoalPace? {
-        GoalPace.resolved(goalPace, for: goalType)
     }
 
     var body: some View {
@@ -58,10 +52,6 @@ struct OnboardingSummaryStepView: View {
 
             VStack(spacing: 0) {
                 goalSummaryRow(title: "Goal", value: goalType.displayName, tint: .fuelOrange)
-                if let resolvedPace {
-                    summaryDivider
-                    paceSummaryRow(resolvedPace, tint: .fuelOrange)
-                }
                 summaryDivider
                 summaryRow(emoji: "🔥", title: "Calories", value: "\(Int(targetMacros.calories)) kcal", tint: .fuelOrange)
                 summaryDivider
@@ -118,20 +108,6 @@ struct OnboardingSummaryStepView: View {
         }
     }
 
-    private func paceSummaryRow(_ pace: GoalPace, tint: Color) -> some View {
-        summaryRowContent(title: "Pace", value: pace.displayName) {
-            Image(systemName: "speedometer")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color.primary)
-                .frame(width: 38, height: 38)
-                .background(Color(.systemBackground), in: Circle())
-                .overlay {
-                    Circle()
-                        .stroke(tint.opacity(colorScheme == .dark ? 0.24 : 0.16), lineWidth: 1)
-                }
-        }
-    }
-
     private func summaryRow(emoji: String, title: String, value: String, tint: Color) -> some View {
         summaryRowContent(title: title, value: value) {
             Text(emoji)
@@ -177,7 +153,6 @@ private extension View {
         weightKg: 82,
         goalType: .leanBulk,
         activityLevel: .somewhatActive,
-        goalPace: .steady,
         onStartTracking: {}
     )
 }

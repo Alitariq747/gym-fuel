@@ -33,17 +33,10 @@ struct NutritionSourcesView: View {
                 −  78   if prefer not to say
 
             Daily target
-            resting energy × activity factor + pace change
-
-            pace change = kg a week × 7,700 ÷ 7
-                (a loss takes off at most 1,000 kcal)
-
-            never below 1,200 kcal (women),
-            1,500 kcal (men, prefer not to say),
-            or your protein + fat calories
+            resting energy × activity factor + goal offset
             """,
-            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). The pace you pick sets the change: Lose fat is 0.5%, 0.75%, or 1% of your body weight a week, Gain is 0.25% or 0.5%, and Maintain has no change. 7,700 kcal per kilogram is a common planning estimate, not a measurement of your body — how much energy a kilogram of change takes varies from person to person. The lowest targets sit at the bottom of the calorie levels commonly prescribed for weight loss, and the target never drops below what your protein and fat alone need.",
-            sourceIDs: ["mifflin", "iom", "helms", "iraki", "hall", "nhlbi", "jensen"]
+            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). Goal offsets are +250 kcal for Gain, 0 for Maintain, and −300 kcal for Lose fat — deliberately moderate rates of change.",
+            sourceIDs: ["mifflin", "iom"]
         ),
         NutritionMethod(
             id: "macros",
@@ -88,21 +81,10 @@ struct NutritionSourcesView: View {
             emoji: "⚖️",
             title: "Your weight trend",
             tint: .fuelBlue,
-            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with a weighted average that fades with time: a weigh-in counts for half as much once it is a week old, and for almost nothing after a month. So the line moves slower than the scale on purpose, and a gap in your weigh-ins loosens the line's hold on the past instead of passing unnoticed.",
-            formula: "gap   = days since your last weigh-in\ndecay = 0.5 ^ (gap ÷ 7)\n\ntrend = (1 − decay) × this weigh-in\n      + decay × previous trend",
+            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with an exponential moving average, weighting the newest reading at 25% and everything before it at 75%, so it moves slower than the scale on purpose.",
+            formula: "trend = 0.25 × today's weigh-in\n      + 0.75 × previous trend",
             footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is scored or streaked.",
             sourceIDs: ["zheng", "jmirScale"]
-        ),
-        NutritionMethod(
-            id: "targetWeight",
-            index: "06",
-            emoji: "📍",
-            title: "Your target weight",
-            tint: .fuelGreen,
-            body: "A target weight is optional, and you set it in Settings. It has to sit on the side your goal is heading — below your current weight when losing fat, above it when gaining — and it can never be in the underweight range, which is a body mass index (BMI) below 18.5. We never show a date for reaching it: weight does not change in a straight line.",
-            formula: "BMI = weight kg ÷ (height m)²\n\nlowest target = 18.5 × (height m)²",
-            footnote: "BMI is a screening measure for populations, not a diagnosis, and it cannot tell muscle from fat. We use it for one thing only: a lower limit, so the app never helps you aim for a weight classed as underweight.",
-            sourceIDs: ["who"]
         )
     ]
 
@@ -112,36 +94,6 @@ struct NutritionSourcesView: View {
             shortLabel: "Mifflin MD, et al. Am J Clin Nutr. 1990;51(2):241–247",
             citation: "Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241–247.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/2305711/")
-        ),
-        NutritionSource(
-            id: "helms",
-            shortLabel: "Helms ER, et al. J Int Soc Sports Nutr. 2014;11:20",
-            citation: "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/24864135/")
-        ),
-        NutritionSource(
-            id: "iraki",
-            shortLabel: "Iraki J, et al. Sports (Basel). 2019;7(7):154",
-            citation: "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition recommendations for bodybuilders in the off-season: a narrative review. Sports (Basel). 2019;7(7):154.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/31247944/")
-        ),
-        NutritionSource(
-            id: "hall",
-            shortLabel: "Hall KD. Int J Obes. 2008;32(3):573–576",
-            citation: "Hall KD. What is the required energy deficit per unit weight loss? Int J Obes (Lond). 2008;32(3):573–576.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/17848938/")
-        ),
-        NutritionSource(
-            id: "nhlbi",
-            shortLabel: "NHLBI. Clinical Guidelines on Overweight and Obesity in Adults, 1998",
-            citation: "National Heart, Lung, and Blood Institute. Clinical Guidelines on the Identification, Evaluation, and Treatment of Overweight and Obesity in Adults: The Evidence Report. Obes Res. 1998;6 Suppl 2:51S–209S.",
-            url: URL(string: "https://www.ncbi.nlm.nih.gov/books/NBK2003/")
-        ),
-        NutritionSource(
-            id: "jensen",
-            shortLabel: "Jensen MD, et al. Circulation. 2014;129(25 Suppl 2):S102–S138",
-            citation: "Jensen MD, Ryan DH, Apovian CM, et al. 2013 AHA/ACC/TOS guideline for the management of overweight and obesity in adults. Circulation. 2014;129(25 Suppl 2):S102–S138.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/24222017/")
         ),
         NutritionSource(
             id: "iom",
@@ -196,12 +148,6 @@ struct NutritionSourcesView: View {
             shortLabel: "Self-Weighing Frequency Cohort. J Med Internet Res. 2021;23(6):e25529",
             citation: "Frequency of Self-Weighing and Weight Change: Cohort Study With 10,000 Smart Scale Users. J Med Internet Res. 2021;23(6):e25529.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/34075879/")
-        ),
-        NutritionSource(
-            id: "who",
-            shortLabel: "WHO. Obesity: Preventing and Managing the Global Epidemic. Tech Rep Ser 894, 2000",
-            citation: "World Health Organization. Obesity: preventing and managing the global epidemic. Report of a WHO consultation. World Health Organ Tech Rep Ser. 2000;894:i–xii, 1–253.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/11234459/")
         )
     ]
 
