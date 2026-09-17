@@ -3,7 +3,10 @@
 The visual system and the rules behind it. The canvas is the picture; this file is
 the part a coding agent can actually read.
 
-Written 10 September 2026.
+Written 10 September 2026. Revised 16 and 17 September: Step 4 no longer builds
+check-ins, phases or a weekly page. It builds a plan the user can see — a goal
+weight, a line to it, saved targets — and a Weight screen. Several artboards still
+carry the old copy — see *Canvas drift* under the cheques.
 
 > **This is a specification, not a description.** Nothing in this file is in the
 > build yet. `product-as-built.md` describes what the code does today — dark
@@ -54,7 +57,7 @@ find the number in under a second, that is the failure.
 | `ruleSoft` | `#F0ECE0` | — | Dividers inside a card |
 | `cardBorder` | `#E9E5D9` | — | Card hairline |
 | `card` | `#FFFFFF` | — | Raised surfaces |
-| `sunken` | `#EFEBDF` | — | Recessed panels (check-in prompt, notes) |
+| `sunken` | `#EFEBDF` | — | Recessed panels (notes) |
 | `mediaWell` | `#EAE6DA` | — | Photo placeholder ground |
 | `well` ‡ | `#F1EDE2` | — | Icon well behind a text entry's glyph — takes a `cardBorder` hairline |
 | `barTrack` ‡ | `#E8E4D8` | — | The unfilled part of a macro bar |
@@ -194,8 +197,9 @@ it costs nothing because the data is already stored.
 ### 4. Weight is never typed
 
 It comes from weigh-ins only. `SettingsTargets` deliberately has no weight row.
-If weight can be edited directly, the trend the entire adaptive engine rests on
+If weight can be edited directly, the trend the Weight screen rests on
 can be overwritten by hand — the same class of failure as the calorie rebate.
+Deleting a mistaken *manual* weigh-in is allowed (Step 4e); editing one is not.
 
 ### 5. No traffic lights
 
@@ -255,24 +259,26 @@ Everything on the canvas, and what is not there yet.
 | Empty day | `Empty day` | Full target still the headline |
 | Saved meals | `Saved meals` | The one path spending no AI call |
 | Day picker | `Day picker` | **Day / Week only — no Month** |
-| Menu | `Menu` | Absorbed the flame and the gear |
-| Week | `Week · after a check-in` | Check-in result leads |
+| Menu | `Menu` | Absorbed the flame and the gear. *Last week* becomes **Weight** (Step 7a) |
+| Week | `Week · after a check-in` | **Out of date** — drawn for the dropped expenditure engine. The Week screen keeps the week's food and the weight card; see *Canvas drift* |
 | Week, early | `Week · day 2` | The state most trialists actually see |
-| Onboarding ×9 | `Onboarding · …` | Intro, name, formula, weight, movement, goal, how to write, reminders, your numbers |
+| Onboarding ×9 | `Onboarding · …` | Intro, name, formula, weight, movement, goal, how to write, reminders, your numbers. *Your numbers* becomes the plan screen (4f) |
 | Paywall | `Paywall` + `Paywall · dark` | Six invariants marked in source |
-| Settings ×3 | `Settings`, `· your targets`, `· delete account` | |
+| Settings ×3 | `Settings`, `· your targets`, `· delete account` | `· your targets` and `· delete account` carry check-in copy; see *Canvas drift* |
 | Constraint proofs | `Dark`, `Arabic RTL`, `Dynamic Type AX3` | **Day view only so far** |
 
-**Deliberately not drawn:** age and height (the weight artboard with a different
-label and range). **Not yet drawn:** reminders settings, appearance, saved-meal
-editor, nutrition sources, score explainer, the four auth screens — all variants
-of patterns already on the canvas.
+**Deliberately not drawn:** age, height and goal weight (the weight artboard with a
+different label and range). **Not yet drawn:** reminders settings, appearance,
+saved-meal editor, nutrition sources, score explainer, the four auth screens — all
+variants of patterns already on the canvas. **Not yet drawn, and new:** the Weight
+screen (4e) — weigh-in dots, the trend line, a dotted plan line and the goal, with
+the weigh-in list below.
 
 ### Navigation
 
-**Two scales: Day and Week.** No Month. The product's cadence is the weekly
-check-in and the weigh-in; a month view would be a dashboard idea with nothing to
-put in it. The calendar in the day picker is for jumping to a date, not a third
+**Two scales: Day and Week.** No Month. The product's cadence is the day's log
+and the weigh-in; a month view would be a dashboard idea with nothing to put in
+it. The long view of weight is the Weight screen's chart. The calendar in the day picker is for jumping to a date, not a third
 scale.
 
 The day picker also states out loud the rule the current build only enforces
@@ -290,7 +296,35 @@ decision, not a fix.
 |---|---|---|
 | `Entry` — items list | Per-item calories **and** macros | `EstimatedItem` is `{name, quantity, estimatedComponents[{name, estimatedAmount}]}`. No macro fields. Needs the Step 6 schema and prompt change. |
 | `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | That is Step 12's suppression rule, which ships **after approval**. Either soften both lines for launch or accept the gap. |
-| `Week`, `Settings · your targets` | A check-in has set a target and a rate | Step 4. The `Week · day 2` artboard is the honest pre-Step-4 state. |
+| `Week`, `Settings · your targets` | A check-in has set a target and a rate | **No longer planned.** Targets are saved and change only when the user acts (Step 4); `Settings · your targets` becomes the targets screen (4d). See *Canvas drift* below. `Week · day 2` is still the honest early state. |
+
+### Canvas drift — 17 September
+
+Step 4 changed after these artboards were drawn. There is no weekly page, no
+check-in, no phase, no suggested change and no measured burn number. The user sets a
+goal weight, sees a plan line to it, and gets saved targets that change only when
+they act (`build-order.md` Step 4, *The rules*). **Build these screens from this
+table, not from the artboard copy.** The layouts still stand; the words do not.
+Final wording is settled in each step and must agree with `store-copy.md`.
+
+| Artboard | Still says | Should say, in substance |
+|---|---|---|
+| `Day`, `Dark` | "Trend weight down 0.4 kg. Your targets moved." | The trend only. Targets never move by themselves, so nothing announces that they did. |
+| `Menu` | "Last week · check-in ready" | The row becomes **Weight** (4e), with nothing to flag. *Your targets* opens the targets screen (4d). |
+| `Week · after a check-in` | "Check-in · done Sunday" · "your new daily target" · "you are burning about 2,810 a day" | The week's food and the weight card, which opens the Weight screen (4e). No check-in, no new target, **never a burn number**. |
+| `Week · day 2` | "First check-in · Sunday" | No check-in date. With few weigh-ins, the weight card shows its early state. |
+| `Onboarding · formula` | "from your first check-in it measures the real number anyway" | Nothing measures a burn. The number is a starting estimate: the Weight screen shows whether it is right, and the user can recalculate or edit. |
+| `Onboarding · daily movement` | "Within two or three weeks Circa has measured what you actually burn, and stops using it." | **Remove the line.** It claims a measurement that was dropped — an App Store 1.4.1 problem. Four options, each a normal week *including* exercise. |
+| `Onboarding · goal` | "From your first check-in onward, Circa moves them…" · "at a rate you set" | No rate to set, and nothing moves on its own. Gain, Lose fat or Maintain, then a goal weight for Gain and Lose fat (4c). |
+| `Onboarding · reminders (3a)` | "Your weekly check-in … once your targets have actually moved" | A reminder to weigh in, claiming nothing moved. The built screen already leaves it out until Step 12. |
+| `Onboarding · your numbers` | "Circa moves them to match what your body is actually doing" | Becomes the plan screen (4f): a line to the goal date, the targets with one reason each ("about 2,420 kcal a day to stay at your weight"), and "This is a starting estimate. Your weigh-ins will show whether it's right." Targets stay as set until the user changes them. |
+| `Paywall`, `Paywall · dark` | "Targets that move with your weight, not a formula that guessed once" · "A weekly check-in that shows its working" | As in `store-copy.md`: a steady plan to a goal weight, targets that show their working and change only when you change them, and weigh-ins against the plan. |
+| `Settings · your targets` | "set at Sunday's check-in" · Rate 0.5% a week · "Changing your goal closes the current phase…" | The targets screen (4d): the numbers, "Set at 85 kg on 3 Sep", the stay-at-your-weight estimate, **Edit** and **Recalculate**, and goal weight in place of Rate. Changing the goal restarts the plan line; there are no phases. |
+| `Settings · delete account` | "Weigh-ins and check-ins" | Weigh-ins only — check-ins are never stored. |
+
+The day-streak tile on both Week artboards is still undecided. Onboarding promises
+"No badges, no streak alarms", but Step 12 still plans streak protection, and the
+weekly page that was going to settle it is gone.
 
 ---
 

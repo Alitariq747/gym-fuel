@@ -30,32 +30,12 @@ struct WeightTrendSeries: Equatable, Sendable {
     var hasTrend: Bool { points.count >= WeightTrendCalculator.minimumPointsForTrend }
 }
 
-/// Smooths a series of weigh-ins into a trend line.
-///
-/// Pure arithmetic, no I/O — the same shape as `StatsCalculator`, and injected
-/// into a ViewModel with a concrete default.
-///
-/// The trend exists because day-to-day scale weight moves with water, glycogen
-/// and gut contents rather than with fat, so a single reading is not a direction.
+
 struct WeightTrendCalculator {
-    /// The weight given to each new observation.
-    ///
-    /// - Note: **This alpha is per *observation*, not per day, and Part B must
-    ///   revisit that.** A 30-day gap and a 1-day gap produce identical
-    ///   arithmetic here. That is harmless while the trend is only *displayed*,
-    ///   but Part B's `trendDeltaKgPerWeek` divides by elapsed days — a
-    ///   time-unaware average feeding a time-aware rate is exactly where a
-    ///   plausible-looking wrong number comes from.
+
     static let defaultAlpha: Double = 0.25
 
-    /// Below this, `hasTrend` is false and the card shows an insufficient-data
-    /// state instead of a line.
-    ///
-    /// Three, not two. At one point the trend *is* the measurement — a tautology
-    /// drawn as a line. At two it is the first measurement plus a quarter-step,
-    /// which renders near-flat and reads as "your weight is stable" on the
-    /// strength of two readings. Three is the first count at which the line has
-    /// two segments and therefore expresses a direction.
+  
     static let minimumPointsForTrend: Int = 3
 
     let alpha: Double

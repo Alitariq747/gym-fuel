@@ -14,7 +14,7 @@ An iOS calorie tracker, mid-repositioning. Two things a fresh session gets wrong
 | `build-order.md` | What we're building now, in order, with progress checkboxes. **Start here.** |
 | `project-brief.md` | Scope — especially what is explicitly *out* |
 | `store-copy.md` | Exact App Store strings, with character counts |
-| `design.md` | The visual system and its rules. A **spec** — the build does not look like this yet |
+| `design.md` | The visual system and its rules. A **spec** — the build does not look like this yet, and where an artboard's copy disagrees with its *Canvas drift* table, the table wins |
 | `repositioning-strategy.md` | Why we're doing this. Rarely needed mid-build |
 | `product-as-built.md` | What the code does today |
 
@@ -25,15 +25,33 @@ Read it directly — it is not missing, and it is not in this repo.
 
 - I name one step from `build-order.md`. Do that step and nothing else.
 - Plan first. Show me the plan before writing code.
+- **Small steps: under ~200 lines of code each.** Estimate the size while planning.
+  If the work will go over, propose dividing it into smaller parts before writing
+  anything, and we'll work through them in the session. Don't add them to
+  `build-order.md`. If a part grows past the limit midway, stop and ask. App and
+  backend code count; tests and docs don't.
 - If something outside the step looks necessary, **stop and ask**. Don't widen scope.
 - No opportunistic refactors, renames, or reformatting.
 - No new dependencies.
+- I build the Xcode project and run the Debug and Release checks myself — don't build it.
+- **Keep the code modular, so extending or editing a feature later stays simple.**
+  - One job per type: rules and maths in pure types with no Firebase or UI (like
+    `MacroTargetCalculator`), reads and writes in services, screen state in view
+    models, and views that only draw.
+  - Each rule or number lives in one place (for example the calorie floor or the
+    activity multipliers), so changing it later is a one-line edit.
+  - Reuse what exists before adding more: `CircaComponents.swift`, the existing
+    services and calculators. Extract a new component only when it repeats or
+    carries a rule.
+  - Pure logic gets unit tests.
+  - This applies to the code a step touches. If older code makes a change hard, say
+    so and propose the cleanup as its own small step — don't slip it in.
 
 ## Finishing a step
 
 Report in this order:
 
-1. Files touched — so I can check `git diff --stat` matches
+1. Files touched and lines of code changed — so I can check `git diff --stat` matches
 2. What behaviour changed, one line each
 3. Exactly what I should tap in the app to confirm it
 4. Anything you noticed but did **not** change
@@ -58,13 +76,27 @@ Each one is a real failure mode, not a style preference.
 - **Don't build a `foods` collection, barcode scanner, or nutrition database** —
   its absence is the product.
 - **Don't re-add exercise or workout logging** — removed deliberately in Step 3.
-  If a burn figure reappears anywhere, it corrupts the adaptive engine. **This
-  includes importing one.** HealthKit active energy, workouts and steps are out —
-  as an input *and* as displayed context. HealthKit is `bodyMass`, read-only.
+  If an exercise burn figure reappears anywhere, it corrupts the targets and what
+  the Weight screen shows. **This includes importing one.** HealthKit active energy,
+  workouts and steps are out — as an input *and* as displayed context. HealthKit is
+  `bodyMass`, read-only.
 - **Don't hardcode a trial length or a price** — read both from StoreKit.
 - **Don't let weight be edited anywhere except a weigh-in.** Same failure class as
-  the calorie rebate: the trend the whole adaptive engine rests on stops being a
-  measurement the moment it can be typed. Settings shows weight; it never edits it.
+  the calorie rebate: the trend the Weight screen rests on stops being a measurement
+  the moment it can be typed. Settings shows weight; it never edits it. Deleting a
+  mistaken *manual* weigh-in is allowed (Step 4e); editing one is not.
+- **Don't let the app change targets on its own.** Targets are worked out once and
+  saved. They change only when the user edits them, taps Recalculate, or changes
+  goal, goal weight or activity — never on a weigh-in, typed or from Apple Health.
+  No coaching, suggested changes or rules judging progress: an expenditure engine,
+  phases with check-ins, and a weekly page were each tried and dropped between 14
+  and 17 September 2026. Store only the current plan and targets, never a history.
+  `backup/step4b-abandoned` is a record, not a starting point.
+- **Don't show a measured burn number.** The formula's maintenance estimate may be
+  shown — "about 2,420 kcal a day to stay at your weight", rounded, dotted as an
+  estimate, never called "burn", never updated from food logs or weigh-ins. A
+  number that claims to measure what this person burns needs validation we don't
+  have (App Store 1.4.1).
 
 ## Relaxed — but only until the first user
 

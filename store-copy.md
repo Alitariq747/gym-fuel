@@ -12,6 +12,12 @@ deck previously carried (it declared the name agnostic while proposing
 `[BRAND]: Desi Food Tracker`). **The keywords field now needs a pass — see the note
 under Keywords.**
 
+Revised 16 and 17 September: **the weekly check-in became a weekly page, and then the
+weekly page was dropped.** `build-order.md` Step 4 now builds a plan the user can
+see — a goal weight, a steady line to it, and saved targets that change only when
+the user changes them — plus a Weight screen. The goal bullets in the description,
+Shot 05 and the cheques below are rewritten to match.
+
 ---
 
 ## Sequence this correctly
@@ -139,7 +145,7 @@ lost on ranking grounds but wins on conversion. This field costs nothing to chan
 and needs no review, so it is where that line earns its place before it takes a
 subtitle slot.
 
-### Description — ~1,830 / 4,000
+### Description — ~1,802 / 4,000
 
 Only the first three lines show before the fold on iPhone, which is why the aloo
 gobi line leads: it is *always* true, because it is a claim about variance rather
@@ -161,10 +167,10 @@ WHAT IT'S GOOD AT
 
 WHEN YOU'RE WORKING TOWARD SOMETHING
 
-• Lose fat, maintain or gain. Your protein, carbs and fat come from your bodyweight and your goal, not a generic diet template.
-• Targets that move. Weigh in through the week and your numbers adjust to what your body is actually doing — instead of a formula that guessed once and never updated.
+• Lose fat, maintain or gain. Set a goal weight and see a steady path to it, with protein, carbs and fat worked out for you — not a generic diet template.
+• Targets that show their working. Every number comes with the reason behind it, and nothing changes unless you change it.
 • Every meal scored out of 100 against your goal, with the reasoning behind it.
-• A weekly check-in: what you averaged, what changed, and what your new numbers are.
+• Your weigh-ins against your plan. Weigh in by hand or sync from Apple Health, and see how it's going.
 
 SAVED MEALS
 
@@ -195,11 +201,11 @@ first, depth second.
 | 02 | Just say what you ate. | The solution |
 | 03 | It shows you what it assumed. You fix what's wrong. | The trust |
 | 04 | Targets from your bodyweight and your goal. | The depth |
-| 05 | They move as your weight moves. | The engine |
+| 05 | Your plan, and how it's going. | The plan |
 | 06 | Every meal scored — with the reason. | Retention |
 
-Shots 1–3 sell the food problem to everyone; 4–6 sell the coach to the people who
-will actually pay.
+Shots 1–3 sell the food problem to everyone; 4–6 sell the goal side to the people
+who will actually pay.
 
 ---
 
@@ -236,15 +242,17 @@ anything else first.
 
 ## What this copy promises that the build doesn't yet deliver
 
-Three lines are writing cheques against unbuilt work. All three are Phase 1 in
-`project-brief.md`. **Ship them before the listing goes live, or soften the lines
-until you have.**
+Six lines are writing cheques against unbuilt work. **Ship them before the listing
+goes live, or soften the lines until you have.**
 
 | Copy | Gap |
 |---|---|
 | "It shows you what it assumed" | True, but buried one tap deep in `LogEntryDetailSheet` — needs to be on the timeline card |
 | "two roti, chicken karahi, half a katori rice" | Three entries from one sentence; `LogComposerViewModel` creates one entry per submission |
-| Shot 05, "They move as your weight moves" | The adaptive engine is Phase 3. **Do not ship this caption before it exists.** |
+| "Set a goal weight and see a steady path to it" | Goal weight is `build-order.md` Step 4c; the path is the onboarding plan screen, 4f |
+| "Every number comes with the reason behind it, and nothing changes unless you change it" | Saved targets are 4c, the targets screen 4d, the reasons 4f |
+| "Your weigh-ins against your plan" | The Weight screen is Step 4e |
+| Shot 05, "Your plan, and how it's going" | Needs Step 4e or 4f. **Do not ship this caption before it exists.** |
 
 ---
 

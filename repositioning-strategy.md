@@ -5,8 +5,9 @@ The *argument*. What we're building and in what order lives in
 deliberately does not duplicate the plan, so the two can't drift.
 
 Written 5 September 2026. Revised 7 September for the drop-lifting and
-scrap-exercise decisions, and 14 September for the pace check — see Revision
-notes at the end.
+scrap-exercise decisions, 14 September for the pace check, 16 September for the
+weekly page, and 17 September for the plan and saved targets — see Revision notes
+at the end.
 
 ---
 
@@ -137,7 +138,7 @@ it.
 |---|---|---|
 | Mouth width | Narrow — lifters running structured phases | Wide — anyone eating home-cooked or non-Western food |
 | Who owns it | MacroFactor, Carbon, RP — entrenched | Fitia/HealthifyMe by region; desi contested by three small apps |
-| Our edge | Marginal — see correction below | Go-to-market: nobody targets diaspora, and no desi app has adaptive targets |
+| Our edge | Marginal — see correction below | Go-to-market: nobody targets diaspora |
 | Cost to reach | Build the engine first; nothing to say until it ships | Mostly prompt work, a reference set, listing copy |
 | Content hook | Weak — an algorithm is hard to film | Strong — "watch MyFitnessPal try to log my mum's biryani" |
 | Unit economics | Good — US/UK/EU pricing | Risky in-region; the money is diaspora |
@@ -180,19 +181,21 @@ Under that frame the competitive picture reads differently:
 
 ### Resolution
 
-**Position on B. Retain on A. Then take lifting off the surface entirely.**
+**Position on B. Keep goals as the depth. Then take lifting off the surface
+entirely.**
 
 Lead with the food problem, because that is what people can hear about, film and
-search for. Keep adaptive targets as the depth, because goal-driven users are the
-ones who pay and a weekly check-in is what makes month three happen.
+search for. Keep a plan to a goal weight as the depth, because goal-driven users
+are the ones who pay, and seeing their weigh-ins against that plan is the reason to
+come back that makes month three happen.
 
 The second half of that was settled later, on 7 September: **"lifters" is a
 subculture, "goal-driven" is a use case**, and only the second is load-bearing.
 Goal-driven also covers recomp, post-partum, a wedding in April, a doctor's
-instruction — same engine, same maths, several times the audience. So lifting
-comes out of the name, the subtitle and the primary copy, while the adaptive
-engine, the phases and the goal-fit score all stay. `GoalType` display strings
-become **Gain / Lose fat / Maintain**.
+instruction — same page, same maths, several times the audience. So lifting comes
+out of the name, the subtitle and the primary copy, while goals, the plan and the
+goal-fit score stay. `GoalType` display strings become **Gain / Lose fat /
+Maintain**.
 
 What that costs: roughly 20–30% of ARPU, since a general tracker anchors against
 Cal AI's $2.49 rather than MacroFactor's $6.00 effective. What it buys: an order of
@@ -202,33 +205,48 @@ display" — and trading price for audience is correct while that holds.
 
 ### Why the retention half is worth building regardless
 
-A **pace check** compares how fast the user's weight is actually moving with the
-pace they chose, and nudges the calorie target in small steps until the two match.
-Once a week it asks one question — *on pace, too slow, or too fast?* — and gives
-an answer a normal person can follow. It is pure arithmetic: unlike scans, it
-costs nothing per user.
+A **plan the user can see**: a goal weight, a steady line to it — 0.5% of body
+weight a week when losing, 0.25% when gaining — daily targets with a plain reason
+for each number, and a Weight screen that plots every weigh-in against the line.
+Nothing coaches, suggests or judges. Targets are saved and change only when the user
+edits them, taps Recalculate, or changes their goal. It is pure arithmetic: unlike
+scans, it costs nothing per user.
 
-Every adaptive coach sells some form of this. MacroFactor goes further and
-estimates the user's energy expenditure from logged intake and weight. That model
-rests on their own 748-user, 100-day validation study, depends on complete food
-logs, and presents a health measurement App Store 1.4.1 expects to be validated.
-We have none of that data, and our users describe food in a sentence rather than
-weighing it. **The pace check was chosen instead on 14 September** — full
-reasoning in `build-order.md` Step 4.
+The weigh-in is the moment that decides month three. Withings users who stopped
+weighing had gained weight in the month before they stopped, after losing it while
+they kept going ([Frie 2020](https://www.jmir.org/2020/3/e15790/)). A trial built on
+nothing more than a smart scale, a weight graph, weekly feedback and lessons
+produced a 6.55% loss at six months against 0.35% for controls
+([Steinberg 2013](https://pubmed.ncbi.nlm.nih.gov/23512320/)). Tailored messages up
+to three times a day added nothing over self-monitoring alone at twelve months
+([SMARTER 2022](https://www.jmir.org/2022/7/e38243)): the graph is the active
+ingredient, and it is what this plan keeps. Food journals are abandoned over missed
+meals and guilt
+([Cordeiro 2015](https://homes.cs.washington.edu/~jfogarty/publications/chi2015-barriersandnegativenudges.pdf)),
+so nothing here scolds.
 
-A 16-week cut for an 85 kg user, illustrative:
+Every adaptive coach sells some form of target adjustment, and MacroFactor goes
+further: it estimates the user's energy expenditure from logged intake and weight.
+That model rests on their own 748-user, 100-day validation study, depends on
+complete food logs, and presents a health measurement App Store 1.4.1 expects to be
+validated. We have none of that data, and our users describe food in a sentence
+rather than weighing it. **Three adaptive designs were tried between 14 and
+17 September and dropped** — an expenditure engine, a pace check with stored
+check-ins, and a weekly page with suggested changes. `build-order.md` Step 4 keeps
+the one-line reasons. The formula's maintenance estimate may still be shown, as an
+estimate, never as a measured burn.
 
-| Week | Static target (today) | With the pace check |
-|---|---|---|
-| 0–4 | 2200 | 2200 |
-| 4–8 | 2200 | 2100 |
-| 8–12 | 2200 | 2000 |
-| 12–16 | 2200 | 1900 |
+**Static targets, on purpose.** F2 above called static targets the behaviour people
+leave MyFitnessPal over. The two halves of that are now answered differently. *Wrong
+at the edges* is fixed: the offset is sized from body weight, not a flat −300.
+*Static* is kept by choice: weigh-ins never move a target, because a number that
+shifts on its own — or on an app update — is one the user cannot trust. The plan
+line makes drift visible, and Recalculate is one tap.
 
-The static column is what the app does now: the same target in week 16 as week 1,
-so when the body needs less the loss stalls and the user concludes the app is
-wrong. Each step in the right-hand column is one 100 kcal move at a check-in where
-the pace had slipped below the goal; the check-ins in between changed nothing.
+Illustrative, for an 85 kg, 178 cm, 35-year-old man who mostly sits: the plan line
+runs 85.0 → 83.3 → 81.7 → 80.0 → 78.5 kg at weeks 0, 4, 8, 12 and 16, from a
+starting target of about 1,950 kcal. Left alone for 10 kg, that target loses about
+20% slower than the line; Recalculate brings it back to pace.
 
 ---
 
@@ -277,16 +295,17 @@ best customers are our least profitable, which is backwards.
 
 **Three changes:**
 
-1. **Trial to 14 days.** Not a benchmark call — an adaptive coach cannot
-   demonstrate itself in 3 days. The pace check needs 14 days of weigh-ins before
-   it can move a target, so the value arrives at day 14 at the earliest — which a
-   14-day trial only just reaches, and a shorter one never shows. (Benchmarks
-   agree: sub-4-day trials convert at ~25.5% median against ~42.5% for 17–32 day
-   trials.)
-2. **Reprice to $7.99/mo and $54.99/yr** once the pace check ships. Lower than the
-   $9.99 originally proposed here, because dropping the lifting surface means
-   anchoring against Cal AI and Yazio rather than MacroFactor. Grandfather
-   existing subscribers.
+1. **Trial to 14 days.** Revised 17 September. The original case was that the
+   weekly page needed 14 days of weigh-ins before it could show anything. That case
+   is gone: the plan shows its value in onboarding, before the paywall. What
+   remains is the benchmark — sub-4-day trials convert at ~25.5% median against
+   ~42.5% for 17–32 day trials — a conversion argument to test after approval, not
+   a product constraint.
+2. **Reprice to $7.99/mo and $54.99/yr** once the plan and the Weight screen ship.
+   Lower than the $9.99 originally proposed here, because dropping the lifting
+   surface means anchoring against Cal AI and Yazio rather than MacroFactor. The
+   case is weaker than when this was written: a goal weight and a progress graph
+   are expected, where a coach was not. Grandfather existing subscribers.
 3. **Rename the entitlement.** `ai_scans` is a cost centre wearing a product's
    name. Keep the scan quota as an internal abuse limit, not a headline feature.
 
@@ -321,22 +340,26 @@ story. It does not cost us the position: three of the four are hand-curating sma
 databases, the capped approach we specifically avoid. HealthifyMe *is* a moat —
 one more reason to aim diaspora rather than India.
 
-**Adaptive targets need weigh-ins and a sensible start.** Revised 14 September.
-The original risk here was an expenditure estimate biased by under-logging — AI
-photo estimation is prone to a commonly cited 150–400 kcal on calorie-dense meals.
-The pace check retires most of that: it reads weight, and counts logged days
-without ever reading their calories. Three risks remain:
+**The plan rests on weigh-ins and a sensible start.** Revised 14, 16 and
+17 September. The original risk here was an expenditure estimate biased by
+under-logging — AI photo estimation is prone to a commonly cited 150–400 kcal on
+calorie-dense meals. The plan never reads logged calories, which retires that. Four
+risks remain:
 
-- **No weigh-ins, no coaching.** Fewer than six in a fortnight and the target
-  never moves. Apple Health body mass (Step 4a2) is the main defence.
-- **It is slow by design.** At most 100 kcal a fortnight means a starting target
-  that is 300 kcal wrong takes six weeks to correct — so the starting offset and
-  the activity multiplier matter more than they would under an expenditure engine.
-- **Partial logging still fools the logging check.** A day with breakfast logged
-  and dinner forgotten counts as logged, so the pace check can lower a target the
-  user is already over. It goes wrong more slowly than a biased expenditure
-  estimate — 100 kcal a fortnight, stopped by the floor — but in the same
-  direction. `confidence` and `assumptions[]` remain the fields to build on.
+- **No weigh-ins, nothing to see.** The Weight screen is empty without them, and
+  people tend to stop weighing right after a gain — the moment the graph matters
+  most. Apple Health body mass (Step 4a2) and Step 12's weigh-in nudge are the
+  defence.
+- **The starting estimate can be off.** Mifflin–St Jeor and a self-reported
+  activity level can miss by a few hundred kcal, and nothing corrects it
+  automatically. The dotted plan line makes the gap visible, and Recalculate or an
+  edit fixes it. The activity multipliers sit at the careful end for this reason.
+- **Nobody helps at the stall.** Loss is fast in the first weeks, mostly water, then
+  slows, so weigh-ins start ahead of the line and drift behind it — where people
+  quit. The app shows the gap without judging it; what to do is the user's call.
+- **Saved targets drift as weight comes off.** They do not follow weight: after
+  10 kg lost on the 0.5% plan, a target left alone loses about 20% slower than the
+  line. Recalculate is the answer, and "Set at 85 kg on 3 Sep" is the reminder.
 
 **Founder-audience fit degrades.** Ahmad is a lifter and writes for lifters
 instinctively. Writing for general home cooks is a different muscle, and untested.
@@ -365,6 +388,18 @@ rather than deleted, so the reasoning stays legible:
   targets that move are still the depth — but the mechanism no longer claims a
   health measurement we cannot validate, and no longer depends on a complete food
   log.
+- **The retention mechanism (§03, §05 and the risks)** was re-scoped again on
+  16 Sep, from the pace check to a weekly page. The pace check had been built with
+  `phases` and `checkIns` collections and reverted: storing every decision, not
+  the maths, made it thousands of lines. The page is worked out from the data on
+  read, and a target changes only when the user accepts a suggestion. The
+  argument is unchanged — a reason to come back each week is still the depth.
+- **The retention mechanism** changed a third time on 17 Sep, from the weekly page
+  to a plan the user can see: a goal weight, a line to it, saved targets that change
+  only when the user acts, and a Weight screen. The weekly page's stall and
+  too-fast rules were subjective and each needed a citation. §03's position table
+  no longer claims adaptive targets as an edge, §03 explains why targets are static
+  on purpose, and §05's trial argument no longer rests on a 14-day reading.
 
 Also decided after this document was first written, and recorded in
 `project-brief.md` rather than here: exercise logging is removed entirely, the
@@ -393,4 +428,8 @@ Store metadata cannot segment cuisines by country in English.
 - [Why Western databases fail on Indian food](https://mybiteiq.com/blog/best-calorie-tracker-indian-food)
 - [Calorify](https://apps.apple.com/gb/app/calorify-desi-calorie-counter/id6791528606) · [Loqma](https://play.google.com/store/apps/details?id=com.zavistudio.loqma) · [Khana AI](https://apps.apple.com/us/app/khana-ai-calorie-tracker/id6745111999)
 - [Micro & nano influencer costs, 2026](https://influenceradvisory.com/blog/micro-nano-influencer-marketing-2026/)
+- [Frie et al. 2020 — weight data before people stop weighing](https://www.jmir.org/2020/3/e15790/)
+- [Steinberg et al. 2013 — daily self-weighing with smart scales and email](https://pubmed.ncbi.nlm.nih.gov/23512320/)
+- [SMARTER 2022 — tailored feedback messages against self-monitoring alone](https://www.jmir.org/2022/7/e38243)
+- [Cordeiro et al. 2015 — barriers and negative nudges in food journaling](https://homes.cs.washington.edu/~jfogarty/publications/chi2015-barriersandnegativenudges.pdf)
 - Internal: `product-as-built.md`, `paywall-audit.md`, `GymFuel/`, `gymfuel-ai-service/`

@@ -16,10 +16,7 @@ struct StatsView: View {
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
     private let macroTargetCalculator = MacroTargetCalculator()
-    /// Reports a saved weigh-in so the caller can refresh the profile it owns.
-    /// Passed in rather than reached for through `@EnvironmentObject`: this view
-    /// is itself presented as a sheet, and this is the one write path in the
-    /// feature — not somewhere to depend on environment propagation.
+ 
     private let onWeighIn: (Double) -> Void
     init(
         profile: UserProfile,

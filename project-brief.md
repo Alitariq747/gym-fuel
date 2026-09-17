@@ -3,7 +3,7 @@
 Working contract for the repositioning. The *argument* for it lives in the strategy
 doc and copy deck (see References); this file is the implementation scope only.
 
-Written 6 September 2026, revised 7 and 14 September. Supersedes any earlier paywall-pass scope; the
+Written 6 September 2026, revised 7, 14, 16 and 17 September. Supersedes any earlier paywall-pass scope; the
 remaining subscription work is Step 1 of `build-order.md`.
 
 ---
@@ -16,8 +16,10 @@ price, without Cal AI's distribution. We reposition onto the one thing our
 architecture is structurally better at than any competitor: **we have no food
 database, so we can estimate food that isn't in anyone's database.** Home-cooked,
 regional, mixed, unmeasured food. Goal-driven users stay the paying audience —
-adaptive targets, phases, goal-fit scoring all remain — but **lifting comes off
-the surface**: out of the name, out of the subtitle, out of the primary copy.
+a goal weight with a plan to it, targets the user controls and goal-fit scoring
+all remain — but
+**lifting comes off the surface**: out of the name, out of the subtitle, out of
+the primary copy.
 Lifters become one subset of the audience rather than the whole of it.
 
 ---
@@ -31,8 +33,10 @@ actually eat isn't in one.
 (US, UK, Canada, Gulf App Store accounts) — not the home market. Inference cost is
 dollar-denominated and local-market App Store revenue is not; see Risks.
 
-**Retention.** Adaptive targets that move with the user's real weight trend. This
-is why they stay past week six and why they pay more than $2.49.
+**Retention.** A plan the user can see: a goal weight, a steady line to it, and
+every weigh-in plotted against that line, with targets that change only when the
+user changes them. This is why they stay past week six and why they pay more than
+$2.49.
 
 **Why this positioning, given four apps say something similar.** Not because it is
 unownable by others — in a market where an AI-coded competitor ships a matching
@@ -129,17 +133,16 @@ RevenueCat, so the risk is builds in the wild rather than stored rows, and an em
 Decided 7 September, replacing the earlier "demote to context". Once lifting is
 off the surface, exercise logging has no remaining job:
 
-- Adherence context is decoration in the check-in, not an input to it.
+- Adherence context would be decoration on the Weight screen, not an input to it.
 - Explaining weight variance was overstated — variance is dominated by water,
   sodium, carbs, glycogen and cycle, and the log cannot distinguish "trained
   harder" from "ate more salt".
 - The calorie rebate at `DailyMacroDetailSheet.swift:12`
   (`target - consumed + burned`, with a "Burned" tile at `:31`) actively
-  **defeats the pace check**: it hands calories back on active days, so the
-  weight moves slower than the goal, the pace check steps the target down, and the
-  rebate hands the difference back again — fortnight after fortnight, until the
-  target reaches the floor while what the user eats never changes. The rebate and
-  the pace check are mutually exclusive.
+  **defeats the plan**: it hands calories back on active days, so the user eats
+  their target plus the rebate, the weigh-ins fall behind the plan line, and the
+  target they trusted was never the one they ate. The rebate and a plan built on
+  weigh-ins are mutually exclusive.
 
 Deleting it removes a cost centre with zero revenue attached — every exercise log
 burns an AI call for a number nothing will read.
@@ -150,7 +153,7 @@ listing on. Ship only:
 
 1. Remove the rebate at `DailyMacroDetailSheet.swift:12`
    (`target - consumed + burned`) and the "Burned" tile at `:31`. **This is the
-   part that matters** — eaten-back calories would defeat the pace check later.
+   part that matters** — eaten-back calories would defeat the plan later.
 2. Stop offering workout logging in the composer. Leave the code in place.
 
 Everything below is the deferred sweep, scheduled after the listing ships.
@@ -170,10 +173,11 @@ in `DailyStatsSnapshot`, `StatsActivitySummaryRow`, the exercise branch in
   write paths, in one pass, owing no later cleanup.
 - **`NonTrainingActivityLevel` stops making sense** — it is named "non-training"
   precisely because training was counted separately. Rename to activity level.
-  **No longer low stakes** (revised 14 September): the pace check never measures
-  expenditure, so the multiplier sets the starting target, and only 100 kcal
-  steps — at most one a fortnight — correct it afterwards. A multiplier that is
-  300 kcal off costs a user six weeks.
+  **No longer low stakes** (revised 14, 16 and 17 September): nothing measures
+  expenditure and nothing corrects the target automatically, so the multiplier sets
+  the starting target until the user recalculates or edits it. Step 4 replaces the
+  three options with four that include exercise (`build-order.md` Step 4, *The
+  rules*).
 
 Also removed: the sets ask at `OnboardingLoggingTipsStepView:133` and the "22
 total sets" worked example at `:42`.
@@ -181,88 +185,67 @@ total sets" worked example at `:42`.
 Audit finding #4 (bodyweight never reaches the burn estimator) is **closed as
 obsolete**, not fixed.
 
-### 4. Adaptive targets — the pace check — `Phase 3`
+### 4. The plan and saved targets — `Phase 3`
 
-**Re-scoped 14 September.** This section used to specify an expenditure engine:
-estimate what the user burns from logged intake and trend weight, then set targets
-from that number. It was built, tested and dropped in Step 4b1. The full reasoning
-is in `build-order.md` Step 4. In short: it is a health measurement we cannot
-validate under App Store 1.4.1, it is only as good as a complete food log, getting
-it right is ongoing research, and the audience could not follow it.
+**Re-scoped three times.** An expenditure engine — estimate what the user burns from
+logged intake and trend weight, then set targets from that number — was dropped on
+14 September: a health measurement we cannot validate under App Store 1.4.1, and
+only as good as a complete food log. A pace check with `phases` and `checkIns`
+collections was built and reverted on 16 September: storing every decision made it
+thousands of lines. A weekly page with a one-tap target change was dropped on
+17 September before it was built: its stall and too-fast rules were subjective, and
+each needed a citation.
 
-**What replaces it.** Once a week, one question: *is the weight moving at the pace
-the user chose?* Too slow, the target steps a little toward the goal. Too fast, it
-steps back. About right, nothing changes. No metabolism number is ever shown.
+**What replaces it.** A plan the user can see. Onboarding asks for a goal weight and
+shows a line to it — 0.5 % of body weight a week when losing, 0.25 % when gaining —
+with the daily targets and one plain reason for each. A Weight screen plots every
+weigh-in against that line. **Nothing coaches, suggests or judges.** Targets are
+worked out once and saved; they change only when the user edits them, taps
+Recalculate, or changes goal, goal weight or activity. Weigh-ins never move them.
 
-Two new Firestore collections on top of `weighIns`, and one small rule. No network
-calls, no inference cost.
+**The rules are owned by `build-order.md` Step 4, *The rules*; change them there
+first.** In outline:
 
 ```
 users/{uid}/weighIns/{yyyy-MM-dd}                    // shipped in 4a
   weightKg, loggedAt, source: manual | healthKit
 
-users/{uid}/phases/{phaseId}
-  goalType, startedAt, endedAt?, startWeightKg,
-  goalRatePercentPerWeek, calorieAdjustment, lastAdjustedAt?, targetWeightKg?
+users/{uid}                                          // new fields, in 4c
+  goalWeightKg, planStartedOn, planStartWeightKg
+  targetCalories, targetProteinG, targetCarbsG, targetFatG
+  maintenanceCalories, targetsSetOn, targetsSetAtWeightKg
 
-users/{uid}/checkIns/{weekStart}
-  weekStart, trendWeightKg, paceKgPerWeek, goalPaceKgPerWeek,
-  weighInCount, loggedDays, decision, previousTargets, newTargets, reason
+maintenance = Mifflin–St Jeor × activity (1.35 · 1.5 · 1.7 · 1.9)
+offset      = weight kg × pace × 7,700 ÷ 7    // pace −0.5 % lose, +0.25 % gain, 0 maintain
+calories    = maintenance + offset, rounded to 10; never below 1,200 (women) or
+              1,500 (men, prefer not to say), nor below protein + fat calories
+basis       = the lower of goal weight and the BMI 25 weight
+              (Maintain: the lower of current weight and the BMI 25 weight)
+protein     = 1.6 g per kg of basis
+fat         = 0.8 g per kg of basis (0.9 when gaining)
+carbs       = what is left
 ```
 
-`calorieAdjustment` on the phase is the recommended shape, not yet final — the 4b2
-plan settles it. It keeps the target a synchronous `starting target + adjustment`,
-instead of a stored target that every screen showing a calorie number must load.
+**Saved, not computed on read.** Saving the numbers is what stops weigh-ins, Apple
+Health syncs and future formula changes from moving a target the user did not touch.
+Only the current plan and targets are stored — no history, which is what made the
+pace check huge. Past days show against the current targets; accepted.
 
-The rule. The starting values are owned by `build-order.md` Step 4; change them
-there first.
+**The maintenance estimate may be shown, as an estimate.** "About 2,420 kcal a day
+to stay at your weight": rounded, dotted, never called "burn", never updated from
+food logs or weigh-ins. A number that claims to measure what this person burns is
+still out.
 
-```
-pace        = slope of the best-fit line through raw weigh-ins, last 14–21 days
-goalPace    = trendWeightKg × goalRatePercentPerWeek / 100      // sign from goalType
-enoughData  = 14+ days since the phase started or the target last moved,
-              6+ weigh-ins, and food logged on most days (about 5 in 7)
+**Safety limits.** Age 18 or over. No goal weight below BMI 18.5, and no *Lose fat*
+for anyone already below it.
 
-about right   pace within ±50 % of goalPace, same direction    → no change
-too slow      or moving the wrong way                           → step toward the goal
-too fast                                                        → step back
-maintain      only if the trend leaves ±0.5 kg of startWeightKg → step back toward it
+**Citations owed under 1.4.1**, on the Sources screen in Step 4b: the pace (NHS
+0.5–1 kg and CDC 1–2 lb a week for losing; Iraki 2019 for gaining), the activity
+table (FAO/WHO/UNU 2004), protein (Morton 2018, Leidy 2015), the calorie floor and
+the BMI limits. Self-weighing is already cited from 4a.
 
-step        = 100 kcal, at most one per 14 days
-target      = starting target + calorieAdjustment, never below the calorie floor
-```
-
-**Every weight quantity above is signed, and negative means losing.**
-`goalRatePercentPerWeek` is the exception: it is stored as a *magnitude* and its
-sign is derived from `goalType`, so a stored `0.75` on a cut can never read as a
-gain goal and step the target the wrong way.
-
-**Pace comes from a best-fit line through the raw weigh-ins, not from the trend
-line.** The trend is smoothed on a 7-day half-life and stays on the chart, but a
-smoothed line lags real weight: tested 13 September, trend endpoints undercount a
-steady loss by about a third at the start of a phase — exactly when a check-in
-matters most. A best-fit line across two to three weeks is smooth enough on its
-own.
-
-**The food-logging condition counts days and never reads calories.** Its only job
-is to avoid lowering a target the user isn't eating. That is what lets the pace
-check keep working when meals are estimated from a sentence, or missed.
-
-**The starting target still comes from `MacroTargetCalculator`.** The flat offsets
-at `MacroTargetCalculator.swift:56-65` (`+250` gain, `-300` cut) do not match the
-chosen pace — a 90 kg user losing 1 % a week needs roughly three times −300 — so
-4b2 either derives the starting offset from the pace or limits the choices. Pace
-ranges:
-
-- Gain — 0.25–0.5 % bodyweight/week
-- Lose fat — 0.5–1.0 % bodyweight/week
-- Maintain — hold trend weight in a ±0.5 kg band
-
-**Citations owed under 1.4.1:** the pace ranges and the calorie floor.
-Self-weighing is already cited from 4a.
-
-`weightKg` stays on `UserProfile` as the current value; `weighIns` becomes the
-history. `EditWeightSheet` writes both.
+`weightKg` stays on `UserProfile` as the current value, for display; `weighIns` is
+the history. `EditWeightSheet` writes both.
 
 ### 5. Day-aware goal-fit score — `Phase 4`
 
@@ -313,11 +296,12 @@ then the server-side call is removed from `normalizeLogEntryFeedback`.
 > conversion numbers to argue with instead of benchmarks. `build-order.md` Step 0
 > is where this is locked; Step 9's items 2 and 3 are struck through accordingly.
 
-The trial length is a product constraint, not a benchmark: an adaptive coach
-cannot demonstrate itself before its first real decision. The pace check needs 14
-days of weigh-ins before it can move a target, so a 3-day trial can show the trend
-but never a target moving. The trial must reach the first check-in that can move
-a target — day 14 at the earliest.
+The original case for 14 days was that the weekly page needed two weeks of
+weigh-ins before it could show anything. That case is gone (17 September): the plan
+shows its value in onboarding, before the paywall. What remains is the benchmark —
+sub-4-day trials convert at a median of ~25.5 % against ~42.5 % for 17–32 days (see
+the strategy doc) — a conversion argument to test after approval, not a product
+constraint.
 
 **Changing the trial length makes the hardcoded trial string blocking.**
 `SubscriptionPaywallSheet.swift:351,364,379` renders `"3-day"` as a literal
@@ -352,15 +336,15 @@ not scheduled* is now scheduled. Two halves, split across the launch boundary:
   paywall (`SubscriptionPaywallSheet.swift:25`) true rather than aspirational.
 - **Step 12, after approval.** Local notification content is fixed at *schedule*
   time and a Notification Service Extension only intercepts push — so intelligence
-  means rescheduling on every state change, not deciding late. Ranked: the weekly
-  check-in nudge, streak protection, and suppressing a nudge when the window
+  means rescheduling on every state change, not deciding late. Ranked: a weekly
+  weigh-in nudge, streak protection, and suppressing a nudge when the window
   already has an entry.
 
-**HealthKit, body mass only — `Step 13`.** Read
+**HealthKit, body mass only — `Step 13`, done early as Step 4a2.** Read
 `HKQuantityTypeIdentifier.bodyMass` into `weighIns`, whose `source` field already
-anticipates it. This attacks the pace check's only input directly: a user with a
-smart scale contributes every weigh-in after the first without opening the app,
-and Phase 3's success criterion is a second weigh-in. **Read only — no write
+anticipates it. This feeds the Weight screen directly: a user with a smart scale
+contributes every weigh-in after the first without typing it, and Phase 3's
+success criterion is a second weigh-in. **Read only — no write
 back**, so `NSHealthShareUsageDescription` is the only usage string. Request the
 one type, with a purpose string naming the actual use.
 
@@ -404,7 +388,7 @@ previous one has proven the funnel converts.
 | **0** | Read the trial length from StoreKit on the paywall | Ships with everything else |
 | **1** | Share card · assumptions on the card · multi-item split · portion set · remove the calorie rebate | Needs the name decision |
 | **2** | App Store Connect: listing rewrite, cross-localization, Custom Product Pages | Needs Phase 1 screenshots |
-| **3** | Weigh-ins, trend weight, pace check, weekly check-in | The spine |
+| **3** | Weigh-ins, trend weight, goal weight, saved targets, the Weight screen and the plan screen | The spine |
 | **4** | Day-aware goal-fit score | After 3 |
 | **5** | Exercise sweep + dead code | Any time after 1 |
 | **6** | State-aware reminders · HealthKit body mass · widgets | After approval |
@@ -417,13 +401,13 @@ Custom Product Pages and up to 1,440 indexable characters across ten US-indexed
 locales. Details in `store-copy.md`. Budget four weeks after any keyword change
 before rankings settle.
 
-Phase 1 before the engine deliberately: it is cheap, testable as content the week
-it ships, and answers "does anything pull" before we spend two months building.
+Phase 1 before the plan deliberately: it is cheap, testable as content the
+week it ships, and answers "does anything pull" before we spend weeks building.
 **Phase 1 must ship before the listing goes live** — the copy promises
 assumptions-on-card and multi-item logging, and neither exists yet.
 
 The rebate removal moves into Phase 1 because it is two lines and it protects the
-pace check; the rest of the exercise deletion waits until after the listing is
+plan; the rest of the exercise deletion waits until after the listing is
 live.
 
 ### Phase 5 — exercise sweep and dead code, enumerated
@@ -460,12 +444,15 @@ From `product-as-built.md`, all verified as unreferenced:
 - ~~Migrating historical `logEntries` or `goalFitScore` values~~ — there is no
   history to migrate. See §3.
 - **HealthKit active energy, workouts, or steps** — as an input *and* as displayed
-  context. Decided 7 September, reasoning revised 14 September. The pace check
+  context. Decided 7 September, reasoning revised 14 September. The Weight screen
   reads the scale, and the scale **already reflects every calorie the user
   burned** — measured, not estimated. An imported burn figure has only one way in:
   raising the target on active days. That is the calorie rebate of §3 arriving
   through a door marked "more accurate", on a worse number — Apple Watch active
   energy runs ±20–30 %. HealthKit is `bodyMass`, read-only, and nothing else.
+- **Coaching, suggested target changes, or rules judging progress.** An expenditure
+  engine, phases with check-ins, and a weekly page were each tried and dropped by
+  17 September (§4). Targets change only when the user acts.
 - **App Intents, Siri, Shortcuts, and Control Center controls.** Decided
   7 September — too much lift for this stack. Widgets do not need them: a
   read-only widget uses a `widgetURL` deep link, and only in-widget buttons would
@@ -543,8 +530,7 @@ measured — there is no funnel to measure yet.
 
 - **Phase 1:** listing live, share card shipped, ≥1 nano-creator post published.
   Watch install→trial rate, not installs.
-- **Phase 3:** ≥40 % of trialists log a second weigh-in; ≥1 check-in reached
-  before trial end.
+- **Phase 3:** ≥40 % of trialists log a second weigh-in.
 - **12–18 months:** ~2,000 active subscribers ≈ $10k MRR at ~$4.80 blended net.
   At ~9 % install→paid that is ~30k downloads cumulative, and ~1,400/month
   sustained to hold against churn.
