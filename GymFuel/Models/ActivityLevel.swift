@@ -9,13 +9,14 @@
 
 import Foundation
 
-/// How active the user's ordinary day is, before anything they eat is considered.
-/// Used to adjust baseline TDEE.
+/// What a normal week looks like, including exercise.
+/// Picks the multiplier on resting energy.
 
 enum ActivityLevel: String, CaseIterable, Codable {
     case mostlySitting = "mostly_sitting"
-    case somewhatActive = "somewhat_active"
-    case physicallyDemanding = "physically_demanding"
+    case lightlyActive = "lightly_active"
+    case active = "active"
+    case veryActive = "very_active"
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -27,32 +28,25 @@ enum ActivityLevel: String, CaseIterable, Codable {
         switch self {
         case .mostlySitting:
             return "Mostly sitting"
-        case .somewhatActive:
-            return "Moderately active"
-        case .physicallyDemanding:
-            return "Physically demanding"
+        case .lightlyActive:
+            return "Lightly active"
+        case .active:
+            return "Active"
+        case .veryActive:
+            return "Very active"
         }
     }
 
-    var shortDisplayName: String {
-        switch self {
-        case .mostlySitting:
-            return "Sedentary"
-        case .somewhatActive:
-            return "Active"
-        case .physicallyDemanding:
-            return "Demanding"
-        }
-    }
-    
     var detail: String {
         switch self {
         case .mostlySitting:
-            return "Mostly desk or study time with light daily movement."
-        case .somewhatActive:
-            return "On your feet often, but not heavy physical labor."
-        case .physicallyDemanding:
-            return "Daily work involves carrying, climbing, or long hours on your feet."
+            return "Desk or study most of the day, little or no exercise."
+        case .lightlyActive:
+            return "Mostly sitting, plus a daily walk or exercise a few times a week."
+        case .active:
+            return "On your feet most of the day, or hard exercise most days."
+        case .veryActive:
+            return "Physical work all day, or hard training every day."
         }
     }
 }

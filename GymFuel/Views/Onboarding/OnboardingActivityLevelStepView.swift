@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Step: What is your general activity level outside of workouts?
+/// Step: What does a normal week look like, including exercise?
 struct OnboardingActivityLevelStepView: View {
     @Binding var selectedLevel: ActivityLevel?
     @Environment(\.colorScheme) private var colorScheme
@@ -32,7 +32,7 @@ struct OnboardingActivityLevelStepView: View {
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
 
-            Text("This helps LiftEats estimate your daily energy needs and set macro targets that fit how active you are day to day.")
+            Text("Pick the one closest to a normal week for you, including any exercise.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -109,8 +109,9 @@ struct OnboardingActivityLevelStepView: View {
     private func activityEmoji(for level: ActivityLevel) -> String {
         switch level {
         case .mostlySitting: return "🪑"
-        case .somewhatActive: return "🏃"
-        case .physicallyDemanding: return "🥵"
+        case .lightlyActive: return "🚶"
+        case .active: return "🏃"
+        case .veryActive: return "🏗️"
         }
     }
 
@@ -123,5 +124,5 @@ struct OnboardingActivityLevelStepView: View {
 
 
 #Preview {
-    OnboardingActivityLevelStepView(selectedLevel: .constant(.physicallyDemanding), onNext: { print("") })
+    OnboardingActivityLevelStepView(selectedLevel: .constant(.veryActive), onNext: { print("") })
 }

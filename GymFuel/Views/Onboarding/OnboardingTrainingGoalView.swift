@@ -9,6 +9,9 @@ import SwiftUI
 
 struct OnboardingTrainingGoalStepView: View {
     @Binding var selectedGoal: GoalType?
+    /// From the height and weight steps. *Lose fat* needs both to judge BMI.
+    let heightCm: Double?
+    let weightKg: Double?
     @Environment(\.colorScheme) private var colorScheme
  
     let onFinish: () -> Void
@@ -60,23 +63,30 @@ struct OnboardingTrainingGoalStepView: View {
             .padding()
         }
         .onAppear {
-            if let existing = selectedGoal {
+            // Only if it is still available: the user may have come back and
+            // changed their weight since choosing it.
+            if let existing = selectedGoal,
+               SafetyLimits.goalProblem(existing, weightKg: weightKg, heightCm: heightCm) == nil {
                 tempSelection = existing
             }
         }
     }
     
     private func goalOption(_ goal: GoalType) -> some View {
-        Button {
+        let problem = SafetyLimits.goalProblem(goal, weightKg: weightKg, heightCm: heightCm)
+
+        return Button {
             tempSelection = goal
             errorMessage = nil
         } label: {
             HStack(alignment: .top, spacing: 14) {
                 goalSymbol(goal)
+                    .opacity(problem == nil ? 1 : 0.45)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(goal.displayName)
                         .font(.headline.weight(.semibold))
-                    Text(goal.detail)
+                        .foregroundStyle(problem == nil ? Color.primary : Color.secondary)
+                    Text(problem ?? goal.detail)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -90,6 +100,7 @@ struct OnboardingTrainingGoalStepView: View {
             )
         }
         .buttonStyle(.plain)
+        .disabled(problem != nil)
     }
 
     private func goalSymbol(_ goal: GoalType) -> some View {
@@ -115,5 +126,5 @@ struct OnboardingTrainingGoalStepView: View {
 
 
 #Preview {
-    OnboardingTrainingGoalStepView(selectedGoal: .constant(.cut), onFinish: { print("")})
+    OnboardingTrainingGoalStepView(selectedGoal: .constant(.cut), heightCm: 178, weightKg: 82, onFinish: { print("")})
 }

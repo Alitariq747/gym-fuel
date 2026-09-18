@@ -192,6 +192,8 @@ struct OnboardingFlowView: View {
         case .goal:
             OnboardingTrainingGoalStepView(
                 selectedGoal: $data.goalType,
+                heightCm: data.heightCm,
+                weightKg: data.weightKg,
                 onFinish: { go(to: .loggingTips, direction: .forward) }
             )
 

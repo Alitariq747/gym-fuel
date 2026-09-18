@@ -7,6 +7,28 @@
 
 import SwiftUI
 
+/// The figures on methods 01 and 02, read from the code that uses them so this
+/// screen cannot drift from the maths. Formatted for the reader's locale.
+private enum MethodFigures {
+    static let caloriesPerKg = MacroTargetCalculator.caloriesPerKg.formatted()
+    static let calorieStep = MacroTargetCalculator.calorieStep.formatted()
+    static let proteinPerKg = MacroTargetCalculator.proteinPerKg.formatted()
+    static let fatPerKg = GoalType.maintain.fatPerKg.formatted()
+    static let gainingFatPerKg = GoalType.leanBulk.fatPerKg.formatted()
+    static let losingPace = abs(GoalType.cut.weeklyPace).formatted(.percent)
+    static let gainingPace = GoalType.leanBulk.weeklyPace.formatted(.percent)
+    static let womenFloor = SafetyLimits.calorieFloor(for: .female).formatted()
+    static let otherFloor = SafetyLimits.calorieFloor(for: .male).formatted()
+    static let topHealthyBMI = SafetyLimits.topHealthyBMI.formatted()
+    static let underweightBMI = SafetyLimits.underweightBMI.formatted()
+    static let minimumAge = SafetyLimits.ageRange.lowerBound.formatted()
+
+    /// "1.35 (mostly sitting), 1.5 (lightly active), …"
+    static let activityFactors = ActivityLevel.allCases
+        .map { "\($0.multiplier.formatted()) (\($0.displayName.lowercased()))" }
+        .joined(separator: ", ")
+}
+
 /// Discloses the science behind every target, score, and estimate LiftEats shows.
 /// Presented as a sheet from Settings, the onboarding summary, the Goal Fit
 /// explainer, and the LiftEats Analysis card.
@@ -24,7 +46,7 @@ struct NutritionSourcesView: View {
             emoji: "🔥",
             title: "Your daily calorie target",
             tint: .fuelOrange,
-            body: "We start with your resting energy — the calories your body uses at rest — using the Mifflin–St Jeor equation, the most widely validated predictive equation for healthy adults.",
+            body: "We start with your resting energy — the calories your body uses at rest — using the Mifflin–St Jeor equation, the most widely validated predictive equation for healthy adults. Multiplied by how active a normal week is for you, it estimates what it takes to stay at your weight. Your target then moves off that estimate at a steady pace: \(MethodFigures.losingPace) of your body weight a week to lose fat, \(MethodFigures.gainingPace) a week to gain.",
             formula: """
             Resting energy (kcal/day)
             (10 × weight kg) + (6.25 × height cm) − (5 × age)
@@ -32,11 +54,14 @@ struct NutritionSourcesView: View {
                 − 161   if female
                 −  78   if prefer not to say
 
+            To stay at your weight
+            resting energy × activity factor
+
             Daily target
-            resting energy × activity factor + goal offset
+            stay-at-your-weight + (weight kg × weekly pace × \(MethodFigures.caloriesPerKg) ÷ 7)
             """,
-            footnote: "Activity factors are 1.35 (mostly sitting), 1.50 (moderately active), and 1.70 (physically demanding). Goal offsets are +250 kcal for Gain, 0 for Maintain, and −300 kcal for Lose fat — deliberately moderate rates of change.",
-            sourceIDs: ["mifflin", "iom"]
+            footnote: "Activity factors are \(MethodFigures.activityFactors), at the careful end of measured everyday lifestyles. A kilogram of body weight is taken as \(MethodFigures.caloriesPerKg) kcal. Targets round to the nearest \(MethodFigures.calorieStep) and never fall below \(MethodFigures.womenFloor) kcal for women or \(MethodFigures.otherFloor) kcal for men and prefer not to say, nor below the calories in your own protein and fat. They are for adults \(MethodFigures.minimumAge) and over, and Lose fat is not offered below a BMI of \(MethodFigures.underweightBMI).",
+            sourceIDs: ["mifflin", "faoActivity", "nhs", "cdcWeight", "iraki", "harvardFloor", "cdcBMI"]
         ),
         NutritionMethod(
             id: "macros",
@@ -44,14 +69,15 @@ struct NutritionSourcesView: View {
             emoji: "💪",
             title: "Your protein, carb, and fat split",
             tint: .fuelBlue,
-            body: "Protein is set at 1.8 g per kg of body weight, raised to 2.2 g/kg when losing fat, where higher intakes help protect lean mass in a calorie deficit. Fat is set at 0.8 g/kg, raised to 0.9 g/kg when gaining. Carbohydrate fills whatever calories remain.",
+            body: "Protein is set at \(MethodFigures.proteinPerKg) g per kg and fat at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both are worked out from your weight capped at the top of the healthy range for your height — a BMI of \(MethodFigures.topHealthyBMI) — so a larger body is not given more protein and fat than it can use. Carbohydrate fills whatever calories remain.",
             formula: """
-            protein g = weight kg × 1.8   (2.2 when losing fat)
-            fat g     = weight kg × 0.8   (0.9 when gaining)
+            basis kg  = the lower of weight kg and the BMI \(MethodFigures.topHealthyBMI) weight
+            protein g = basis kg × \(MethodFigures.proteinPerKg)
+            fat g     = basis kg × \(MethodFigures.fatPerKg)   (\(MethodFigures.gainingFatPerKg) when gaining)
             carbs g   = (target kcal − protein kcal − fat kcal) ÷ 4
             """,
-            footnote: "Calories per gram use the Atwater factors: 4 kcal for protein, 4 for carbohydrate, 9 for fat.",
-            sourceIDs: ["issn", "morton", "iom", "fao"]
+            footnote: "Muscle gain stops improving above about 1.6 g of protein per kg a day, and 1.2–1.6 g/kg is the range studied for weight loss. Calories per gram use the Atwater factors: 4 kcal for protein, 4 for carbohydrate, 9 for fat.",
+            sourceIDs: ["morton", "leidy", "cdcBMI", "fao"]
         ),
         NutritionMethod(
             id: "goalfit",
@@ -96,6 +122,42 @@ struct NutritionSourcesView: View {
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/2305711/")
         ),
         NutritionSource(
+            id: "faoActivity",
+            shortLabel: "FAO/WHO/UNU. Human Energy Requirements, 2004",
+            citation: "Food and Agriculture Organization of the United Nations, World Health Organization, United Nations University. Human Energy Requirements: Report of a Joint FAO/WHO/UNU Expert Consultation. FAO Food and Nutrition Technical Report Series 1. Rome; 2004.",
+            url: URL(string: "https://www.fao.org/4/y5686e/y5686e00.htm")
+        ),
+        NutritionSource(
+            id: "nhs",
+            shortLabel: "NHS. Tips to help you lose weight — 0.5 to 1 kg a week",
+            citation: "National Health Service (UK). Tips to help you lose weight. Live Well: Healthy weight. Last reviewed 17 March 2023.",
+            url: URL(string: "https://www.nhs.uk/live-well/healthy-weight/managing-your-weight/tips-to-help-you-lose-weight/")
+        ),
+        NutritionSource(
+            id: "cdcWeight",
+            shortLabel: "CDC. Steps for Losing Weight — 1 to 2 lb a week",
+            citation: "Centers for Disease Control and Prevention. Steps for Losing Weight. Healthy Weight and Growth; updated 17 January 2025.",
+            url: URL(string: "https://www.cdc.gov/healthy-weight-growth/losing-weight/index.html")
+        ),
+        NutritionSource(
+            id: "iraki",
+            shortLabel: "Iraki J, et al. Sports (Basel). 2019;7(7):154",
+            citation: "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition recommendations for bodybuilders in the off-season: a narrative review. Sports (Basel). 2019;7(7):154.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/31247944/")
+        ),
+        NutritionSource(
+            id: "harvardFloor",
+            shortLabel: "Harvard Health Publishing. Calorie counting made easy, 2024",
+            citation: "Harvard Health Publishing. Calorie counting made easy. Harvard Medical School; updated 3 April 2024.",
+            url: URL(string: "https://www.health.harvard.edu/staying-healthy/calorie-counting-made-easy")
+        ),
+        NutritionSource(
+            id: "cdcBMI",
+            shortLabel: "CDC. Adult BMI Categories, 2024",
+            citation: "Centers for Disease Control and Prevention. Adult BMI Categories. BMI; updated 19 March 2024.",
+            url: URL(string: "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html")
+        ),
+        NutritionSource(
             id: "iom",
             shortLabel: "Institute of Medicine. Dietary Reference Intakes for Energy and Macronutrients, 2005",
             citation: "Institute of Medicine. Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and Amino Acids. Washington, DC: National Academies Press; 2005.",
@@ -112,6 +174,12 @@ struct NutritionSourcesView: View {
             shortLabel: "Morton RW, et al. Br J Sports Med. 2018;52(6):376–384",
             citation: "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376–384.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/28698222/")
+        ),
+        NutritionSource(
+            id: "leidy",
+            shortLabel: "Leidy HJ, et al. Am J Clin Nutr. 2015;101(6):1320S–1329S",
+            citation: "Leidy HJ, Clifton PM, Astrup A, Wycherley TP, Westerterp-Plantenga MS, Luscombe-Marsh ND, Woods SC, Mattes RD. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S–1329S.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/25926512/")
         ),
         NutritionSource(
             id: "schoenfeld",

@@ -439,6 +439,7 @@ struct ProfileView: View {
 
     private var canSave: Bool {
         guard let profile = profileVm.profile, let draft else { return false }
+        guard SafetyLimits.ageProblem(draft.age) == nil else { return false }
 
         return isDirty(draft: draft, profile: profile) && !profileVm.isSaving
     }

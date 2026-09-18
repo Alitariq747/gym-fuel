@@ -106,13 +106,14 @@ struct OnboardingAgeStepView: View {
     }
 
     private func handleNext() {
-        guard let value = Int(ageText), value > 0, value < 120 else {
-            errorMessage = "Please enter a valid age."
+        let enteredAge = Int(ageText)
+        if let problem = SafetyLimits.ageProblem(enteredAge) {
+            errorMessage = problem
             return
         }
         
         errorMessage = nil
-        age = value
+        age = enteredAge
         onNext()
     }
 }

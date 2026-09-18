@@ -31,17 +31,9 @@ struct ProfileEditorView: View {
     private func applyAgeTextToDraft(_ newValue: String) {
         let digits = newValue.filter(\.isNumber)
         ageText = digits
-        
-        // keep age to sane number
-        if let value = Int(digits) {
-            draft.age = min(max(value, 10), 100)
-        }
-
-        if digits.isEmpty {
-            draft.age = nil
-        } else {
-            draft.age = Int(digits)
-        }
+        // Kept exactly as typed. `SafetyLimits.ageProblem` explains an age that
+        // cannot be used, and `ProfileView.canSave` stops it being saved.
+        draft.age = Int(digits)
     }
     
     // gender
@@ -60,7 +52,7 @@ struct ProfileEditorView: View {
     }
 
     private var activityLevelTitle: String {
-        draft.activityLevel?.shortDisplayName ?? "Set"
+        draft.activityLevel?.displayName ?? "Set"
     }
 
     // Height
@@ -181,6 +173,12 @@ struct ProfileEditorView: View {
                         applyAgeTextToDraft(newValue)
                     }
             }
+            if let problem = SafetyLimits.ageProblem(draft.age) {
+                Text(problem)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             Divider()
             rowButton(
                 title: "Gender",
@@ -295,16 +293,20 @@ struct ProfileEditorView: View {
     }
 
     private func goalOptionRow(_ goal: GoalType) -> some View {
-        Button {
+        let problem = SafetyLimits.goalProblem(goal, weightKg: draft.weightKg, heightCm: draft.heightCm)
+
+        return Button {
             draft.goalType = goal
             showGoalSheet = false
         } label: {
             HStack(alignment: .top, spacing: 14) {
                 goalSymbol(goal)
+                    .opacity(problem == nil ? 1 : 0.45)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(goal.displayName)
                         .font(.headline.weight(.semibold))
-                    Text(goal.detail)
+                        .foregroundStyle(problem == nil ? Color.primary : Color.secondary)
+                    Text(problem ?? goal.detail)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -315,6 +317,7 @@ struct ProfileEditorView: View {
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.goalType == goal ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: draft.goalType == goal ? 2 : 1))
         }
         .buttonStyle(.plain)
+        .disabled(problem != nil)
     }
 
     private func goalSymbol(_ goal: GoalType) -> some View {
@@ -375,7 +378,7 @@ struct ProfileEditorView: View {
             VStack(alignment: .leading, spacing: 14) {
                 pickerSheetHeader(
                     title: "Daily movement",
-                    subtitle: "Outside exercise, how active is your normal day?",
+                    subtitle: "Including exercise, what's a normal week like for you?",
                     dismiss: { showActivitySheet = false }
                 )
 
@@ -418,8 +421,9 @@ struct ProfileEditorView: View {
     private func activityEmoji(for level: ActivityLevel) -> String {
         switch level {
         case .mostlySitting: return "🪑"
-        case .somewhatActive: return "🏃"
-        case .physicallyDemanding: return "🏗️"
+        case .lightlyActive: return "🚶"
+        case .active: return "🏃"
+        case .veryActive: return "🏗️"
         }
     }
 

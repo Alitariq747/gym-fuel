@@ -152,7 +152,7 @@ private extension View {
         heightCm: 178,
         weightKg: 82,
         goalType: .leanBulk,
-        activityLevel: .somewhatActive,
+        activityLevel: .lightlyActive,
         onStartTracking: {}
     )
 }

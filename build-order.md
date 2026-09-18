@@ -61,7 +61,7 @@ fresh session reads this file, not the chat history.
 - [x] **3a** · Notification opt-in in onboarding
 - [x] **4a** · Weigh-ins and the trend
 - [x] **4a2** · Apple Health body mass → `weighIns`
-- [ ] **4b** · Target maths and safety limits
+- [x] **4b** · Target maths and safety limits
 - [ ] **4c** · Goal weight and saved targets
 - [ ] **4d** · Your targets screen
 - [ ] **4e** · The Weight screen
@@ -720,7 +720,10 @@ All of this ships with the version. Copy is written and paste-ready in
 3. ~~Price change to $7.99 / $54.99~~ — **not this submission** (Step 0, 11 Sep).
    Prices stay at $5.99 / $49.99. Grandfathering is a problem for the day the
    change actually happens, which is after approval at the earliest.
-4. **Cross-localization** — two secondary locales, properly. Arabic first: it is
+4. **Age rating 13+ → 18+.** The live listing still says 13+, but Step 4b gates
+   onboarding and Settings at 18 and the app says so on screen. Change it in the
+   age rating questionnaire before submitting, or listing and app disagree in review.
+5. **Cross-localization** — two secondary locales, properly. Arabic first: it is
    one of the nine US-indexed secondaries *and* the Gulf localisation we want.
    +160 indexable chars each. **Do not paste the same text into nine slots** —
    Apple rejects that now.
