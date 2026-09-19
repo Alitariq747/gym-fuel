@@ -64,7 +64,7 @@ fresh session reads this file, not the chat history.
 - [x] **4b** · Target maths and safety limits
 - [x] **4c** · Goal weight and saved targets
 - [x] **4d** · Your targets screen
-- [ ] **4e** · The Weight screen
+- [x] **4e** · The Weight screen
 - [ ] **4f** · The plan screen in onboarding
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
@@ -365,6 +365,9 @@ Decided 17 September. Every sub-step below builds on these; none repeats them.
 the calorie target come from the same pace, at 7,700 kcal per kg:
 `daily offset = weight kg × pace × 7,700 ÷ 7`. That is about −470 kcal a day at
 85 kg losing, and +190 at 70 kg gaining. Faster gain mostly adds fat (Iraki 2019).
+When the calorie floor lifts a losing target, the plan line slopes only as fast as
+the maintenance estimate minus the floor allows, so it never promises a loss the
+targets cannot deliver (decided 19 September).
 
 **Maintenance estimate.** Mifflin–St Jeor × the activity multiplier. It may be shown
 as "about 2,420 kcal a day to stay at your weight": rounded, dotted as an estimate,

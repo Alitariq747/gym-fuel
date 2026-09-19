@@ -15,6 +15,7 @@ struct StatsView: View {
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
+    @State private var isWeightPresented = false
  
     private let onWeighIn: (Double) -> Void
     init(
@@ -71,7 +72,8 @@ struct StatsView: View {
                         windowStart: window.start,
                         windowEnd: window.end,
                         onWeighIn: { isWeighInPresented = true },
-                        onConnectHealth: showsHealthPrompt ? { Task { await connectHealth() } } : nil
+                        onConnectHealth: showsHealthPrompt ? { Task { await connectHealth() } } : nil,
+                        onOpen: { isWeightPresented = true }
                     )
                 }
 
@@ -107,6 +109,13 @@ struct StatsView: View {
                     }
                 )
             }
+        }
+        .navigationDestination(isPresented: $isWeightPresented) {
+            WeightView()
+        }
+        // A weigh-in deleted there must not linger on the card.
+        .onChange(of: isWeightPresented) { _, isPresented in
+            if !isPresented { Task { await viewModel.loadWeightTrend(userId: profile.id) } }
         }
     }
 

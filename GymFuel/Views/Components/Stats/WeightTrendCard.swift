@@ -3,7 +3,6 @@
 //  GymFuel
 //
 
-import Charts
 import SwiftUI
 
 /// Weight over time: what the scale said, and the smoothed line through it.
@@ -14,13 +13,6 @@ import SwiftUI
 ///
 /// **The card makes no recommendation.** It shows a measurement and a disclosed
 /// estimate, and nothing else: no rate, no target, no judgement of the number.
-/// Coaching language arrives with the check-in, alongside its citations.
-///
-/// Swift Charts rather than a hand-drawn `Path`: every other chart in this app is
-/// a fixed seven-column bar layout with no scale and no date mapping, and a
-/// weight series is a continuous domain with arbitrary gaps. It is a system
-/// framework, so it costs no dependency, and it brings date-axis scaling, RTL
-/// mirroring, Dynamic Type on axis labels and per-mark VoiceOver with it.
 struct WeightTrendCard: View {
     let series: WeightTrendSeries
     let unit: BodyWeightUnit
@@ -30,8 +22,9 @@ struct WeightTrendCard: View {
     /// Non-nil only while Apple Health is available and not yet connected, so
     /// the prompt removes itself the moment it is used.
     var onConnectHealth: (() -> Void)? = nil
+    /// Opens the Weight screen.
+    var onOpen: (() -> Void)? = nil
 
-    @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 160
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isSourcesPresented = false
 
@@ -43,7 +36,7 @@ struct WeightTrendCard: View {
                 if series.points.isEmpty {
                     emptyState
                 } else {
-                    chart
+                    WeightChart(series: series, unit: unit, domain: windowStart...windowEnd)
                 }
 
                 if let prompt = insufficientDataPrompt {
@@ -55,6 +48,11 @@ struct WeightTrendCard: View {
 
                 Button("Weigh in", action: onWeighIn)
                     .buttonStyle(.circa(.secondary))
+
+                if let onOpen {
+                    Button("See weigh-ins and plan", action: onOpen)
+                        .buttonStyle(.circa(.link, height: 32))
+                }
 
                 if let onConnectHealth {
                     // The cheapest possible second weigh-in: a scale that
@@ -116,62 +114,6 @@ struct WeightTrendCard: View {
         )
     }
 
-    // MARK: - Chart
-
-    private var chart: some View {
-        Chart {
-            // Measurements: solid. These are facts.
-            ForEach(series.points) { point in
-                PointMark(
-                    x: .value("Day", point.date),
-                    y: .value("Weight", displayValue(point.weightKg))
-                )
-                .symbolSize(22)
-                .foregroundStyle(Color.circaInk3)
-                .accessibilityLabel(accessibilityDate(point.date))
-                .accessibilityValue(BodyWeight.displayString(kilograms: point.weightKg, unit: unit))
-            }
-
-            // Trend: dotted. This is an estimate.
-            if series.hasTrend {
-                ForEach(series.points) { point in
-                    LineMark(
-                        x: .value("Day", point.date),
-                        y: .value("Trend", displayValue(point.trendKg)),
-                        series: .value("Series", "trend")
-                    )
-                    .interpolationMethod(.linear)
-                    .foregroundStyle(Color.circaAccent)
-                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, dash: [0.01, 4]))
-                    .accessibilityHidden(true)
-                }
-            }
-        }
-        // Without an explicit x domain, three points stretch across the full
-        // width and misrepresent how often the user actually weighed in.
-        .chartXScale(domain: windowStart...windowEnd)
-        // Without an explicit y domain, Swift Charts includes zero and every
-        // real variation collapses into a flat line.
-        .chartYScale(domain: yDomain)
-        .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 3)) {
-                AxisValueLabel()
-                    .font(.circaMono)
-                    .foregroundStyle(Color.circaInk3)
-            }
-        }
-        .chartYAxis {
-            AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) {
-                AxisGridLine().foregroundStyle(Color.circaBarTrack)
-                AxisValueLabel()
-                    .font(.circaMono)
-                    .foregroundStyle(Color.circaInk3)
-            }
-        }
-        .frame(height: chartHeight)
-        .accessibilityLabel("Weight trend, \(rangeLabel)")
-    }
-
     // MARK: - Empty state
 
     private var emptyState: some View {
@@ -202,31 +144,15 @@ struct WeightTrendCard: View {
 
     // MARK: - Derived
 
-    private func displayValue(_ kilograms: Double) -> Double {
-        unit == .kilograms ? kilograms : BodyWeight.pounds(fromKilograms: kilograms)
-    }
-
     private var trendText: String {
         guard let latest = series.latest else { return "" }
         return BodyWeight.displayString(kilograms: latest.trendKg, unit: unit)
-    }
-
-    private var yDomain: ClosedRange<Double> {
-        let values = series.points.flatMap { [displayValue($0.weightKg), displayValue($0.trendKg)] }
-        guard let low = values.min(), let high = values.max() else { return 0...1 }
-
-        let padding = unit == .kilograms ? 1.0 : BodyWeight.pounds(fromKilograms: 1)
-        return (low - padding)...(high + padding)
     }
 
     private var rangeLabel: String {
         let start = windowStart.formatted(.dateTime.month(.abbreviated).day())
         let end = windowEnd.formatted(.dateTime.month(.abbreviated).day())
         return "\(start) – \(end)"
-    }
-
-    private func accessibilityDate(_ date: Date) -> String {
-        date.formatted(.dateTime.month(.wide).day())
     }
 }
 

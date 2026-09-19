@@ -119,10 +119,9 @@ service cloud.firestore {
           ])
           && request.resource.data.dateKey == dateKey;
 
-        // Nothing in the app deletes a weigh-in: the sheet only ever writes
-        // today's key, and same-day corrections overwrite. Relax this when the
-        // check-in screen gains an edit affordance.
-        allow delete: if false;
+        // Typed weigh-ins only: the Health import refills any day without a
+        // row, so a deleted Health row would come back on the next open.
+        allow delete: if isOwner(uid) && resource.data.source == "manual";
       }
 
       match /dailyMacroTargets/{dateKey} {

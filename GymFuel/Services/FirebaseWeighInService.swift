@@ -123,4 +123,24 @@ extension FirebaseWeighInService: WeighInService {
         let docRef = weighInsCollection(for: userId).document(weighIn.dateKey)
         docRef.setData(data, merge: true)
     }
+
+    /// - Important: like `saveWeighIn`, this completes only on server
+    ///   acknowledgement, so offline callers use `deleteWeighInLocally`.
+    func deleteWeighIn(dateKey: String, for userId: String) async throws {
+        let docRef = weighInsCollection(for: userId).document(dateKey)
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            docRef.delete { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+
+    func deleteWeighInLocally(dateKey: String, for userId: String) {
+        weighInsCollection(for: userId).document(dateKey).delete()
+    }
 }

@@ -36,4 +36,10 @@ protocol WeighInService: Sendable {
     /// acknowledgement, so the value appears immediately and syncs later.
     /// See the offline note on `saveWeighIn` in `FirebaseWeighInService`.
     func saveWeighInLocally(_ weighIn: WeighIn, for userId: String) throws
+
+    /// The rules accept this for typed weigh-ins only.
+    func deleteWeighIn(dateKey: String, for userId: String) async throws
+
+    /// The offline twin of `deleteWeighIn`, for the same reason as `saveWeighInLocally`.
+    func deleteWeighInLocally(dateKey: String, for userId: String)
 }
