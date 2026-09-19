@@ -60,7 +60,7 @@ struct NutritionSourcesView: View {
             Daily target
             stay-at-your-weight + (weight kg × weekly pace × \(MethodFigures.caloriesPerKg) ÷ 7)
             """,
-            footnote: "Activity factors are \(MethodFigures.activityFactors), at the careful end of measured everyday lifestyles. A kilogram of body weight is taken as \(MethodFigures.caloriesPerKg) kcal. Targets round to the nearest \(MethodFigures.calorieStep) and never fall below \(MethodFigures.womenFloor) kcal for women or \(MethodFigures.otherFloor) kcal for men and prefer not to say, nor below the calories in your own protein and fat. They are for adults \(MethodFigures.minimumAge) and over, and Lose fat is not offered below a BMI of \(MethodFigures.underweightBMI).",
+            footnote: "Activity factors are \(MethodFigures.activityFactors), at the careful end of measured everyday lifestyles. A kilogram of body weight is taken as \(MethodFigures.caloriesPerKg) kcal. Targets round to the nearest \(MethodFigures.calorieStep) and never fall below \(MethodFigures.womenFloor) kcal for women or \(MethodFigures.otherFloor) kcal for men and prefer not to say, nor below the calories in your own protein and fat. They are for adults \(MethodFigures.minimumAge) and over. Lose fat is not offered below a BMI of \(MethodFigures.underweightBMI), and no goal weight can be set below it.",
             sourceIDs: ["mifflin", "faoActivity", "nhs", "cdcWeight", "iraki", "harvardFloor", "cdcBMI"]
         ),
         NutritionMethod(
@@ -69,9 +69,10 @@ struct NutritionSourcesView: View {
             emoji: "💪",
             title: "Your protein, carb, and fat split",
             tint: .fuelBlue,
-            body: "Protein is set at \(MethodFigures.proteinPerKg) g per kg and fat at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both are worked out from your weight capped at the top of the healthy range for your height — a BMI of \(MethodFigures.topHealthyBMI) — so a larger body is not given more protein and fat than it can use. Carbohydrate fills whatever calories remain.",
+            body: "Protein is set at \(MethodFigures.proteinPerKg) g per kg and fat at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both are worked out from your goal weight — your current weight if you are maintaining — capped at the top of the healthy range for your height, a BMI of \(MethodFigures.topHealthyBMI), so a larger body is not given more protein and fat than it can use. Carbohydrate fills whatever calories remain.",
             formula: """
-            basis kg  = the lower of weight kg and the BMI \(MethodFigures.topHealthyBMI) weight
+            basis kg  = the lower of goal weight kg and the BMI \(MethodFigures.topHealthyBMI) weight
+                        (current weight kg when maintaining)
             protein g = basis kg × \(MethodFigures.proteinPerKg)
             fat g     = basis kg × \(MethodFigures.fatPerKg)   (\(MethodFigures.gainingFatPerKg) when gaining)
             carbs g   = (target kcal − protein kcal − fat kcal) ÷ 4

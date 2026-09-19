@@ -18,7 +18,8 @@ struct MacroTargetCalculatorTests {
         heightCm: Double,
         weightKg: Double,
         goal: GoalType,
-        activity: ActivityLevel
+        activity: ActivityLevel,
+        goalWeightKg: Double? = nil
     ) -> MacroTargets? {
         calculator.targets(for: UserProfile(
             name: "",
@@ -28,7 +29,8 @@ struct MacroTargetCalculatorTests {
             goalType: goal,
             activityLevel: activity,
             isOnboardingComplete: true,
-            gender: gender
+            gender: gender,
+            goalWeightKg: goalWeightKg
         ))
     }
 
@@ -124,6 +126,30 @@ struct MacroTargetCalculatorTests {
 
         #expect(heavier.macros.protein == heaviest.macros.protein)
         #expect(heavier.macros.fat == heaviest.macros.fat)
+    }
+
+    @Test("Gaining takes protein and fat from the goal weight, capped at the BMI 25 weight")
+    func gainingUsesGoalWeight() throws {
+        // BMI 25 at 180 cm is 81 kg, below the 90 kg goal.
+        let result = try #require(targets(.male, age: 30, heightCm: 180, weightKg: 75, goal: .leanBulk, activity: .lightlyActive, goalWeightKg: 90))
+
+        #expect(result.macros.protein == 130)
+        #expect(result.macros.fat == 73)
+    }
+
+    @Test("Losing takes protein and fat from the goal weight")
+    func losingUsesGoalWeight() throws {
+        // BMI 25 at 185 cm is 85.6 kg, above the 82 kg goal.
+        let result = try #require(targets(.male, age: 35, heightCm: 185, weightKg: 90, goal: .cut, activity: .mostlySitting, goalWeightKg: 82))
+
+        #expect(result.macros.protein == 131)
+        #expect(result.macros.fat == 66)
+    }
+
+    @Test("Maintaining ignores a goal weight left over from another goal")
+    func maintainIgnoresGoalWeight() {
+        let result = targets(.female, age: 30, heightCm: 165, weightKg: 60, goal: .maintain, activity: .lightlyActive, goalWeightKg: 50)
+        #expect(result == expected(kcal: 1_980, protein: 96, carbs: 291, fat: 48, maintenance: 1_980))
     }
 
     @Test("The minimum never falls below protein and fat, and rounds up")

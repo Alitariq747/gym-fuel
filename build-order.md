@@ -62,7 +62,7 @@ fresh session reads this file, not the chat history.
 - [x] **4a** · Weigh-ins and the trend
 - [x] **4a2** · Apple Health body mass → `weighIns`
 - [x] **4b** · Target maths and safety limits
-- [ ] **4c** · Goal weight and saved targets
+- [x] **4c** · Goal weight and saved targets
 - [ ] **4d** · Your targets screen
 - [ ] **4e** · The Weight screen
 - [ ] **4f** · The plan screen in onboarding

@@ -37,10 +37,12 @@ struct MacroTargetCalculator {
         ) * activity.multiplier
         let dailyOffset = weightKg * goal.weeklyPace * Self.caloriesPerKg / 7
 
-        // Until 4c adds a goal weight, the basis is the current weight, capped at
-        // the top healthy weight for this height.
+        // Protein and fat come from the goal weight — the current weight when
+        // maintaining, or when an account has no goal weight yet — capped at the
+        // top healthy weight for this height.
+        let referenceKg = goal == .maintain ? weightKg : (profile.goalWeightKg ?? weightKg)
         let topHealthyWeightKg = SafetyLimits.weightKg(atBMI: SafetyLimits.topHealthyBMI, heightCm: heightCm)
-        let basisKg = min(weightKg, topHealthyWeightKg)
+        let basisKg = min(referenceKg, topHealthyWeightKg)
         let protein = (basisKg * Self.proteinPerKg).rounded()
         let fat = (basisKg * goal.fatPerKg).rounded()
 

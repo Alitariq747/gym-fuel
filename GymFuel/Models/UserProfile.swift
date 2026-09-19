@@ -56,6 +56,20 @@ struct UserProfile: Codable, Identifiable, Equatable {
     var isOnboardingComplete: Bool
     var gender: Gender
 
+   
+    /// Where the plan is headed. Nil on Maintain, which has no goal weight.
+    var goalWeightKg: Double?
+    // The `…On` fields are `"yyyy-MM-dd"` day keys from `DateKey`, like weigh-ins.
+    var planStartedOn: String?
+    var planStartWeightKg: Double?
+    var targetCalories: Double?
+    var targetProteinG: Double?
+    var targetCarbsG: Double?
+    var targetFatG: Double?
+    var maintenanceCalories: Double?
+    var targetsSetOn: String?
+    var targetsSetAtWeightKg: Double?
+
     /// Firestore field names. `id` is intentionally omitted so the document
     /// identifier is never persisted as a field.
     private enum CodingKeys: String, CodingKey {
@@ -67,11 +81,52 @@ struct UserProfile: Codable, Identifiable, Equatable {
         case activityLevel
         case isOnboardingComplete
         case gender
+        case goalWeightKg
+        case planStartedOn
+        case planStartWeightKg
+        case targetCalories
+        case targetProteinG
+        case targetCarbsG
+        case targetFatG
+        case maintenanceCalories
+        case targetsSetOn
+        case targetsSetAtWeightKg
     }
 
     /// Trims user-entered text. Call before persisting.
     mutating func normalize() {
         name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+// MARK: - Saved targets and plan
+
+extension UserProfile {
+    /// The daily targets as saved, or nil until they have been worked out once.
+    /// Screens read these; nothing recalculates them on read.
+    var savedTargets: Macros? {
+        guard let targetCalories, let targetProteinG, let targetCarbsG, let targetFatG else {
+            return nil
+        }
+        return Macros(calories: targetCalories, protein: targetProteinG, carbs: targetCarbsG, fat: targetFatG)
+    }
+
+    /// Saves `targets` as the current ones, stamped with the day and the weight
+    /// they were set at — "Set at 85 kg on 3 Sep". Replaces whatever was saved.
+    mutating func setTargets(_ targets: MacroTargets, on date: Date) {
+        targetCalories = targets.macros.calories
+        targetProteinG = targets.macros.protein
+        targetCarbsG = targets.macros.carbs
+        targetFatG = targets.macros.fat
+        maintenanceCalories = targets.maintenanceCalories
+        targetsSetOn = DateKey.key(for: date)
+        targetsSetAtWeightKg = weightKg
+    }
+
+    /// Starts the plan line from `date` and the current weight.
+    mutating func startPlan(on date: Date) {
+        planStartedOn = DateKey.key(for: date)
+        planStartWeightKg = weightKg
     }
 }
 
@@ -87,8 +142,10 @@ struct OnboardingAnswers {
     var weightKg: Double? = nil
     var goalType: GoalType? = nil
     var activityLevel: ActivityLevel? = nil
+    var goalWeightKg: Double? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
+    /// A goal weight left over from an earlier answer is dropped on Maintain.
     func toProfile(id: String) -> UserProfile? {
         guard
             let age,
@@ -107,7 +164,8 @@ struct OnboardingAnswers {
             goalType: goalType,
             activityLevel: activityLevel,
             isOnboardingComplete: true,
-            gender: gender
+            gender: gender,
+            goalWeightKg: goalType == .maintain ? nil : goalWeightKg
         )
     }
 }

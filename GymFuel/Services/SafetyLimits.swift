@@ -12,7 +12,7 @@ enum SafetyLimits {
     /// and no carbs.
     static let topHealthyBMI: Double = 25
 
-    /// Below this BMI, *Lose fat* is not offered.
+    /// Below this BMI, *Lose fat* is not offered and no goal weight is allowed.
     static let underweightBMI: Double = 18.5
 
     /// The ages the app accepts. 18 is the rule; 119 only keeps typos out.
@@ -44,11 +44,55 @@ enum SafetyLimits {
     /// Why this goal cannot be chosen at this weight and height, or nil when it
     /// can. An unknown height or weight allows it — there is nothing to judge.
     static func goalProblem(_ goal: GoalType, weightKg: Double?, heightCm: Double?) -> String? {
-        guard goal == .cut, let weightKg, let heightCm else { return nil }
+        guard goal != .maintain, let weightKg, let heightCm else { return nil }
 
         let lowestHealthyWeightKg = SafetyLimits.weightKg(atBMI: underweightBMI, heightCm: heightCm)
-        guard weightKg < lowestHealthyWeightKg else { return nil }
+        if goal == .cut, weightKg < lowestHealthyWeightKg {
+            return "Not available when your weight is below the healthy range for your height."
+        }
 
-        return "Not available when your weight is below the healthy range for your height."
+        // The goal weight step offers whole kilos or pounds. With none to offer
+        // in either unit, this goal would lead nowhere.
+        let hasGoalWeights = BodyWeightUnit.allCases.allSatisfy { unit in
+            !goalWeightOptions(for: goal, currentWeightKg: weightKg, heightCm: heightCm, unit: unit).isEmpty
+        }
+        guard !hasGoalWeights else { return nil }
+
+        return goal == .cut
+            ? "Not available this close to the lowest healthy weight for your height."
+            : "Not available at this weight."
+    }
+
+    /// Whether `goalWeightKg` can be the goal for `goal`: below the current weight
+    /// but not under BMI 18.5 when losing, above it when gaining, and within the
+    /// weights the app records. Maintain has no goal weight.
+    static func allowsGoalWeight(_ goalWeightKg: Double, for goal: GoalType, currentWeightKg: Double, heightCm: Double) -> Bool {
+        guard goalWeightKg >= BodyWeight.minimumKilograms,
+              goalWeightKg <= BodyWeight.maximumKilograms else { return false }
+
+        switch goal {
+        case .cut:
+            return goalWeightKg < currentWeightKg
+                && goalWeightKg >= SafetyLimits.weightKg(atBMI: underweightBMI, heightCm: heightCm)
+        case .leanBulk:
+            return goalWeightKg > currentWeightKg
+        case .maintain:
+            return false
+        }
+    }
+
+    /// The goal weights the goal weight step offers: every whole kilo or pound
+    /// that `allowsGoalWeight` accepts, lightest first.
+    static func goalWeightOptions(for goal: GoalType, currentWeightKg: Double, heightCm: Double, unit: BodyWeightUnit) -> [Int] {
+        let lowest = BodyWeight.minimumKilograms
+        let highest = BodyWeight.maximumKilograms
+        let candidates = unit == .kilograms
+            ? Int(lowest)...Int(highest)
+            : Int(BodyWeight.pounds(fromKilograms: lowest))...Int(BodyWeight.pounds(fromKilograms: highest))
+
+        return candidates.filter { value in
+            let kg = unit == .kilograms ? Double(value) : BodyWeight.kilograms(fromPounds: Double(value))
+            return allowsGoalWeight(kg, for: goal, currentWeightKg: currentWeightKg, heightCm: heightCm)
+        }
     }
 }

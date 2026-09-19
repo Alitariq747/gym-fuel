@@ -26,6 +26,9 @@ service cloud.firestore {
       // were not updated. Because `onlyAllowedKeys` uses hasOnly(), every profile
       // write carrying the new name was rejected — which meant onboarding could
       // not complete at all.
+      //
+      // Step 4c adds the goal weight, the plan start and the saved targets.
+      // Deploy these rules before running a build that writes them.
       allow create, update: if isOwner(uid)
         && onlyAllowedKeys([
           "name",
@@ -36,6 +39,16 @@ service cloud.firestore {
           "activityLevel",
           "isOnboardingComplete",
           "gender",
+          "goalWeightKg",
+          "planStartedOn",
+          "planStartWeightKg",
+          "targetCalories",
+          "targetProteinG",
+          "targetCarbsG",
+          "targetFatG",
+          "maintenanceCalories",
+          "targetsSetOn",
+          "targetsSetAtWeightKg",
           "createdAt",
           "updatedAt"
         ]);

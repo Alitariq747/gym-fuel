@@ -154,8 +154,8 @@ final class HealthWeightSyncService: ObservableObject {
         return await applyLatestWeight(userId: userId, existing: existing, planned: planned)
     }
 
-    /// Keeps `users/{uid}.weightKg` on the newest measurement, so the BMR in
-    /// `MacroTargetCalculator` does not drift away from the weigh-in history.
+    /// Keeps `users/{uid}.weightKg` on the newest measurement, so the weight the
+    /// app shows matches the weigh-in history. It never changes the saved targets.
     ///
     /// An import **is** a weigh-in, which is the only thing permitted to move
     /// stored weight.

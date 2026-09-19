@@ -15,7 +15,6 @@ struct StatsView: View {
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
-    private let macroTargetCalculator = MacroTargetCalculator()
  
     private let onWeighIn: (Double) -> Void
     init(
@@ -28,7 +27,7 @@ struct StatsView: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     private var targetMacros: Macros? {
-        macroTargetCalculator.targetMacros(for: profile)
+        profile.savedTargets
     }
     private var snapshot: StatsSnapshot {
         viewModel.snapshot

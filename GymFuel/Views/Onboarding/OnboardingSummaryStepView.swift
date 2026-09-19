@@ -7,6 +7,8 @@ struct OnboardingSummaryStepView: View {
     let heightCm: Double
     let weightKg: Double
     let goalType: GoalType
+    /// Nil on Maintain. Passed so this screen shows the numbers that get saved.
+    let goalWeightKg: Double?
     let activityLevel: ActivityLevel
     let onStartTracking: () -> Void
 
@@ -23,7 +25,8 @@ struct OnboardingSummaryStepView: View {
             goalType: goalType,
             activityLevel: activityLevel,
             isOnboardingComplete: false,
-            gender: gender
+            gender: gender,
+            goalWeightKg: goalWeightKg
         )
         return MacroTargetCalculator().targetMacros(for: profile) ?? .zero
     }
@@ -152,6 +155,7 @@ private extension View {
         heightCm: 178,
         weightKg: 82,
         goalType: .leanBulk,
+        goalWeightKg: 88,
         activityLevel: .lightlyActive,
         onStartTracking: {}
     )

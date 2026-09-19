@@ -34,7 +34,7 @@ struct RootView: View {
     }
 
     /// Pulls anything new out of Apple Health and reflects the newest weight in
-    /// memory, so `targetMacros` recomputes without waiting for a profile
+    /// memory, so the weight shown is current without waiting for a profile
     /// refetch. No-ops entirely unless the user has connected Health.
     @MainActor
     private func importHealthWeight(for uid: String) async {
