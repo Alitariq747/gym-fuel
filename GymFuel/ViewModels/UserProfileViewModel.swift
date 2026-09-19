@@ -24,15 +24,18 @@ final class UserProfileViewModel: ObservableObject {
        private let service: FirebaseUserProfileService
        private let macroTargetCalculator: MacroTargetCalculator
        private let weighInService: WeighInService
+       private let networkMonitor: NetworkMonitoring
 
        init(
            service: FirebaseUserProfileService = .shared,
            macroTargetCalculator: MacroTargetCalculator = MacroTargetCalculator(),
-           weighInService: WeighInService = FirebaseWeighInService()
+           weighInService: WeighInService = FirebaseWeighInService(),
+           networkMonitor: NetworkMonitoring = NetworkMonitor.shared
        ) {
            self.service = service
            self.macroTargetCalculator = macroTargetCalculator
            self.weighInService = weighInService
+           self.networkMonitor = networkMonitor
        }
     
     func loadProfile(for uid: String) async {
@@ -148,6 +151,102 @@ final class UserProfileViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Targets the user changes
+
+    /// Saves numbers the user typed, with carbs filled and the floors held by
+    /// `MacroTargetCalculator.edited` before they arrive here.
+    ///
+    /// Stamps "Set at" with today and the current weight, keeps the maintenance
+    /// estimate as it was — the formula's estimate is not a target — and **leaves
+    /// the plan line alone**: editing targets does not redraw it
+    /// (`build-order.md` Step 4, *The rules*).
+    func saveEditedTargets(_ macros: Macros) async {
+        guard let current = profile,
+              let maintenance = current.maintenanceCalories
+                ?? macroTargetCalculator.targets(for: current)?.maintenanceCalories
+        else { return }
+
+        var updated = current
+        updated.setTargets(MacroTargets(macros: macros, maintenanceCalories: maintenance), on: .now)
+
+        await writeTargets(updated)
+    }
+
+    /// Fresh numbers from the latest weigh-in, and the plan line restarted from
+    /// today — one re-anchoring gesture, decided 19 September.
+    ///
+    /// `weightKg` is only ever written by a weigh-in, so it *is* the latest one and
+    /// this recalculates from the weight the screen is showing. No extra read.
+    func recalculateTargets() async {
+        guard let current = profile,
+              let targets = macroTargetCalculator.targets(for: current) else { return }
+
+        let now = Date.now
+        var updated = current
+        updated.setTargets(targets, on: now)
+        updated.startPlan(on: now)
+
+        await writeTargets(updated)
+    }
+
+    /// The one path for a change to the goal, the goal weight or the activity
+    /// level. Each of them changes the numbers and where the plan line starts, so
+    /// each recalculates and restarts it — *The rules*.
+    func updatePlan(_ change: UserProfile.PlanChange) async {
+        guard let current = profile else { return }
+
+        var updated = current
+        guard updated.applyPlanChange(change, on: .now, using: macroTargetCalculator) else {
+            errorMessage = "We couldn't work out new targets for that. Please check your age, height and weight."
+            return
+        }
+
+        await writeTargets(updated)
+    }
+
+    /// The one write all three paths use.
+    ///
+    /// Memory is updated only after the write succeeds, so a failed save never
+    /// leaves the app showing numbers Firestore does not have.
+    private func writeTargets(_ updated: UserProfile) async {
+        // `ProfileView.draftBinding`'s fallback builds a profile with an empty id;
+        // writing that would create `users//…`.
+        guard !updated.id.isEmpty else {
+            errorMessage = "We couldn't tell which account to save this to. Please try again."
+            return
+        }
+        errorMessage = nil
+
+        // Same reason as `saveProfileEdits`: awaiting a write with no network never
+        // resumes, which would leave this screen's buttons dead and its numbers
+        // stale while the change sat unseen in the local cache.
+        guard networkMonitor.isConnected else {
+            do {
+                try service.updateTargetsLocally(for: updated)
+                profile = updated
+            } catch {
+                errorMessage = AppErrorMessage.message(
+                    for: error,
+                    fallback: "We couldn't save your targets. Please try again."
+                )
+            }
+            return
+        }
+
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            try await service.updateTargets(for: updated)
+            profile = updated
+        } catch {
+            errorMessage = AppErrorMessage.message(
+                for: error,
+                fallback: "We couldn't save your targets. Please try again."
+            )
+        }
+    }
+
     func clear() {
         profile = nil
         isLoading = false
@@ -166,9 +265,14 @@ final class UserProfileViewModel: ObservableObject {
             profile.id = uid
             profile.isOnboardingComplete = currentProfile.isOnboardingComplete
 
-            let updatedProfile = try await service.updateProfile(profile)
-
-            self.profile = updatedProfile
+            // Firestore acknowledges a write only from the server, so awaiting one
+            // with no network never resumes and the Save button would spin for ever.
+            // Queue it into the local cache instead and let it sync.
+            if networkMonitor.isConnected {
+                self.profile = try await service.updateProfile(profile)
+            } else {
+                self.profile = try service.updateProfileLocally(profile)
+            }
         } catch {
             self.errorMessage = AppErrorMessage.message(
                 for: error,

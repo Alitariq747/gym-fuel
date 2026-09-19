@@ -63,7 +63,7 @@ fresh session reads this file, not the chat history.
 - [x] **4a2** · Apple Health body mass → `weighIns`
 - [x] **4b** · Target maths and safety limits
 - [x] **4c** · Goal weight and saved targets
-- [ ] **4d** · Your targets screen
+- [x] **4d** · Your targets screen
 - [ ] **4e** · The Weight screen
 - [ ] **4f** · The plan screen in onboarding
 - [ ] **5** · Food wedge, client
@@ -414,7 +414,8 @@ everyday lifestyles start at 1.40.
 - Weigh-ins never change them, typed or from Apple Health. `weightKg` still updates,
   for display.
 - Users edit calories, protein and fat; carbs fill the rest. Editing targets does not
-  redraw the plan line.
+  redraw the plan line; **Recalculate** does, because it re-anchors to the latest
+  weigh-in and today (decided 19 September).
 
 **Goal weight.**
 

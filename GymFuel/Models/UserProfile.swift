@@ -128,6 +128,65 @@ extension UserProfile {
         planStartedOn = DateKey.key(for: date)
         planStartWeightKg = weightKg
     }
+
+    /// A change to the plan itself, rather than to the numbers.
+    ///
+    /// Both cases go through `applyPlanChange`, because both change the targets
+    /// *and* where the plan line starts — `build-order.md` Step 4, *The rules*.
+    /// A goal weight is part of the goal case rather than a case of its own: the
+    /// two are one decision, and the goal weight sets the protein and fat basis.
+    enum PlanChange {
+        case goal(GoalType, goalWeightKg: Double?)
+        case activity(ActivityLevel)
+    }
+
+    /// Applies `change`, works out fresh targets, and restarts the plan line from
+    /// `date` and the current weight.
+    ///
+    /// Returns false when targets cannot be worked out — an account missing an age,
+    /// height or weight — in which case nothing is changed at all, rather than a
+    /// goal being saved that the numbers do not match.
+    mutating func applyPlanChange(
+        _ change: PlanChange,
+        on date: Date,
+        using calculator: MacroTargetCalculator
+    ) -> Bool {
+        var updated = self
+
+        switch change {
+        case .goal(let goal, let goalWeightKg):
+            updated.goalType = goal
+            // Maintain has no goal weight, and one left behind would still reach
+            // the protein and fat basis.
+            updated.goalWeightKg = goal == .maintain ? nil : goalWeightKg
+        case .activity(let level):
+            updated.activityLevel = level
+        }
+
+        guard let targets = calculator.targets(for: updated) else { return false }
+
+        updated.setTargets(targets, on: date)
+        updated.startPlan(on: date)
+        self = updated
+        return true
+    }
+
+    /// Overlays the fields the Settings screen edits onto this profile.
+    ///
+    /// `ProfileView` holds a draft copy and its Save writes **all** of it, so a
+    /// target changed on the targets screen would be written back stale the next
+    /// time Settings saves. Re-seeding the draft from the saved profile through
+    /// this keeps both halves current.
+    ///
+    /// The field list is exactly what `ProfileView.isDirty` compares, and the two
+    /// change together. Goal and activity are absent because the targets screen
+    /// owns them, not Settings.
+    mutating func adoptSettingsEdits(from draft: UserProfile) {
+        name = draft.name
+        gender = draft.gender
+        age = draft.age
+        heightCm = draft.heightCm
+    }
 }
 
 /// In-memory onboarding answers. Never persisted. Every answer the user actively

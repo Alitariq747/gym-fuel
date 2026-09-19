@@ -213,4 +213,55 @@ struct MacroTargetCalculatorTests {
             }
         }
     }
+
+    // MARK: - Numbers the user types (Step 4d)
+
+    @Test("More protein leaves fewer carbs, at the same calories")
+    func editedProteinMovesCarbs() {
+        let before = MacroTargetCalculator.edited(calories: 2_000, proteinG: 130, fatG: 65, gender: .male)
+        let after = MacroTargetCalculator.edited(calories: 2_000, proteinG: 160, fatG: 65, gender: .male)
+
+        #expect(after.calories == before.calories)
+        #expect(after.protein == 160)
+        // 30 g of protein is 120 kcal, which is 30 g of carbs.
+        #expect(after.carbs == before.carbs - 30)
+    }
+
+    @Test("A typed calorie number below the floor is lifted to it")
+    func editedHoldsTheGenderFloor() {
+        let woman = MacroTargetCalculator.edited(calories: 900, proteinG: 110, fatG: 55, gender: .female)
+        #expect(woman.calories == 1_200)
+
+        let man = MacroTargetCalculator.edited(calories: 900, proteinG: 110, fatG: 55, gender: .male)
+        #expect(man.calories == 1_500)
+
+        let unstated = MacroTargetCalculator.edited(calories: 900, proteinG: 110, fatG: 55, gender: .preferNotToSay)
+        #expect(unstated.calories == 1_500)
+    }
+
+    /// The 200 kg case from `targets(for:)`, reached by typing instead.
+    @Test("Protein and fat alone lift the calories rather than pushing carbs negative")
+    func editedNeverGoesNegative() {
+        let macros = MacroTargetCalculator.edited(calories: 1_400, proteinG: 400, fatG: 200, gender: .female)
+
+        // 400 g protein and 200 g fat is 3,400 kcal, which is already a multiple of 10.
+        #expect(macros.calories == 3_400)
+        #expect(macros.carbs == 0)
+    }
+
+    @Test("A typed calorie number is kept as typed, not rounded to 10")
+    func editedKeepsTypedCalories() {
+        let macros = MacroTargetCalculator.edited(calories: 2_005, proteinG: 130, fatG: 65, gender: .male)
+
+        #expect(macros.calories == 2_005)
+    }
+
+    @Test("Negative typed numbers are floored at zero, not saved")
+    func editedRejectsNegatives() {
+        let macros = MacroTargetCalculator.edited(calories: 2_000, proteinG: -40, fatG: -10, gender: .male)
+
+        #expect(macros.protein == 0)
+        #expect(macros.fat == 0)
+        #expect(macros.carbs == 500)
+    }
 }

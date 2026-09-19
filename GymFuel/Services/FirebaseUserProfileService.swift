@@ -110,17 +110,75 @@ final class FirebaseUserProfileService: @unchecked Sendable {
         profileDocument(for: uid).setData(data, merge: true)
     }
 
-    func updateProfile(_ profile: UserProfile) async throws -> UserProfile {
+    /// Every key the plan and the saved targets own. `weightKg` is deliberately
+    /// absent: weigh-ins write it, and nothing on the targets screen may.
+    private static let planAndTargetKeys = [
+        "goalType",
+        "activityLevel",
+        "goalWeightKg",
+        "planStartedOn",
+        "planStartWeightKg",
+        "targetCalories",
+        "targetProteinG",
+        "targetCarbsG",
+        "targetFatG",
+        "maintenanceCalories",
+        "targetsSetOn",
+        "targetsSetAtWeightKg",
+    ]
+
+    /// Writes the plan and the saved targets, and nothing else.
+    ///
+    /// Deliberately not `updateProfile(_:)`, for the reason given on
+    /// `updateWeight`: re-encoding the whole document from possibly-stale memory
+    /// would put a concurrently-edited field back the way it was. The rules'
+    /// `hasOnly()` accepts subsets and every key here is already allowed.
+    ///
+    /// - Important: as with every write here, the completion fires only on
+    ///   **server acknowledgement**, so awaiting this offline does not resume.
+    func updateTargets(for profile: UserProfile) async throws {
+        let data = try planAndTargetData(for: profile)
         let docRef = profileDocument(for: profile.id)
 
-        var normalized = profile
-        normalized.normalize()
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            docRef.setData(data, merge: true) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+    }
 
-        var data = try Firestore.Encoder().encode(normalized)
-        data["updatedAt"] = FieldValue.serverTimestamp()
+    /// Queues the same write into Firestore's local cache without awaiting the
+    /// server, so an offline change to the targets lands immediately and syncs
+    /// later. Same reason as `updateWeightLocally`.
+    func updateTargetsLocally(for profile: UserProfile) throws {
+        let data = try planAndTargetData(for: profile)
+        profileDocument(for: profile.id).setData(data, merge: true)
+    }
+
+    /// The write itself, built once for both paths.
+    private func planAndTargetData(for profile: UserProfile) throws -> [String: Any] {
+        let encoded = try Firestore.Encoder().encode(profile)
+
+        var data: [String: Any] = ["updatedAt": FieldValue.serverTimestamp()]
+        for key in Self.planAndTargetKeys {
+            // Encoding leaves a nil field out entirely, and `merge: true` would
+            // then keep whatever is stored — so a goal weight dropped by
+            // switching to Maintain has to be removed, not omitted.
+            data[key] = encoded[key] ?? FieldValue.delete()
+        }
+        return data
+    }
+
+    func updateProfile(_ profile: UserProfile) async throws -> UserProfile {
+        let write = try profileWrite(for: profile)
+        let docRef = profileDocument(for: profile.id)
 
         try await withCheckedThrowingContinuation {( continuation: CheckedContinuation<Void,Error>) in
-            docRef.setData(data, merge: true) { error in
+            docRef.setData(write.data, merge: true) { error in
                     if let error = error {
                         continuation.resume(throwing: error)
                     } else {
@@ -128,7 +186,27 @@ final class FirebaseUserProfileService: @unchecked Sendable {
                     }
             }
         }
-        return normalized
+        return write.normalized
+    }
+
+    /// Queues the whole document into Firestore's local cache without awaiting the
+    /// server, so an offline profile edit lands immediately and syncs later.
+    func updateProfileLocally(_ profile: UserProfile) throws -> UserProfile {
+        let write = try profileWrite(for: profile)
+        profileDocument(for: profile.id).setData(write.data, merge: true)
+        return write.normalized
+    }
+
+    /// Normalizes and encodes a whole profile, so the awaited and local paths write
+    /// exactly the same thing.
+    private func profileWrite(for profile: UserProfile) throws -> (normalized: UserProfile, data: [String: Any]) {
+        var normalized = profile
+        normalized.normalize()
+
+        var data = try Firestore.Encoder().encode(normalized)
+        data["updatedAt"] = FieldValue.serverTimestamp()
+
+        return (normalized, data)
     }
     
   

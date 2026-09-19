@@ -12,6 +12,9 @@ struct ProfileEditorView: View {
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
     @Binding var draft: UserProfile
     let email: String?
+    /// Opens the targets screen (Step 4d). `ProfileView` presents it, because the
+    /// screen saves through the profile view model rather than through this draft.
+    let onOpenTargets: () -> Void
 
     private var preferredColorScheme: ColorScheme? {
         switch colorSchemePreference {
@@ -43,16 +46,10 @@ struct ProfileEditorView: View {
         draft.gender.displayName
     }
 
-    // goal and activity
-    @State private var showGoalSheet = false
-    @State private var showActivitySheet = false
-
-    private var goalTitle: String {
-        draft.goalType?.displayName ?? "Set"
-    }
-
-    private var activityLevelTitle: String {
-        draft.activityLevel?.displayName ?? "Set"
+    /// The saved calorie target, read and never recalculated here.
+    private var targetsTitle: String {
+        guard let calories = draft.savedTargets?.calories else { return "View" }
+        return "\(Int(calories.rounded())) kcal"
     }
 
     // Height
@@ -97,18 +94,6 @@ struct ProfileEditorView: View {
             }
             .preferredColorScheme(preferredColorScheme)
             .presentationDetents([.large])
-        }
-        .sheet(isPresented: $showGoalSheet) {
-            goalPickerSheet
-                .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
-        }
-        .sheet(isPresented: $showActivitySheet) {
-            activityPickerSheet
-                .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showGenderSheet) {
             genderPickerSheet
@@ -262,75 +247,16 @@ struct ProfileEditorView: View {
 
     private var targetsCard: some View {
         VStack(spacing: 10) {
-            rowButton(title: "Goal", systemImage: "scope", value: goalTitle, isPlaceholder: draft.goalType == nil) {
-                showGoalSheet = true
-            }
-            Divider()
-            rowButton(title: "Daily Activity", systemImage: "figure.walk", value: activityLevelTitle, isPlaceholder: draft.activityLevel == nil) {
-                showActivitySheet = true
-            }
+            rowButton(
+                title: "Your targets",
+                systemImage: "list.bullet.rectangle",
+                value: targetsTitle,
+                isPlaceholder: draft.savedTargets == nil,
+                action: onOpenTargets
+            )
         }
         .padding(14)
         .background(cardBackground)
-    }
-
-    private var goalPickerSheet: some View {
-        AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 14) {
-                pickerSheetHeader(
-                    title: "Choose your goal",
-                    subtitle: "This shapes your macro targets and goal fit score.",
-                    dismiss: { showGoalSheet = false }
-                )
-                ForEach(GoalType.allCases, id: \.self) { goal in
-                    goalOptionRow(goal)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(18)
-        }
-        .background(Color(.systemGroupedBackground))
-    }
-
-    private func goalOptionRow(_ goal: GoalType) -> some View {
-        let problem = SafetyLimits.goalProblem(goal, weightKg: draft.weightKg, heightCm: draft.heightCm)
-
-        return Button {
-            draft.goalType = goal
-            showGoalSheet = false
-        } label: {
-            HStack(alignment: .top, spacing: 14) {
-                goalSymbol(goal)
-                    .opacity(problem == nil ? 1 : 0.45)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(goal.displayName)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(problem == nil ? Color.primary : Color.secondary)
-                    Text(problem ?? goal.detail)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
-            .padding(14)
-            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.goalType == goal ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: draft.goalType == goal ? 2 : 1))
-        }
-        .buttonStyle(.plain)
-        .disabled(problem != nil)
-    }
-
-    private func goalSymbol(_ goal: GoalType) -> some View {
-        Image(systemName: goal.symbolName)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(Color.primary)
-            .frame(width: 44, height: 44)
-            .background(Color(.systemBackground), in: Circle())
-            .overlay {
-                Circle()
-                    .stroke(Color.fuelOrange.opacity(colorScheme == .dark ? 0.24 : 0.16), lineWidth: 1)
-            }
-            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0 : 0.05), radius: 8, y: 4)
     }
 
     private func pickerSheetHeader(title: String, subtitle: String, dismiss: @escaping () -> Void) -> some View {
@@ -371,60 +297,6 @@ struct ProfileEditorView: View {
         }
         .padding(12)
         .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private var activityPickerSheet: some View {
-        AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 14) {
-                pickerSheetHeader(
-                    title: "Daily movement",
-                    subtitle: "Including exercise, what's a normal week like for you?",
-                    dismiss: { showActivitySheet = false }
-                )
-
-                ForEach(ActivityLevel.allCases, id: \.self) { level in
-                    activityOptionRow(level)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(18)
-        }
-        .background(Color(.systemGroupedBackground))
-    }
-
-    private func activityOptionRow(_ level: ActivityLevel) -> some View {
-        Button {
-            draft.activityLevel = level
-            showActivitySheet = false
-        } label: {
-            HStack(alignment: .top, spacing: 14) {
-                Text(activityEmoji(for: level))
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-                    .background(Color.fuelBlue.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(level.displayName)
-                        .font(.headline.weight(.semibold))
-                    Text(level.detail)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
-            .padding(14)
-            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.activityLevel == level ? Color.fuelBlue : Color.gray.opacity(0.24), lineWidth: draft.activityLevel == level ? 2 : 1))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func activityEmoji(for level: ActivityLevel) -> String {
-        switch level {
-        case .mostlySitting: return "🪑"
-        case .lightlyActive: return "🚶"
-        case .active: return "🏃"
-        case .veryActive: return "🏗️"
-        }
     }
 
     private var initials: String {

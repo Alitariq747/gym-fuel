@@ -58,6 +58,21 @@ struct MacroTargetCalculator {
         )
     }
 
+    /// Applies numbers the user typed: carbs take what is left, and the floors
+    /// hold — *The rules* count a typed number as a target like any other.
+    ///
+    /// Typed calories are **not** re-rounded to 10. The rounding in `targets(for:)`
+    /// tidies a number the app worked out; doing it to one the user typed would
+    /// silently change what they asked for.
+    static func edited(calories: Double, proteinG: Double, fatG: Double, gender: Gender) -> Macros {
+        let protein = max(proteinG.rounded(), 0)
+        let fat = max(fatG.rounded(), 0)
+        let kcal = max(calories.rounded(), minimumCalories(gender: gender, proteinG: protein, fatG: fat))
+        let carbs = ((kcal - (protein * 4) - (fat * 9)) / 4).rounded()
+
+        return Macros(calories: kcal, protein: protein, carbs: carbs, fat: fat)
+    }
+
     /// The lowest calorie target allowed: the floor for `gender`, and never less
     /// than the protein and fat alone. Rounded **up** to 10, so carbs can never go
     /// negative.

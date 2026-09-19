@@ -30,6 +30,7 @@ struct ProfileView: View {
     @State private var showSavedMealsSheet: Bool = false
     @State private var showGoalFitExplainerSheet: Bool = false
     @State private var showNutritionSourcesSheet: Bool = false
+    @State private var showTargetsSheet: Bool = false
     @State private var showSubscriptionPaywall: Bool = false
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
@@ -156,7 +157,11 @@ struct ProfileView: View {
                                 .padding(.horizontal)
                                 .padding(.top)
 
-                                ProfileEditorView(draft: draftBinding, email: authManager.user?.email)
+                                ProfileEditorView(
+                                    draft: draftBinding,
+                                    email: authManager.user?.email,
+                                    onOpenTargets: { showTargetsSheet = true }
+                                )
                                     .disabled(isBusy)
                                     .opacity(isBusy ? 0.6 : 1)
 
@@ -318,6 +323,10 @@ struct ProfileView: View {
             GoalFitScoreExplainerSheet(primaryButtonTitle: "Done")
                 .preferredColorScheme(preferredColorScheme)
         }
+        .sheet(isPresented: $showTargetsSheet, onDismiss: adoptTargetsScreenChanges) {
+            TargetsView()
+                .preferredColorScheme(preferredColorScheme)
+        }
         .sheet(isPresented: $showNutritionSourcesSheet) {
             NutritionSourcesView(primaryButtonTitle: "Done")
                 .preferredColorScheme(preferredColorScheme)
@@ -437,6 +446,17 @@ struct ProfileView: View {
         .padding(24)
     }
 
+    /// The targets screen saves through the view model, so this draft is stale the
+    /// moment it does — and Save here writes the whole draft. Re-seed it from the
+    /// saved profile, keeping the fields this screen itself owns.
+    private func adoptTargetsScreenChanges() {
+        guard let saved = profileVm.profile, let edited = draft else { return }
+
+        var merged = saved
+        merged.adoptSettingsEdits(from: edited)
+        draft = merged
+    }
+
     private var canSave: Bool {
         guard let profile = profileVm.profile, let draft else { return false }
         guard SafetyLimits.ageProblem(draft.age) == nil else { return false }
@@ -451,9 +471,10 @@ struct ProfileView: View {
         if draft.age != profile.age { return true }
         if draft.heightCm != profile.heightCm { return true }
         // Weight is deliberately absent: this screen displays it but cannot edit
-        // it, so it can never be the reason there are changes to save.
-        if draft.goalType != profile.goalType { return true }
-        if draft.activityLevel != profile.activityLevel { return true }
+        // it, so it can never be the reason there are changes to save. Goal and
+        // daily activity left for the same reason in Step 4d — changing either has
+        // to recalculate the targets and restart the plan line, which is the
+        // targets screen's job, not this draft's.
         return false
     }
 
