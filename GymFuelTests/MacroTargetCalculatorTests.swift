@@ -264,4 +264,67 @@ struct MacroTargetCalculatorTests {
         #expect(macros.fat == 0)
         #expect(macros.carbs == 500)
     }
+
+    // MARK: - Which weight protein and fat come from (Step 4f)
+
+    private func basis(
+        weightKg: Double,
+        heightCm: Double,
+        goal: GoalType,
+        goalWeightKg: Double? = nil
+    ) -> ProteinFatBasis? {
+        calculator.basis(for: UserProfile(
+            name: "",
+            heightCm: heightCm,
+            weightKg: weightKg,
+            goalType: goal,
+            isOnboardingComplete: true,
+            gender: .male,
+            goalWeightKg: goalWeightKg
+        ))
+    }
+
+    @Test("Losing toward a goal under the BMI 25 weight names the goal weight")
+    func basisIsTheGoalWeight() {
+        // BMI 25 at 185 cm is 85.6 kg, above the 82 kg goal.
+        #expect(basis(weightKg: 90, heightCm: 185, goal: .cut, goalWeightKg: 82) == ProteinFatBasis(kg: 82, source: .goalWeight))
+    }
+
+    @Test("A goal weight above the BMI 25 weight gives way to it")
+    func basisIsTheTopHealthyWeight() throws {
+        // BMI 25 at 180 cm is 81 kg, below the 90 kg goal.
+        let result = try #require(basis(weightKg: 75, heightCm: 180, goal: .leanBulk, goalWeightKg: 90))
+
+        #expect(result.source == .topHealthyWeight)
+        #expect(abs(result.kg - 81) < 1e-9)
+    }
+
+    @Test("Maintaining names the current weight and ignores a leftover goal weight")
+    func basisWhenMaintaining() {
+        #expect(basis(weightKg: 60, heightCm: 165, goal: .maintain, goalWeightKg: 50) == ProteinFatBasis(kg: 60, source: .currentWeight))
+    }
+
+    @Test("A current weight above the BMI 25 weight gives way to it too")
+    func basisWhenMaintainingAboveTheCap() {
+        // 85 kg at 180 cm caps at 81 kg.
+        #expect(basis(weightKg: 85, heightCm: 180, goal: .maintain)?.source == .topHealthyWeight)
+    }
+
+    @Test("Gain or Lose fat with no goal weight yet uses the current weight")
+    func basisWithoutAGoalWeight() {
+        #expect(basis(weightKg: 70, heightCm: 180, goal: .cut) == ProteinFatBasis(kg: 70, source: .currentWeight))
+    }
+
+    @Test("No height or weight, no basis")
+    func basisNeedsHeightAndWeight() {
+        var profile = UserProfile(name: "", heightCm: 180, weightKg: 70, goalType: .cut, isOnboardingComplete: true, gender: .male)
+        #expect(calculator.basis(for: profile) != nil)
+
+        profile.heightCm = nil
+        #expect(calculator.basis(for: profile) == nil)
+
+        profile.heightCm = 180
+        profile.weightKg = nil
+        #expect(calculator.basis(for: profile) == nil)
+    }
 }

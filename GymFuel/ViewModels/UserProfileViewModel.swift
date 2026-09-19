@@ -88,18 +88,14 @@ final class UserProfileViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        guard var profile = answers.toProfile(id: uid),
-              let targets = macroTargetCalculator.targets(for: profile) else {
+        // Worked out once and saved, with any edit made on the plan screen. From
+        // now on only the user changes them.
+        guard let profile = answers.plannedProfile(id: uid, on: .now, using: macroTargetCalculator) else {
             FirebaseTelemetryService.logOnboardingEvent("complete_failed")
             self.errorMessage = "We couldn't finish setting up your profile. Please try again."
             isLoading = false
             return
         }
-
-        // Worked out once, here, and saved. From now on only the user changes them.
-        let now = Date.now
-        profile.setTargets(targets, on: now)
-        profile.startPlan(on: now)
 
         do {
             let updatedProfile = try await service.updateProfile(profile)

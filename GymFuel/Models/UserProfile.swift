@@ -202,6 +202,8 @@ struct OnboardingAnswers {
     var goalType: GoalType? = nil
     var activityLevel: ActivityLevel? = nil
     var goalWeightKg: Double? = nil
+    /// Numbers the user changed on the plan screen. Nil keeps the worked-out ones.
+    var editedTargets: Macros? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
     /// A goal weight left over from an earlier answer is dropped on Maintain.
@@ -226,6 +228,26 @@ struct OnboardingAnswers {
             gender: gender,
             goalWeightKg: goalType == .maintain ? nil : goalWeightKg
         )
+    }
+
+    /// The profile onboarding saves: the answers, the targets worked out once — or
+    /// as edited on the plan screen — and the plan starting on `date`.
+    ///
+    /// The plan screen draws from this and `completeOnboarding` saves it, so the
+    /// numbers on screen are the numbers saved. Nil while an answer is missing.
+    func plannedProfile(id: String, on date: Date, using calculator: MacroTargetCalculator) -> UserProfile? {
+        guard var profile = toProfile(id: id),
+              let workedOut = calculator.targets(for: profile) else { return nil }
+
+        // An edit replaces the numbers, never the estimate they sit against —
+        // the same rule as editing on the targets screen.
+        let targets = editedTargets.map {
+            MacroTargets(macros: $0, maintenanceCalories: workedOut.maintenanceCalories)
+        } ?? workedOut
+
+        profile.setTargets(targets, on: date)
+        profile.startPlan(on: date)
+        return profile
     }
 }
 

@@ -232,29 +232,13 @@ struct OnboardingFlowView: View {
             )
 
         case .summary:
-            if let age = data.age,
-               let height = data.heightCm,
-               let weight = data.weightKg,
-               let goalType = data.goalType,
-               let activityLevel = data.activityLevel {
-                OnboardingSummaryStepView(
-                    name: data.name,
-                    gender: data.gender,
-                    age: age,
-                    heightCm: height,
-                    weightKg: weight,
-                    goalType: goalType,
-                    goalWeightKg: data.goalWeightKg,
-                    activityLevel: activityLevel,
-                    onStartTracking: finishOnboarding
-                )
-            }
+            OnboardingSummaryStepView(answers: data, onStartTracking: finishOnboarding(editedTargets:))
         }
     }
 
-    private func finishOnboarding() {
-        // Guard that every required answer is present before finishing. The summary
-        // step only renders once these are set, so this is a safety net.
+    private func finishOnboarding(editedTargets: Macros?) {
+        // Guard that every required answer is present before finishing. The plan
+        // step disables Start writing until these are set, so this is a safety net.
         guard
             data.age != nil,
             data.heightCm != nil,
@@ -264,7 +248,11 @@ struct OnboardingFlowView: View {
         else { return }
 
         FirebaseTelemetryService.logOnboardingEvent("finish_tapped", step: step.analyticsName)
-        onFinished(data)
+        // Edits join the answers only here, so going back to change an answer
+        // never carries old numbers forward.
+        var answers = data
+        answers.editedTargets = editedTargets
+        onFinished(answers)
     }
 
 

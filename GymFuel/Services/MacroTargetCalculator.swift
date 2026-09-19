@@ -8,6 +8,21 @@ struct MacroTargets: Equatable {
     let maintenanceCalories: Double
 }
 
+/// The weight protein and fat are worked out from, and which weight that is.
+struct ProteinFatBasis: Equatable {
+    enum Source: Equatable {
+        case goalWeight
+        /// Maintaining, or no goal weight yet.
+        case currentWeight
+        /// The goal or current weight is above the top healthy weight for this
+        /// height, so that weight is used instead.
+        case topHealthyWeight
+    }
+
+    let kg: Double
+    let source: Source
+}
+
 /// Works out daily targets from a profile, following `build-order.md` Step 4,
 /// *The rules*. Pure: no Firebase, no UI.
 struct MacroTargetCalculator {
@@ -25,7 +40,8 @@ struct MacroTargetCalculator {
     func targets(for profile: UserProfile) -> MacroTargets? {
         guard let age = profile.age,
               let heightCm = profile.heightCm,
-              let weightKg = profile.weightKg else { return nil }
+              let weightKg = profile.weightKg,
+              let basisKg = basis(for: profile)?.kg else { return nil }
 
         let goal = profile.goalType ?? .defaultValue
         let activity = profile.activityLevel ?? .lightlyActive
@@ -36,13 +52,6 @@ struct MacroTargetCalculator {
             weightKg: weightKg
         ) * activity.multiplier
         let dailyOffset = weightKg * goal.weeklyPace * Self.caloriesPerKg / 7
-
-        // Protein and fat come from the goal weight — the current weight when
-        // maintaining, or when an account has no goal weight yet — capped at the
-        // top healthy weight for this height.
-        let referenceKg = goal == .maintain ? weightKg : (profile.goalWeightKg ?? weightKg)
-        let topHealthyWeightKg = SafetyLimits.weightKg(atBMI: SafetyLimits.topHealthyBMI, heightCm: heightCm)
-        let basisKg = min(referenceKg, topHealthyWeightKg)
         let protein = (basisKg * Self.proteinPerKg).rounded()
         let fat = (basisKg * goal.fatPerKg).rounded()
 
@@ -56,6 +65,24 @@ struct MacroTargetCalculator {
             macros: Macros(calories: calories, protein: protein, carbs: carbs, fat: fat),
             maintenanceCalories: Self.roundedToStep(maintenance)
         )
+    }
+
+    /// Protein and fat come from the goal weight — the current weight when
+    /// maintaining, or when an account has no goal weight yet — capped at the top
+    /// healthy weight for this height. Says which weight won, so the plan screen
+    /// can name the one the numbers really came from.
+    func basis(for profile: UserProfile) -> ProteinFatBasis? {
+        guard let heightCm = profile.heightCm, let weightKg = profile.weightKg else { return nil }
+
+        let goal = profile.goalType ?? .defaultValue
+        let goalWeightKg = goal == .maintain ? nil : profile.goalWeightKg
+        let referenceKg = goalWeightKg ?? weightKg
+        let topHealthyWeightKg = SafetyLimits.weightKg(atBMI: SafetyLimits.topHealthyBMI, heightCm: heightCm)
+
+        if referenceKg > topHealthyWeightKg {
+            return ProteinFatBasis(kg: topHealthyWeightKg, source: .topHealthyWeight)
+        }
+        return ProteinFatBasis(kg: referenceKg, source: goalWeightKg == nil ? .currentWeight : .goalWeight)
     }
 
     /// Applies numbers the user typed: carbs take what is left, and the floors

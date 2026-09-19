@@ -256,4 +256,68 @@ struct UserProfileTargetsTests {
         #expect(profile.planStartedOn == nil)
         #expect(profile.savedTargets == nil)
     }
+
+    // MARK: - What onboarding saves (Step 4f)
+
+    /// The sample as onboarding answers, losing toward 78 kg.
+    private let answers = OnboardingAnswers(
+        gender: .male,
+        age: 30,
+        heightCm: 180,
+        weightKg: 85,
+        goalType: .cut,
+        activityLevel: .mostlySitting,
+        goalWeightKg: 78
+    )
+
+    @Test("Onboarding saves the worked-out targets and starts the plan that day")
+    func plannedProfileWorksOutTargets() throws {
+        let today = try day("2026-09-19")
+        let profile = try #require(answers.plannedProfile(id: "uid", on: today, using: calculator))
+        let workedOut = try #require(calculator.targets(for: profile))
+
+        #expect(profile.id == "uid")
+        #expect(profile.isOnboardingComplete)
+        #expect(profile.savedTargets == workedOut.macros)
+        #expect(profile.maintenanceCalories == workedOut.maintenanceCalories)
+        #expect(profile.targetsSetOn == "2026-09-19")
+        #expect(profile.targetsSetAtWeightKg == 85)
+        #expect(profile.planStartedOn == "2026-09-19")
+        #expect(profile.planStartWeightKg == 85)
+    }
+
+    /// The plan screen's Edit: what the user typed is what gets saved.
+    @Test("Numbers edited on the plan screen are saved against the same estimate")
+    func plannedProfileKeepsEdits() throws {
+        let today = try day("2026-09-19")
+        let unedited = try #require(answers.plannedProfile(id: "uid", on: today, using: calculator))
+
+        var edited = answers
+        edited.editedTargets = MacroTargetCalculator.edited(calories: 2_100, proteinG: 140, fatG: 60, gender: .male)
+        let profile = try #require(edited.plannedProfile(id: "uid", on: today, using: calculator))
+
+        #expect(profile.savedTargets == edited.editedTargets)
+        #expect(profile.savedTargets != unedited.savedTargets)
+        #expect(profile.maintenanceCalories == unedited.maintenanceCalories)
+        #expect(profile.planStartedOn == "2026-09-19")
+    }
+
+    @Test("Nothing is planned while an answer is missing")
+    func plannedProfileNeedsEveryAnswer() throws {
+        let today = try day("2026-09-19")
+        var missing = answers
+        missing.activityLevel = nil
+
+        #expect(missing.plannedProfile(id: "uid", on: today, using: calculator) == nil)
+    }
+
+    @Test("Maintain saves no goal weight, even one left from an earlier answer")
+    func plannedProfileDropsGoalWeightOnMaintain() throws {
+        let today = try day("2026-09-19")
+        var maintaining = answers
+        maintaining.goalType = .maintain
+
+        let profile = try #require(maintaining.plannedProfile(id: "uid", on: today, using: calculator))
+        #expect(profile.goalWeightKg == nil)
+    }
 }

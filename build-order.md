@@ -65,7 +65,7 @@ fresh session reads this file, not the chat history.
 - [x] **4c** · Goal weight and saved targets
 - [x] **4d** · Your targets screen
 - [x] **4e** · The Weight screen
-- [ ] **4f** · The plan screen in onboarding
+- [x] **4f** · The plan screen in onboarding
 - [ ] **5** · Food wedge, client
 - [ ] **6** · Food wedge, backend
 - [ ] **7** · Day-aware goal-fit score · *first to cut*

@@ -130,7 +130,10 @@ struct WeightChart: View {
 
         return layout {
             legendItem("Weigh-ins", mark: Circle().fill(Color.circaInk3).frame(width: 5, height: 5))
-            legendItem("Trend", mark: dottedSample(Color.circaAccent))
+            // Named only once it is drawn, which takes three weigh-ins.
+            if series.hasTrend {
+                legendItem("Trend", mark: dottedSample(Color.circaAccent))
+            }
             legendItem("Plan", mark: dottedSample(Color.circaDotted))
         }
         .accessibilityHidden(true)
