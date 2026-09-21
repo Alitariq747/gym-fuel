@@ -222,14 +222,18 @@ struct EditSavedMealSheet: View {
         let trimmedDescription = descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalDescription = trimmedDescription.isEmpty ? nil : trimmedDescription
 
-        let updatedMeal = SavedMeal(
-            id: meal.id,
-            userId: meal.userId,
-            name: trimmedName,
-            description: finalDescription,
-            macros: Macros(calories: calories, protein: protein, carbs: carbs, fat: fat),
-            createdAt: meal.createdAt
-        )
+        let typed = Macros(calories: calories, protein: protein, carbs: carbs, fat: fat)
+
+        // Built from the existing meal, so renaming it keeps the breakdown it was
+        // saved for. Retyping the totals is the override, and only that.
+        var updatedMeal = meal
+        updatedMeal.name = trimmedName
+        updatedMeal.description = finalDescription
+        updatedMeal.macros = typed
+
+        if typed.rounded() != meal.macros.rounded() {
+            updatedMeal = MealBreakdownCalculator.superseding(updatedMeal, withUserTotal: typed)
+        }
 
         Task {
             let didUpdate = await savedMealsViewModel.updateSavedMeal(updatedMeal)

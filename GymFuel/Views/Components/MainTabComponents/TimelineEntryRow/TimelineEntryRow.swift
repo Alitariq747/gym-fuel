@@ -8,6 +8,7 @@ struct TimelineEntryRow: View {
     var onDelete: (() -> Void)? = nil
     var shouldAnimateSuccessReveal: Bool = false
     var onSuccessRevealCompleted: (() -> Void)? = nil
+    var onTapAssumption: (() -> Void)? = nil
     @State private var showRevealedTitle = false
     @State private var showRevealedCalories = false
     @State private var showRevealedProtein = false
@@ -25,6 +26,31 @@ struct TimelineEntryRow: View {
 
     private var rowState: TimelineEntryRowState {
         TimelineEntryRowState(entry: entry, localPreviewData: localPreviewData)
+    }
+
+    /// The most consequential assumption, on the row — ochre mono, design.md's
+    /// assumption colour.
+    ///
+    /// Tapping it goes straight to the editor. The row is itself one big `Button`,
+    /// so if the outer one wins the hit test instead, the tap still opens the
+    /// entry: the same destination, one step further away.
+    @ViewBuilder
+    private func assumptionRow(_ line: String) -> some View {
+        if rowState.hasEditableBreakdown, let onTapAssumption {
+            Button(action: onTapAssumption) { assumptionText(line) }
+                .buttonStyle(.plain)
+        } else {
+            assumptionText(line)
+        }
+    }
+
+    private func assumptionText(_ line: String) -> some View {
+        Text(line)
+            .font(.circaMono)
+            .foregroundStyle(Color.circaAccent)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
     }
 
     private func applyImmediateRevealState() {
@@ -169,6 +195,9 @@ struct TimelineEntryRow: View {
                             showRevealedFat: showRevealedFat,
                             showRevealedGoalFit: showRevealedGoalFit
                         )
+                        if let assumptionLine = rowState.assumptionLine {
+                            assumptionRow(assumptionLine)
+                        }
                     }
                     if entry.status == .analyzing, !rowState.isAnalyzingTextEntry, !rowState.isAnalyzingImageEntry {
                         Text(entry.rawInput == "Meal image" ? "Analyzing your meal image..." : entry.rawInput)

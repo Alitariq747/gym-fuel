@@ -29,6 +29,9 @@ struct MainTabView: View {
     @State private var showSubscriptionPaywall = false
     @State private var showFutureLoggingToast = false
     @State private var selectedEntry: LogEntry?
+    /// Set when the entry was opened from its assumption line, so detail knows to
+    /// present the amount editor rather than just showing the breakdown.
+    @State private var opensEditorForEntryID: String?
     @State var mealImageDraft = MealImageDraft()
     @State var pendingMealImageSource: MealImageSource?
     @State var showCameraCapture = false
@@ -151,6 +154,7 @@ struct MainTabView: View {
             .navigationDestination(item: $selectedEntry) { entry in
             LogEntryDetailSheet(
                 entry: entry,
+                opensEditor: opensEditorForEntryID == entry.id,
                 isPerformingAction: logEntryDetailViewModel.isSaving,
                 aiErrorMessage: logEntryDetailViewModel.aiErrorMessage,
                 actionErrorMessage: logEntryDetailViewModel.actionErrorMessage,
@@ -167,6 +171,13 @@ struct MainTabView: View {
                             }
                         }
                     },
+                onSaveBreakdown: { breakdown in
+                    Task {
+                        if let updatedEntry = await logEntryDetailViewModel.updateBreakdown(for: entry, to: breakdown) {
+                            await handleUpdatedEntry(updatedEntry)
+                        }
+                    }
+                },
                 onSaveLoggedAt: { loggedAt in
                     Task {
                         if let updatedEntry = await logEntryDetailViewModel.updateLoggedAt(for: entry, to: loggedAt) {
@@ -373,6 +384,11 @@ struct MainTabView: View {
                     timelineViewModel.localImagePreviewData(for: entryId)
                 },
                 onSelectEntry: { entry in
+                    opensEditorForEntryID = nil
+                    selectedEntry = entry
+                },
+                onEditEntryAmounts: { entry in
+                    opensEditorForEntryID = entry.id
                     selectedEntry = entry
                 },
                 onRetryEntry: { entry in

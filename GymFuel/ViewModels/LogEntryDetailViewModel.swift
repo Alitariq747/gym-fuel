@@ -101,20 +101,29 @@ final class LogEntryDetailViewModel: ObservableObject {
         }
     }
 
+    /// A typed total supersedes the breakdown that disagreed with it, rather than
+    /// sitting on top of one that now describes a different meal.
     func updateMacros(for entry: LogEntry, to macros: Macros) async -> LogEntry? {
         await updateEntry(entry) { updated in
-            if updated.feedback == nil {
-                updated.feedback = LogEntryFeedback(
-                    explanation: "",
-                    assumptions: [],
-                    confidence: nil,
-                    macros: macros,
-                    goalFitScore: nil,
-                    estimatedItems: nil
-                )
-            } else {
-                updated.feedback?.macros = macros
-            }
+            updated.feedback = MealBreakdownCalculator.superseding(
+                updated.feedback,
+                withUserTotal: macros
+            )
+        }
+    }
+
+    /// A quantity edit is not an override. The corrected breakdown replaces the
+    /// old one and the total is recomputed from it, while the explanation,
+    /// assumptions and score stay exactly as they were — `meal-contract.md` §6.
+    func updateBreakdown(for entry: LogEntry, to breakdown: MealBreakdown) async -> LogEntry? {
+        let calculator = MealBreakdownCalculator()
+        let macros = calculator.total(of: breakdown)
+        let provenance = calculator.provenance(of: breakdown)
+
+        return await updateEntry(entry) { updated in
+            updated.feedback?.breakdown = breakdown
+            updated.feedback?.macros = macros
+            updated.feedback?.macrosProvenance = provenance
         }
     }
 

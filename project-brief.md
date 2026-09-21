@@ -444,8 +444,9 @@ Do not treat it as new work or remove code without checking its current callers:
      `store-copy.md` under Keywords, awaiting sign-off.
 2. **Cuisine scope is closed.** Broad brand, specific launch examples; see Step 0
    and Step 6 in `build-order.md`. No rename or single-cuisine restriction.
-3. **Meal schema details.** Settle the payload, persistence and correction examples
-   at the beginning of Step 5.
+3. ~~**Meal schema details.**~~ **Closed 21 September — `meal-contract.md`.** The
+   payload, persistence, contribution, provenance and correction rules Steps 5 and
+   6 share. Changing it is a two-repo edit; neither step may change it alone.
 4. **Goal Fit factors, weights and bands.** The behavior and launch timing are
    agreed; settle the numerical rubric using Step 7's cases before implementing it.
 5. **`/api/log-entry/analyze`** — inspect compatibility/callers during Step 6 before

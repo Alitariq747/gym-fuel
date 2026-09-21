@@ -154,7 +154,16 @@ extension FirebaseLogEntryService: LogEntryService {
         let docRef = entriesCollection(for: entry.userId).document(entry.id)
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            docRef.setData(data, merge: true) { error in
+            // Deliberately not `merge: true`. Encoding omits a nil field, so a
+            // merge would leave a superseded breakdown on the server and it would
+            // return on the next snapshot. This is the only write that clears, and
+            // a full replace is correct for every nullable field rather than for a
+            // list of them someone has to remember to extend.
+            //
+            // The cost, named in `meal-contract.md` §7: any key not mirrored in
+            // `LogEntryDocument` is destroyed by a user edit. Today that is only
+            // `updatedAt`, which nothing reads.
+            docRef.setData(data) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {

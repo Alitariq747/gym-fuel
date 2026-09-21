@@ -199,6 +199,21 @@ struct ProfileView: View {
                                     savedMealCount: savedMealsViewModel.savedMeals.count,
                                     onOpen: { showSavedMealsSheet = true }
                                 )
+                                #if DEBUG
+                                // Step 5 scaffolding: the only way to get a meal
+                                // with a breakdown onto the timeline until Step 6
+                                // sends one. Deleted with `MealFixtures`.
+                                Button("Log sample meal (debug)") {
+                                    guard let uid = authManager.user?.uid else { return }
+                                    Task {
+                                        try? await FirebaseLogEntryService().saveEntry(
+                                            MealFixtures.sampleEntry(userId: uid)
+                                        )
+                                    }
+                                }
+                                .font(.footnote.weight(.semibold))
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                #endif
                                 ProfileLiftEatsSection(
                                     onOpenScoreExplanation: { showGoalFitExplainerSheet = true },
                                     reviewURL: appStoreReviewURL

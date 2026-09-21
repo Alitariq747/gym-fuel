@@ -2,6 +2,8 @@ import SwiftUI
 
 struct LogEntryDetailSheet: View {
     let entry: LogEntry
+    /// Opened from the timeline's assumption line, so go straight to the editor.
+    var opensEditor: Bool = false
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
     var isPerformingAction: Bool = false
     var aiErrorMessage: String? = nil
@@ -9,11 +11,13 @@ struct LogEntryDetailSheet: View {
     var onClearAIError: (() -> Void)? = nil
     var onClearActionError: (() -> Void)? = nil
     var onSaveMacros: ((Macros) -> Void)? = nil
+    var onSaveBreakdown: ((MealBreakdown) -> Void)? = nil
     var onSaveLoggedAt: ((Date) -> Void)? = nil
     var onDeleteEntry: (() -> Void)? = nil
     var onUseAIAgain: ((String) -> Void)? = nil
 
     @State private var showManualEditSheet = false
+    @State private var showBreakdownEditor = false
     @State private var showTimeEditSheet = false
     @State private var showSaveMealSheet = false
     @State private var showSavedMealToast = false
@@ -26,6 +30,43 @@ struct LogEntryDetailSheet: View {
     
     private var canEditManually: Bool {
         entry.feedback?.macros != nil
+    }
+    /// A reusable snapshot of this meal as it now stands — its corrected items,
+    /// amounts, assumptions and provenance, not just its totals.
+    ///
+    /// The sheet rounds for display, so the comparison rounds too: otherwise
+    /// saving without touching a field would read as an override of 32.7 by 33.
+    private func savedMeal(named name: String, description: String?, macros: Macros) -> SavedMeal {
+        let stored = entry.feedback?.macros ?? macros
+        let snapshot = SavedMeal(
+            id: UUID().uuidString,
+            userId: entry.userId,
+            name: name,
+            description: description,
+            macros: stored,
+            breakdown: editableBreakdown,
+            assumptions: entry.feedback?.assumptions,
+            macrosProvenance: entry.feedback?.macrosProvenance
+        )
+
+        guard macros.rounded() != stored.rounded() else { return snapshot }
+
+        // Retyping the totals in the sheet is the same override as anywhere else.
+        return MealBreakdownCalculator.superseding(snapshot, withUserTotal: macros)
+    }
+
+    /// Where the meal total came from, said only when it is worth saying — a
+    /// plain estimate returns nil, so no row gains a line that adds nothing.
+    private var macrosProvenanceLine: String? {
+        MealCopy.provenance(
+            source: entry.feedback?.macrosProvenance ?? .estimated,
+            isAdjusted: false
+        )
+    }
+    /// The breakdown this build can render, and therefore the one it can edit.
+    private var editableBreakdown: MealBreakdown? {
+        guard let breakdown = entry.feedback?.breakdown, breakdown.isSupported else { return nil }
+        return breakdown
     }
     private var isSavedMealEntry: Bool {
         entry.source == .savedMeal
@@ -101,13 +142,25 @@ struct LogEntryDetailSheet: View {
 
                     if let macros = entry.feedback?.macros {
                         DetailMacroSummaryCard(macros: macros)
+
+                        if let macrosProvenanceLine {
+                            Text(macrosProvenanceLine)
+                                .font(.circaMono)
+                                .foregroundStyle(Color.circaAccent)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
 
                     if let score = entry.feedback?.goalFitScore {
                         GoalFitProgressCard(score: score, goalType: entry.feedback?.goalType)
                     }
 
-                    if !estimatedItems.isEmpty {
+                    // `meal-contract.md` §3: a breakdown is edited, an older
+                    // totals-only meal keeps the read-only card it was written
+                    // with, and neither invents detail for the other.
+                    if let breakdown = entry.feedback?.breakdown, breakdown.isSupported {
+                        MealBreakdownCard(breakdown: breakdown)
+                    } else if !estimatedItems.isEmpty {
                         EstimatedItemsCard(items: estimatedItems)
                     }
 
@@ -142,6 +195,14 @@ struct LogEntryDetailSheet: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    if editableBreakdown != nil {
+                        Button("Edit amounts", systemImage: "ruler") {
+                            onClearActionError?()
+                            showBreakdownEditor = true
+                        }
+                        .disabled(isPerformingAction)
+                        Divider()
+                    }
                     Button("Edit Manually", systemImage: "slider.horizontal.3") {
                         onClearActionError?()
                         showManualEditSheet = true
@@ -184,10 +245,23 @@ struct LogEntryDetailSheet: View {
                 .disabled(isPerformingAction)
             }
         }
+        .onAppear {
+            if opensEditor, editableBreakdown != nil {
+                showBreakdownEditor = true
+            }
+        }
+        .sheet(isPresented: $showBreakdownEditor) {
+            if let breakdown = editableBreakdown {
+                MealBreakdownEditorSheet(breakdown: breakdown) { corrected in
+                    onSaveBreakdown?(corrected)
+                }
+            }
+        }
         .sheet(isPresented: $showManualEditSheet) {
             if let macros = entry.feedback?.macros {
                 ManualMacroEditSheet(
                     initialMacros: macros,
+                    supersedesBreakdown: editableBreakdown != nil,
                     onSave: onSaveMacros
                 )
             }
@@ -231,7 +305,7 @@ struct LogEntryDetailSheet: View {
                     initialDescription: nil,
                     macros: saveableMealMacros
                 ) { name, description, macros in
-                    let meal = SavedMeal(id: UUID().uuidString, userId: entry.userId, name: name, description: description, macros: macros)
+                    let meal = savedMeal(named: name, description: description, macros: macros)
                     Task {
                         if await savedMealsViewModel.saveSavedMeal(meal) {
                             showSaveMealSheet = false

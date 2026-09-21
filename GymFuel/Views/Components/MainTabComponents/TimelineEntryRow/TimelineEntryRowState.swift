@@ -56,6 +56,19 @@ struct TimelineEntryRowState {
         feedback?.goalFitScore != nil
     }
 
+    /// The one assumption line the row shows, or nil when there is nothing to
+    /// say — including after a typed total, which clears both of its sources.
+    var assumptionLine: String? {
+        let all = MealBreakdownCalculator().assumptions(of: feedback)
+        return MealCopy.assumptionLine(count: all.count, lead: all.first)
+    }
+
+    /// Whether tapping that line has an editor to open.
+    var hasEditableBreakdown: Bool {
+        guard let breakdown = feedback?.breakdown else { return false }
+        return breakdown.isSupported
+    }
+
     var isMealImageEntry: Bool {
         let rawInput = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
         return imageStoragePath != nil ||

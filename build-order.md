@@ -71,7 +71,7 @@ fresh session reads this file, not the chat history.
 - [x] **4d** · Your targets screen
 - [x] **4e** · The Weight screen
 - [x] **4f** · The plan screen in onboarding
-- [ ] **5** · Meal contract and editable meal client
+- [x] **5** · Meal contract and editable meal client
 - [ ] **6** · Meal backend, references and saved-meal round trip
 - [ ] **7** · Personal-target and day-aware Goal Fit · **required for launch**
 - [ ] **7a** · Visual sweep and final share card

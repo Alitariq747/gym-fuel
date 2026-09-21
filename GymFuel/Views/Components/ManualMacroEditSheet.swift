@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ManualMacroEditSheet: View {
     var onSaveMacros: ((Macros) -> Void)? = nil
+    /// Whether saving here will discard an item breakdown — `meal-contract.md` §6.
+    var supersedesBreakdown: Bool = false
 
     @Environment(\.dismiss) private var dismiss
     @State private var caloriesText: String
@@ -10,8 +12,13 @@ struct ManualMacroEditSheet: View {
     @State private var fatText: String
     @FocusState private var isInputFocused: Bool
 
-    init(initialMacros: Macros, onSave: ((Macros) -> Void)? = nil) {
+    init(
+        initialMacros: Macros,
+        supersedesBreakdown: Bool = false,
+        onSave: ((Macros) -> Void)? = nil
+    ) {
         self.onSaveMacros = onSave
+        self.supersedesBreakdown = supersedesBreakdown
         _caloriesText = State(initialValue: Self.string(initialMacros.calories))
         _proteinText = State(initialValue: Self.string(initialMacros.protein))
         _carbsText = State(initialValue: Self.string(initialMacros.carbs))
@@ -34,6 +41,15 @@ struct ManualMacroEditSheet: View {
                     macroBox("Fat", suffix: "g", text: $fatText)
                 }
                 Spacer(minLength: 0)
+                if supersedesBreakdown {
+                    // Said here, beside Save, rather than in a dialog afterwards:
+                    // the user should know what a typed total costs while they are
+                    // deciding what to type.
+                    Text("Saving a total you type will remove the item breakdown and its assumptions — they describe a different meal. The total stays.")
+                        .font(.footnote)
+                        .foregroundStyle(Color.circaAccent)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 Button {
                     isInputFocused = false
                     guard let updatedMacros else { return }

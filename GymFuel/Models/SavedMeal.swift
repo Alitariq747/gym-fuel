@@ -14,6 +14,15 @@ struct SavedMeal: Codable, Identifiable, Equatable {
     var description: String?
     var macros: Macros
     var createdAt: Date
+    /// The corrected version, kept so re-logging costs no AI call and loses none
+    /// of the user's work — `meal-contract.md` §8. `nil` on a meal typed by hand,
+    /// which is a permanent state and not a legacy one.
+    @Lenient var breakdown: MealBreakdown? = nil
+    /// The meal-wide assumptions. Node assumptions ride inside `breakdown`.
+    var assumptions: [String]? = nil
+    /// Carried so a re-logged correction does not present itself as a fresh
+    /// estimate, or a typed total as anything but typed.
+    var macrosProvenance: MealProvenance? = nil
 
     init(
         id: String,
@@ -21,7 +30,10 @@ struct SavedMeal: Codable, Identifiable, Equatable {
         name: String,
         description: String? = nil,
         macros: Macros,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        breakdown: MealBreakdown? = nil,
+        assumptions: [String]? = nil,
+        macrosProvenance: MealProvenance? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -29,6 +41,9 @@ struct SavedMeal: Codable, Identifiable, Equatable {
         self.description = description
         self.macros = macros
         self.createdAt = createdAt
+        self.breakdown = breakdown
+        self.assumptions = assumptions
+        self.macrosProvenance = macrosProvenance
     }
 }
 

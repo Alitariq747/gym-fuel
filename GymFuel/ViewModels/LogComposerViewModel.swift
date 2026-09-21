@@ -405,11 +405,16 @@ final class LogComposerViewModel: ObservableObject {
             detail: meal.description,
             feedback: LogEntryFeedback(
                 explanation: "Saved meal logged directly.",
-                assumptions: [],
+                // The snapshot is copied in, so the new entry carries the same
+                // corrections and assumptions the saved version was kept for.
+                // Later edits to that saved meal never reach back here.
+                assumptions: meal.assumptions ?? [],
                 confidence: nil,
                 macros: meal.macros,
                 goalFitScore: nil,
-                estimatedItems: nil
+                estimatedItems: nil,
+                breakdown: meal.breakdown,
+                macrosProvenance: meal.macrosProvenance
             )
         )
 

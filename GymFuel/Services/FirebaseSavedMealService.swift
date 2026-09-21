@@ -17,6 +17,9 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
         let description: String?
         let macros: Macros
         let createdAt: Date
+        @Lenient var breakdown: MealBreakdown? = nil
+        let assumptions: [String]?
+        let macrosProvenance: MealProvenance?
     }
 
     private func savedMealsCollection(for userId: String) -> CollectionReference {
@@ -25,7 +28,17 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
 
     private func decodeSavedMeal(from snapshot: QueryDocumentSnapshot) throws -> SavedMeal {
         let document = try snapshot.data(as: SavedMealDocument.self)
-        return SavedMeal(id: snapshot.documentID, userId: document.userId, name: document.name, description: document.description, macros: document.macros, createdAt: document.createdAt)
+        return SavedMeal(
+            id: snapshot.documentID,
+            userId: document.userId,
+            name: document.name,
+            description: document.description,
+            macros: document.macros,
+            createdAt: document.createdAt,
+            breakdown: document.breakdown,
+            assumptions: document.assumptions,
+            macrosProvenance: document.macrosProvenance
+        )
     }
 
     private func decodeSavedMeal(skippingFailuresFrom snapshot: QueryDocumentSnapshot) -> SavedMeal? {
@@ -43,7 +56,16 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
 
     private func encodeSavedMeal(_ meal: SavedMeal) throws -> [String: Any] {
         try Firestore.Encoder().encode(
-            SavedMealDocument(userId: meal.userId, name: meal.name, description: meal.description, macros: meal.macros, createdAt: meal.createdAt)
+            SavedMealDocument(
+                userId: meal.userId,
+                name: meal.name,
+                description: meal.description,
+                macros: meal.macros,
+                createdAt: meal.createdAt,
+                breakdown: meal.breakdown,
+                assumptions: meal.assumptions,
+                macrosProvenance: meal.macrosProvenance
+            )
         )
     }
 
@@ -94,7 +116,11 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
         var data = try encodeSavedMeal(meal)
         data["updatedAt"] = FieldValue.serverTimestamp()
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            docRef.updateData(data) { error in
+            // A full replace, for the reason `updateEntry` uses one: encoding
+            // omits a nil field, so a superseded breakdown would survive a merge.
+            // It also writes a meal whose document has gone, which `updateData`
+            // refuses to do.
+            docRef.setData(data) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {

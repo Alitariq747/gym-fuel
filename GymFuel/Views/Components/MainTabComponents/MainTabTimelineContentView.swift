@@ -4,6 +4,7 @@ struct MainTabTimelineContentView: View {
     @ObservedObject var viewModel: TimelineViewModel
     let localPreviewData: (String) -> Data?
     let onSelectEntry: (LogEntry) -> Void
+    let onEditEntryAmounts: (LogEntry) -> Void
     let onRetryEntry: (LogEntry) -> Void
     let onDeleteFailedEntry: (LogEntry) -> Void
     let onSuccessRevealCompleted: (String) -> Void
@@ -76,7 +77,8 @@ struct MainTabTimelineContentView: View {
                 shouldAnimateSuccessReveal: shouldAnimateSuccessReveal,
                 onSuccessRevealCompleted: shouldAnimateSuccessReveal ? {
                     onSuccessRevealCompleted(entry.id)
-                } : nil
+                } : nil,
+                onTapAssumption: { onEditEntryAmounts(entry) }
             )
         }
         .buttonStyle(.plain)
