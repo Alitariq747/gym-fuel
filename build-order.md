@@ -639,16 +639,46 @@ precise list when planning each implementation part.
 one → see the delta → save → reopen with the correction intact, while unaffected
 ingredients retain their values. No final share-card layout until Step 7a.
 
+**Closed 21 September**, in eight parts, against `meal-contract.md`. Two things
+carried forward rather than fixed:
+
+- **`MealBreakdownEditorSheet` holds its own draft-building and validation**, so
+  the rule *typing the original amount back clears the correction* is verified by
+  tapping, not by a test. The part ran 47% over the size limit and this was the
+  agreed cost. Pull it into a pure type when something next touches that file.
+- **`MealFixtures.swift` and the `#if DEBUG` button in `ProfileView`** are Step 5
+  scaffolding — the only way to get a breakdown onto the timeline before the
+  backend sends one. Step 6 deletes both.
+
 ---
 
 ## Step 6 — Meal backend, references and saved-meal round trip
 
-- **Implement Step 5's contract end to end.** Align the AI schema, prompt,
-  normalizer, API responses, Swift models and persistence rules. The existing AI
-  schema already requests item nutrition, but the normalizer discards it; retain
-  it and add the structured component data needed for supported edits. Validate
-  totals and quantities rather than trusting a fluent explanation. Version or
-  adapt the response so installed clients continue to decode it.
+**The contract is `meal-contract.md`, settled 21 September.** Read it before
+anything else; §10 is the list of what this step's normalizer must guarantee, and
+a change to the shape is a two-repo edit that Step 6 may not make alone.
+
+- **Implement the contract end to end.** Align the AI schema, prompt, normalizer,
+  API responses, Swift models and persistence rules. The existing AI schema
+  already requests item nutrition, but `normalizeEstimatedItems` discards it;
+  retain it and add the structured component data the client now decodes.
+- **Validate, do not trust a fluent explanation.** Two requirements from §10 that
+  the current normalizer does not meet and that are real work:
+  - **Recompute `feedback.macros` server-side** from the contribution rule (§4),
+    rather than copying the model's own `totals`. Totals that reconcile are the
+    whole point of the breakdown; a copied number cannot be relied on to.
+  - **Enforce item-nutrition XOR priced components.** If the model returns both,
+    keep the item's own nutrition and strip nutrition from its components, leaving
+    them descriptive. Without this the no-double-counting guarantee is a
+    convention rather than a property.
+- **No wire compatibility with older builds — decided 21 September.** Firestore
+  holds no rows, so this was only ever about TestFlight installs, and testers
+  update. So: **delete `estimatedItems`, `EstimatedItem`, `EstimatedItemComponent`
+  and `LogEntryEstimatedItemsCard.swift` outright** rather than keeping a read path
+  alive for entries that do not exist — the same call as `LogEntryType` in Step 3 —
+  send only `breakdown`, and spend no time on response versioning. The `version`
+  field still ships, so the mechanism exists the day it starts to matter. **This
+  expires at the first real user**, like everything else in *The data is empty*.
 - **Preserve photo uncertainty.** Recognition must pass ambiguity and assumed
   quantities to nutrition estimation, rather than turning the most likely guess
   into a user-confirmed fact. Distinguish user text from a generated description.

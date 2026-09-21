@@ -188,8 +188,13 @@ One branch, one place:
 | `breakdown == nil`, `estimatedItems != nil` | the existing `EstimatedItemsCard`, read-only, untouched |
 | neither | nothing |
 
-`LogEntryEstimatedItemsCard.swift` is not edited in Step 5. Step 6 deletes it
-once every new entry carries a breakdown.
+`LogEntryEstimatedItemsCard.swift` is not edited in Step 5.
+
+**That branch is temporary, not part of the contract.** It exists only for the gap
+between Step 5 and Step 6, when the backend still sends `estimatedItems` and no
+`breakdown`. Step 6 deletes the card, the field and its types outright — see
+`build-order.md` Step 6. What survives permanently is the *totals-only* state
+below it, which a hand-typed saved meal and a superseded total both produce.
 
 ---
 
