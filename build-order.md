@@ -4,21 +4,27 @@ One ship, not six. The phases in `project-brief.md` are an ordering of *work*, n
 of releases — everything below goes out in a single binary and a single App Store
 submission.
 
-That changes the sequencing rule. Nothing here is ordered by "what's cheap to test
-first", because nothing reaches a user until all of it does. It is ordered by
-**hard dependency** and **discover-problems-early**.
+One public release still allows focused TestFlight checks before submission.
+Order the remaining work by **data contract, dependable meal editing, meaningful
+scoring, then presentation**. Steps 0–4 remain complete.
+
+**Agreed 19 September:** TestFlight users already liked explicit ingredient and
+portion assumptions. Finish that validated interaction with editable items in one
+meal, preserve corrected saved meals, and ship personal-target **and** day-aware
+Goal Fit together. This feedback establishes usefulness, not measured accuracy or
+paid retention. Steps 5–7 below own the implementation contract.
 
 ---
 
 ## The critical path
 
 ```
-decisions ──► all UI work ──► screenshots ──► submit ──► approval ──► CPPs
+meal schema ──► client + backend editing ──► Goal Fit ──► visual sweep + share card
+            ──► launch checks ──► screenshots ──► submit ──► approval ──► CPPs
 ```
 
-**Screenshots are the long pole.** They cannot be shot until the UI is final, and
-nothing can be submitted until they exist. Every step before them is really a race
-to unblock a photoshoot.
+**Screenshots follow working behavior.** The estimate, correction, saved-meal and
+scoring paths must agree before their presentation is finalized.
 
 **The redesign is inside this sequence, not beside it.** The app is being rebuilt
 visually as well as functionally — the whole system is specified in `design.md`
@@ -27,11 +33,11 @@ ordering is not optional:
 
 1. **Step 2a lands the tokens first**, so no screen is ever built twice.
 2. **Every step after it builds its own screens in the new language.** Steps 3,
-   3a, 4, 5 and 6 each touch or create surfaces; each one ships them looking
+   3a, 4, 5, 6 and 7 each touch or create surfaces; each one ships them looking
    like `design.md`, not like the current build. This is not extra scope on those
    steps — it is the same work done once instead of twice.
 3. **Step 7a sweeps the screens no other step rebuilds** — auth, settings, the
-   saved-meal sheets, the explainers. It is the last thing before screenshots
+   remaining sheets and explainers, plus the final share card. It precedes screenshots
    because it is the last thing that changes what a screenshot shows.
 
 Do not schedule "the redesign" as a phase. There isn't one.
@@ -40,11 +46,10 @@ Do not schedule "the redesign" as a phase. There isn't one.
 review, so they are genuinely post-launch work — but they need the new screenshots,
 so they cannot start early either.
 
-**Retention work comes after approval too.** Steps 12 and 14 each add a new target
-or a new review surface, and neither helps a listing with no installs. Retention
-matters once there is someone to retain. Two exceptions ship in the launch build:
-Step 3a, which is a leak, not a feature, and Apple Health body mass (Step 13),
-pulled forward into 4a2 because it feeds the Weight screen.
+**Additional retention surfaces come after approval.** State-aware reminders and
+widgets remain Steps 12 and 14. The core repeat-use experience ships at launch:
+corrected saved meals, meaningful Goal Fit, the plan and weight history. Onboarding
+notification opt-in and Apple Health body mass are already complete.
 
 ---
 
@@ -66,10 +71,10 @@ fresh session reads this file, not the chat history.
 - [x] **4d** · Your targets screen
 - [x] **4e** · The Weight screen
 - [x] **4f** · The plan screen in onboarding
-- [ ] **5** · Food wedge, client
-- [ ] **6** · Food wedge, backend
-- [ ] **7** · Day-aware goal-fit score · *first to cut*
-- [ ] **7a** · Visual sweep — the screens no other step rebuilds
+- [ ] **5** · Meal contract and editable meal client
+- [ ] **6** · Meal backend, references and saved-meal round trip
+- [ ] **7** · Personal-target and day-aware Goal Fit · **required for launch**
+- [ ] **7a** · Visual sweep and final share card
 - [ ] **8** · Rename
 - [ ] **9** · App Store Connect metadata
 - [ ] **10** · Screenshots and submit
@@ -211,7 +216,8 @@ every screen repeats:
 
 - the card, the section label (mono, uppercase, tracked), the hairline
 - **the certainty rule** — one modifier with three states: estimated (dotted),
-  known (none), pending (the rule alone, nothing above it). Rule 1 in `design.md`,
+  reference-based (none), pending (the rule alone, nothing above it). Saving or
+  editing an estimate never removes its uncertainty. Rule 1 in `design.md`,
   and the reason nothing jumps when an estimate lands
 - the four button tiers, with the dark-mode inversion of the primary built in
 - the macro bar row, the entry row, the restyled `LogActionDock`
@@ -593,81 +599,153 @@ flat, rising.
 
 ---
 
-## Step 5 — Food wedge, client · M
+## Step 5 — Meal contract and editable meal client
 
-Everything a screenshot needs to show.
+**Start with the contract, before implementation.** Describe the shared payload
+and persistence shape, worked examples, and the smallest next implementation part.
+Continue the existing small-step workflow; do not implement this entire step in
+one pass. Steps 5 and 6 share a contract and must be verified together.
 
-- **Assumptions on the timeline card.** `assumptions[]` currently sits one tap
-  deep in `LogEntryDetailSheet`. Surface it: *"Assumed 2 tbsp ghee · tap to
-  change"*. This is the product's personality and it is invisible today.
-- **Share card.** Render an entry — image, title, macros, score, the one-line
-  explanation — to an image, with a share sheet and a watermark. The app has no
-  sharing, export, invite or referral of any kind.
+- **One submission, one meal, several editable items.** "Two roti, chicken karahi,
+  half a katori rice" stays one timeline entry, with three items, a meal total and
+  one Goal Fit assessment. No independently scored roti/rice entries.
+- **Structured amounts and nutrition.** Define stable item/component identity,
+  numeric quantity and unit, nutrition for that amount, material assumptions, and
+  source information. Composite foods expose the major components users can
+  correct. Specify which components contribute to which totals so an ingredient
+  is never counted twice; displayed contributions reconcile within rounding.
+- **Predictable editing.** Scale an unchanged item/component using its stored
+  nutrition when its quantity changes. Changing ingredients or preparation can
+  request reinterpretation of the affected part. Apply several edits together;
+  preserve unaffected values. Show the calorie difference before saving. Whole-
+  meal rewording remains an explicit action, not a requirement for quantity edits.
+- **Honest provenance.** Distinguish estimated, user-adjusted and reference-based
+  values. Saving or editing does not establish accuracy. Preserve uncertainty
+  through edits and photo analysis; do not present model confidence as measured
+  accuracy. A manual total override must explicitly supersede or invalidate an
+  incompatible breakdown and explanation rather than showing both as consistent.
+- **Assumptions on the timeline.** Surface the most consequential assumption,
+  with a route into the editor; keep the full breakdown in meal detail.
+- **Saved-meal contract.** Preserve the corrected items, amounts, assumptions,
+  source information and meal description in a reusable snapshot. Re-logging
+  copies that version; later saved-meal edits do not rewrite previous logs.
+  Older totals-only meals remain usable and never gain invented component detail.
 
-**Files** `TimelineEntryRow*` · new share-card view · `MainTabView`
+**Likely files** `LogEntryFeedback.swift` · `SavedMeal.swift` · meal detail/editor
+views and view models · `TimelineEntryRow*` · serialization services. Confirm the
+precise list when planning each implementation part.
 
-**Done when** shots 02, 03 and 06 can be taken, and a card can be posted to
-Instagram Stories in one tap.
-
----
-
-## Step 6 — Food wedge, backend · M
-
-Client and AI service together; coordinate the schema change.
-
-- **Multi-item split** — one sentence becomes several entries. Schema + prompt in
-  the AI service, then `LogComposerViewModel` stops assuming one entry per submit.
-- **Portion reference set** — 100–200 dishes you can verify, in household measures
-  (katori, roti vs paratha, a plate of biryani, home-cooking oil). A JSON file plus
-  prompt instructions. **Not a `foods` collection.**
-
-  > **Spread it across cuisines** — Step 0 closed cuisine-agnostic on 11 September.
-  > The examples above are desi because the brief was; they are no longer the
-  > shape of the set. What generalises is the **household measure**, not the dish
-  > list — a katori, a cup, a ladle, a piece, a home-sized pour of oil — so build
-  > the set around measures several cuisines share and verify dishes across them.
-  > Still 100–200 you can actually check; still server-side, so it extends without
-  > a build.
-- **Move image analysis off `gpt-5.4`** (`src/ai/imageRecognizer.js:27`) and stop
-  routing exercise text through the vision path.
-- **Goal framing in the prompt.** `logEntryPrompt.js:76` tells the model that
-  `lean_bulk` means *"carbs that support training and recovery"*, and `:98` repeats
-  the register. Step 2 changes the display strings; this is the same vocabulary
-  sitting in the model's reasoning on every estimate, where users never see it but
-  every explanation inherits it. Rewrite the goal rules at `:55,76,98`. If you
-  rename the `GoalType` raw values, do it here — the token rename is nearly free
-  while these lines are already open, and pointless otherwise. Sites:
-  `logEntryRoute.js:36`, `logEntryPrompt.js:55,76,98`, and six in
-  `logEntryScoring.js` (`:23,27,112,149,165,276`).
-
-**Done when** *"two roti, chicken karahi, half a katori rice"* produces three
-correctly-portioned entries, and per-scan cost is measured rather than assumed.
+**Done when** client fixtures support inspect → edit mayonnaise from two tbsp to
+one → see the delta → save → reopen with the correction intact, while unaffected
+ingredients retain their values. No final share-card layout until Step 7a.
 
 ---
 
-## Step 7 — Day-aware goal-fit score · M · **first thing to cut**
+## Step 6 — Meal backend, references and saved-meal round trip
 
-Not required for launch. Every screenshot caption works with the current score.
-Cut this before cutting anything else.
+- **Implement Step 5's contract end to end.** Align the AI schema, prompt,
+  normalizer, API responses, Swift models and persistence rules. The existing AI
+  schema already requests item nutrition, but the normalizer discards it; retain
+  it and add the structured component data needed for supported edits. Validate
+  totals and quantities rather than trusting a fluent explanation. Version or
+  adapt the response so installed clients continue to decode it.
+- **Preserve photo uncertainty.** Recognition must pass ambiguity and assumed
+  quantities to nutrition estimation, rather than turning the most likely guess
+  into a user-confirmed fact. Distinguish user text from a generated description.
+- **Verify household measures.** Begin with roughly 30–50 documented meal/recipe
+  cases and preparation variants, using weighed recipes or credible references.
+  Use Pakistani/home-cooked examples the founder and testers can evaluate, plus
+  everyday meals across cuisines. Step 0's brand remains cuisine-agnostic. State
+  serving sizes, cooked/raw basis and oil allocated to the eaten portion, not the
+  whole cooking pot. A server-side reference file can grow toward 100–200 cases
+  later; this is not a searchable food database or a required new user study.
+- **Finish saved-meal reuse.** Verify corrected breakdowns, assumptions and source
+  information survive saving, re-logging and relaunch. Repeat logging needs no AI
+  call. Automatic learning across unrelated meals is outside this launch.
+- **Measure quality and cost together.** Use existing usage/cost telemetry for
+  text, photo recognition plus analysis, corrections and failed attempts. Compare
+  cheaper image models on the same examples before switching; no automatic
+  downgrade based on model name. Exercise interpretation stays removed.
+- **Rewrite the gym-oriented prompt.** Nutrition estimates describe the meal;
+  Step 7 owns contextual Goal Fit and its explanation. Remove bodybuilding and
+  generic goal verdicts that would contradict it. Raw goal tokens need not change;
+  rename only as a coordinated compatibility-aware edit if it adds value.
 
-- Port `logEntryScoring.js` (~470 lines, pure arithmetic) to Swift.
-- Compute on read from stored macros + current day state + current goal.
-  `goalFitScore` stops being a stored field.
-- Remove the `scoreFoodLog` call from `normalizeLogEntryFeedback.js` once verified.
-- **Judge meal size against the user's own calorie target.** Today the server uses
-  the same bands for everyone (`scoreEnergyFit`, `logEntryScoring.js:160`): on Lose
-  fat a 450 kcal meal scores top marks and a 900 kcal meal about 30, whatever the
-  user's daily target is. Found 17 September.
-
-**Why it's worth doing eventually** it closes three flags at once — scores frozen
-at log time, scores going stale when the goal changes, and `logSavedMeal` writing
-`goalFitScore: nil` so re-logged saved meals vanish from every score surface.
+**Done when** both text and photo paths produce one meal with editable items,
+totals reconcile, quantity edits preserve unrelated items, saved versions round-
+trip correctly, and per-completed-meal cost and observed errors are recorded.
 
 ---
 
-## Step 7a — Visual sweep · M
+## Step 7 — Personal-target and day-aware Goal Fit · **required for launch**
 
-The screens no other step rebuilds. By here, Steps 3, 3a, 4, 5 and 6 have shipped
+**Meaning:** how this meal contributes to the user's personal calorie and macro
+targets, considering earlier logged meals on the same day. The chosen goal informs
+the saved targets; the score must not add generic goal penalties that contradict
+those targets. It is not a health grade, a probability of weight loss or a verdict
+that a food is good or bad. Assess the whole meal, not its components separately.
+
+**Design the assessment before the formula.** Write representative cases and the
+plain-language judgment each should receive, then choose factors, weights and
+score bands. Those numerical choices are still to be settled in this step; do
+not invent them during a mechanical port of `logEntryScoring.js`.
+
+Rules agreed 19 September:
+
+- Use the user's saved targets and this meal's nutrition. Replace absolute meal-
+  calorie bands and repeated protein rewards. No universal ideal meal size or
+  assumption that everyone eats three meals. Snacks need proportionate treatment.
+- Use **earlier meals by logged time**, not arrival time or the day's final total.
+  Count each meal once and define a stable tie-break for equal timestamps.
+  Adding dinner does not change breakfast. Editing, deleting or backdating an
+  earlier meal updates affected later assessments; moving a meal updates both
+  affected days. Pending/failed entries are not zero-calorie successes.
+- State **"Based on your logged meals"**. Missing logs do not prove fasting, a
+  complete day, or permission to eat a particular amount. If required targets or
+  day context have not loaded, show an unavailable/pending state, never a fabricated
+  score. Handle already-exceeded and zero remaining targets without division by
+  zero, negative allowances presented as advice, or compensatory restriction.
+- Do not reward minimal calories automatically, or keep rewarding protein beyond
+  the relevant target. A low score must identify the concrete contribution or
+  tradeoff; it must not imply a forbidden food or a failed day.
+- Keep estimate uncertainty separate. Changing confidence alone must not change
+  Goal Fit. Unsupported claims about sugar, fiber, health or satiety cannot be
+  inferred from calories and macros alone.
+- Return the score **and its explanatory factors from the same pure calculation**.
+  Render the explanation from those factors; do not pair a contextual score with
+  the old AI-generated goal judgment. No new inference call when the day changes.
+- Saved meals and manual corrections use the same calculation. Never retain a
+  stale score/explanation after changing nutrition. Do not average meal scores
+  into a day score: a whole-day assessment has different semantics. A new numeric
+  day/week score is not required by this step.
+- Preserve Step 4's current-target policy: no target history is added. Historical
+  assessments use today's saved targets and must be labeled **"Using your current
+  targets"**; they are not a reconstruction of targets at the time. Explicit target
+  changes can therefore change historical assessments, even though later meals do
+  not. Never silently present current-target results as historical facts.
+
+**Implementation direction.** A pure Swift calculator derives the assessment on
+read from meal nutrition, preceding same-day entries and saved targets. New-client
+UI ignores stored legacy scores. Preserve the old server contract for installed
+clients until it can safely be retired; no blind parity port of the old formula.
+
+**Acceptance cases, before screenshots:** the same meal with different personal
+targets; different preceding intake; a snack and a main meal; protein already met;
+calories already exceeded; an empty/partial diary; confidence-only changes; a
+quantity correction; a saved meal; backdated, moved and deleted entries; equal
+timestamps; unavailable context; a target change on a historical day. Adding a
+later meal leaves earlier scores unchanged. Verify arithmetic with focused pure-
+logic tests and check that users can explain the main reason for the result.
+
+**Done when** personal-target and day-aware behavior work together, score and
+explanation agree, and the cases above hold. TestFlight confirmation focuses on
+understanding and edit consistency; it is not a restart of discovery.
+
+---
+
+## Step 7a — Visual sweep and final share card · M
+
+The screens no other step rebuilds. By here, Steps 3, 3a, 4, 5, 6 and 7 have built
 their own surfaces in the new language; this is the remainder, and it is the last
 thing that changes what a screenshot shows.
 
@@ -677,8 +755,13 @@ thing that changes what a screenshot shows.
 - **Settings** — the hub, reminders, appearance, delete account. The targets screen
   is built in 4d. Weight is **shown, never edited** — it comes from weigh-ins or the
   trend stops being a measurement.
-- **Saved meals** — picker, list, add, edit.
-- **Explainers** — the goal-fit sheet, nutrition sources.
+- **Saved meals** — finish styling the picker/list; Steps 5–6 own editor behavior.
+- **Explainers** — align the goal-fit sheet and nutrition sources with Step 7.
+- **Share card** — finalize after meal editing and scoring. Render the meal image,
+  description, nutrition, key assumption and explanation, with a share sheet and
+  watermark. If a score is shown, identify it as personal and based on logged meals;
+  do not publish weight, targets or other meals implicitly. Verify the supported
+  system share flow; do not promise one-tap Instagram posting before testing it.
 - **Onboarding metric steps** — gender, age, height, weight, activity. One
   template, five screens; the canvas draws it once as `Onboarding · weight`.
 - **Day picker and menu** — the two-scale nav model. Day and Week only, no Month.
@@ -688,11 +771,12 @@ thing that changes what a screenshot shows.
 Then delete the old system: `Color.liftEatsCoral`, the four `Fuel*` colorsets, and
 any remaining emoji in view code (the paywall carried eight, the summary step four).
 
-**Done when** no screen in the app still renders from the old palette, and a walk
-from launch to paywall to settings looks like one app in both themes.
+**Done when** no screen in the app still renders from the old palette, a walk
+from launch to paywall to settings looks like one app in both themes, and the final
+meal card can be exported through the system share sheet.
 
-> **Not on the cut list.** Everything above the line in *If time runs short* can
-> go; this cannot. Shots 01–06 are taken from these screens, and a listing that
+> **The visual sweep is not on the cut list.** Optional share-card variants can
+> wait, but the core visual consistency cannot. Shots 01–06 use these screens, and a listing that
 > mixes two visual systems reads as abandoned rather than minimal.
 
 ---
@@ -736,9 +820,13 @@ All of this ships with the version. Copy is written and paste-ready in
 
 ## Step 10 — Screenshots and submit · M
 
-Six captions, in `store-copy.md`. Shot 04 needs Step 3 shipped and 05 needs 4e or
-4f; 02, 03 and 06 need Step 4. **All six need Step 7a** — a shot of a half-converted screen is
-worse than no shot.
+Six captions, in `store-copy.md`. Shots 01–03 need Steps 5–6; 04–05 need the
+completed Step 4; 06 needs Step 7. **All six need Step 7a.**
+
+Before shooting, confirm text/photo logging, reconciled totals, predictable edits,
+saved-meal reuse, scoring explanations, failure recovery and cost telemetry. Use
+existing TestFlight participants for a focused pass through the changed experience.
+Keep broader onboarding, trial and pricing experiments after launch.
 
 > **Shot 05's caption, "They move as your weight moves", is no longer true.**
 > Targets are saved and change only when the user acts (Step 4). The shot shows the
@@ -872,22 +960,20 @@ device with no snapshot yet shows a sensible empty state rather than zeros.
 
 ## If time runs short
 
-Cut in this order. Everything above the line still makes a coherent launch.
+Reduce optional breadth first; do not reopen completed Steps 0–4.
 
-1. **Step 7** — day-aware score. Nothing depends on it.
-2. **Step 6's portion set** — ship 50 dishes instead of 200; extend later without
-   a build, it is server-side.
-3. **Step 9's cross-localization** — the primary locale alone is a valid listing.
-4. **Step 3a** — last, and reluctantly. It is an S, so cutting it saves little, and
-   the cost is launching with reminders off for every user until Step 12.
+1. **Reference-set expansion** — keep the documented launch cases; defer growth
+   toward 100–200 and additional cuisine coverage.
+2. **Step 9's cross-localization** — the primary locale alone is a valid listing.
+3. **Share-card variants and destination-specific integrations** — keep one
+   readable card and the system share sheet.
 
 Steps 12 and 14 are not on this list. They are after approval either way, and
 Step 13 already shipped as 4a2.
 
-**Never cut:** Step 1 (rejection risk the moment the trial changes), Step 2a
-(everything after it assumes the tokens exist), Step 3's rebate removal (corrupts
-what the Weight screen shows), Step 4 (it is the reason anyone pays), or Step 7a
-(the screenshots come off those screens).
+**Required for launch:** completed Steps 0–4, the editable meal and saved-version
+contract (5–6), personal-target **and** day-aware Goal Fit (7), and the coherent
+visual sweep (7a). The old generic score is not the launch fallback.
 
 ---
 

@@ -18,6 +18,12 @@ see — a goal weight, a steady line to it, and saved targets that change only w
 the user changes them — plus a Weight screen. The goal bullets in the description,
 Shot 05 and the cheques below are rewritten to match.
 
+Revised 19 September: copy now describes one meal with editable items, preserved
+saved versions, and personal-target **and** day-aware Goal Fit at launch. Earlier
+TestFlight users liked explicit assumptions. Claims about exclusive competitor
+capabilities and unverified search-result counts have been removed. This remains
+launch copy, conditional on the completion checks below.
+
 ---
 
 ## Sequence this correctly
@@ -130,10 +136,10 @@ users who pay most.
 indexes ten locales, so the real budget is up to 1,440 characters, not 100. Fill
 this field first, then spill the overflow into secondary locales.
 
-### Promotional Text — 160 / 170
+### Promotional Text — 148 / 170
 
 ```
-Most calorie apps are built around barcodes and packaged food. Most of what you eat isn't. Describe your meal in plain words — and see every assumption we made.
+Understand the food you actually eat. Describe your meal, see the portions and ingredients assumed, correct your version, and save it for next time.
 ```
 
 Sits above the description on the product page. **Rotate weekly against creator
@@ -145,36 +151,36 @@ lost on ranking grounds but wins on conversion. This field costs nothing to chan
 and needs no review, so it is where that line earns its place before it takes a
 subtitle slot.
 
-### Description — ~1,802 / 4,000
+### Description — 1,963 / 4,000 (with Pro placeholder)
 
-Only the first three lines show before the fold on iPhone, which is why the aloo
-gobi line leads: it is *always* true, because it is a claim about variance rather
-than absence.
+Lead with the user's own food and the correction experience. Show the product's
+behavior instead of asserting that other apps cannot do it.
 
 ```
-Search "aloo gobi" in a normal calorie app and you get forty entries, from 80 to 400 calories. None of them are how your mum makes it.
+Understand the calories in the food you actually eat — including the way you make it.
 
-Circa doesn't have a food database. You say what you ate — "two roti, chicken karahi, half a katori rice" — and it works out the calories and macros from the description. Then it shows you every assumption it made, so you can fix the ones that are wrong.
+Tell Circa what you ate — "two roti, chicken karahi, half a katori rice" — or take a photo. See one meal with an estimated breakdown of its items, portions, calories and macros.
 
-That's the whole difference. Other apps hand you a number and hope you trust it. Circa shows its working.
+Circa shows the ingredients and quantities it assumed. Less mayonnaise in your wrap? A smaller portion of rice? Correct the amount, see the difference, and save your version for next time.
 
 WHAT IT'S GOOD AT
 
-• Home-cooked food. Karahi, daal, biryani, salan — described the way you'd describe them to a person. In rotis and katoris, not grams of a branded product.
-• Restaurant and street food that was never in anyone's database.
+• Home-cooked food. Karahi, daal, biryani, salan — describe the meal in familiar portions such as rotis, katoris and cups.
+• Restaurant and street food. Describe your order and review the estimate's assumptions.
 • Photos, when you'd rather not type. Point the camera at the plate.
-• Being corrected. Every estimate comes with its confidence, its assumptions, and a breakdown per item. Change any of it, or re-run it with a better description.
+• Being corrected. Adjust item quantities, or describe a change in ingredients or preparation. See how the meal total changes.
+• Honest uncertainty. Review what was assumed. Saving an estimate does not make it an exact measurement.
 
 WHEN YOU'RE WORKING TOWARD SOMETHING
 
 • Lose fat, maintain or gain. Set a goal weight and see a steady path to it, with protein, carbs and fat worked out for you — not a generic diet template.
 • Targets that show their working. Every number comes with the reason behind it, and nothing changes unless you change it.
-• Every meal scored out of 100 against your goal, with the reasoning behind it.
+• Goal Fit with a reason. See how a meal contributes to your personal targets, considering the meals you logged earlier that day. Based on your logged meals; not a health rating.
 • Your weigh-ins against your plan. Weigh in by hand or sync from Apple Health, and see how it's going.
 
 SAVED MEALS
 
-The things you eat every week — your shake, your breakfast, your usual order — saved once, logged in a tap.
+Your breakfast, your usual order, your own recipe — save the corrected breakdown and its assumptions, then log that version again without starting over.
 
 Circa PRO
 
@@ -183,10 +189,10 @@ Circa PRO
 Nutrition figures are estimates for general guidance, not medical or dietary advice. Sources are listed in the app.
 ```
 
-**Keep the Pro block in sync with the actual intro offer.** A mismatch between
-listing copy and App Store Connect is a 3.1.2 rejection — and the paywall itself
-still hardcodes `"3-day"` at `SubscriptionPaywallSheet.swift:351,364,379`, which
-becomes blocking the moment the trial changes to 14 days.
+**Keep the Pro block in sync with the actual intro offer.** Step 1 is complete:
+the paywall reads the trial length from StoreKit. Launch pricing and the trial
+remain as decided in `build-order.md` Step 0. Replace the placeholder before
+submission and verify the listing against the configured offer.
 
 ---
 
@@ -197,12 +203,12 @@ first, depth second.
 
 | # | Caption | Job |
 |---|---|---|
-| 01 | Forty entries for aloo gobi. None of them yours. | The problem |
+| 01 | Understand the food you actually eat. | The promise |
 | 02 | Just say what you ate. | The solution |
 | 03 | It shows you what it assumed. You fix what's wrong. | The trust |
 | 04 | Targets from your bodyweight and your goal. | The depth |
 | 05 | Your plan, and how it's going. | The plan |
-| 06 | Every meal scored — with the reason. | Retention |
+| 06 | How this meal fits your day — with the reason. | Personal targets and earlier logged meals |
 
 Shots 1–3 sell the food problem to everyone; 4–6 sell the goal side to the people
 who will actually pay.
@@ -215,44 +221,47 @@ For creators, for the App Store, for anyone who asks what you're building.
 
 **One sentence**
 
-> Every calorie app is a database of packaged food. This is the one that works on
-> the food you actually cook.
+> Understand the food you actually eat: see what went into the estimate, correct
+> what's different, and save your version.
 
 **Thirty seconds**
 
-> Calorie apps were built around barcodes. That works for a protein bar and falls
-> apart on dinner. Search "aloo gobi" in MyFitnessPal and you get forty entries
-> between 80 and 400 calories — none of them your mum's.
+> Your wrap, biryani or homemade dinner depends on the ingredients and portions
+> you actually ate. Circa lets you describe the meal or take a photo, then shows
+> the estimated breakdown and what it assumed.
 >
-> This app has no food database at all. You describe the meal the way you'd
-> describe it to a person — "two roti, chicken karahi, half a katori rice" — and it
-> estimates from the description. Then it tells you what it assumed: two
-> tablespoons of ghee, a 30 cm roti. If that's wrong, you change it.
+> If it assumed two tablespoons of mayonnaise and you used one, correct the
+> amount and see the difference. Save your version so next time is easier.
 >
-> Every other app hands you a number and hopes you trust it. This one shows its
-> working.
+> Goal Fit explains how the meal contributes to your targets, considering what
+> you've already logged that day.
 
-**The load-bearing word is "assumed".** It is the one thing no competitor can say,
-because none of them store their reasoning. We already do — `confidence`,
-`assumptions[]` and `estimatedItems` are on every entry. It converts "the AI is
-guessing" from the objection into the feature. If a line has to be cut, cut
-anything else first.
+**Demonstrate the correction.** Earlier TestFlight feedback supports the value of
+explicit assumptions. The launch demonstration should show an actual edit and its
+effect, then reuse the saved version. Competitors also expose sources or editable
+ingredients; do not claim that assumptions or explanations are exclusive to Circa.
 
 ---
 
 ## What this copy promises that the build doesn't yet deliver
 
-Six lines are writing cheques against unbuilt work. **Ship them before the listing
-goes live, or soften the lines until you have.**
+**Verify every promise before the listing goes live.** Steps 0–4 are complete;
+the remaining food and scoring promises depend on Steps 5–7.
 
 | Copy | Gap |
 |---|---|
 | "It shows you what it assumed" | True, but buried one tap deep in `LogEntryDetailSheet` — needs to be on the timeline card |
-| "two roti, chicken karahi, half a katori rice" | Three entries from one sentence; `LogComposerViewModel` creates one entry per submission |
-| "Set a goal weight and see a steady path to it" | Goal weight is `build-order.md` Step 4c; the path is the onboarding plan screen, 4f |
-| "Every number comes with the reason behind it, and nothing changes unless you change it" | Saved targets are 4c, the targets screen 4d, the reasons 4f |
-| "Your weigh-ins against your plan" | The Weight screen is Step 4e |
-| Shot 05, "Your plan, and how it's going" | Needs Step 4e or 4f. **Do not ship this caption before it exists.** |
+| One meal with an editable breakdown | Steps 5–6 retain one meal, expose structured quantities/nutrition and reconcile the totals |
+| Correct an amount and see the difference | Steps 5–6 preserve unaffected items and show the resulting change |
+| Save the corrected version | Step 6 preserves breakdown, assumptions and provenance through save/re-log/relaunch |
+| "Set a goal weight and see a steady path to it" | Steps 4c–4f complete; verify final visuals and wording before capture |
+| Targets change only when the user acts | Step 4 complete; this promise applies to targets, not derived Goal Fit assessments |
+| "Your weigh-ins against your plan" and Shot 05 | Step 4e complete; capture the actual plan screen |
+| Shot 06 and contextual Goal Fit | Step 7 must deliver personal-target and day-aware assessment together, with an explanation from the same factors |
+
+Historical assessments use current saved targets and say so. Adding a later meal
+does not alter earlier scores; correcting an earlier log can affect later scores.
+Do not advertise permanent scores, verified accuracy or an overall health grade.
 
 ---
 
@@ -329,10 +338,11 @@ listing therefore has to carry every cuisine, which is why the name and subtitle
 stay generic. Custom Product Pages are how the specificity gets delivered to the
 people it is for — see above.
 
-Swapping beachhead is mechanical: dish names in the keywords, dish names in the
-description bullets, one screenshot. Nothing structural changes, because the real
-claim is that packaged-food databases don't cover what people cook.
+The brand stays broad. Launch examples can emphasize Pakistani/home-cooked meals
+the founder and testers know, alongside everyday foods. Expanding a cuisine lane
+requires checking its portions and preparation assumptions as well as changing
+the marketing examples.
 
-**Arabic is the best second localisation** — high Gulf ARPU, large South Asian
-expat populations, and its own uncovered cuisine. Post-launch. **Not Urdu or
-Hindi:** that acquires the users who can't cover our inference cost.
+**Additional localisation follows `build-order.md`.** Urdu and Hindi remain out
+of this launch's scope. Future choices should use observed demand, regional
+proceeds and inference cost, rather than assuming a language cannot monetize.

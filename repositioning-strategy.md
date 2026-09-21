@@ -9,9 +9,19 @@ scrap-exercise decisions, 14 September for the pace check, 16 September for the
 weekly page, and 17 September for the plan and saved targets — see Revision notes
 at the end.
 
+**Decision update, 19 September.** Steps 0–4 are complete. Ahmad reports that
+TestFlight users already liked explicit ingredient and portion assumptions. The
+remaining launch work strengthens that experience: one meal with editable items,
+predictable corrections, reusable saved versions, and personal-target **and**
+day-aware Goal Fit together. This feedback supports usefulness, not measured
+estimation accuracy or paid retention. `build-order.md` Steps 5–7 own the contract.
+
 ---
 
 ## 01 · Diagnosis — from the schema, not the copy
+
+This section records the pre-revamp diagnosis. F1 and F2 describe the old build;
+completed Step 4 now provides weight history, revised maths and saved targets.
 
 `product-as-built.md` gets there on its own: *"an AI-interpretation meter for a
 food journal, with an exercise-shaped calorie rebate bolted onto the same table,
@@ -102,7 +112,7 @@ Every non-US winner in calorie tracking won on **food localisation**:
 | Fitia | Spanish / LatAm | 10M users · YC '21 | ~2M foods, each nutritionist-reviewed, filterable by country |
 | HealthifyMe | India | 40M users · ₹229 Cr FY24 | 12 years of crowd contributions, 100k+ regional dishes |
 | Yazio | Germany / EU | 50M users · ~$2.8M/mo EU | 2.5M foods incl. European supermarket brands |
-| Calorify | Pakistan | New, small | ~190 hand-verified desi home foods + local chain menus |
+| Calorify | Pakistan | Early competitor | Its website advertises 355 home dishes, local menus, source labels and editable orders (reviewed 19 September; marketing claims, not independently tested) |
 | Loqma | South Asia | New, small | Hand-verified desi dishes in household portions |
 
 Fitia's own Sensor Tower claim is that it outranks MyFitnessPal, Lose It,
@@ -111,26 +121,26 @@ LatAm markets — without beating any of them on features.
 
 ### The asset the first draft under-read
 
-**Every one of those moats is a database.** Fitia needed nutritionists and YC
-money. HealthifyMe needed twelve years and forty million contributors. Calorify
-and Loqma are hand-curating a few hundred dishes each, which is why they are
-still small.
+Circa can interpret a description without requiring the user to find an exact
+food record. That supports mixed meals and preparation variants, but absence of
+a database does not establish accuracy or exclusive capability. Documented
+ingredient/portion references remain useful without building a searchable catalog.
 
-Our schema has **no `foods` collection, no barcode, no serving registry, no USDA
-identifier**. The first draft filed that as a limitation. In the localisation play
-it is the advantage: the app never looks food up, it reasons about a sentence.
-Reaching "understands home-cooked desi food" is a prompt and a reference set for
-us, and a decade of curation for them.
+**The product promise:** understand the calories in the food you actually eat,
+see what went into the estimate, correct what's different, and save your version.
 
-**The unowned position is not a cuisine. It is the property underneath it: we
-don't need to know what the food is called.**
+The current schema already contains assumptions and component descriptions, and
+Ahmad's TestFlight users liked examples such as assumed mayonnaise or cooking oil.
+The revamp must make those assumptions quantitatively useful: contributions add
+up, edits have predictable effects, and a saved version keeps its reasoning.
+One sentence remains one meal with several editable items.
 
-What turns that from a guess into a product is also already in the schema. Every
-entry carries `confidence`, `assumptions[]` and `estimatedItems` with
-per-component amounts. No competitor surfaces its reasoning. An app that says
-*"I assumed two tablespoons of ghee and a 30 cm roti — change it if I'm wrong"* is
-having a conversation; every other app hands you a number and dares you to trust
-it.
+**Competitive correction, 19 September.** [Calorify](https://www.calorify.pk/)
+advertises Official/Derived/Estimated source labels, ingredient-based modelling,
+editable orders and free home-food logging. [MacroFactor](https://help.macrofactorapp.com/en/articles/258-ai-food-logging)
+documents photo/text input, editable portions and expandable ingredients. These
+features are not exclusive to Circa. Compete on the quality and ease of explaining
+and correcting a user's version; do not claim competitors cannot show their work.
 
 ### Two candidate positions
 
@@ -138,8 +148,8 @@ it.
 |---|---|---|
 | Mouth width | Narrow — lifters running structured phases | Wide — anyone eating home-cooked or non-Western food |
 | Who owns it | MacroFactor, Carbon, RP — entrenched | Fitia/HealthifyMe by region; desi contested by three small apps |
-| Our edge | Marginal — see correction below | Go-to-market: nobody targets diaspora |
-| Cost to reach | Build the engine first; nothing to say until it ships | Mostly prompt work, a reference set, listing copy |
+| Our edge | Marginal — see correction below | Founder knowledge and a concrete meal-correction demonstration; diaspora is a segment to test |
+| Cost to reach | Build the engine first; nothing to say until it ships | Structured editing, verified examples, dependable explanations and focused distribution |
 | Content hook | Weak — an algorithm is hard to film | Strong — "watch MyFitnessPal try to log my mum's biryani" |
 | Unit economics | Good — US/UK/EU pricing | Risky in-region; the money is diaspora |
 
@@ -173,11 +183,12 @@ Under that frame the competitive picture reads differently:
 - **calog.cc** is web-first. Not in App Store search, not in the listicles, no
   iOS push, no home-screen presence. Same pitch, different surface. Not a
   competitor for the channel we're fighting on.
-- **Calorify** is the real benchmark, and the lesson is *distribution*, not
-  product: on the App Store, growing dish coverage, free-forever home logging.
-  Free-tier pressure is real and comes from here, not from the pitch overlap.
-- **MacroFactor** is stronger than this document said, but has no desi food and
-  is not going to acquire one.
+- **Calorify** is a benchmark for product experience and distribution: growing
+  coverage, source labels and free home logging. Compare actual correction flows
+  instead of assuming it only offers a small static database.
+- **MacroFactor** already supports AI descriptions and editable ingredients. The
+  earlier claim that it has no desi food and cannot gain it is not a defensible
+  basis for positioning.
 
 ### Resolution
 
@@ -204,6 +215,24 @@ constraint, not ARPU** — the listing currently shows "insufficient ratings to
 display" — and trading price for audience is correct while that holds.
 
 ### Why the retention half is worth building regardless
+
+**Launch scoring decision, 19 September.** Goal Fit must use both personal saved
+targets and earlier logged meals on the same day. Its job is to explain a meal's
+contribution and tradeoffs. The old goal-category formula is being redesigned,
+not merely moved to Swift. Write example judgments before choosing weights.
+Confidence stays separate, and the numerical score and explanation share the same
+computed factors. More protein cannot earn unlimited rewards, and a small meal
+does not automatically fit well just because it contains fewer calories.
+
+Meal context follows logged time: dinner does not change breakfast; corrections
+to earlier intake can change later assessments. Say "Based on your logged meals".
+Because Step 4 stores only current targets, historical assessments are explicitly
+labeled as using current targets. No target-history system or adaptive coach is
+being reopened. A separate numeric day/week score is not required for launch.
+
+Saved corrected versions complement the plan: repeated meals become easier to log
+without repeated AI calls. Whether this improves retention is measured after launch;
+TestFlight enthusiasm for assumptions is not proof of subscription renewal.
 
 A **plan the user can see**: a goal weight, a steady line to it — 0.5% of body
 weight a week when losing, 0.25% when gaining — daily targets with a plain reason
@@ -256,15 +285,14 @@ Position B is chosen partly *because* of this section. An adaptive algorithm is
 nearly impossible to film; a database failing at your dinner is a fifteen-second
 video that makes itself.
 
-**Start here: there is no viral surface at all.** No sharing, no export, no invite,
-no referral. Meanwhile every log entry already produces a scored, explained,
-image-backed card that is exactly the shape of an Instagram story. A share card is
-the cheapest growth mechanic available and it does not exist. Build it before
-contacting a single creator, because every channel below leaks without it.
+**Show the meal correction first.** A creator can demonstrate an assumption, an
+edit and the resulting calorie difference before a share card exists. Finalize the
+card after the meal and scoring contracts, in Step 7a. Sharing is a distribution
+experiment, not guaranteed virality or a prerequisite for creator conversations.
 
 | Channel | Cash cost | Needs from the product | Honest read |
 |---|---|---|---|
-| Share cards | $0 | Entry card render, one tap to Stories | Compounding, permanent, entirely in our control |
+| Share cards | $0 cash, implementation time | Final meal card and system share sheet, Step 7a | Measure actual exports and acquisition; no guaranteed growth loop |
 | Nano seeding | ~$0–500 | Lifetime codes; a 15-sec demo that lands | 83% of creators accept gifting alone if they like it. 20–50 nano creators (1k–10k) is the opening move |
 | Own account | $0 | Nothing — the failure demos exist today | Slow, but it's how we learn which hook converts before paying anyone |
 | Long-tail ASO | $0 | Subtitle + keyword rewrite | Cuisine and homemade terms near-uncontested; indies under-invest here |
@@ -288,12 +316,19 @@ carrying a 500-scan inference bill on a full vision model.
 | Pro Monthly | $5.99 | $5.09 | $5.09 | $0.0102 / scan |
 | **Pro Yearly** | **$49.99** | **$42.49** | **$3.54** | **$0.0071 / scan** |
 
-Excludes Firestore, Storage and Cloud Run. Apple's 15% assumes Small Business
-Program enrolment; 30% if not, which roughly halves the headroom again. An annual
-subscriber who uses their quota is near break-even before infrastructure — our
-best customers are our least profitable, which is backwards.
+Excludes taxes, refunds, acquisition, Firestore, Storage and Cloud Run. Apple's
+15% assumes applicable Small Business Program enrolment. At a 30% commission,
+the annual plan's monthly equivalent is about $2.92 rather than $3.54. These are
+revenue ceilings, not measured contribution margins. Use existing backend usage
+telemetry to measure text, photo, correction and failure costs per completed meal.
+Compare model quality and cost on the same documented examples before switching.
 
-**Three changes:**
+**Launch stays $5.99/month, $49.99/year and a three-day trial**, as decided in
+`build-order.md` Step 0. The first two proposals below are post-launch experiments,
+not requirements for this submission. Existing TestFlight feedback supports the
+assumption experience; pricing and paid retention still need their own evidence.
+
+**Commercial follow-ups:**
 
 1. **Trial to 14 days.** Revised 17 September. The original case was that the
    weekly page needed 14 days of weigh-ins before it could show anything. That case
@@ -306,8 +341,9 @@ best customers are our least profitable, which is backwards.
    surface means anchoring against Cal AI and Yazio rather than MacroFactor. The
    case is weaker than when this was written: a goal weight and a progress graph
    are expected, where a coach was not. Grandfather existing subscribers.
-3. **Rename the entitlement.** `ai_scans` is a cost centre wearing a product's
-   name. Keep the scan quota as an internal abuse limit, not a headline feature.
+3. **Keep the entitlement `ai_scans`.** Its internal name is not a product promise;
+   renaming it breaks installed clients. Market the meal experience rather than
+   treating the scan quota as the headline benefit.
 
 **What $10k MRR requires.** At $7.99/$54.99 with the category-typical 68% of
 revenue from annual plans, blended net lands near **$4.80 per subscriber per
@@ -326,13 +362,12 @@ four years of word of mouth from a pre-existing research audience. We have neith
 a budget nor an audience. §04 gives channels that cost only time, and that is the
 honest ceiling on speed.
 
-**Cuisine-first can worsen unit economics.** Inference cost is dollar-denominated;
-App Store revenue in Pakistan and India is not, and converts at a fraction of US
-rates. Calorify charges ~100 PKR/month (~$0.36) — that cannot fund a `gpt-5.4`
-vision call at any volume. **The money in this play is the diaspora**, not the home
-market: US, UK, Canada and Gulf accounts, where someone pays Western prices to log
-the food they grew up eating. Fitia followed exactly this shape — LatAm for scale,
-Spain and the US for revenue.
+**Regional economics need measurement.** Inference is billed in dollars, while
+regional prices, acquisition and usage vary. Diaspora is a promising segment, not
+proof that Pakistan cannot support a business. Calorify's website reviewed on
+19 September advertises PKR 249/month and free home-food logging; the older PKR 100
+comparison was stale. Evaluate regional proceeds and actual costs, including
+saved-meal reuse. Do not infer profitability from a country or language alone.
 
 **The desi niche is not empty, just weakly held.** Calorify, Loqma, Khana AI and
 NutriScan are already there. That validates demand and costs us the first-mover
@@ -361,13 +396,14 @@ risks remain:
   10 kg lost on the 0.5% plan, a target left alone loses about 20% slower than the
   line. Recalculate is the answer, and "Set at 85 kg on 3 Sep" is the reminder.
 
-**Founder-audience fit degrades.** Ahmad is a lifter and writes for lifters
-instinctively. Writing for general home cooks is a different muscle, and untested.
+**Founder knowledge is an asset with limits.** Ahmad knows Pakistani meals and has
+positive TestFlight feedback on explicit assumptions. Use that knowledge in launch
+examples while keeping Circa cuisine-agnostic. Broader cuisine accuracy and paid
+retention remain to be demonstrated.
 
-**The paywall was re-verified on 7 September** and is sound apart from one thing:
-the trial length is a hardcoded string rather than read from StoreKit, which
-becomes a rejection risk the moment the offer changes to 14 days. Step 1 of
-`build-order.md`.
+**The paywall trial fix is complete.** Step 1 reads trial length from StoreKit.
+Keep listing copy and configured offers aligned; neither pricing nor trial length
+changes in this launch.
 
 ---
 
@@ -375,6 +411,12 @@ becomes a rejection risk the moment the offer changes to 14 days. Step 1 of
 
 Conclusions in earlier versions that were superseded have been corrected in place
 rather than deleted, so the reasoning stays legible:
+
+- **Food and scoring scope, 19 September:** recorded the founder's TestFlight
+  evidence; one meal retains editable items and saved provenance; predictable
+  corrections precede the share card. Personal-target and day-aware Goal Fit are
+  both launch requirements, with example-led formula design and matching reasons.
+  Competitive exclusivity claims and the entitlement-rename proposal were removed.
 
 - **The ceiling argument (§03)** was the wrong objection. Market size was never
   the problem; incumbency is.
@@ -403,8 +445,8 @@ rather than deleted, so the reasoning stays legible:
 
 Also decided after this document was first written, and recorded in
 `project-brief.md` rather than here: exercise logging is removed entirely, the
-goal-fit score becomes day-aware and therefore client-side and derived, and App
-Store metadata cannot segment cuisines by country in English.
+goal-fit score becomes personal-target-based and day-aware, calculated client-side,
+and App Store metadata cannot segment cuisines by country in English.
 
 ---
 

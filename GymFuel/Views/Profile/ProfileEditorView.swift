@@ -61,9 +61,12 @@ struct ProfileEditorView: View {
     }
     
     // Weight — displayed, never edited here. See `bodyMetricsCard`.
+    /// Shared with the weigh-in sheet, so a pounds user reads pounds here too.
+    @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
+
     private var weightPrimaryText: String {
         guard let kg = draft.weightKg, kg > 0 else { return "—" }
-        return BodyWeight.displayString(kilograms: kg, unit: .kilograms)
+        return BodyWeight.displayString(kilograms: kg, unit: BodyWeightUnit(rawValue: unitRawValue) ?? .kilograms)
     }
     
     var body: some View {

@@ -3,40 +3,37 @@
 Working contract for the repositioning. The *argument* for it lives in the strategy
 doc and copy deck (see References); this file is the implementation scope only.
 
-Written 6 September 2026, revised 7, 14, 16 and 17 September. Supersedes any earlier paywall-pass scope; the
-remaining subscription work is Step 1 of `build-order.md`.
+Written 6 September 2026, revised 7, 14, 16, 17 and 19 September. Steps 0–4 in
+`build-order.md` are complete, including the paywall trial fix. That file owns
+progress and the detailed meal/scoring contracts; this brief summarizes scope.
 
 ---
 
 ## The decision, in one paragraph
 
-LiftEats currently positions as an AI calorie tracker and monetises inference —
-the entitlement is literally `ai_scans`. That is Cal AI's business at Cal AI's
-price, without Cal AI's distribution. We reposition onto the one thing our
-architecture is structurally better at than any competitor: **we have no food
-database, so we can estimate food that isn't in anyone's database.** Home-cooked,
-regional, mixed, unmeasured food. Goal-driven users stay the paying audience —
-a goal weight with a plan to it, targets the user controls and goal-fit scoring
-all remain — but
-**lifting comes off the surface**: out of the name, out of the subtitle, out of
-the primary copy.
-Lifters become one subset of the audience rather than the whole of it.
+Circa helps people understand and log their actual meals: describe or photograph
+food, inspect its estimated ingredients and portions, correct the version, and
+save it for next time. Goal-driven users get a plan, user-controlled targets and
+personal-target **and** day-aware Goal Fit. Lifting comes off the surface; lifters
+remain one subset of the audience. The `ai_scans` entitlement stays unchanged.
 
 ---
 
 ## Positioning
 
-**Thesis.** Every calorie app is a database of packaged food. Most of what people
-actually eat isn't in one.
+**Thesis.** A useful estimate explains the user's version of a meal and makes
+corrections dependable. A food name alone does not specify its recipe or portion.
 
-**Beachhead.** South Asian / desi home cooking, targeted at the **diaspora**
-(US, UK, Canada, Gulf App Store accounts) — not the home market. Inference cost is
-dollar-denominated and local-market App Store revenue is not; see Risks.
+**Audience.** Step 0 closed the brand as cuisine-agnostic. Launch examples can
+emphasize Pakistani/home-cooked food the founder and TestFlight users know, plus
+everyday meals across cuisines. Diaspora is a promising acquisition segment;
+regional willingness to pay and costs remain measurements, not settled facts.
 
-**Retention.** A plan the user can see: a goal weight, a steady line to it, and
-every weigh-in plotted against that line, with targets that change only when the
-user changes them. This is why they stay past week six and why they pay more than
-$2.49.
+**Evidence and retention.** Ahmad reports that TestFlight users liked explicit
+ingredient and quantity assumptions. That supports finishing the interaction; it
+does not establish measured accuracy or paid retention. Corrected saved meals,
+understandable Goal Fit, and the existing plan/weight screen are the repeat-use
+experience to evaluate after launch.
 
 **Why this positioning, given four apps say something similar.** Not because it is
 unownable by others — in a market where an AI-coded competitor ships a matching
@@ -44,7 +41,7 @@ feature in a week, defensibility is not on the menu at our size. It is chosen
 because it is the angle that **distributes**: filmable, searchable, and adjacent
 to creator communities that exist. calog.cc shares the pitch but is web-first —
 not in App Store search, not in the listicles, no iOS push. Calorify is the real
-benchmark, and the lesson there is distribution and a free tier, not the pitch.
+benchmark for product experience, distribution and free-tier expectations.
 We stop optimising for a moat and start optimising for a channel.
 
 **Explicitly not.** We are not a workout tracker. Hevy owns that at $2.99 with a
@@ -72,10 +69,9 @@ We therefore cannot segment cuisines by country in English. Instead:
 have high ARPU, large South Asian expat populations, *and* their own uncovered
 cuisine (machboos, kabsa, mandi). Two underserved audiences, one localisation.
 
-**Do not add Urdu or Hindi localisations.** That acquires precisely the users who
-cannot cover our inference cost. Custom per-storefront pricing exists, but a
-100 PKR/month subscription (Calorify's price) cannot fund a `gpt-5.4` vision call
-at any volume — price segmentation does not rescue the home market.
+**Urdu and Hindi localisations remain outside this launch.** Future expansion
+depends on observed regional demand, proceeds and inference cost. A language or
+country alone does not establish whether a subscriber can be served profitably.
 
 ---
 
@@ -111,24 +107,34 @@ language, not the token** — rename only while already editing those lines. See
 RevenueCat, so the risk is builds in the wild rather than stored rows, and an empty
 `users` collection does not prove no such install exists.
 
-### 2. The food wedge — `Phase 1`
+### 2. The food experience — Steps 5–6, share card in 7a
 
-- **Share card.** Render an entry — image, title, macros, goal-fit score, the
-  one-line explanation — as a shareable image. The app currently has no sharing,
-  no export, no invite, no referral. This is the only viral surface we have and it
-  does not exist.
-- **Surface `assumptions[]` on the timeline card**, not one tap deep in
-  `LogEntryDetailSheet`. "Assumed 2 tbsp ghee · tap to change". This is the
-  product's whole personality and it is currently hidden.
-- **Portion reference set.** Household measures the databases don't hold — katori,
-  medium roti vs paratha, a "plate" of biryani, home-cooking oil quantities. A
-  JSON file plus prompt instructions in the AI service. Start at 100–200 dishes we
-  can verify. **Not** a `foods` collection — do not build a database.
-- **Split multi-item text entries.** One sentence → several entries. Schema and
-  prompt change in the AI service; `LogComposerViewModel` currently creates one
-  entry per submission.
+The detailed contract lives in `build-order.md` Steps 5–6. Agree on the schema
+before editing code, then implement in the existing small-step workflow.
 
-### 3. Exercise — minimal now, deletion later
+- **One meal with editable items.** One submission retains its context, with
+  structured quantities, item/component nutrition and reconciled totals.
+- **Visible assumptions.** Show the most consequential assumption on the timeline
+  and the full editable breakdown in detail.
+- **Predictable corrections.** Quantity changes scale stored nutrition without AI;
+  ingredient/preparation changes can reinterpret the affected part. Apply edits
+  together, show the delta and preserve unrelated values. Manual total overrides
+  cannot silently coexist with an incompatible breakdown or explanation.
+- **Preserved provenance.** Estimates remain estimates after editing or saving.
+  Carry uncertainty through photo recognition and nutrition analysis; distinguish
+  generated descriptions from user text.
+- **Saved versions.** Keep the corrected items, quantities, assumptions, source
+  information and description. Reuse without inference, copy into each log, and
+  do not rewrite old entries when the reusable version changes. Support older
+  totals-only meals without inventing a breakdown.
+- **Documented references.** Start with roughly 30–50 meal/recipe cases and
+  preparation variants, then expand after launch. Household measures need explicit
+  serving and preparation assumptions. No searchable food database.
+- **Share card.** Finalize in Step 7a after editing and scoring. Show the meal,
+  nutrition, key assumption and explanation; a score must carry its personal/logged-
+  meal context without exposing private target or weight data automatically.
+
+### 3. Exercise — removed in completed Step 3
 
 Decided 7 September, replacing the earlier "demote to context". Once lifting is
 off the surface, exercise logging has no remaining job:
@@ -147,45 +153,13 @@ off the surface, exercise logging has no remaining job:
 Deleting it removes a cost centre with zero revenue attached — every exercise log
 burns an AI call for a number nothing will read.
 
-**Do the two-line version now; defer the sweep.** The full removal touches 26
-Swift files and 3 AI-service files — a whole cycle. It is not worth blocking the
-listing on. Ship only:
+**Completed in Step 3.** The rebate, workout input and exercise branches were
+removed before the plan work. The earlier proposal to defer the sweep is
+superseded. `ActivityLevel` now includes normal weekly exercise in the four
+options established by Step 4. Do not restore an exercise log, burn import or
+calorie rebate while implementing meal scoring.
 
-1. Remove the rebate at `DailyMacroDetailSheet.swift:12`
-   (`target - consumed + burned`) and the "Burned" tile at `:31`. **This is the
-   part that matters** — eaten-back calories would defeat the plan later.
-2. Stop offering workout logging in the composer. Leave the code in place.
-
-Everything below is the deferred sweep, scheduled after the listing ships.
-
-**Deferred scope: 26 Swift files, 3 AI-service files.** `ExerciseEstimate`, the 11-case
-activity enum, `estimatedCalories`, the calories-burned mode in
-`ManualMacroEditSheet`, the Burned tile, `workoutLogsThisWeek`, `caloriesBurned`
-in `DailyStatsSnapshot`, `StatsActivitySummaryRow`, the exercise branch in
-`normalizeLogEntryFeedback`, and the exercise rules in `logEntryPrompt.js`.
-
-**Two things that are not free:**
-
-- ~~**Existing entries.**~~ **No longer a constraint.** `type: food|exercise`
-  discriminates the shared `logEntries` collection, and the plan was to keep
-  `LogEntryType` and the *read* path so historical entries still render. Firestore
-  has no documents, so there is nothing to render: delete the read path with the
-  write paths, in one pass, owing no later cleanup.
-- **`NonTrainingActivityLevel` stops making sense** — it is named "non-training"
-  precisely because training was counted separately. Rename to activity level.
-  **No longer low stakes** (revised 14, 16 and 17 September): nothing measures
-  expenditure and nothing corrects the target automatically, so the multiplier sets
-  the starting target until the user recalculates or edits it. Step 4 replaces the
-  three options with four that include exercise (`build-order.md` Step 4, *The
-  rules*).
-
-Also removed: the sets ask at `OnboardingLoggingTipsStepView:133` and the "22
-total sets" worked example at `:42`.
-
-Audit finding #4 (bodyweight never reaches the burn estimator) is **closed as
-obsolete**, not fixed.
-
-### 4. The plan and saved targets — `Phase 3`
+### 4. The plan and saved targets — completed Step 4
 
 **Re-scoped three times.** An expenditure engine — estimate what the user burns from
 logged intake and trend weight, then set targets from that number — was dropped on
@@ -247,39 +221,36 @@ the BMI limits. Self-weighing is already cited from 4a.
 `weightKg` stays on `UserProfile` as the current value, for display; `weighIns` is
 the history. `EditWeightSheet` writes both.
 
-### 5. Day-aware goal-fit score — `Phase 4`
+### 5. Personal-target and day-aware Goal Fit — Step 7, required for launch
 
-`scoreFoodLog({ goal, macros, confidence })`
-(`gymfuel-ai-service/src/scoring/logEntryScoring.js:432`, called from
-`normalizeLogEntryFeedback.js:159`) sees one meal in isolation. It does not
-receive the day's running totals, the day's remaining allowance, the user's
-targets, or anything else. A 900 kcal meal is capped the same whether it is the
-user's first food of the day or their fourth.
+**Meaning:** how this meal contributes to personal calorie and macro targets,
+considering earlier logged meals that day. Both forms of personalization ship
+together. This is not an overall health grade or a prediction of weight loss.
 
-**The design consequence, which is forced rather than chosen:** a score that
-depends on day state *cannot* be frozen at log time, because day state keeps
-changing after the entry is written. Day-aware therefore implies **computed on
-read**, which implies **client-side**. Scoring is pure arithmetic — no AI call —
-so this is a port of ~470 lines of JS to Swift, not a redesign.
+`build-order.md` Step 7 owns the behavioral rules and acceptance cases. Before
+implementation, write the desired judgments for representative meals and contexts,
+then settle the factors, weights and score bands. These numbers are not yet agreed.
+Do not mechanically port the old goal-category scorer or seek parity with it.
 
-`goalFitScore` stops being a stored field on `feedback` and becomes derived from
-stored macros + current day state + current goal.
+A pure client calculation uses meal nutrition, saved targets and preceding same-
+day entries in stable logged-time order. Adding dinner never changes breakfast;
+editing, deleting or backdating an earlier entry updates affected later scores.
+Show "Based on your logged meals" and handle unavailable/incomplete context honestly.
+Saved meals and manual edits use the same calculation.
 
-That one change closes three separate flags at once:
+Score and explanation come from the same computed factors. Confidence is separate;
+small meals do not automatically win, and protein does not earn unlimited rewards
+after its target is met. No repeated protein criteria disguised as distinct factors.
+Handle snacks proportionately and avoid generic ideal meal sizes.
 
-- **Frozen at log time.** `goalType` is stamped client-side at log time and
-  nothing recomputes when the user later changes goal.
-- **Saved meals have no score.** `logSavedMeal` writes `goalFitScore: nil`, so a
-  re-logged meal silently drops out of every score-based surface while still
-  counting toward macros. Derived scoring fixes this for free.
-- **Score has no day-level or week-level rollup.** Once it is derived, a day
-  score is just the same function over the day's totals.
+Step 4's storage decision remains: current targets only, no historical target
+collection. Historical assessments therefore say "Using your current targets";
+explicit target changes may change them. They do not reconstruct past targets.
 
-Historical entries need no migration — macros are stored, so any past entry can
-be scored fresh. Ignore the stored `goalFitScore` rather than reading it back.
-
-The AI service keeps `scoreFoodLog` until the Swift port is verified against it,
-then the server-side call is removed from `normalizeLogEntryFeedback`.
+New-client views derive their assessment and ignore stored legacy scores. Keep
+legacy server fields compatible with installed clients until safe retirement.
+A numerical day/week score is not added implicitly: averaging meal scores or
+applying the same meal formula to day totals would have different semantics.
 
 ### 6. Monetisation
 
@@ -303,10 +274,8 @@ sub-4-day trials convert at a median of ~25.5 % against ~42.5 % for 17–32 days
 the strategy doc) — a conversion argument to test after approval, not a product
 constraint.
 
-**Changing the trial length makes the hardcoded trial string blocking.**
-`SubscriptionPaywallSheet.swift:351,364,379` renders `"3-day"` as a literal
-instead of reading `package.storeProduct.introductoryDiscount`. Fix it in Step 1 — if the App Store Connect intro offer says 14 days and the
-paywall says 3, that is a 3.1.2 metadata-mismatch rejection.
+**Step 1 is complete:** trial copy comes from StoreKit. Verify it against the
+configured offer before submission; the launch trial remains three days.
 
 Pricing is lower than the $9.99 in the strategy doc because dropping the lifting
 surface means anchoring against Cal AI ($2.49) and Yazio rather than MacroFactor
@@ -315,25 +284,23 @@ constraint while the listing shows "insufficient ratings to display".
 
 Grandfather existing subscribers.
 
-**Cost action:** move image analysis off `gpt-5.4`
-(`gymfuel-ai-service/src/ai/imageRecognizer.js:27`). At $49.99/yr the net is
-$3.54/mo against a 500-scan quota; a heavy annual subscriber is near break-even
-before infrastructure.
+**Cost action:** use existing telemetry to measure text, photo, correction and
+failure costs per completed meal. Compare cheaper image models on documented
+examples before switching. At $49.99/yr and a 15% commission, the monthly equivalent
+is about $3.54 before other costs; the quota alone does not prove the actual margin.
 
-### 7. Retention surfaces — `Phase 6`, after approval
+### 7. Additional retention surfaces — after approval
 
-Added 7 September. Three features, held back deliberately: each adds a new target,
-a new entitlement or a new review surface, and none of them helps a listing with no
-installs. Detail and sequencing live in `build-order.md` steps 12–14.
+State-aware reminders and widgets remain after approval. Onboarding opt-in and
+HealthKit body mass are complete and ship with the revamp. The core meal reuse
+and scoring experience remains required for launch. `build-order.md` owns timing.
 
 **Reminders that read the app's state.** The `ReminderService` note under *Noted,
 not scheduled* is now scheduled. Two halves, split across the launch boundary:
 
-- **Step 3a, in the launch build.** Reminders default to `.quiet` and the
-  permission ask is buried in Settings, so effectively nobody has them. An
-  onboarding opt-in fixes a leak; intelligence added to a feature nobody switches
-  on is worth nothing. It also makes the "Smart reminders" line already on the
-  paywall (`SubscriptionPaywallSheet.swift:25`) true rather than aspirational.
+- **Step 3a, complete.** Onboarding offers notification opt-in. This enables
+  reminders; it does not implement Step 12's state-aware suppression. Launch copy
+  must not promise suppression before that behavior ships.
 - **Step 12, after approval.** Local notification content is fixed at *schedule*
   time and a Notification Service Extension only intercepts push — so intelligence
   means rescheduling on every state change, not deciding late. Ranked: a weekly
@@ -343,8 +310,8 @@ not scheduled* is now scheduled. Two halves, split across the launch boundary:
 **HealthKit, body mass only — `Step 13`, done early as Step 4a2.** Read
 `HKQuantityTypeIdentifier.bodyMass` into `weighIns`, whose `source` field already
 anticipates it. This feeds the Weight screen directly: a user with a smart scale
-contributes every weigh-in after the first without typing it, and Phase 3's
-success criterion is a second weigh-in. **Read only — no write
+can contribute weigh-ins without typing them. Measure weight engagement alongside
+food reuse. **Read only — no write
 back**, so `NSHealthShareUsageDescription` is the only usage string. Request the
 one type, with a purpose string naming the actual use.
 
@@ -363,18 +330,16 @@ amplifier Cal AI reached *after* creators got them to ~$2M/month, never the engi
 
 | Channel | Cost | Needs |
 |---|---|---|
-| Share cards | $0 | Phase 1 |
+| Share cards | $0 | Step 7a, after meal editing and Goal Fit |
 | Nano-creator seeding, gifted codes | ~$0 | 20–50 creators, 1k–10k followers |
 | Own account — failure demos | $0 | Nothing; the demos exist today |
 | Long-tail ASO | $0 | Listing rewrite |
 | Comparison-site listings | $0 | Outreach |
 
-**Screenshot 1 stays "aloo gobi", not "mutton kunna".** Reverted 7 September.
-"No results for kunna" is falsifiable by a single user submission — MyFitnessPal
-carries ~20M user-added entries — which makes it a trust risk and an accurate-
-metadata risk sitting permanently in the listing. "Forty results, 80–400 calories"
-is always true, because it is a claim about variance rather than absence, and it
-makes the sharper point anyway: too many wrong answers is worse than none.
+**Demonstrate the user's meal and its correction.** Screenshot 1 follows the
+revised copy deck: "Understand the food you actually eat." Do not use unverified
+competitor result counts or blanket claims that other apps cannot explain food.
+Creator conversations can begin before the share card is built.
 
 Sequencing matters more than any single channel: each engine only starts once the
 previous one has proven the funnel converts.
@@ -383,36 +348,23 @@ previous one has proven the funnel converts.
 
 ## Sequence
 
-| | Scope | Gate |
+`build-order.md` is the source of truth. Its step numbers replace the older phase
+sequence; one public release still permits focused TestFlight checks beforehand.
+
+| Steps | Scope | Gate |
 |---|---|---|
-| **0** | Read the trial length from StoreKit on the paywall | Ships with everything else |
-| **1** | Share card · assumptions on the card · multi-item split · portion set · remove the calorie rebate | Needs the name decision |
-| **2** | App Store Connect: listing rewrite, cross-localization, Custom Product Pages | Needs Phase 1 screenshots |
-| **3** | Weigh-ins, trend weight, goal weight, saved targets, the Weight screen and the plan screen | The spine |
-| **4** | Day-aware goal-fit score | After 3 |
-| **5** | Exercise sweep + dead code | Any time after 1 |
-| **6** | State-aware reminders · HealthKit body mass · widgets | After approval |
+| **0–4** | Decisions, trial copy, design kit, exercise removal, notifications, HealthKit body mass, targets and weight plan | Complete |
+| **5** | Meal contract, editable client, visible assumptions | Agree schema before implementation |
+| **6** | Backend, documented references, saved-version round trip | Shared contract with Step 5 |
+| **7** | Personal-target and day-aware Goal Fit together | Example judgments before formula; both required for launch |
+| **7a** | Remaining visual sweep and final share card | Final meal and scoring presentation |
+| **8–10** | Rename, metadata, launch checks, screenshots, submission | Promises agree with working behavior |
+| **11–14** | CPPs/outreach, state-aware reminders, widgets | After approval; Step 13 already completed as 4a2 |
 
-The onboarding notification opt-in is the one piece of Phase 6 that ships with the
-listing — `build-order.md` Step 3a. It is a leak, not a feature.
+### Earlier exercise/dead-code audit — reference only
 
-Phase 2 is the largest distribution lever we have and costs no engineering — 70
-Custom Product Pages and up to 1,440 indexable characters across ten US-indexed
-locales. Details in `store-copy.md`. Budget four weeks after any keyword change
-before rankings settle.
-
-Phase 1 before the plan deliberately: it is cheap, testable as content the
-week it ships, and answers "does anything pull" before we spend weeks building.
-**Phase 1 must ship before the listing goes live** — the copy promises
-assumptions-on-card and multi-item logging, and neither exists yet.
-
-The rebate removal moves into Phase 1 because it is two lines and it protects the
-plan; the rest of the exercise deletion waits until after the listing is
-live.
-
-### Phase 5 — exercise sweep and dead code, enumerated
-
-From `product-as-built.md`, all verified as unreferenced:
+The following list came from `product-as-built.md` before completed Step 3.
+Do not treat it as new work or remove code without checking its current callers:
 
 - `MainTabGradientBackground` (`Extras/MainTabGradient.swift:3`) — no call site.
 - `SavedMeal.lastUsedAt` — declared, encoded, decoded, never written.
@@ -432,8 +384,8 @@ From `product-as-built.md`, all verified as unreferenced:
 
 ## Explicitly out of scope
 
-- A `foods` collection, barcode scanning, or any nutrition database. The absence
-  of one is the differentiator.
+- A `foods` collection, barcode scanning, or a searchable nutrition database.
+  Documented portion/ingredient references for estimates remain in scope.
 - Sets, reps, load, progression, or anything resembling a training log.
 - Social, feed, friends, coach marketplace.
 - Urdu or Hindi App Store localisations.
@@ -472,9 +424,9 @@ From `product-as-built.md`, all verified as unreferenced:
   merely dumb, they were off.
 - **`SavedMealsPickerSheet` is unreachable on older days.** It hangs off the
   `LogActionDock` bookmark button, which hides outside the today−7d…today window.
-- **Saved meals are severed from their origin.** `SaveLoggedMealSheet` drops
-  `estimatedItems`, `assumptions`, `confidence`, `rawInput` and the image; there
-  is no foreign key either direction. Partly resolved by derived scoring (Phase 4).
+- **Saved meals losing their explanation is now scheduled.** Steps 5–6 preserve
+  corrected meal snapshots and their assumptions/provenance. This does not require
+  a foreign-key relationship or automatic learning across unrelated meals.
 
 ---
 
@@ -490,12 +442,14 @@ From `product-as-built.md`, all verified as unreferenced:
    - **Keywords are stale.** The agnostic name means `desi` now appears nowhere in
      the listing, and `macros` duplicates the subtitle's *macro*. Proposed fix is in
      `store-copy.md` under Keywords, awaiting sign-off.
-2. **Beachhead cuisine.** Brief assumes desi. Swap is mechanical — dish names,
-   keywords, portion set — if a different community fits better. Thesis and
-   structure are unchanged either way. **Lower stakes now than when this was
-   written:** the name no longer encodes a cuisine, so a swap costs keywords and
-   screenshots rather than a rename.
-3. **`/api/log-entry/analyze`** — delete or wire up (Phase 5).
+2. **Cuisine scope is closed.** Broad brand, specific launch examples; see Step 0
+   and Step 6 in `build-order.md`. No rename or single-cuisine restriction.
+3. **Meal schema details.** Settle the payload, persistence and correction examples
+   at the beginning of Step 5.
+4. **Goal Fit factors, weights and bands.** The behavior and launch timing are
+   agreed; settle the numerical rubric using Step 7's cases before implementing it.
+5. **`/api/log-entry/analyze`** — inspect compatibility/callers during Step 6 before
+   deciding whether this older audit item still needs action.
 
 ---
 
@@ -503,9 +457,9 @@ From `product-as-built.md`, all verified as unreferenced:
 
 - **Distribution is the binding constraint and this brief barely touches it.**
   Free channels only, as above.
-- **Diaspora targeting is load-bearing.** In-region App Store revenue will not
-  cover dollar-denominated inference. If acquisition skews to the home market the
-  unit economics invert.
+- **Regional economics need measurement.** Diaspora is promising, while local
+  free competitors create price pressure. Measure proceeds and inference use per
+  cohort instead of declaring the home market unprofitable in advance.
 - **The niche is not empty — and it is filling faster than this brief assumed.**
   Measured against the App Store on 8 September, the desi calorie set is now at
   least six apps: MasalaFit (8 ratings, May 2026), Kalorist (4), Calorify (2,
@@ -518,8 +472,9 @@ From `product-as-built.md`, all verified as unreferenced:
   first**. The window is open and closing at the same time — whoever reaches ~50
   ratings first takes those terms. This argues for shipping sooner, not for
   abandoning the angle.
-- **Founder-audience fit degrades.** Ahmad is a lifter and writes for lifters
-  instinctively. Writing for general home cooks is a different muscle, untested.
+- **Founder knowledge is useful but bounded.** Ahmad's Pakistani food experience
+  and TestFlight feedback support the launch examples. Broader cuisine accuracy,
+  score usefulness and paid retention still need evidence.
 
 ---
 
@@ -528,9 +483,16 @@ From `product-as-built.md`, all verified as unreferenced:
 Directional, not forecasts. The install→paid figure is benchmark-derived, not
 measured — there is no funnel to measure yet.
 
-- **Phase 1:** listing live, share card shipped, ≥1 nano-creator post published.
-  Watch install→trial rate, not installs.
-- **Phase 3:** ≥40 % of trialists log a second weigh-in.
+- **Before submission:** text/photo → inspect → correct → save → re-log works,
+  totals reconcile, and Goal Fit matches its explanation across Step 7's cases.
+  Existing TestFlight users can confirm the changed interaction; no new broad
+  discovery study blocks launch.
+- **After launch:** measure first successful meal, correction completion, repeat
+  logging, saved-meal reuse, trial-to-paid and cost per completed meal. Reuse
+  existing telemetry and add only the events needed for gaps. A creator post and
+  a share-card export are distribution activity, not proof of retention.
+- **Weight engagement:** track second weigh-ins alongside food reuse rather than
+  treating them as the sole measure of value.
 - **12–18 months:** ~2,000 active subscribers ≈ $10k MRR at ~$4.80 blended net.
   At ~9 % install→paid that is ~30k downloads cumulative, and ~1,400/month
   sustained to hold against churn.

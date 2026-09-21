@@ -8,10 +8,13 @@ check-ins, phases or a weekly page. It builds a plan the user can see — a goal
 weight, a line to it, saved targets — and a Weight screen. Several artboards still
 carry the old copy — see *Canvas drift* under the cheques.
 
-> **This is a specification, not a description.** Nothing in this file is in the
-> build yet. `product-as-built.md` describes what the code does today — dark
-> screens, an amber ring, coral accents, emoji in the paywall. Everything below
-> replaces that. Do not read this file as documentation of the current app.
+Revised 19 September: one meal contains editable items, corrections preserve
+unaffected values, and saved meals retain their estimated provenance. Personal-
+target and day-aware Goal Fit ship together. These rules supersede older artboards.
+
+> **This is a specification, not a completion record.** The component kit and
+> Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
+> progress. Older product audits and artboards may describe superseded behavior.
 
 **The canvas** — every screen, at
 https://claude.ai/code/artifact/5039f517-40d9-4e28-860f-336719ab0cef
@@ -26,7 +29,7 @@ that lost, frozen as they were when the choice was made.
 **Circa is a journal, not a dashboard.** A dashboard opens with aggregate numbers
 and asks you to interpret them. A journal opens with what happened, in order, in
 your own words. The name means *approximately*, so the design is **comfortable
-being unsure** where every competitor performs false precision. An assumption is
+being unsure** and makes its estimation limits visible. An assumption is
 not a caveat to hide in grey 11pt — it is the product, and it looks like it.
 
 **What it is not:** not gym, not neon-on-black, not a fitness dashboard with six
@@ -162,30 +165,40 @@ The single most important rule, and the one that makes the name mean something.
 
 | State | Rendering |
 |---|---|
-| Estimated by the AI | Number carries a **1.5px dotted underline** |
-| Known — saved meal, or user-corrected | Number carries **no rule** |
+| Estimated, including a saved or user-adjusted estimate | Number carries a **1.5px dotted underline** |
+| Supplied reference value, such as a label | Number carries **no rule**, with its source identified; this is not a claim of exact real-world accuracy |
 | Not yet known — still analysing | **The dotted rule alone, with nothing above it** |
 
 That third row is why this works: the same mark that means "estimated" on a
 settled row means "not yet known" on a pending one, and **nothing jumps when the
 number lands**. No spinner, no zero, no placeholder digits.
 
-The confidence ring uses the same language — the unfilled arc is drawn dotted.
+Saving does not verify an estimate. A quantity correction may reduce one source
+of uncertainty while leaving the recipe uncertain. Keep source and user-adjustment
+information, with plain labels where needed. Mixed totals retain the estimate mark
+if any contributing nutrition is estimated. Direct manual totals are user-supplied,
+not verified; identify them without inventing supporting ingredient detail.
 
-`confidence` and `assumptions[]` are already on every entry. This rule is what
-makes them visible without a word of copy.
+Prefer specific uncertainty copy, such as "Sauce quantity assumed", to an
+uncalibrated confidence percentage. Never present model confidence as a measured
+accuracy rate, and never fold it into Goal Fit.
 
-### 2. One edit path, one AI call
+### 2. One meal, predictable corrections
 
-The entry screen shows assumptions but **does not let them be edited
-individually**. Each per-assumption edit would be its own inference call, and the
-margin does not survive that.
+One submission stays one meal. Show its editable items and material components
+with quantities and nutrition, followed by a reconciled meal total. The timeline
+surfaces the most consequential assumption and opens the same editor.
 
-The single edit path is **rewording the raw sentence** — one call, the whole meal
-re-read. The assumption list says so in place: *"Wrong? Reword the sentence above
-— Circa re-reads the whole meal in one go."*
+Changing the amount of an unchanged ingredient scales its stored nutrition without
+AI. Changing preparation or ingredients can reinterpret the affected part. Allow
+several edits to be applied together and show the resulting calorie difference;
+unaffected ingredients keep their values. Rewording the whole meal remains an
+explicit option. Do not silently replace unrelated values during a small edit.
 
-This matches `LogEntryDetailSheet`'s existing "Edit with AI" on `rawInput`. Keep it.
+A manual total override must not leave a contradictory breakdown or old explanation
+looking current. Follow the contract in `build-order.md` Step 5. Saving a corrected
+meal preserves its items, assumptions and provenance for the next time; later
+template changes never rewrite previously logged meals.
 
 ### 3. The raw sentence is the title
 
@@ -193,6 +206,10 @@ This matches `LogEntryDetailSheet`'s existing "Edit with AI" on `rawInput`. Keep
 rice"* — not laundered into "Chicken Karahi". `product-as-built.md` calls the raw
 sentence "the primary key of truth"; showing it is what makes this a journal, and
 it costs nothing because the data is already stored.
+
+For photo entries, identify a generated description as the app's interpretation,
+not words the user typed. Preserve the original input while making applied item
+corrections visible; the displayed breakdown describes the current saved version.
 
 ### 4. Weight is never typed
 
@@ -243,6 +260,29 @@ bars fill from the right, the thumbnail moves right. The artboards prove it.
 Inline SVG in the mockups, SF Symbols in the build. The current paywall carries
 eight emoji and the summary step four; all twelve go.
 
+### 11. Goal Fit explains a contribution in context
+
+Personal-target and day-aware scoring both ship at launch. The behavioral contract
+and acceptance cases live in `build-order.md` Step 7; exact factors and weights are
+settled there before implementation. This is a redesign, not a port of old bands.
+
+Show the score with its main explanatory factors and **"Based on your logged
+meals"**. It assesses this meal against saved targets and meals logged earlier that
+day. Later meals do not change an earlier meal's score; correcting earlier intake
+can change later assessments. An empty diary does not prove an empty stomach.
+
+Keep source uncertainty separate from nutritional fit. Avoid good/bad food labels,
+health grades, claims of weight-loss probability or instructions to compensate
+for an overage. Render explanation and score from the same computed factors.
+Missing targets or unloaded context show an unavailable/pending state, not zero.
+
+Step 4 stores only current targets. Historical assessments must say **"Using your
+current targets"** and can change when the user explicitly changes those targets.
+Do not imply that they preserve the plan in effect on the original date.
+
+No day score is obtained by averaging meal scores. A separate numerical day/week
+assessment is not required for launch. The existing daily totals remain useful.
+
 ---
 
 ## Screen inventory
@@ -252,12 +292,12 @@ Everything on the canvas, and what is not there yet.
 | Screen | Artboard | Notes |
 |---|---|---|
 | Day | `Day` | Summary at top, `LogActionDock` keeps the bottom |
-| Entry detail | `Entry` | Goal fit is the loudest block; confidence returns |
+| Entry detail | `Entry` | Editable breakdown, reconciled total, assumptions, and contextual Goal Fit with its explanation; no confidence-as-accuracy ring |
 | Composer | `Composer` | Gym vocabulary removed from heading and examples |
 | Analysing | `Analysing · text + photo` | Sweep overlay + the existing 3-stage message rotation |
 | Failed | `Failed · retry` | Both failure shapes |
 | Empty day | `Empty day` | Full target still the headline |
-| Saved meals | `Saved meals` | The one path spending no AI call |
+| Saved meals | `Saved meals` | Reuse a corrected version with its breakdown and provenance, without an AI call |
 | Day picker | `Day picker` | **Day / Week only — no Month** |
 | Menu | `Menu` | Absorbed the flame and the gear. *Last week* becomes **Weight** (Step 7a) |
 | Week | `Week · after a check-in` | **Out of date** — drawn for the dropped expenditure engine. The Week screen keeps the week's food and the weight card; see *Canvas drift* |
@@ -289,16 +329,17 @@ not written to.**
 
 ## Cheques this design writes against unbuilt work
 
-Three things on the canvas that the code cannot deliver today. Each needs a
-decision, not a fix.
+Older artboards carry promises or behavior that differ from the current build
+and agreed launch contract. Follow the rules here and the build order.
 
 | Where | What it assumes | Reality |
 |---|---|---|
-| `Entry` — items list | Per-item calories **and** macros | `EstimatedItem` is `{name, quantity, estimatedComponents[{name, estimatedAmount}]}`. No macro fields. Needs the Step 6 schema and prompt change. |
-| `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | That is Step 12's suppression rule, which ships **after approval**. Either soften both lines for launch or accept the gap. |
+| `Entry` — items list | Per-item calories **and** macros | AI output already has item nutrition, but normalization drops it and the client model lacks it. Steps 5–6 retain it and add structured quantities/components for editing. |
+| `Entry` — score and confidence | Old meal-only score and confidence ring | Step 7 uses personal targets and preceding logged meals. Its explanation shares the calculated factors; confidence remains separate. |
+| `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | Step 12's suppression ships **after approval**. Soften both lines for launch; onboarding opt-in alone does not deliver this behavior. |
 | `Week`, `Settings · your targets` | A check-in has set a target and a rate | **No longer planned.** Targets are saved and change only when the user acts (Step 4); `Settings · your targets` becomes the targets screen (4d). See *Canvas drift* below. `Week · day 2` is still the honest early state. |
 
-### Canvas drift — 17 September
+### Canvas drift — 17 and 19 September
 
 Step 4 changed after these artboards were drawn. There is no weekly page, no
 check-in, no phase, no suggested change and no measured burn number. The user sets a
@@ -309,6 +350,9 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 
 | Artboard | Still says | Should say, in substance |
 |---|---|---|
+| `Entry` | Reword the whole meal to correct an assumption; saved/corrected means known | Editable quantities and affected-item reinterpretation, a visible delta, preserved uncertainty and a reconciled total (Steps 5–6). |
+| `Entry`, score explainer | Generic goal verdict and confidence-adjusted score | Personal-target and day-aware Goal Fit with the actual reasons; "Based on your logged meals" (Step 7). |
+| `Saved meals` | Reused totals without their reasoning | The corrected meal version, retaining items, assumptions and provenance (Step 6). |
 | `Day`, `Dark` | "Trend weight down 0.4 kg. Your targets moved." | The trend only. Targets never move by themselves, so nothing announces that they did. |
 | `Menu` | "Last week · check-in ready" | The row becomes **Weight** (4e), with nothing to flag. *Your targets* opens the targets screen (4d). |
 | `Week · after a check-in` | "Check-in · done Sunday" · "your new daily target" · "you are burning about 2,810 a day" | The week's food and the weight card, which opens the Weight screen (4e). No check-in, no new target, **never a burn number**. |
@@ -336,13 +380,12 @@ weekly page that was going to settle it is gone.
    placeholder. How real food sits on warm paper — how much room it gets, whether
    it fights the minimalism — has not been tested and cannot be judged from
    placeholders.
-3. **Nothing has been seen on a device.** Artboards are viewed at whatever zoom
-   you like on a large screen. The app is a 6-inch phone, one-handed, at 11pm.
-   A real-device check comes before the first line of SwiftUI.
-4. **The component kit does not exist yet.** `CircaTheme.swift` landed on
-   10 September, so the tokens are real Swift constants. The shapes — the card,
-   the certainty rule, the four button tiers, the entry row, the dock — are still
-   only drawn. Until they are code, every screen re-solves them and they drift.
+3. **Check the changed experience on a device.** Earlier TestFlight users liked
+   explicit assumptions. Recheck the revised editor and score on a small screen,
+   including Dynamic Type; do not mistake artboard review for interaction testing.
+4. **Reuse the completed component kit.** `CircaTheme.swift` and
+   `CircaComponents.swift` exist. Extend only for the rules above and genuinely
+   repeated patterns; do not rebuild the kit as part of the meal editor.
 5. **The app's manual light/dark override is unverified against the palette.**
    Tokens resolve off `UITraitCollection`; `appColorSchemePreference` is applied
    with `.preferredColorScheme`. That *should* propagate, but a theme that
