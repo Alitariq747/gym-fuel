@@ -3,7 +3,7 @@ import SwiftUI
 /// The durable home for the Apple Health connection.
 ///
 /// Built in the legacy Profile idiom rather than Circa on purpose: this is a
-/// `ProfileView` row, and that whole screen is rebuilt in one pass in Step 7a.
+/// `ProfileView` row, and that whole screen is rebuilt in one pass in Step 7.
 /// A single Circa card sitting among eight material ones would read as a bug.
 struct ProfileHealthSection: View {
     let userId: String

@@ -4,6 +4,9 @@ Derived by reading the SwiftUI view tree, the Firestore service layer, the Cloud
 Functions, and the Node AI service. Nothing here comes from a README or from
 marketing copy. Where copy and schema disagree, the schema is treated as the truth.
 
+This is a pre-revamp audit. Steps 3–5 and work in Step 6 changed the app and service; use
+`build-order.md` and the current code for behavior that has since changed.
+
 Sources: `GymFuel/` (iOS), `functions/src/index.ts` (Firebase Functions),
 `/Users/ahmadalitariq/Desktop/gymfuel-ai-service/` (Cloud Run AI service).
 
@@ -46,14 +49,14 @@ AuthFlowView  (NavigationStack, path: [AuthRoute])
 All four sign-in paths land back at `RootView`, which re-evaluates on
 `authManager.user`.
 
-### Onboarding branch — linear, 11 or 12 steps
+### Onboarding branch — linear
 
 `OnboardingFlowView` holds `step: OnboardingStep` and animates between step views
 in place. There is a back chevron and a progress bar; there is no skip-to-end and
 no way to exit to the main app.
 
 ```
-liftEatsIntro → OnboardingLiftEats → GoalFitScoreExplainerSheet
+liftEatsIntro → OnboardingLiftEats
   → [OnboardingNameStepView]      ← only when showsNameStep (email/password accounts)
   → OnboardingGenderStepView → OnboardingAgeStepView → OnboardingHeightStepView
   → OnboardingWeightStepView → OnboardingActivityLevelStepView
@@ -131,9 +134,7 @@ ProfileView  (pushed; titled "Settings")
 ├── ProfileSavedMealsSection → sheet: SavedMealsSheet
 │                               ├── + → sheet: AddSavedMealSheet
 │                               └── row → sheet: EditSavedMealSheet → delete confirmation
-├── ProfileLiftEatsSection
-│   ├── "How score is calculated" → sheet: GoalFitScoreExplainerSheet
-│   └── "Rate LiftEats"           → App Store review URL
+├── ProfileLiftEatsSection → "Rate LiftEats" → App Store review URL
 ├── ProfileLegalSection
 │   ├── Privacy Policy / Terms / Support (mailto) → external
 │   └── Nutrition sources → sheet: NutritionSourcesView
@@ -147,8 +148,7 @@ ProfileView  (pushed; titled "Settings")
 
 `SubscriptionPaywallSheet` is reachable from three places: `RootView`
 (post-onboarding), `MainTabView` (any AI gate), and `ProfileView` (subscription
-row). `GoalFitScoreExplainerSheet` is reachable from two: onboarding step 3 and
-the profile. `NutritionSourcesView` is reachable from two: the profile and the
+row). `NutritionSourcesView` is reachable from two: the profile and the
 `NutritionSourcesLinkButton` inside `LogEntryAnalysisCards`.
 
 ---
@@ -172,9 +172,8 @@ the profile. `NutritionSourcesView` is reachable from two: the profile and the
 ### Onboarding
 | Screen | Job |
 |---|---|
-| `liftEatsIntro` | Sell the premise: the same meal fits different goals differently. |
+| `liftEatsIntro` | Show how an estimate can be inspected and corrected. |
 | `OnboardingLiftEats` | Show what a finished analysis looks like before asking for anything. |
-| `GoalFitScoreExplainerSheet` | Explain what the 0–100 goal-fit number means. |
 | `OnboardingNameStepView` | Collect a display name when the auth provider supplied none. |
 | `OnboardingGenderStepView` | Collect the sex constant the BMR formula needs. |
 | `OnboardingAgeStepView` | Collect age for BMR. |
@@ -216,7 +215,7 @@ the profile. `NutritionSourcesView` is reachable from two: the profile and the
 | `SavedMealsSheet` | Browse and manage the saved-meal library. |
 | `AddSavedMealSheet` | Create a saved meal by hand. |
 | `EditSavedMealSheet` | Edit or delete one saved meal. |
-| `ProfileLiftEatsSection` | Reach the score explainer and the App Store review prompt. |
+| `ProfileLiftEatsSection` | Reach the App Store review prompt. |
 | `ProfileLegalSection` | Reach privacy, terms, support, and the nutrition sources. |
 | Sign-out / delete-account / reauth sheets | Confirm and, for deletion, prove identity before an irreversible action. |
 
@@ -239,8 +238,6 @@ users/{uid}/logEntries/{entryId}             ← the one event table
     explanation, assumptions[], confidence?,
     estimatedCalories?,                      ← exercise only
     macros? { calories, protein, carbs, fat },← food only
-    goalFitScore?,                           ← food only
-    goalType?,                               ← stamped client-side at log time
     estimatedItems?[ { name, quantity, estimatedComponents[{name, estimatedAmount}] } ],
     exercise? { activityType, durationMinutes, intensity }
   }
@@ -278,7 +275,7 @@ database.
 
 **Food and exercise are the same object.** One `logEntries` collection, one
 `feedback` envelope, discriminated by a single `type` field, with half the fields
-null on each side: `macros` and `goalFitScore` for food, `estimatedCalories` and
+null on each side: `macros` for food, `estimatedCalories` and
 `exercise` for exercise. This is a "log your day" model, not a nutrition tracker
 that happens to also have workouts.
 
@@ -296,14 +293,7 @@ the profile document, overwritten in place by `EditWeightSheet`. There is no
 weigh-in collection, no measurement history, no photos, no timestamped body
 record. For an app whose entire premise is cut / maintain / lean bulk, the schema
 cannot answer the one question those goals are about: is the weight moving. The
-goal only ever influences the target macro numbers and the per-meal score.
-
-**The score is per-meal and frozen at log time.** `goalFitScore` is computed by
-`scoreFoodLog` from one meal's macros plus confidence, and `goalType` is stamped
-onto the feedback client-side at the moment of logging. Nothing recomputes a
-score when the user later changes their goal. There is no day-level score, no
-week-level score, and no rollup — the schema stores five component weights'
-worth of judgment about one burrito and never aggregates it.
+goal only ever influences the target macro numbers.
 
 **Monetization is metered AI, not features.** The entitlement is literally named
 `ai_scans`. The quota document counts `totalAiScansUsed` against `quotaLimit`
@@ -443,24 +433,15 @@ already used locally for protein-per-kg and fat-per-kg, is never sent. Calorie
 burn for a 55 kg and a 110 kg user logging the same run is estimated from the same
 assumed body.
 
-**5. The goal-fit score is blind to the rest of the day.**
-`scoreFoodLog({ goal, macros, confidence })` sees one meal in isolation. It does
-not receive the day's running totals, the day's remaining allowance, the user's
-targets, or whether a workout was logged. A 900 kcal meal is capped at 42 on a cut
-whether it is the user's only food of the day or their fourth, and whether or not
-they logged a session that burned 800.
-
-**6. Saved meals are severed from their origin.**
+**5. Saved meals are severed from their origin.**
 `SaveLoggedMealSheet` builds a fresh `SavedMeal` from a log entry's title and
 macros and drops everything else — `estimatedItems`, `assumptions`, `confidence`,
-`goalFitScore`, `rawInput`, and the image. When that saved meal is later logged,
-`logSavedMeal` writes `estimatedCalories: nil, goalFitScore: nil,
-estimatedItems: nil` and the explanation "Saved meal logged directly." A
-re-logged meal therefore carries no score, so it silently drops out of every
-score-based surface while still counting toward macros. There is no foreign key
+`rawInput`, and the image. When that saved meal is later logged,
+`logSavedMeal` writes `estimatedCalories: nil,
+estimatedItems: nil` and the explanation "Saved meal logged directly." There is no foreign key
 back to the saved meal, and none forward to the entries that used it.
 
-**7. Reminders know nothing about either.**
+**6. Reminders know nothing about either.**
 `ReminderService` schedules fixed wall-clock times from a three-mode enum. It does
 not read the timeline, so the 8:30 PM "Log your latest meal or workout" fires
 identically whether the user has logged nothing or logged six times.

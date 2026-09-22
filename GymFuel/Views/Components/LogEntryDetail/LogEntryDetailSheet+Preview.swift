@@ -21,26 +21,7 @@ private struct PreviewSavedMealService: SavedMealService {
                         "Salad dressing was assumed to be light and not separately logged.",
                     ],
                     confidence: 0.72,
-                    macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
-                    goalFitScore: 78,
-                    estimatedItems: [
-                        EstimatedItem(
-                            name: "Chicken Bowl",
-                            quantity: "1 serving",
-                            estimatedComponents: [
-                                EstimatedItemComponent(name: "Chicken breast", estimatedAmount: "120g"),
-                                EstimatedItemComponent(name: "Cooked rice", estimatedAmount: "1 cup"),
-                                EstimatedItemComponent(name: "Salad greens", estimatedAmount: "1 cup")
-                            ]
-                        ),
-                        EstimatedItem(
-                            name: "Fruit",
-                            quantity: "1 cup",
-                            estimatedComponents: [
-                                EstimatedItemComponent(name: "Mixed fruit", estimatedAmount: "1 cup")
-                            ]
-                        )
-                    ]
+                    macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20)
                 )
             )
         )

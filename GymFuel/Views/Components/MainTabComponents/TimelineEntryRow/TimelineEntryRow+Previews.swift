@@ -7,13 +7,10 @@ import SwiftUI
             title: "Chicken Burrito Bowl",
             rawInput: "Chicken burrito bowl",
             feedback: LogEntryFeedback(
-                explanation: "High protein and decent satiety make this easier to fit into a cut.",
+                explanation: "Estimated as one bowl of chicken, rice and vegetables.",
                 assumptions: [],
                 confidence: 0.84,
-                macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20),
-                goalFitScore: 38,
-                goalType: .leanBulk,
-                estimatedItems: nil
+                macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20)
             )
         )
     )
@@ -28,13 +25,10 @@ import SwiftUI
             title: "Salmon Rice Bowl",
             rawInput: "Meal image",
             feedback: LogEntryFeedback(
-                explanation: "Balanced protein, carbs, and fats for a steady meal.",
+                explanation: "Estimated as one bowl of salmon and cooked rice.",
                 assumptions: [],
                 confidence: 0.82,
-                macros: Macros(calories: 710, protein: 42, carbs: 68, fat: 28),
-                goalFitScore: 74,
-                goalType: .maintain,
-                estimatedItems: nil
+                macros: Macros(calories: 710, protein: 42, carbs: 68, fat: 28)
             )
         ),
         localPreviewData: UIImage(systemName: "fork.knife.circle.fill")?.pngData()
@@ -81,9 +75,7 @@ import SwiftUI
                 explanation: "The meal analysis service is unavailable right now. Try again shortly.",
                 assumptions: [],
                 confidence: nil,
-                macros: nil,
-                goalFitScore: nil,
-                estimatedItems: nil
+                macros: nil
             )
         )
     )
@@ -102,9 +94,7 @@ import SwiftUI
                 explanation: "The meal analysis service is unavailable right now. Try again shortly.",
                 assumptions: [],
                 confidence: nil,
-                macros: nil,
-                goalFitScore: nil,
-                estimatedItems: nil
+                macros: nil
             )
         )
     )

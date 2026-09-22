@@ -18,9 +18,7 @@ struct SubscriptionPaywallSheet: View {
              "About 16 a day, on both monthly and yearly plans — plenty to log and reinterpret every meal."),
             ("🥗", "Food logging", "Log meals with text or photos in seconds."),
             ("⚡️", "Very low friction", "Built for quick logging throughout the day."),
-            ("🎯", "Goal-based insights", "See feedback shaped around your current goal."),
-            ("🏆", "Meal scoring", "Understand how each meal fits your plan."),
-            ("✨", "Quick insights", "Get fast macro estimates and practical guidance."),
+            ("✨", "Quick insights", "See the portions and ingredients behind each estimate."),
             ("🔔", "Smart reminders", "Stay consistent with gentle local nudges."),
         ]
     }

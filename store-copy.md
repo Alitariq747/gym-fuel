@@ -18,8 +18,8 @@ see — a goal weight, a steady line to it, and saved targets that change only w
 the user changes them — plus a Weight screen. The goal bullets in the description,
 Shot 05 and the cheques below are rewritten to match.
 
-Revised 19 September: copy now describes one meal with editable items, preserved
-saved versions, and personal-target **and** day-aware Goal Fit at launch. Earlier
+Revised 19 and 22 September: copy now describes one meal with editable items and
+preserved saved versions. The meal score is no longer a launch feature. Earlier
 TestFlight users liked explicit assumptions. Claims about exclusive competitor
 capabilities and unverified search-result counts have been removed. This remains
 launch copy, conditional on the completion checks below.
@@ -151,7 +151,7 @@ lost on ranking grounds but wins on conversion. This field costs nothing to chan
 and needs no review, so it is where that line earns its place before it takes a
 subtitle slot.
 
-### Description — 1,963 / 4,000 (with Pro placeholder)
+### Description — 1,784 / 4,000 (with Pro placeholder)
 
 Lead with the user's own food and the correction experience. Show the product's
 behavior instead of asserting that other apps cannot do it.
@@ -175,7 +175,6 @@ WHEN YOU'RE WORKING TOWARD SOMETHING
 
 • Lose fat, maintain or gain. Set a goal weight and see a steady path to it, with protein, carbs and fat worked out for you — not a generic diet template.
 • Targets that show their working. Every number comes with the reason behind it, and nothing changes unless you change it.
-• Goal Fit with a reason. See how a meal contributes to your personal targets, considering the meals you logged earlier that day. Based on your logged meals; not a health rating.
 • Your weigh-ins against your plan. Weigh in by hand or sync from Apple Health, and see how it's going.
 
 SAVED MEALS
@@ -208,7 +207,7 @@ first, depth second.
 | 03 | It shows you what it assumed. You fix what's wrong. | The trust |
 | 04 | Targets from your bodyweight and your goal. | The depth |
 | 05 | Your plan, and how it's going. | The plan |
-| 06 | How this meal fits your day — with the reason. | Personal targets and earlier logged meals |
+| 06 | Save your version. Log it again. | Corrected saved-meal reuse |
 
 Shots 1–3 sell the food problem to everyone; 4–6 sell the goal side to the people
 who will actually pay.
@@ -233,8 +232,6 @@ For creators, for the App Store, for anyone who asks what you're building.
 > If it assumed two tablespoons of mayonnaise and you used one, correct the
 > amount and see the difference. Save your version so next time is easier.
 >
-> Goal Fit explains how the meal contributes to your targets, considering what
-> you've already logged that day.
 
 **Demonstrate the correction.** Earlier TestFlight feedback supports the value of
 explicit assumptions. The launch demonstration should show an actual edit and its
@@ -245,8 +242,8 @@ ingredients; do not claim that assumptions or explanations are exclusive to Circ
 
 ## What this copy promises that the build doesn't yet deliver
 
-**Verify every promise before the listing goes live.** Steps 0–4 are complete;
-the remaining food and scoring promises depend on Steps 5–7.
+**Verify every promise before the listing goes live.** Steps 0–5 are complete;
+the remaining food and saved-meal promises depend on Step 6, with visuals in Step 7.
 
 | Copy | Gap |
 |---|---|
@@ -255,13 +252,11 @@ the remaining food and scoring promises depend on Steps 5–7.
 | Correct an amount and see the difference | Steps 5–6 preserve unaffected items and show the resulting change |
 | Save the corrected version | Step 6 preserves breakdown, assumptions and provenance through save/re-log/relaunch |
 | "Set a goal weight and see a steady path to it" | Steps 4c–4f complete; verify final visuals and wording before capture |
-| Targets change only when the user acts | Step 4 complete; this promise applies to targets, not derived Goal Fit assessments |
+| Targets change only when the user acts | Step 4 complete |
 | "Your weigh-ins against your plan" and Shot 05 | Step 4e complete; capture the actual plan screen |
-| Shot 06 and contextual Goal Fit | Step 7 must deliver personal-target and day-aware assessment together, with an explanation from the same factors |
+| Shot 06 and saved-meal reuse | Step 6 must preserve the corrected version through re-log and relaunch |
 
-Historical assessments use current saved targets and say so. Adding a later meal
-does not alter earlier scores; correcting an earlier log can affect later scores.
-Do not advertise permanent scores, verified accuracy or an overall health grade.
+Do not advertise verified accuracy or an overall health grade.
 
 ---
 

@@ -52,10 +52,6 @@ struct TimelineEntryRowState {
         feedback?.macros != nil
     }
 
-    var hasGoalFitScore: Bool {
-        feedback?.goalFitScore != nil
-    }
-
     /// The one assumption line the row shows, or nil when there is nothing to
     /// say — including after a typed total, which clears both of its sources.
     var assumptionLine: String? {

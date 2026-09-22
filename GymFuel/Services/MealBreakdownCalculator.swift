@@ -118,14 +118,13 @@ struct MealBreakdownCalculator {
     /// cannot both be current — so everything the old numbers explained goes with
     /// them. Supersede means delete, not grey out: if a superseded breakdown
     /// survived, the card, the timeline's assumption line, the saved-meal snapshot
-    /// and Goal Fit would each have to re-implement "is this superseded?", and one
+    /// would each have to re-implement "is this superseded?", and one
     /// of them would get it wrong.
     ///
     /// Built fresh rather than mutated, so a field added later cannot quietly
-    /// survive an override by being forgotten here. `goalType` is carried over on
-    /// purpose: it is the user's goal, not something the model produced.
+    /// survive an override by being forgotten here.
     static func superseding(
-        _ feedback: LogEntryFeedback?,
+        _: LogEntryFeedback?,
         withUserTotal macros: Macros
     ) -> LogEntryFeedback {
         LogEntryFeedback(
@@ -133,9 +132,6 @@ struct MealBreakdownCalculator {
             assumptions: [],
             confidence: nil,
             macros: macros,
-            goalFitScore: nil,
-            goalType: feedback?.goalType,
-            estimatedItems: nil,
             breakdown: nil,
             macrosProvenance: .userTotal
         )

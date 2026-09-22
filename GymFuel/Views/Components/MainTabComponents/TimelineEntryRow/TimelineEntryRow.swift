@@ -14,7 +14,6 @@ struct TimelineEntryRow: View {
     @State private var showRevealedProtein = false
     @State private var showRevealedCarbs = false
     @State private var showRevealedFat = false
-    @State private var showRevealedGoalFit = false
     @State private var revealSequenceTask: Task<Void, Never>?
     @State private var imageAnalysisMessage = "Reading your meal"
     @State private var imageAnalysisMessageTask: Task<Void, Never>?
@@ -59,7 +58,6 @@ struct TimelineEntryRow: View {
         showRevealedProtein = rowState.hasConsumedMacros
         showRevealedCarbs = rowState.hasConsumedMacros
         showRevealedFat = rowState.hasConsumedMacros
-        showRevealedGoalFit = rowState.hasGoalFitScore
     }
 
     private func resetRevealState() {
@@ -68,7 +66,6 @@ struct TimelineEntryRow: View {
         showRevealedProtein = false
         showRevealedCarbs = false
         showRevealedFat = false
-        showRevealedGoalFit = false
     }
 
     private func syncRevealStateForCurrentEntry() {
@@ -125,10 +122,6 @@ struct TimelineEntryRow: View {
                 await reveal(\.showRevealedProtein)
                 await reveal(\.showRevealedCarbs)
                 await reveal(\.showRevealedFat)
-            }
-
-            if rowState.hasGoalFitScore {
-                await reveal(\.showRevealedGoalFit)
             }
 
             runningSuccessRevealEntryID = nil
@@ -192,8 +185,7 @@ struct TimelineEntryRow: View {
                             showRevealedCalories: showRevealedCalories,
                             showRevealedProtein: showRevealedProtein,
                             showRevealedCarbs: showRevealedCarbs,
-                            showRevealedFat: showRevealedFat,
-                            showRevealedGoalFit: showRevealedGoalFit
+                            showRevealedFat: showRevealedFat
                         )
                         if let assumptionLine = rowState.assumptionLine {
                             assumptionRow(assumptionLine)
@@ -238,7 +230,6 @@ struct TimelineEntryRow: View {
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedProtein)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedCarbs)
         .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedFat)
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedGoalFit)
         .onAppear {
             syncRevealStateForCurrentEntry()
             syncImageAnalysisMessageState()

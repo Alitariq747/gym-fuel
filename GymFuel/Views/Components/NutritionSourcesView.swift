@@ -29,9 +29,9 @@ private enum MethodFigures {
         .joined(separator: ", ")
 }
 
-/// Discloses the science behind every target, score, and estimate LiftEats shows.
-/// Presented as a sheet from Settings, the onboarding summary, the Goal Fit
-/// explainer, and the LiftEats Analysis card.
+/// Discloses the science behind the targets and estimates LiftEats shows.
+/// Presented as a sheet from Settings, the onboarding summary, and the
+/// LiftEats Analysis card.
 struct NutritionSourcesView: View {
     var primaryButtonTitle: String = "Done"
     var onPrimaryAction: (() -> Void)? = nil
@@ -81,36 +81,25 @@ struct NutritionSourcesView: View {
             sourceIDs: ["morton", "leidy", "cdcBMI", "fao"]
         ),
         NutritionMethod(
-            id: "goalfit",
-            index: "03",
-            emoji: "🎯",
-            title: "The Goal Fit score",
-            tint: .fuelGreen,
-            body: "Each meal is scored 0–100 across five weighted factors: useful protein, protein efficiency, goal calories, macro balance, and practicality. The reference points are drawn from published research — roughly 35 g of protein as a meaningful per-meal dose, around 6 g of protein per 100 kcal as strong protein efficiency, and fat share limits that reflect the accepted 20–35% of energy from fat.",
-            formula: nil,
-            footnote: "Weights shift with your goal, and hard ceilings apply for extreme calories, very low protein efficiency, or very high fat. The score compares a meal to your goal — it is not a judgement of the food itself.",
-            sourceIDs: ["schoenfeld", "issn", "iom"]
-        ),
-        NutritionMethod(
             id: "ai",
-            index: "04",
+            index: "03",
             emoji: "🤖",
             title: "Food estimates and LiftEats Analysis",
             tint: .cyan,
             body: "Calories and macros for a logged meal are estimated by an AI model from your description or photo. They are approximations, not laboratory measurements, and every entry shows a confidence level so you can see how certain the estimate is.",
             formula: nil,
-            footnote: "The analysis discusses protein, fat, carbohydrate, fibre, sugar, sodium, and cooking method qualitatively only. It never fabricates exact values for nutrients it cannot estimate, and it does not give medical advice. Reference nutrient data comes from USDA FoodData Central; general dietary framing follows the Dietary Guidelines for Americans.",
-            sourceIDs: ["usda", "dga"]
+            footnote: "The analysis describes the ingredients and portions behind the estimate. It does not infer nutrients it cannot estimate or give medical advice. Reference nutrient data comes from USDA FoodData Central.",
+            sourceIDs: ["usda"]
         ),
         NutritionMethod(
             id: "trend",
-            index: "05",
+            index: "04",
             emoji: "⚖️",
             title: "Your weight trend",
             tint: .fuelBlue,
             body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with an exponential moving average, weighting the newest reading at 25% and everything before it at 75%, so it moves slower than the scale on purpose.",
             formula: "trend = 0.25 × today's weigh-in\n      + 0.75 × previous trend",
-            footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is scored or streaked.",
+            footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is streaked.",
             sourceIDs: ["zheng", "jmirScale"]
         )
     ]
@@ -159,18 +148,6 @@ struct NutritionSourcesView: View {
             url: URL(string: "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html")
         ),
         NutritionSource(
-            id: "iom",
-            shortLabel: "Institute of Medicine. Dietary Reference Intakes for Energy and Macronutrients, 2005",
-            citation: "Institute of Medicine. Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and Amino Acids. Washington, DC: National Academies Press; 2005.",
-            url: URL(string: "https://nap.nationalacademies.org/catalog/10490")
-        ),
-        NutritionSource(
-            id: "issn",
-            shortLabel: "ISSN Position Stand: Protein and Exercise. J Int Soc Sports Nutr. 2017;14:20",
-            citation: "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/28642676/")
-        ),
-        NutritionSource(
             id: "morton",
             shortLabel: "Morton RW, et al. Br J Sports Med. 2018;52(6):376–384",
             citation: "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376–384.",
@@ -183,12 +160,6 @@ struct NutritionSourcesView: View {
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/25926512/")
         ),
         NutritionSource(
-            id: "schoenfeld",
-            shortLabel: "Schoenfeld BJ, Aragon AA. J Int Soc Sports Nutr. 2018;15:10",
-            citation: "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
-            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/29497353/")
-        ),
-        NutritionSource(
             id: "fao",
             shortLabel: "FAO. Food Energy — Methods of Analysis and Conversion Factors, 2003",
             citation: "Food and Agriculture Organization of the United Nations. Food Energy — Methods of Analysis and Conversion Factors. FAO Food and Nutrition Paper 77. Rome; 2003.",
@@ -199,12 +170,6 @@ struct NutritionSourcesView: View {
             shortLabel: "USDA FoodData Central",
             citation: "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central.",
             url: URL(string: "https://fdc.nal.usda.gov")
-        ),
-        NutritionSource(
-            id: "dga",
-            shortLabel: "Dietary Guidelines for Americans, 2020–2025",
-            citation: "U.S. Departments of Agriculture and Health and Human Services. Dietary Guidelines for Americans, 2020–2025. 9th ed.",
-            url: URL(string: "https://www.dietaryguidelines.gov")
         ),
         NutritionSource(
             id: "zheng",
@@ -280,7 +245,7 @@ struct NutritionSourcesView: View {
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
 
-                Text("Every target, score, and estimate in LiftEats traces back to published nutrition science. Here is exactly what we use, and where it came from.")
+                Text("See how LiftEats calculates targets and estimates meals, and where its reference figures come from.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

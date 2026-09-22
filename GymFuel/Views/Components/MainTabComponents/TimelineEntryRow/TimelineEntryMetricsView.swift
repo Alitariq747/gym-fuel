@@ -7,7 +7,6 @@ struct TimelineEntryMetricsView: View {
     let showRevealedProtein: Bool
     let showRevealedCarbs: Bool
     let showRevealedFat: Bool
-    let showRevealedGoalFit: Bool
 
     var body: some View {
         if let macros = state.feedback?.macros,
@@ -32,10 +31,6 @@ struct TimelineEntryMetricsView: View {
                 }
                 if showRevealedFat {
                     secondaryMetricStat(symbol: "drop.fill", value: "\(Int(macros.fat.rounded()))g", color: .pink)
-                }
-                if showRevealedGoalFit, let goalFitScore = state.feedback?.goalFitScore {
-                    Spacer(minLength: 8)
-                    goalFitScoreBadge(score: goalFitScore)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
@@ -71,32 +66,5 @@ struct TimelineEntryMetricsView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
         }
-    }
-
-    @ViewBuilder
-    private func goalFitScoreBadge(score: Int) -> some View {
-        let color = scoreColor(for: score)
-        let symbolName = state.feedback?.goalType?.symbolName ?? GoalType.defaultValue.symbolName
-
-        HStack(spacing: 4) {
-            Image(systemName: symbolName)
-                .font(.caption2.weight(.regular))
-            Text("\(score)")
-                .font(.caption.weight(.semibold))
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 9)
-        .frame(height: 30)
-        .background(color.opacity(0.11), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(color.opacity(0.14), lineWidth: 1)
-        }
-    }
-
-    private func scoreColor(for score: Int) -> Color {
-        if score > 80 { return .fuelGreen }
-        if score < 50 { return .fuelRed }
-        return .fuelBlue
     }
 }

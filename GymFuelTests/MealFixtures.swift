@@ -1,22 +1,16 @@
 //
 //  MealFixtures.swift
-//  GymFuel
+//  GymFuelTests
 //
-//  Created by Ahmad on 21/09/2026.
+//  The meal the contract's rules are checked against. It moved here from the app
+//  target in Step 6: the scaffolding that put a breakdown on the timeline is gone
+//  now that the backend sends real ones, but the tests still need a meal shaped
+//  like `meal-contract.md` §4.
 //
-
-#if DEBUG
 
 import Foundation
+@testable import LiftEats
 
-/// A meal in the shape Step 6 will send, so Step 5's screens can be built and the
-/// correction in `build-order.md`'s done-when — mayonnaise from two tbsp to one —
-/// can be walked on a real device before any backend work exists.
-///
-/// It has to be logged through Firestore rather than shown in a preview, because
-/// the thing being proved is *save, quit, reopen, correction intact*.
-///
-/// Debug-only scaffolding. Step 6 deletes it once the backend sends breakdowns.
 enum MealFixtures {
 
     /// Covers both branches of the contribution rule at once: a composite item
@@ -60,37 +54,4 @@ enum MealFixtures {
             sourceNote: "Pack label, 25 g"
         )
     ])
-
-    /// Totals come from the calculator, never from a literal, so logging this
-    /// exercises the contribution rule end to end instead of asserting a number
-    /// that could quietly stop matching it.
-    static func sampleEntry(userId: String, loggedAt: Date = Date()) -> LogEntry {
-        let calculator = MealBreakdownCalculator()
-        let macros = calculator.total(of: sampleBreakdown)
-        let shown = macros.rounded()
-
-        return LogEntry(
-            userId: userId,
-            source: .text,
-            loggedAt: loggedAt,
-            title: "Chicken sandwich and crisps",
-            rawInput: "chicken sandwich with mayo, and a packet of crisps",
-            detail: "Estimated \(Int(shown.calories)) kcal • P \(Int(shown.protein))g"
-                + " • C \(Int(shown.carbs))g • F \(Int(shown.fat))g",
-            feedback: LogEntryFeedback(
-                explanation: "Estimated from typical shop-bought portions.",
-                assumptions: [
-                    "Full-fat mayonnaise, not light",
-                    "A 25 g packet of crisps"
-                ],
-                confidence: 0.64,
-                macros: macros,
-                goalFitScore: 58,
-                breakdown: sampleBreakdown,
-                macrosProvenance: calculator.provenance(of: sampleBreakdown)
-            )
-        )
-    }
 }
-
-#endif

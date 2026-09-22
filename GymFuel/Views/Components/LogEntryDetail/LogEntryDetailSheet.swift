@@ -101,9 +101,6 @@ struct LogEntryDetailSheet: View {
     private var assumptions: [String] {
         entry.feedback?.assumptions ?? []
     }
-    private var estimatedItems: [EstimatedItem] {
-        entry.feedback?.estimatedItems ?? []
-    }
     private var hasExpandableAIDetails: Bool {
         !assumptions.isEmpty
     }
@@ -151,17 +148,10 @@ struct LogEntryDetailSheet: View {
                         }
                     }
 
-                    if let score = entry.feedback?.goalFitScore {
-                        GoalFitProgressCard(score: score, goalType: entry.feedback?.goalType)
-                    }
-
-                    // `meal-contract.md` §3: a breakdown is edited, an older
-                    // totals-only meal keeps the read-only card it was written
-                    // with, and neither invents detail for the other.
+                    // `meal-contract.md` §3: a meal with no breakdown shows its
+                    // totals and never gains invented component detail.
                     if let breakdown = entry.feedback?.breakdown, breakdown.isSupported {
                         MealBreakdownCard(breakdown: breakdown)
-                    } else if !estimatedItems.isEmpty {
-                        EstimatedItemsCard(items: estimatedItems)
                     }
 
                     if !analysisExplanation.isEmpty {

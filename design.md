@@ -8,9 +8,9 @@ check-ins, phases or a weekly page. It builds a plan the user can see — a goal
 weight, a line to it, saved targets — and a Weight screen. Several artboards still
 carry the old copy — see *Canvas drift* under the cheques.
 
-Revised 19 September: one meal contains editable items, corrections preserve
-unaffected values, and saved meals retain their estimated provenance. Personal-
-target and day-aware Goal Fit ship together. These rules supersede older artboards.
+Revised 19 and 22 September: one meal contains editable items, corrections preserve
+unaffected values, and saved meals retain their estimated provenance. The meal score
+has been removed. These rules supersede older artboards.
 
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
@@ -181,7 +181,7 @@ not verified; identify them without inventing supporting ingredient detail.
 
 Prefer specific uncertainty copy, such as "Sauce quantity assumed", to an
 uncalibrated confidence percentage. Never present model confidence as a measured
-accuracy rate, and never fold it into Goal Fit.
+accuracy rate.
 
 ### 2. One meal, predictable corrections
 
@@ -220,7 +220,7 @@ Deleting a mistaken *manual* weigh-in is allowed (Step 4e); editing one is not.
 
 ### 5. No traffic lights
 
-No green/amber/red for confidence, scores or macro adherence. Monochrome plus one
+No green/amber/red for confidence or macro adherence. Monochrome plus one
 ochre. Colour-coding a food log reads as a scolding, and the category is
 saturated with it.
 
@@ -260,28 +260,11 @@ bars fill from the right, the thumbnail moves right. The artboards prove it.
 Inline SVG in the mockups, SF Symbols in the build. The current paywall carries
 eight emoji and the summary step four; all twelve go.
 
-### 11. Goal Fit explains a contribution in context
+### 11. Keep meal explanations factual
 
-Personal-target and day-aware scoring both ship at launch. The behavioral contract
-and acceptance cases live in `build-order.md` Step 7; exact factors and weights are
-settled there before implementation. This is a redesign, not a port of old bands.
-
-Show the score with its main explanatory factors and **"Based on your logged
-meals"**. It assesses this meal against saved targets and meals logged earlier that
-day. Later meals do not change an earlier meal's score; correcting earlier intake
-can change later assessments. An empty diary does not prove an empty stomach.
-
-Keep source uncertainty separate from nutritional fit. Avoid good/bad food labels,
-health grades, claims of weight-loss probability or instructions to compensate
-for an overage. Render explanation and score from the same computed factors.
-Missing targets or unloaded context show an unavailable/pending state, not zero.
-
-Step 4 stores only current targets. Historical assessments must say **"Using your
-current targets"** and can change when the user explicitly changes those targets.
-Do not imply that they preserve the plan in effect on the original date.
-
-No day score is obtained by averaging meal scores. A separate numerical day/week
-assessment is not required for launch. The existing daily totals remain useful.
+Explain the portions, ingredients and preparation used in the estimate. Give the
+user a direct way to correct them. Daily totals and saved targets provide the
+personal context; the meal itself does not receive a numeric judgment.
 
 ---
 
@@ -292,14 +275,14 @@ Everything on the canvas, and what is not there yet.
 | Screen | Artboard | Notes |
 |---|---|---|
 | Day | `Day` | Summary at top, `LogActionDock` keeps the bottom |
-| Entry detail | `Entry` | Editable breakdown, reconciled total, assumptions, and contextual Goal Fit with its explanation; no confidence-as-accuracy ring |
+| Entry detail | `Entry` | Editable breakdown, reconciled total and assumptions; no confidence-as-accuracy ring |
 | Composer | `Composer` | Gym vocabulary removed from heading and examples |
 | Analysing | `Analysing · text + photo` | Sweep overlay + the existing 3-stage message rotation |
 | Failed | `Failed · retry` | Both failure shapes |
 | Empty day | `Empty day` | Full target still the headline |
 | Saved meals | `Saved meals` | Reuse a corrected version with its breakdown and provenance, without an AI call |
 | Day picker | `Day picker` | **Day / Week only — no Month** |
-| Menu | `Menu` | Absorbed the flame and the gear. *Last week* becomes **Weight** (Step 7a) |
+| Menu | `Menu` | Absorbed the flame and the gear. *Last week* becomes **Weight** (Step 7) |
 | Week | `Week · after a check-in` | **Out of date** — drawn for the dropped expenditure engine. The Week screen keeps the week's food and the weight card; see *Canvas drift* |
 | Week, early | `Week · day 2` | The state most trialists actually see |
 | Onboarding ×9 | `Onboarding · …` | Intro, name, formula, weight, movement, goal, how to write, reminders, your numbers. *Your numbers* becomes the plan screen (4f) |
@@ -309,7 +292,7 @@ Everything on the canvas, and what is not there yet.
 
 **Deliberately not drawn:** age, height and goal weight (the weight artboard with a
 different label and range). **Not yet drawn:** reminders settings, appearance,
-saved-meal editor, nutrition sources, score explainer, the four auth screens — all
+saved-meal editor, nutrition sources, the four auth screens — all
 variants of patterns already on the canvas. **Not yet drawn, and new:** the Weight
 screen (4e) — weigh-in dots, the trend line, a dotted plan line and the goal, with
 the weigh-in list below.
@@ -335,7 +318,7 @@ and agreed launch contract. Follow the rules here and the build order.
 | Where | What it assumes | Reality |
 |---|---|---|
 | `Entry` — items list | Per-item calories **and** macros | AI output already has item nutrition, but normalization drops it and the client model lacks it. Steps 5–6 retain it and add structured quantities/components for editing. |
-| `Entry` — score and confidence | Old meal-only score and confidence ring | Step 7 uses personal targets and preceding logged meals. Its explanation shares the calculated factors; confidence remains separate. |
+| `Entry` — old rating | Old meal rating and confidence ring | Remove the rating. Show the meal breakdown and assumptions; keep uncertainty separate. |
 | `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | Step 12's suppression ships **after approval**. Soften both lines for launch; onboarding opt-in alone does not deliver this behavior. |
 | `Week`, `Settings · your targets` | A check-in has set a target and a rate | **No longer planned.** Targets are saved and change only when the user acts (Step 4); `Settings · your targets` becomes the targets screen (4d). See *Canvas drift* below. `Week · day 2` is still the honest early state. |
 
@@ -351,7 +334,7 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 | Artboard | Still says | Should say, in substance |
 |---|---|---|
 | `Entry` | Reword the whole meal to correct an assumption; saved/corrected means known | Editable quantities and affected-item reinterpretation, a visible delta, preserved uncertainty and a reconciled total (Steps 5–6). |
-| `Entry`, score explainer | Generic goal verdict and confidence-adjusted score | Personal-target and day-aware Goal Fit with the actual reasons; "Based on your logged meals" (Step 7). |
+| `Entry`, rating area | Generic goal verdict and confidence-adjusted rating | Remove this area; give the breakdown and assumptions room instead. |
 | `Saved meals` | Reused totals without their reasoning | The corrected meal version, retaining items, assumptions and provenance (Step 6). |
 | `Day`, `Dark` | "Trend weight down 0.4 kg. Your targets moved." | The trend only. Targets never move by themselves, so nothing announces that they did. |
 | `Menu` | "Last week · check-in ready" | The row becomes **Weight** (4e), with nothing to flag. *Your targets* opens the targets screen (4d). |
@@ -381,7 +364,7 @@ weekly page that was going to settle it is gone.
    it fights the minimalism — has not been tested and cannot be judged from
    placeholders.
 3. **Check the changed experience on a device.** Earlier TestFlight users liked
-   explicit assumptions. Recheck the revised editor and score on a small screen,
+   explicit assumptions. Recheck the revised editor on a small screen,
    including Dynamic Type; do not mistake artboard review for interaction testing.
 4. **Reuse the completed component kit.** `CircaTheme.swift` and
    `CircaComponents.swift` exist. Extend only for the rules above and genuinely

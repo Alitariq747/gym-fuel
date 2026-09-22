@@ -41,8 +41,6 @@ struct SavedMealSnapshotTests {
             assumptions: meal.assumptions ?? [],
             confidence: nil,
             macros: meal.macros,
-            goalFitScore: nil,
-            estimatedItems: nil,
             breakdown: meal.breakdown,
             macrosProvenance: meal.macrosProvenance
         )
@@ -108,7 +106,6 @@ struct SavedMealSnapshotTests {
         #expect(feedback.breakdown == nil)
         #expect(feedback.assumptions.isEmpty)
         #expect(feedback.macros?.calories == 300)
-        #expect(feedback.estimatedItems == nil, "no invented component detail")
     }
 
     // MARK: - Independence

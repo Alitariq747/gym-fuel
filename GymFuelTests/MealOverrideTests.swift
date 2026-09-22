@@ -22,8 +22,6 @@ struct MealOverrideTests {
             assumptions: ["Full-fat mayonnaise, not light"],
             confidence: 0.64,
             macros: Macros(calories: 607, protein: 32.7, carbs: 42.4, fat: 33.7),
-            goalFitScore: 58,
-            goalType: .cut,
             breakdown: MealFixtures.sampleBreakdown,
             macrosProvenance: .estimated
         )
@@ -38,18 +36,6 @@ struct MealOverrideTests {
     @Test("The breakdown is removed, not kept alongside a total it disagrees with")
     func breakdownIsRemoved() {
         #expect(superseded().breakdown == nil)
-    }
-
-    @Test("A legacy breakdown is removed too")
-    func estimatedItemsAreRemoved() {
-        let legacy = LogEntryFeedback(
-            explanation: "x",
-            assumptions: ["y"],
-            macros: Macros(calories: 400, protein: 1, carbs: 2, fat: 3),
-            estimatedItems: [EstimatedItem(name: "Sandwich", quantity: "1", estimatedComponents: [])]
-        )
-
-        #expect(MealBreakdownCalculator.superseding(legacy, withUserTotal: typed).estimatedItems == nil)
     }
 
     @Test("The explanation goes, because it described the superseded numbers")
@@ -67,11 +53,6 @@ struct MealOverrideTests {
         #expect(superseded().confidence == nil)
     }
 
-    @Test("The score goes, because it was worked out from different macros")
-    func scoreIsCleared() {
-        #expect(superseded().goalFitScore == nil)
-    }
-
     // MARK: - What stays
 
     @Test("The typed total is what the meal now says")
@@ -85,11 +66,6 @@ struct MealOverrideTests {
         #expect(MealCopy.provenance(source: .userTotal, isAdjusted: false) == "You set this total")
     }
 
-    @Test("The goal stays, because it is the user's and not the model's")
-    func goalTypeSurvives() {
-        #expect(superseded().goalType == .cut)
-    }
-
     // MARK: - Edges
 
     @Test("Overriding a meal that had no feedback at all still produces a total")
@@ -98,7 +74,6 @@ struct MealOverrideTests {
 
         #expect(result.macros == typed)
         #expect(result.macrosProvenance == .userTotal)
-        #expect(result.goalType == nil)
         #expect(result.breakdown == nil)
     }
 
@@ -112,7 +87,7 @@ struct MealOverrideTests {
 
     /// The contract's own table, walked in one place. If a field is added to
     /// `LogEntryFeedback` and forgotten in `superseding`, this is what notices.
-    @Test("Nothing from the analysis survives except the goal and the typed total")
+    @Test("Nothing from the analysis survives except the typed total")
     func nothingElseSurvives() {
         let result = superseded()
 
@@ -121,9 +96,6 @@ struct MealOverrideTests {
             assumptions: [],
             confidence: nil,
             macros: typed,
-            goalFitScore: nil,
-            goalType: .cut,
-            estimatedItems: nil,
             breakdown: nil,
             macrosProvenance: .userTotal
         ))
@@ -142,7 +114,6 @@ struct MealOverrideTests {
         #expect(feedback.explanation == analysed.explanation)
         #expect(feedback.assumptions == analysed.assumptions)
         #expect(feedback.confidence == analysed.confidence)
-        #expect(feedback.goalFitScore == analysed.goalFitScore)
         #expect(feedback.breakdown != nil)
     }
 }

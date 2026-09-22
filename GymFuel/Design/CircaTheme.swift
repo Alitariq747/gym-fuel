@@ -126,7 +126,7 @@ extension Font {
     static let circaMono = Font.system(.caption2, design: .monospaced)
     /// A number that carries weight in a row — an entry's calories.
     static let circaMonoValue = Font.system(.callout, design: .monospaced).weight(.semibold)
-    /// A number that leads a card — a day total, a score.
+    /// A number that leads a card — a day total.
     static let circaMonoLarge = Font.system(.title3, design: .monospaced).weight(.semibold)
 }
 
@@ -135,7 +135,7 @@ extension Font {
 enum Circa {
 
     enum Radius {
-        /// Major cards — the day summary, the goal-fit block, the paywall tray.
+        /// Major cards — the day summary and the paywall tray.
         static let card: CGFloat = 20
         /// Inline cards — an assumption row, a failure card.
         static let cardSmall: CGFloat = 16
@@ -168,7 +168,6 @@ enum Circa {
     /// view that uses them, or Dynamic Type stops at these values.
     enum Display {
         static let entryTotal: CGFloat = 44
-        static let goalScore: CGFloat = 52
     }
 
     enum Rule {

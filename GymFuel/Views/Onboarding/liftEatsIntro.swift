@@ -24,7 +24,7 @@ struct liftEatsIntro: View {
                     .lineSpacing(0)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("The same meal can support different goals in different ways. LiftEats scores your food based on what you’re trying to do: lose fat, maintain, or gain")
+                Text("Describe what you ate. See the portions and ingredients we assumed, then correct what differs from your meal.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -58,15 +58,12 @@ struct liftEatsIntro: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Same meal, different goal fit")
+                    Text("What we assumed")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-
-                    VStack(spacing: 8) {
-                        GoalScoreRow(goal: .cut, title: "Lose fat", score: "62", tint: .liftEatsCoral)
-                        GoalScoreRow(goal: .maintain, title: "Maintain", score: "76", tint: .orange)
-                        GoalScoreRow(goal: .leanBulk, title: "Gain", score: "91", tint: .green)
-                    }
+                    Text("One bowl of rice, chicken, vegetables and cooking oil. Adjust the amounts to match your bowl.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -114,34 +111,6 @@ struct liftEatsIntro: View {
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.secondary)
         }
-    }
-}
-
-private struct GoalScoreRow: View {
-    let goal: GoalType
-    let title: String
-    let score: String
-    let tint: Color
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: goal.symbolName)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
-                .frame(width: 30, height: 30)
-                .background(Color(.systemBackground), in: Circle())
-                .overlay {
-                    Circle()
-                        .stroke(tint.opacity(0.18), lineWidth: 1)
-                }
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-            Spacer()
-            Text(score)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(tint)
-        }
-        .padding(.vertical, 4)
     }
 }
 

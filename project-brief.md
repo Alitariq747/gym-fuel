@@ -3,9 +3,9 @@
 Working contract for the repositioning. The *argument* for it lives in the strategy
 doc and copy deck (see References); this file is the implementation scope only.
 
-Written 6 September 2026, revised 7, 14, 16, 17 and 19 September. Steps 0–4 in
+Written 6 September 2026, revised 7, 14, 16, 17, 19 and 22 September. Steps 0–5 in
 `build-order.md` are complete, including the paywall trial fix. That file owns
-progress and the detailed meal/scoring contracts; this brief summarizes scope.
+progress and the detailed meal contract; this brief summarizes scope.
 
 ---
 
@@ -13,8 +13,8 @@ progress and the detailed meal/scoring contracts; this brief summarizes scope.
 
 Circa helps people understand and log their actual meals: describe or photograph
 food, inspect its estimated ingredients and portions, correct the version, and
-save it for next time. Goal-driven users get a plan, user-controlled targets and
-personal-target **and** day-aware Goal Fit. Lifting comes off the surface; lifters
+save it for next time. Goal-driven users get a plan and user-controlled targets.
+Lifting comes off the surface; lifters
 remain one subset of the audience. The `ai_scans` entitlement stays unchanged.
 
 ---
@@ -31,8 +31,8 @@ regional willingness to pay and costs remain measurements, not settled facts.
 
 **Evidence and retention.** Ahmad reports that TestFlight users liked explicit
 ingredient and quantity assumptions. That supports finishing the interaction; it
-does not establish measured accuracy or paid retention. Corrected saved meals,
-understandable Goal Fit, and the existing plan/weight screen are the repeat-use
+does not establish measured accuracy or paid retention. Corrected saved meals
+and the existing plan/weight screen are the repeat-use
 experience to evaluate after launch.
 
 **Why this positioning, given four apps say something similar.** Not because it is
@@ -107,7 +107,7 @@ language, not the token** — rename only while already editing those lines. See
 RevenueCat, so the risk is builds in the wild rather than stored rows, and an empty
 `users` collection does not prove no such install exists.
 
-### 2. The food experience — Steps 5–6, share card in 7a
+### 2. The food experience — Steps 5–6, share card in 7
 
 The detailed contract lives in `build-order.md` Steps 5–6. Agree on the schema
 before editing code, then implement in the existing small-step workflow.
@@ -130,9 +130,8 @@ before editing code, then implement in the existing small-step workflow.
 - **Documented references.** Start with roughly 30–50 meal/recipe cases and
   preparation variants, then expand after launch. Household measures need explicit
   serving and preparation assumptions. No searchable food database.
-- **Share card.** Finalize in Step 7a after editing and scoring. Show the meal,
-  nutrition, key assumption and explanation; a score must carry its personal/logged-
-  meal context without exposing private target or weight data automatically.
+- **Share card.** Finalize in Step 7 after editing. Show the meal, nutrition, key
+  assumption and explanation without exposing private target or weight data.
 
 ### 3. Exercise — removed in completed Step 3
 
@@ -157,7 +156,7 @@ burns an AI call for a number nothing will read.
 removed before the plan work. The earlier proposal to defer the sweep is
 superseded. `ActivityLevel` now includes normal weekly exercise in the four
 options established by Step 4. Do not restore an exercise log, burn import or
-calorie rebate while implementing meal scoring.
+calorie rebate while implementing meal editing.
 
 ### 4. The plan and saved targets — completed Step 4
 
@@ -221,36 +220,12 @@ the BMI limits. Self-weighing is already cited from 4a.
 `weightKg` stays on `UserProfile` as the current value, for display; `weighIns` is
 the history. `EditWeightSheet` writes both.
 
-### 5. Personal-target and day-aware Goal Fit — Step 7, required for launch
+### 5. Meal explanations and daily progress
 
-**Meaning:** how this meal contributes to personal calorie and macro targets,
-considering earlier logged meals that day. Both forms of personalization ship
-together. This is not an overall health grade or a prediction of weight loss.
-
-`build-order.md` Step 7 owns the behavioral rules and acceptance cases. Before
-implementation, write the desired judgments for representative meals and contexts,
-then settle the factors, weights and score bands. These numbers are not yet agreed.
-Do not mechanically port the old goal-category scorer or seek parity with it.
-
-A pure client calculation uses meal nutrition, saved targets and preceding same-
-day entries in stable logged-time order. Adding dinner never changes breakfast;
-editing, deleting or backdating an earlier entry updates affected later scores.
-Show "Based on your logged meals" and handle unavailable/incomplete context honestly.
-Saved meals and manual edits use the same calculation.
-
-Score and explanation come from the same computed factors. Confidence is separate;
-small meals do not automatically win, and protein does not earn unlimited rewards
-after its target is met. No repeated protein criteria disguised as distinct factors.
-Handle snacks proportionately and avoid generic ideal meal sizes.
-
-Step 4's storage decision remains: current targets only, no historical target
-collection. Historical assessments therefore say "Using your current targets";
-explicit target changes may change them. They do not reconstruct past targets.
-
-New-client views derive their assessment and ignore stored legacy scores. Keep
-legacy server fields compatible with installed clients until safe retirement.
-A numerical day/week score is not added implicitly: averaging meal scores or
-applying the same meal formula to day totals would have different semantics.
+The meal detail explains estimated ingredients, quantities and preparation so the
+user can correct their version. Daily totals show progress against saved targets.
+The numeric meal rating and its explanatory UI were removed on 22 September; they
+do not serve a clear decision in this launch experience.
 
 ### 6. Monetisation
 
@@ -293,7 +268,7 @@ is about $3.54 before other costs; the quota alone does not prove the actual mar
 
 State-aware reminders and widgets remain after approval. Onboarding opt-in and
 HealthKit body mass are complete and ship with the revamp. The core meal reuse
-and scoring experience remains required for launch. `build-order.md` owns timing.
+experience remains required for launch. `build-order.md` owns timing.
 
 **Reminders that read the app's state.** The `ReminderService` note under *Noted,
 not scheduled* is now scheduled. Two halves, split across the launch boundary:
@@ -330,7 +305,7 @@ amplifier Cal AI reached *after* creators got them to ~$2M/month, never the engi
 
 | Channel | Cost | Needs |
 |---|---|---|
-| Share cards | $0 | Step 7a, after meal editing and Goal Fit |
+| Share cards | $0 | Step 7, after meal editing |
 | Nano-creator seeding, gifted codes | ~$0 | 20–50 creators, 1k–10k followers |
 | Own account — failure demos | $0 | Nothing; the demos exist today |
 | Long-tail ASO | $0 | Listing rewrite |
@@ -356,8 +331,7 @@ sequence; one public release still permits focused TestFlight checks beforehand.
 | **0–4** | Decisions, trial copy, design kit, exercise removal, notifications, HealthKit body mass, targets and weight plan | Complete |
 | **5** | Meal contract, editable client, visible assumptions | Agree schema before implementation |
 | **6** | Backend, documented references, saved-version round trip | Shared contract with Step 5 |
-| **7** | Personal-target and day-aware Goal Fit together | Example judgments before formula; both required for launch |
-| **7a** | Remaining visual sweep and final share card | Final meal and scoring presentation |
+| **7** | Remaining visual sweep and final share card | Final meal presentation |
 | **8–10** | Rename, metadata, launch checks, screenshots, submission | Promises agree with working behavior |
 | **11–14** | CPPs/outreach, state-aware reminders, widgets | After approval; Step 13 already completed as 4a2 |
 
@@ -393,7 +367,7 @@ Do not treat it as new work or remove code without checking its current callers:
   survives the empty Firestore — it is about builds in the wild, not stored rows.
 - ~~Renaming `GoalType` raw values~~ — no longer prohibited, just not worth doing
   on its own. See §1.
-- ~~Migrating historical `logEntries` or `goalFitScore` values~~ — there is no
+- ~~Migrating historical `logEntries` values~~ — there is no
   history to migrate. See §3.
 - **HealthKit active energy, workouts, or steps** — as an input *and* as displayed
   context. Decided 7 September, reasoning revised 14 September. The Weight screen
@@ -447,9 +421,7 @@ Do not treat it as new work or remove code without checking its current callers:
 3. ~~**Meal schema details.**~~ **Closed 21 September — `meal-contract.md`.** The
    payload, persistence, contribution, provenance and correction rules Steps 5 and
    6 share. Changing it is a two-repo edit; neither step may change it alone.
-4. **Goal Fit factors, weights and bands.** The behavior and launch timing are
-   agreed; settle the numerical rubric using Step 7's cases before implementing it.
-5. **`/api/log-entry/analyze`** — inspect compatibility/callers during Step 6 before
+4. **`/api/log-entry/analyze`** — inspect compatibility/callers during Step 6 before
    deciding whether this older audit item still needs action.
 
 ---
@@ -475,7 +447,7 @@ Do not treat it as new work or remove code without checking its current callers:
   abandoning the angle.
 - **Founder knowledge is useful but bounded.** Ahmad's Pakistani food experience
   and TestFlight feedback support the launch examples. Broader cuisine accuracy,
-  score usefulness and paid retention still need evidence.
+  paid retention still needs evidence.
 
 ---
 
@@ -485,7 +457,7 @@ Directional, not forecasts. The install→paid figure is benchmark-derived, not
 measured — there is no funnel to measure yet.
 
 - **Before submission:** text/photo → inspect → correct → save → re-log works,
-  totals reconcile, and Goal Fit matches its explanation across Step 7's cases.
+  totals reconcile, and the assumptions match the editable breakdown.
   Existing TestFlight users can confirm the changed interaction; no new broad
   discovery study blocks launch.
 - **After launch:** measure first successful meal, correction completion, repeat

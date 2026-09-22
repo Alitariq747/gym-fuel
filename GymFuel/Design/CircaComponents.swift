@@ -87,7 +87,7 @@ enum CircaSurface {
     case raised
     /// Recessed — the check-in prompt, an inline note.
     case sunken
-    /// Ink ground — the goal-fit block, the loudest thing on a screen.
+    /// Ink ground — the loudest thing on a screen.
     ///
     /// Inverts with the theme, like the primary button: `circaInk` is near-black
     /// on paper and near-white in dark, and the content follows it.
@@ -780,18 +780,6 @@ private struct CircaGallery: View {
                                 Button("Not now") {}.buttonStyle(.circa(.quiet))
                             }
                             .padding(.leading, -10)
-                        }
-                    }
-
-                    CircaCard(.inverted) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            CircaSectionLabel.onInverted("Lose fat · fit score")
-                            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                Text("74").font(.circaMonoLarge).monospacedDigit()
-                                Text("/ 100")
-                                    .font(.circaMono)
-                                    .foregroundStyle(Color.circaPaperTop.opacity(0.66))
-                            }
                         }
                     }
 

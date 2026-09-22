@@ -62,16 +62,8 @@ final class LogComposerViewModel: ObservableObject {
             explanation: message,
             assumptions: [],
             confidence: nil,
-            macros: nil,
-            goalFitScore: nil,
-            estimatedItems: nil
+            macros: nil
         )
-    }
-
-    private func feedback(_ feedback: LogEntryFeedback?, scoredFor goal: GoalType) -> LogEntryFeedback? {
-        var feedback = feedback
-        feedback?.goalType = goal
-        return feedback
     }
 
     private var offlineAIMessage: String {
@@ -145,7 +137,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
+                feedback: interpretedEntry.feedback,
                 image: interpretedEntry.image
             )
             try await logEntryService.updateEntry(resolvedEntry)
@@ -219,7 +211,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
+                feedback: interpretedEntry.feedback,
                 image: interpretedEntry.image
             )
             try await logEntryService.updateEntry(resolvedEntry)
@@ -271,7 +263,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
+                feedback: interpretedEntry.feedback,
                 image: interpretedEntry.image,
                 imageUploadStatus: .localOnly
             )
@@ -353,7 +345,7 @@ final class LogComposerViewModel: ObservableObject {
                 title: interpretedEntry.title,
                 rawInput: interpretedEntry.rawInput,
                 detail: interpretedEntry.detail,
-                feedback: feedback(interpretedEntry.feedback, scoredFor: goal),
+                feedback: interpretedEntry.feedback,
                 image: interpretedEntry.image,
                 imageUploadStatus: .localOnly
             )
@@ -411,8 +403,6 @@ final class LogComposerViewModel: ObservableObject {
                 assumptions: meal.assumptions ?? [],
                 confidence: nil,
                 macros: meal.macros,
-                goalFitScore: nil,
-                estimatedItems: nil,
                 breakdown: meal.breakdown,
                 macrosProvenance: meal.macrosProvenance
             )

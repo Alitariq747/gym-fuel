@@ -71,3 +71,4 @@ node_modules/
 # Xcode per-user settings: breakpoints, scheme list, window state.
 # Personal to each developer, so never committed.
 xcuserdata/
+.DS_Store

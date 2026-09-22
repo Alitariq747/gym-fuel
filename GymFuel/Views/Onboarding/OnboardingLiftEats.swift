@@ -23,7 +23,7 @@ struct OnboardingLiftEats: View {
                 }
                 .font(.title2.bold())
 
-                Text("After every log, LiftEats shows what you ate, how it fits your goal, and the nutrition patterns that matter most.")
+                Text("After every log, LiftEats shows what it estimated and the portions and ingredients behind the numbers.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -49,10 +49,6 @@ struct OnboardingLiftEats: View {
                             macroValue("8g", label: "FAT")
                         }
                     }
-
-                    Spacer(minLength: 8)
-
-                    OnboardingGoalFitScoreRing(score: 58, tone: .fuelOrange, label: "Med")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -112,7 +108,7 @@ struct OnboardingLiftEats: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text("This meal is easy to repeat and keeps calories controlled, but the score stays moderate because it is light on protein and total calories for a goal of gaining weight. LiftEats weighs that tradeoff instead of judging the meal as good or bad.")
+            Text("We estimated one egg, two slices of toast and a cup of coffee. Check the amounts and change anything that differs from your breakfast.")
                 .font(.caption)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -120,7 +116,7 @@ struct OnboardingLiftEats: View {
                 Text("🔎")
                     .frame(width: 30, height: 30)
                     .background(Color.fuelOrange.opacity(0.14), in: Circle())
-                Text("The score reflects useful protein, goal calories, macro balance, and how practical the meal is to repeat.")
+                Text("The estimate explains the portions it used, so you can see what changes the total.")
                     .font(.caption.weight(.medium))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -146,18 +142,10 @@ struct OnboardingLiftEats: View {
                 .background(Color.fuelGreen.opacity(0.14), in: Circle())
 
             VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
-                    Text("58")
-                        .foregroundStyle(Color.liftEatsCoral)
-                    Image(systemName: "arrow.right")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.secondary)
-                    Text("82")
-                        .foregroundStyle(Color.fuelGreen)
-                }
-                .font(.headline.weight(.bold))
+                Text("Make it your meal")
+                    .font(.headline.weight(.bold))
 
-                Text("Adding a higher-protein side and a few more calories could move the same breakfast from light to goal-ready.")
+                Text("Change two slices of toast to one, and the meal total updates with it.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -183,42 +171,6 @@ struct OnboardingLiftEats: View {
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(.secondary)
         }
-    }
-}
-
-private struct OnboardingGoalFitScoreRing: View {
-    let score: Int
-    let tone: Color
-    let label: String
-
-    private var progress: Double {
-        min(max(Double(score) / 100, 0), 1)
-    }
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color(.tertiarySystemFill), lineWidth: 4)
-
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(
-                    tone,
-                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-
-            VStack(spacing: -1) {
-                Text("\(score)")
-                    .font(.system(size: 13, weight: .bold))
-                Text(label.uppercased())
-                    .font(.system(size: 6.5, weight: .semibold))
-            }
-            .foregroundStyle(tone)
-        }
-        .frame(width: 42, height: 42)
-        .padding(.top, 2)
-        .accessibilityLabel("Goal fit score \(score), \(label)")
     }
 }
 

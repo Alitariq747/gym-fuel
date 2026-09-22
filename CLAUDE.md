@@ -33,6 +33,9 @@ Read it directly — it is not missing, and it is not in this repo.
   backend code count; tests and docs don't.
 - If something outside the step looks necessary, **stop and ask**. Don't widen scope.
 - No opportunistic refactors, renames, or reformatting.
+- **Comment sparingly.** The Swift app is already over-commented. Comment only what
+  the code cannot say — a rule that would otherwise be "fixed" wrongly. Cite a
+  contract section rather than restating it.
 - No new dependencies.
 - I build the Xcode project and run the Debug and Release checks myself — don't build it.
 - **Keep the code modular, so extending or editing a feature later stays simple.**
@@ -93,6 +96,14 @@ Each one is a real failure mode, not a style preference.
   phases with check-ins, and a weekly page were each tried and dropped between 14
   and 17 September 2026. Store only the current plan and targets, never a history.
   `backup/step4b-abandoned` is a record, not a starting point.
+- **Don't let one cuisine's vocabulary become the default.** The app is
+  cuisine-agnostic. A fixed unit list in the prompt or schema, plus worked examples
+  from a single cuisine, is enough to make the model apply that cuisine's units to
+  everything — Step 6 shipped a prompt that answered "chicken chowmein" in
+  *katori*. Units come from the person's own words, and otherwise from the shape of
+  the food: plate, bowl or cup for loose food, the item itself when countable,
+  tbsp for fats, grams for what a recipe would weigh. Keep worked examples spread
+  across cuisines.
 - **Don't show a measured burn number.** The formula's maintenance estimate may be
   shown — "about 2,420 kcal a day to stay at your weight", rounded, dotted as an
   estimate, never called "burn", never updated from food logs or weigh-ins. A
@@ -105,12 +116,13 @@ Each one is a real failure mode, not a style preference.
 protecting data that doesn't exist. They come back the moment someone signs up, so
 treat both as *before launch or not at all*.
 
-- **`GoalType` raw values** (`lean_bulk`, `maintain`, `cut`) are safe to change.
-  Don't do it opportunistically anyway: `goal.rawValue` reaches the AI prompt,
-  which hard-codes the tokens, so it is a two-repo edit that only pays as part of
-  the Step 6 prompt work.
-- **`logEntries` has no history to protect.** Delete `LogEntryType` and its read
-  path in Step 3 rather than keeping them alive for entries that don't exist.
+- **`GoalType` raw values** (`lean_bulk`, `maintain`, `cut`) are safe to change
+  in Firestore terms while there are no users. The meal-analysis backend ignores
+  the goal field now; the prompt and former meal rating no longer use it. Check
+  stored profiles and older app builds before changing the values later.
+- **`logEntries` has no history to protect.** `LogEntryType` and its read path were
+  deleted in Step 3, and `estimatedItems` with its card in Step 6, rather than
+  being kept alive for entries that don't exist.
 
 **Neither relaxation reaches `ai_scans`** — that rule is about builds in the wild,
 not stored rows, and an empty `users` collection doesn't prove no old install

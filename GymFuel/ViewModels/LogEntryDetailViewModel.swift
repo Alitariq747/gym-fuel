@@ -68,9 +68,6 @@ final class LogEntryDetailViewModel: ObservableObject {
                 loggedAt: entry.loggedAt
             )
 
-            var updatedFeedback = reinterpretedEntry.feedback
-            updatedFeedback?.goalType = goal
-
             let updatedEntry = LogEntry(
                 id: entry.id,
                 userId: entry.userId,
@@ -80,7 +77,7 @@ final class LogEntryDetailViewModel: ObservableObject {
                 title: reinterpretedEntry.title,
                 rawInput: newRawInput,
                 detail: reinterpretedEntry.detail,
-                feedback: updatedFeedback,
+                feedback: reinterpretedEntry.feedback,
                 image: entry.image,
                 imageUploadStatus: entry.imageUploadStatus
             )
@@ -114,7 +111,7 @@ final class LogEntryDetailViewModel: ObservableObject {
 
     /// A quantity edit is not an override. The corrected breakdown replaces the
     /// old one and the total is recomputed from it, while the explanation,
-    /// assumptions and score stay exactly as they were — `meal-contract.md` §6.
+    /// assumptions stay exactly as they were — `meal-contract.md` §6.
     func updateBreakdown(for entry: LogEntry, to breakdown: MealBreakdown) async -> LogEntry? {
         let calculator = MealBreakdownCalculator()
         let macros = calculator.total(of: breakdown)

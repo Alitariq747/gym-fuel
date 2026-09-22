@@ -13,7 +13,7 @@ Settled 21 September 2026. Closes `project-brief.md` open question 3.
 ## 1. What this contract is for
 
 One submission is **one meal**: one timeline entry, several editable items, one
-meal total, one Goal Fit assessment. "Two roti, chicken karahi, half a katori
+meal total. "Two roti, chicken karahi, half a katori
 rice" is three items in one entry, not three entries.
 
 Today the model already returns per-item `calories/protein/carbs/fat`
@@ -32,7 +32,6 @@ an amount is local arithmetic and costs nothing**.
 | **Amounts** | `quantity: Double` + free-text `unit: String`. Scaling is a pure ratio. **No unit conversion, no gram equivalents** — that is a food database, and its absence is the product. |
 | **Depth** | Exactly two levels: items, and components within an item. Not recursive. |
 | **Reinterpretation** | Defined in §9, **not built in Step 5**. Step 5 ships quantity edits only. |
-| **Scoring** | Out of scope here. Step 7 owns Goal Fit and reads `feedback.macros`. |
 
 ---
 
@@ -307,7 +306,7 @@ disappears into an average.
 Writes `adjustedQuantity` on the edited node. Nothing else in the tree changes —
 not another node's `nutrition`, not its `adjustedQuantity`, not an id. The meal
 total is recomputed by §4 from the same stored numbers. No network call, no AI
-scan, no change to `explanation`, `assumptions`, `confidence` or `goalFitScore`.
+scan, no change to `explanation`, `assumptions` or `confidence`.
 
 Several edits apply together on one save.
 
@@ -345,16 +344,14 @@ cannot both be shown as current.
 | `explanation` | `""` | the model's words describe superseded numbers |
 | `assumptions` | `[]` | they belong to the discarded breakdown |
 | `confidence` | **nil** | confidence in a number no longer shown |
-| `goalFitScore` | **nil** | computed from different macros |
-| `goalType` | preserved | the user's goal, not a model output |
 
 **Supersede means delete, not grey out.** If a superseded breakdown survived in
-storage, the card, the timeline assumption line, the saved-meal snapshot and
-Step 7's Goal Fit would each have to re-implement *"is this superseded?"*, and
+storage, the card, the timeline assumption line and the saved-meal snapshot
+would each have to re-implement *"is this superseded?"*, and
 one of them would get it wrong. One rule, one place, zero readers.
 
 The user is told before it happens, and it is confirmable. **A quantity edit is
-not an override** — its total is derived, and its breakdown and score stay.
+not an override** — its total is derived and its breakdown stays.
 
 ---
 

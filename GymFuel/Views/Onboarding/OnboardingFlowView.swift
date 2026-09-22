@@ -11,7 +11,6 @@ private enum OnboardingStep: Hashable {
     case name
     case liftEatsIntro
     case liftEatsDifference
-    case goalFitScoreExplainer
     case gender
     case age
     case height
@@ -31,8 +30,6 @@ private enum OnboardingStep: Hashable {
             return "lift_eats_intro"
         case .liftEatsDifference:
             return "lift_eats_difference"
-        case .goalFitScoreExplainer:
-            return "goal_fit_score_explainer"
         case .gender:
             return "gender"
         case .age:
@@ -71,7 +68,7 @@ struct OnboardingFlowView: View {
     // MARK: - Step order + progress
 
     private var orderedSteps: [OnboardingStep] {
-        var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference, .goalFitScoreExplainer]
+        var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference]
         if showsNameStep { steps.append(.name) }
         steps += [.gender, .age, .height, .weight, .activityLevel, .goal]
         // Maintain has no goal weight, so it skips that step.
@@ -155,13 +152,7 @@ struct OnboardingFlowView: View {
 
         case .liftEatsDifference:
             OnboardingLiftEats(
-                onNext: { go(to: .goalFitScoreExplainer, direction: .forward) }
-            )
-
-        case .goalFitScoreExplainer:
-            GoalFitScoreExplainerSheet(
-                primaryButtonTitle: "Next",
-                onPrimaryAction: { go(to: showsNameStep ? .name : .gender, direction: .forward) }
+                onNext: { go(to: showsNameStep ? .name : .gender, direction: .forward) }
             )
 
         case .gender:

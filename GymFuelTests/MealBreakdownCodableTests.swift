@@ -66,8 +66,6 @@ struct MealBreakdownCodableTests {
             assumptions: ["Ghee, not oil", "One katori is about 200 ml"],
             confidence: 0.62,
             macros: Macros(calories: 919, protein: 36.8, carbs: 80.1, fat: 52.1),
-            goalFitScore: 71,
-            estimatedItems: nil,
             breakdown: breakdown,
             macrosProvenance: .estimated
         )
@@ -106,7 +104,7 @@ struct MealBreakdownCodableTests {
 
     // MARK: - Documents written before this contract existed
 
-    @Test("Feedback saved before Step 5 decodes with no breakdown and nothing else lost")
+    @Test("A document written before Step 6 still decodes, ignoring its retired key")
     func olderFeedbackDecodes() throws {
         let decoded = try decodeFeedback(#"""
         {
@@ -123,9 +121,8 @@ struct MealBreakdownCodableTests {
 
         #expect(decoded.breakdown == nil)
         #expect(decoded.macrosProvenance == nil, "which reads as .estimated")
-        #expect(decoded.estimatedItems?.count == 1)
-        #expect(decoded.macros?.calories == 477)
-        #expect(decoded.goalFitScore == 64)
+        #expect(decoded.macros?.calories == 477, "the retired key is ignored, not fatal")
+        #expect(decoded.explanation == "Estimated from typical portions.")
     }
 
     // MARK: - The tests that protect the timeline

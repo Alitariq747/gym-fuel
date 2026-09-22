@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// The user's weigh-ins against their plan. Opens from the Week card until 7a
+/// The user's weigh-ins against their plan. Opens from the Week card until 7
 /// puts it in the menu.
 ///
 /// **Nothing here judges.** No red, no "behind", no advice: the chart shows where

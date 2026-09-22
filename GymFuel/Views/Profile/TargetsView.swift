@@ -6,7 +6,7 @@
 import SwiftUI
 
 /// The one place the user's numbers and their goal live. Opens from Settings
-/// until 7a puts it in the menu.
+/// until 7 puts it in the menu.
 ///
 /// **Nothing here works a target out.** It reads what was saved, because a screen
 /// that recalculates on appear is a screen that moves targets without the user

@@ -9,12 +9,12 @@ scrap-exercise decisions, 14 September for the pace check, 16 September for the
 weekly page, and 17 September for the plan and saved targets — see Revision notes
 at the end.
 
-**Decision update, 19 September.** Steps 0–4 are complete. Ahmad reports that
+**Decision update, 22 September.** Steps 0–5 are complete. Ahmad reports that
 TestFlight users already liked explicit ingredient and portion assumptions. The
 remaining launch work strengthens that experience: one meal with editable items,
-predictable corrections, reusable saved versions, and personal-target **and**
-day-aware Goal Fit together. This feedback supports usefulness, not measured
-estimation accuracy or paid retention. `build-order.md` Steps 5–7 own the contract.
+predictable corrections and reusable saved versions. The numeric meal rating was
+removed from launch scope because it lacked a clear job. This feedback supports usefulness, not measured
+estimation accuracy or paid retention. `build-order.md` Steps 5–7 own the work.
 
 ---
 
@@ -205,7 +205,7 @@ subculture, "goal-driven" is a use case**, and only the second is load-bearing.
 Goal-driven also covers recomp, post-partum, a wedding in April, a doctor's
 instruction — same page, same maths, several times the audience. So lifting comes
 out of the name, the subtitle and the primary copy, while goals, the plan and the
-goal-fit score stay. `GoalType` display strings become **Gain / Lose fat /
+saved targets stay. `GoalType` display strings become **Gain / Lose fat /
 Maintain**.
 
 What that costs: roughly 20–30% of ARPU, since a general tracker anchors against
@@ -216,19 +216,10 @@ display" — and trading price for audience is correct while that holds.
 
 ### Why the retention half is worth building regardless
 
-**Launch scoring decision, 19 September.** Goal Fit must use both personal saved
-targets and earlier logged meals on the same day. Its job is to explain a meal's
-contribution and tradeoffs. The old goal-category formula is being redesigned,
-not merely moved to Swift. Write example judgments before choosing weights.
-Confidence stays separate, and the numerical score and explanation share the same
-computed factors. More protein cannot earn unlimited rewards, and a small meal
-does not automatically fit well just because it contains fewer calories.
-
-Meal context follows logged time: dinner does not change breakfast; corrections
-to earlier intake can change later assessments. Say "Based on your logged meals".
-Because Step 4 stores only current targets, historical assessments are explicitly
-labeled as using current targets. No target-history system or adaptive coach is
-being reopened. A separate numeric day/week score is not required for launch.
+**Launch decision, 22 September.** Remove the numeric meal rating. The estimate's
+ingredients, portions and assumptions give users concrete things to inspect and
+correct; daily totals already show progress against saved targets. Building a
+contextual rating would add rules without a clear user decision to support.
 
 Saved corrected versions complement the plan: repeated meals become easier to log
 without repeated AI calls. Whether this improves retention is measured after launch;
@@ -287,12 +278,12 @@ video that makes itself.
 
 **Show the meal correction first.** A creator can demonstrate an assumption, an
 edit and the resulting calorie difference before a share card exists. Finalize the
-card after the meal and scoring contracts, in Step 7a. Sharing is a distribution
+card after the meal contract, in Step 7. Sharing is a distribution
 experiment, not guaranteed virality or a prerequisite for creator conversations.
 
 | Channel | Cash cost | Needs from the product | Honest read |
 |---|---|---|---|
-| Share cards | $0 cash, implementation time | Final meal card and system share sheet, Step 7a | Measure actual exports and acquisition; no guaranteed growth loop |
+| Share cards | $0 cash, implementation time | Final meal card and system share sheet, Step 7 | Measure actual exports and acquisition; no guaranteed growth loop |
 | Nano seeding | ~$0–500 | Lifetime codes; a 15-sec demo that lands | 83% of creators accept gifting alone if they like it. 20–50 nano creators (1k–10k) is the opening move |
 | Own account | $0 | Nothing — the failure demos exist today | Slow, but it's how we learn which hook converts before paying anyone |
 | Long-tail ASO | $0 | Subtitle + keyword rewrite | Cuisine and homemade terms near-uncontested; indies under-invest here |
@@ -412,11 +403,10 @@ changes in this launch.
 Conclusions in earlier versions that were superseded have been corrected in place
 rather than deleted, so the reasoning stays legible:
 
-- **Food and scoring scope, 19 September:** recorded the founder's TestFlight
-  evidence; one meal retains editable items and saved provenance; predictable
-  corrections precede the share card. Personal-target and day-aware Goal Fit are
-  both launch requirements, with example-led formula design and matching reasons.
-  Competitive exclusivity claims and the entitlement-rename proposal were removed.
+- **Food scope, 19 and 22 September:** recorded the founder's TestFlight evidence;
+  one meal retains editable items and saved provenance; predictable corrections
+  precede the share card. The numeric meal rating was removed. Competitive
+  exclusivity claims and the entitlement-rename proposal were removed.
 
 - **The ceiling argument (§03)** was the wrong objection. Market size was never
   the problem; incumbency is.
@@ -445,7 +435,7 @@ rather than deleted, so the reasoning stays legible:
 
 Also decided after this document was first written, and recorded in
 `project-brief.md` rather than here: exercise logging is removed entirely, the
-goal-fit score becomes personal-target-based and day-aware, calculated client-side,
+numeric meal rating was removed,
 and App Store metadata cannot segment cuisines by country in English.
 
 ---

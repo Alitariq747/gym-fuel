@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ProfileLiftEatsSection: View {
-    let onOpenScoreExplanation: () -> Void
     let reviewURL: URL
 
     var body: some View {
@@ -9,18 +8,6 @@ struct ProfileLiftEatsSection: View {
             ProfileSectionHeader(title: "LiftEats", systemImage: "sparkles")
 
             VStack(spacing: 0) {
-                Button(action: onOpenScoreExplanation) {
-                    actionRow(
-                        title: "How score is calculated",
-                        systemImage: "chart.line.uptrend.xyaxis",
-                        tint: .fuelOrange
-                    )
-                }
-                .buttonStyle(.plain)
-
-                Divider()
-                    .padding(.leading, 82)
-
                 Link(destination: reviewURL) {
                     actionRow(
                         title: "Rate LiftEats",
