@@ -16,16 +16,27 @@ struct StatsView: View {
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
     @State private var isWeightPresented = false
+    @State private var isDatePickerPresented = false
+    @State private var selectedDate: Date
+    @State private var pendingDayDate: Date?
  
     private let onWeighIn: (Double) -> Void
+    private let onSelectedDateChange: (Date) -> Void
+    private let onShowDay: (Date) -> Void
     init(
         profile: UserProfile,
-        viewModel: StatsViewModel = StatsViewModel(),
-        onWeighIn: @escaping (Double) -> Void = { _ in }
+        selectedDate: Date,
+        viewModel: StatsViewModel? = nil,
+        onWeighIn: @escaping (Double) -> Void = { _ in },
+        onSelectedDateChange: @escaping (Date) -> Void,
+        onShowDay: @escaping (Date) -> Void
     ) {
         self.profile = profile
         self.onWeighIn = onWeighIn
-        _viewModel = StateObject(wrappedValue: viewModel)
+        self.onSelectedDateChange = onSelectedDateChange
+        self.onShowDay = onShowDay
+        _selectedDate = State(initialValue: selectedDate)
+        _viewModel = StateObject(wrappedValue: viewModel ?? StatsViewModel(now: selectedDate))
     }
     private var targetMacros: Macros? {
         profile.savedTargets
@@ -55,11 +66,15 @@ struct StatsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 topControlsRow
+                DayWeekScaleControl(selected: .week) { scale in
+                    if scale == .day { onShowDay(selectedDate) }
+                }
                 StatsWeekPicker(
                     weekLabel: weekLabel,
                     canGoNext: viewModel.canGoToNextWeek(),
-                    onPrevious: { viewModel.goToPreviousWeek() },
-                    onNext: { viewModel.goToNextWeek() }
+                    onPrevious: { moveWeek(by: -1) },
+                    onNext: { moveWeek(by: 1) },
+                    onDateTap: { isDatePickerPresented = true }
                 )
 
                 // Outside the error branch on purpose: the weight trend loads
@@ -110,6 +125,20 @@ struct StatsView: View {
                 )
             }
         }
+        .sheet(isPresented: $isDatePickerPresented, onDismiss: {
+            if let date = pendingDayDate {
+                pendingDayDate = nil
+                onShowDay(date)
+            }
+        }) {
+            DayWeekPickerSheet(date: selectedDate, scale: .week) { date, scale in
+                if scale == .day {
+                    pendingDayDate = date
+                } else {
+                    selectDate(date)
+                }
+            }
+        }
         .navigationDestination(isPresented: $isWeightPresented) {
             WeightView()
         }
@@ -117,6 +146,17 @@ struct StatsView: View {
         .onChange(of: isWeightPresented) { _, isPresented in
             if !isPresented { Task { await viewModel.loadWeightTrend(userId: profile.id) } }
         }
+    }
+
+    private func moveWeek(by offset: Int) {
+        guard let candidate = Calendar.current.date(byAdding: .weekOfYear, value: offset, to: selectedDate) else { return }
+        selectDate(min(candidate, .now))
+    }
+
+    private func selectDate(_ date: Date) {
+        selectedDate = Calendar.current.startOfDay(for: date)
+        viewModel.selectWeek(containing: selectedDate)
+        onSelectedDateChange(selectedDate)
     }
 
     /// Offered only while Health can supply weigh-ins and has not been asked to.

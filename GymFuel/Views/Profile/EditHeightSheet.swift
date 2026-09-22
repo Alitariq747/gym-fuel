@@ -16,6 +16,7 @@ private enum HeightUnit: String, CaseIterable {
 struct EditHeightSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var heightCm: Double?
+    @ScaledMetric(relativeTo: .body) private var pickerHeight: CGFloat = 160
 
     @State private var selectedUnit: HeightUnit = .centimeters
 
@@ -33,33 +34,33 @@ struct EditHeightSheet: View {
 
     var body: some View {
         AdaptiveScrollContainer {
-            VStack(spacing: 16) {
-            header
+            VStack(alignment: .leading, spacing: 20) {
+                header
+                HeightUnitSegmentedControl(selectedUnit: $selectedUnit)
+                summaryCard
+                inputCard
 
-            HeightUnitSegmentedControl(selectedUnit: $selectedUnit)
-
-            summaryCard
-            inputCard
-
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-
-            Spacer(minLength: 0)
+            .padding(Circa.Space.screenMargin)
         }
-            .padding()
-        }
+        .circaPaper()
         .navigationTitle("Height")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                toolbarIconButton(systemImage: "xmark", action: { dismiss() })
+                Button("Cancel") { dismiss() }
+                    .foregroundStyle(Color.circaInk2)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                toolbarIconButton(systemImage: "checkmark", action: handleDone)
+                Button("Done", action: handleDone)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.circaAccent)
             }
         }
         .onAppear { initializeFromBindingIfNeeded() }
@@ -78,60 +79,42 @@ struct EditHeightSheet: View {
         }
     }
 
-    // MARK: - UI Pieces (matches onboarding styling)
-    private func toolbarIconButton(systemImage: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(.secondary)
-        }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.circle)
-        .tint(.secondary)
-    }
-
     private var header: some View {
-        VStack(spacing: 14) {
-            Text("📏")
-                .font(.system(size: 48))
-                .frame(width: 96, height: 96)
-                .background(Color.fuelBlue.opacity(0.13), in: Circle())
-                .shadow(color: Color.fuelBlue.opacity(0.12), radius: 18, y: 10)
-                .padding(.top, 12)
-
+        VStack(alignment: .leading, spacing: 8) {
+            CircaSectionLabel("About you")
+            Text("Your height")
+                .font(.circaTitle)
+                .foregroundStyle(Color.circaInk)
             Text("Update your height. We store it in centimeters, but you can enter it in either unit.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var summaryCard: some View {
         VStack(spacing: 6) {
+            CircaSectionLabel("Selected height")
             Text(primaryHeightText)
-                .font(.system(size: 42, weight: .bold, design: .rounded))
-                .monospacedDigit()
+                .font(.circaMonoLarge)
+                .foregroundStyle(Color.circaInk)
 
             Text(secondaryHeightText)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.circaCaption)
+                .foregroundStyle(Color.circaInk2)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.systemGray5), lineWidth: 1)
-        )
+        .padding(18)
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+        .overlay {
+            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                .strokeBorder(Color.circaCardBorder, lineWidth: 1)
+        }
     }
 
     private var inputCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(selectedUnit == .centimeters ? "Height (cm)" : "Height (ft / in)")
-                .font(.headline)
+            CircaSectionLabel(selectedUnit == .centimeters ? "Height (cm)" : "Height (ft / in)")
 
             if selectedUnit == .centimeters {
                 Picker("Centimeters", selection: $selectedCm) {
@@ -140,7 +123,7 @@ struct EditHeightSheet: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 160)
+                .frame(height: pickerHeight)
                 .clipped()
                 .labelsHidden()
             } else {
@@ -152,7 +135,7 @@ struct EditHeightSheet: View {
                     }
                     .pickerStyle(.wheel)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 160)
+                    .frame(height: pickerHeight)
                     .clipped()
                     .labelsHidden()
 
@@ -163,22 +146,19 @@ struct EditHeightSheet: View {
                     }
                     .pickerStyle(.wheel)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 160)
+                    .frame(height: pickerHeight)
                     .clipped()
                     .labelsHidden()
                 }
             }
         }
-        .padding(16)
+        .padding(18)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.systemGray5), lineWidth: 1)
-        )
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+        .overlay {
+            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                .strokeBorder(Color.circaCardBorder, lineWidth: 1)
+        }
     }
 
     // MARK: - Derived Text (same logic as onboarding)
@@ -273,7 +253,7 @@ private struct HeightUnitSegmentedControl: View {
             segment(title: "ft / in", unit: .feetInches)
         }
         .padding(4)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: Circa.Radius.button))
     }
 
     private func segment(title: String, unit: HeightUnit) -> some View {
@@ -283,14 +263,14 @@ private struct HeightUnitSegmentedControl: View {
             selectedUnit = unit
         } label: {
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(.circaRow)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .frame(minHeight: Circa.minHitTarget)
                 .background(
-                    RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(isSelected ? Color(.systemBackground) : Color.clear)
+                    RoundedRectangle(cornerRadius: Circa.Radius.thumb, style: .continuous)
+                        .fill(isSelected ? Color.circaCard : Color.clear)
                 )
-                .foregroundStyle(isSelected ? .primary : .secondary)
+                .foregroundStyle(isSelected ? Color.circaInk : Color.circaInk2)
         }
         .buttonStyle(.plain)
     }

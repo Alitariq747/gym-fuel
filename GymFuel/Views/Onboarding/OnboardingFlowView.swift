@@ -89,10 +89,10 @@ struct OnboardingFlowView: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(Color.circaBarTrack)
 
                 Capsule()
-                    .fill(Color.primary)
+                    .fill(Color.circaAccent)
                     .frame(width: geo.size.width * progress)
                     .animation(.spring(response: 0.28, dampingFraction: 0.9), value: progress)
             }
@@ -256,13 +256,15 @@ struct OnboardingFlowView: View {
                         Button(action: goBack) {
                             Image(systemName: "chevron.left")
                                 .font(.headline)
-                                .frame(width: 36, height: 36)
-                                .background(Color(.secondarySystemBackground), in: Circle())
+                                .foregroundStyle(Color.circaInk)
+                                .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                                .background(Color.circaCard, in: Circle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Previous step")
                     } else {
                         Color.clear
-                            .frame(width: 36, height: 36)
+                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
                     }
 
                     progressBar
@@ -277,6 +279,7 @@ struct OnboardingFlowView: View {
                 .id(step)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .circaPaper()
             .navigationBarBackButtonHidden(true)
             .onAppear {
                 FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: step.analyticsName)

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import GoogleSignInSwift
 import AuthenticationServices
 
 struct WelcomeView: View {
@@ -22,103 +21,94 @@ struct WelcomeView: View {
 
     var body: some View {
         AdaptiveScrollContainer {
-            VStack(spacing: 16) {
-            Spacer(minLength: 24)
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Circa")
+                        .font(.system(.title2).weight(.semibold))
+                        .foregroundStyle(Color.circaInk)
 
-            Image("LiftEatsWelcomeIcon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 220, height: 220)
-                .padding(.top, 16)
-                
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Welcome to LiftEats")
-                    .font(.title.bold())
-
-                Text("Log what you eat. Track how you train. Move closer to your goal.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
-            .padding(.top, 8)
-
-            Spacer()
-
-            VStack(spacing: 12) {
-                SignInWithAppleButton(.continue) { request in
-                    let nonce = authManager.generateNonce()
-                    appleNonce = nonce
-                    request.requestedScopes = [.fullName, .email]
-                    request.nonce = authManager.sha256(nonce)
-                } onCompletion: { result in
-                    Task { await handleAppleSignIn(result) }
-                }
-                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-                .frame(height: 48)
-                .frame(maxWidth: .infinity)
-                .disabled(isAppleLoading)
-                // ASAuthorizationAppleIDButton fixes its style at init, so SwiftUI does
-                // not restyle it when the appearance changes. Without a new identity a
-                // light-mode button stays black after a switch to dark, leaving it
-                // invisible against the black background.
-                .id(colorScheme)
-
-                Button {
-                    Task { await handleGoogleSignIn() }
-                } label: {
-                    socialButtonLabel(
-                        icon: googleIcon,
-                        text: isGoogleLoading ? "Connecting…" : "Continue with Google",
-                        isLoading: isGoogleLoading
-                    )
-                }
-                .buttonStyle(.plain)
-                .disabled(isGoogleLoading)
-
-                if let authError {
-                    Text(authError)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    CircaSectionLabel("Food & calorie journal")
                 }
 
-                Button {
-                    onSignUp()
-                } label: {
-                    Text("Sign up")
-                        .font(.system(size: 19, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                        .frame(height: 48)
+                Spacer(minLength: 48)
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Your food, in your words.")
+                        .font(.system(.largeTitle).weight(.semibold))
+                        .foregroundStyle(Color.circaInk)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("Describe a meal or add a photo. See the portions and ingredients we assumed, then correct what differs.")
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 48)
+
+                VStack(spacing: 12) {
+                    SignInWithAppleButton(.continue) { request in
+                        let nonce = authManager.generateNonce()
+                        appleNonce = nonce
+                        request.requestedScopes = [.fullName, .email]
+                        request.nonce = authManager.sha256(nonce)
+                    } onCompletion: { result in
+                        Task { await handleAppleSignIn(result) }
+                    }
+                    .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                    .frame(height: 52)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.button))
+                    .disabled(isAppleLoading)
+                    // The native button fixes its appearance at creation time.
+                    .id(colorScheme)
+
+                    Button {
+                        Task { await handleGoogleSignIn() }
+                    } label: {
+                        HStack(spacing: 10) {
+                            if isGoogleLoading {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image("GoogleLogo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
+                            }
+                            Text(isGoogleLoading ? "Connecting…" : "Continue with Google")
+                        }
                         .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: buttonCornerRadius)
-                                .fill(socialBackground)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: buttonCornerRadius)
-                                .strokeBorder(socialBorder, lineWidth: 1)
-                        )
-                }
-                .buttonStyle(.plain)
+                    }
+                    .buttonStyle(.circa(.secondary, height: 52))
+                    .disabled(isGoogleLoading)
 
+                    if let authError {
+                        Text(authError)
+                            .font(.circaCaption)
+                            .foregroundStyle(Color.circaDanger)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                Button {
-                    onSignIn()
-                } label: {
-                    Text("Already have an account? Sign in")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+                    Button(action: onSignUp) {
+                        Text("Sign up")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.circa(.outline, height: 52))
+
+                    Button(action: onSignIn) {
+                        Text("Already have an account? Sign in")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.circa(.link))
                 }
-                .buttonStyle(.plain)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 20)
-            }
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 32)
+            .padding(.bottom, 24)
         }
+        .circaPaper()
     }
 
     @MainActor
@@ -188,54 +178,6 @@ struct WelcomeView: View {
         }
     }
 
-    /// Measured off the native Sign in with Apple button, whose corner radius cannot be
-    /// enlarged from SwiftUI: a 6pt *circular* corner, not a continuous squircle. Every
-    /// custom button on this screen matches it so the stack reads as one control group.
-    private let buttonCornerRadius: CGFloat = 6
-
-    private var socialBackground: Color {
-        colorScheme == .light ? Color(.systemBackground) : Color(.secondarySystemBackground)
-    }
-
-    private var socialBorder: Color {
-        colorScheme == .light ? Color.black.opacity(0.08) : Color.white.opacity(0.12)
-    }
-
-    private var googleIcon: some View {
-        Image("GoogleLogo")
-            .resizable()
-            .scaledToFit()
-            .frame(width: 18, height: 18)
-    }
-
-    private func socialButtonLabel(icon: some View, text: String, isLoading: Bool) -> some View {
-        HStack(spacing: 8) {
-            if isLoading {
-                ProgressView()
-                    .controlSize(.small)
-                    .frame(width: 18, height: 18)
-            } else {
-                icon
-            }
-
-            Text(text)
-                .font(.system(size: 19, weight: .medium))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(height: 48)
-        .padding(.horizontal, 16)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: buttonCornerRadius)
-                .fill(socialBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: buttonCornerRadius)
-                .strokeBorder(socialBorder, lineWidth: 1)
-        )
-    }
 }
 
 

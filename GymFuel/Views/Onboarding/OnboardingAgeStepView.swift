@@ -8,85 +8,51 @@
 import SwiftUI
 
 struct OnboardingAgeStepView: View {
-    @Environment(\.colorScheme) private var colorScheme
     @Binding var age: Int?
-    
-
     let onNext: () -> Void
-    
+
     @State private var ageText: String = ""
     @State private var errorMessage: String?
-    
+
     var body: some View {
-        AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 18) {
-            Spacer(minLength: 28)
+        OnboardingMetricPage(
+            title: "How old are you?",
+            detail: "Age helps set a starting calorie estimate. This plan is for adults 18 and older.",
+            onContinue: handleNext
+        ) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Age")
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk2)
 
-            Text("🎂")
-                .font(.system(size: 58))
-                .frame(width: 116, height: 116)
-                .background(
-                    LinearGradient(
-                        colors: [Color.fuelOrange.opacity(0.22), Color.fuelGreen.opacity(0.14)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    in: Circle()
-                )
-                .frame(maxWidth: .infinity)
-
-            Text("Age helps calibrate your baseline energy needs before activity and goals are added.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Enter Age")
-                    .font(.subheadline.weight(.semibold))
-                HStack(spacing: 10) {
-                    TextField("", text: ageBinding)
+                HStack(spacing: 12) {
+                    TextField("Age", text: ageBinding)
                         .keyboardType(.numberPad)
-                        .font(.title3.weight(.semibold))
-                        .multilineTextAlignment(.leading)
-                    Spacer()
+                        .font(.circaMonoLarge)
+                        .foregroundStyle(Color.circaInk)
+                    Spacer(minLength: 0)
                     Text("years")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk2)
                 }
-                .padding(14)
-                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(errorMessage == nil ? Color(.secondarySystemBackground) : Color.fuelRed, lineWidth: 1)
-                )
+                .padding(16)
+                .frame(minHeight: 68)
+                .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+                .overlay {
+                    RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                        .strokeBorder(errorMessage == nil ? Color.circaCardBorder : Color.circaDanger, lineWidth: 1)
+                }
             }
-            
+
             if let errorMessage {
                 Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaDanger)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            
-            
-            Spacer()
-            Button {
-                handleNext()
-            } label: {
-                Text("Confirm")
-                    .font(.headline).bold()
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-        }
-            .padding()
         }
         .onAppear {
-            // Pre-fill if we already have an age
             if let currentAge = age, ageText.isEmpty {
                 ageText = String(currentAge)
             }

@@ -23,8 +23,15 @@ struct MainTabView: View {
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject var timelineViewModel = TimelineViewModel()
     @State private var showProfile = false
+    @State private var showMenu = false
+    @State private var showWeight = false
+    @State private var showTargets = false
+    @State private var pendingMenuDestination: MainMenuDestination?
     @State private var showSavedMeals = false
     @State private var showStats = false
+    @State private var showDatePicker = false
+    @State private var weekAnchorDate: Date = .now
+    @State private var pendingWeekDate: Date?
     @State private var showTextLogSheet = false
     @State private var showSubscriptionPaywall = false
     @State private var showFutureLoggingToast = false
@@ -123,13 +130,16 @@ struct MainTabView: View {
                     onNextDateTap: {
                         navigateToNextDate()
                     },
-                    onStatsTap: {
-                        showStats = true
+                    onDateTap: {
+                        showDatePicker = true
                     },
-                    onProfileTap: {
-                        showProfile = true
+                    onMenuTap: {
+                        showMenu = true
                     }
                 )
+                DayWeekScaleControl(selected: .day) { scale in
+                    if scale == .week { openWeek() }
+                }
                 ZStack {
                     dayContent
                         .id(timelineViewModel.selectedDate)
@@ -151,9 +161,15 @@ struct MainTabView: View {
                 ProfileView()
                     .preferredColorScheme(preferredColorScheme)
             }
+            .navigationDestination(isPresented: $showWeight) {
+                WeightView()
+                    .toolbar(.visible, for: .navigationBar)
+                    .preferredColorScheme(preferredColorScheme)
+            }
             .navigationDestination(item: $selectedEntry) { entry in
             LogEntryDetailSheet(
                 entry: entry,
+                canModify: isDateWithinLoggingWindow(entry.loggedAt),
                 opensEditor: opensEditorForEntryID == entry.id,
                 isPerformingAction: logEntryDetailViewModel.isSaving,
                 aiErrorMessage: logEntryDetailViewModel.aiErrorMessage,
@@ -226,12 +242,44 @@ struct MainTabView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .sheet(isPresented: $showStats) {
+        .sheet(isPresented: $showStats, onDismiss: {
+            selectDay(weekAnchorDate)
+        }) {
             NavigationStack {
                 StatsView(
                     profile: profile,
-                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) }
+                    selectedDate: weekAnchorDate,
+                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) },
+                    onSelectedDateChange: { weekAnchorDate = $0 },
+                    onShowDay: { date in
+                        weekAnchorDate = date
+                        showStats = false
+                    }
                 )
+            }
+            .preferredColorScheme(preferredColorScheme)
+        }
+        .sheet(isPresented: $showMenu, onDismiss: openPendingMenuDestination) {
+            MainMenuSheet { destination in
+                pendingMenuDestination = destination
+                showMenu = false
+            }
+            .preferredColorScheme(preferredColorScheme)
+            .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showTargets) {
+            TargetsView()
+                .preferredColorScheme(preferredColorScheme)
+        }
+        .sheet(isPresented: $showDatePicker, onDismiss: {
+            if let date = pendingWeekDate {
+                pendingWeekDate = nil
+                openWeek(on: date)
+            }
+        }) {
+            DayWeekPickerSheet(date: timelineViewModel.selectedDate, scale: .day) { date, scale in
+                selectDay(date)
+                if scale == .week { pendingWeekDate = date }
             }
             .preferredColorScheme(preferredColorScheme)
         }
@@ -353,6 +401,28 @@ struct MainTabView: View {
         }
     }
 
+    private func openWeek(on date: Date? = nil) {
+        weekAnchorDate = date ?? timelineViewModel.selectedDate
+        showStats = true
+    }
+
+    private func openPendingMenuDestination() {
+        guard let destination = pendingMenuDestination else { return }
+        pendingMenuDestination = nil
+        switch destination {
+        case .week: openWeek()
+        case .weight: showWeight = true
+        case .targets: showTargets = true
+        case .settings: showProfile = true
+        }
+    }
+
+    private func selectDay(_ date: Date) {
+        dayNavigationDirection = date < timelineViewModel.selectedDate ? .previous : .next
+        weekAnchorDate = date
+        Task { await timelineViewModel.setSelectedDate(date, userId: profile.id) }
+    }
+
     private func navigateToNextDate() {
         guard canNavigateToNextDate else {
             presentFutureLoggingToast()
@@ -374,7 +444,7 @@ struct MainTabView: View {
                 )
             }
 
-            Text("Logged Today")
+            Text("Logged meals")
                 .font(.title3.weight(.bold))
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -400,7 +470,8 @@ struct MainTabView: View {
                 onSuccessRevealCompleted: { entryId in
                     timelineViewModel.markSuccessRevealed(for: entryId)
                 },
-                bottomContentInset: canLogForSelectedDate ? 118 : 24
+                bottomContentInset: canLogForSelectedDate ? 118 : 24,
+                canModifyEntries: canLogForSelectedDate
             )
             .contentShape(Rectangle())
             .onTapGesture {

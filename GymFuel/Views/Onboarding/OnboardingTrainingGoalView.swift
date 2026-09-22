@@ -12,7 +12,6 @@ struct OnboardingTrainingGoalStepView: View {
     /// From the height and weight steps. *Lose fat* needs both to judge BMI.
     let heightCm: Double?
     let weightKg: Double?
-    @Environment(\.colorScheme) private var colorScheme
  
     let onFinish: () -> Void
     
@@ -20,48 +19,44 @@ struct OnboardingTrainingGoalStepView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        AdaptiveScrollContainer {
-            VStack(spacing: 20) {
-            Text("🎯")
-                .font(.system(size: 48))
-                .frame(width: 96, height: 96)
-                .background(Color.fuelOrange.opacity(0.14), in: Circle())
-            
-            Text("Choose your goal")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.primary)
-                .multilineTextAlignment(.center)
-            
-            Spacer()
-            
-            VStack(spacing: 12) {
-                ForEach(GoalType.allCases, id: \.self) { goal in
-                    goalOption(goal)
+        VStack(spacing: 0) {
+            AdaptiveScrollContainer {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        CircaSectionLabel("Your plan")
+                        Text("What are you working toward?")
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaInk)
+                        Text("Choose a direction for your starting targets. You can change it later.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
+                    }
+
+                    VStack(spacing: 12) {
+                        ForEach(GoalType.allCases, id: \.self) { goal in
+                            goalOption(goal)
+                        }
+                    }
+
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.circaCaption)
+                            .foregroundStyle(Color.circaDanger)
+                    }
                 }
+                .padding(.horizontal, Circa.Space.screenMargin)
+                .padding(.top, 18)
+                .padding(.bottom, 20)
             }
-            
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(action: handleFinish) {
+                Text("Continue").frame(maxWidth: .infinity)
             }
-            
-            Spacer()
-            Button {
-                handleFinish()
-            } label: {
-                Text("Finish")
-                    .font(.headline).bold()
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
+            .buttonStyle(.circa(.primary, height: 52))
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.bottom, 16)
         }
-            .padding()
-        }
+        .circaPaper()
         .onAppear {
             // Only if it is still available: the user may have come back and
             // changed their weight since choosing it.
@@ -84,36 +79,38 @@ struct OnboardingTrainingGoalStepView: View {
                     .opacity(problem == nil ? 1 : 0.45)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(goal.displayName)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(problem == nil ? Color.primary : Color.secondary)
+                        .font(.circaRow.weight(.semibold))
+                        .foregroundStyle(problem == nil ? Color.circaInk : Color.circaInk3)
                     Text(problem ?? goal.detail)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
                 }
                 Spacer()
+                if tempSelection == goal {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.circaAccent)
+                        .accessibilityHidden(true)
+                }
             }
-            .padding(14)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
+            .background(ProfileCardBackground())
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(tempSelection == goal ? Color.fuelOrange : Color.gray.opacity(0.24), lineWidth: tempSelection == goal ? 2 : 1)
+                RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous)
+                    .strokeBorder(tempSelection == goal ? Color.circaAccent : Color.clear, lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)
         .disabled(problem != nil)
+        .accessibilityAddTraits(tempSelection == goal ? [.isSelected] : [])
     }
 
     private func goalSymbol(_ goal: GoalType) -> some View {
         Image(systemName: goal.symbolName)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(Color.primary)
+            .font(.circaRow)
+            .foregroundStyle(Color.circaInk2)
             .frame(width: 44, height: 44)
-            .background(Color(.systemBackground), in: Circle())
-            .overlay {
-                Circle()
-                    .stroke(Color.fuelOrange.opacity(colorScheme == .dark ? 0.24 : 0.16), lineWidth: 1)
-            }
-            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0 : 0.05), radius: 8, y: 4)
+            .background(Color.circaWell, in: RoundedRectangle(cornerRadius: Circa.Radius.thumb))
     }
 
     private func handleFinish() {

@@ -1,10 +1,6 @@
 import SwiftUI
 
 /// The durable home for the Apple Health connection.
-///
-/// Built in the legacy Profile idiom rather than Circa on purpose: this is a
-/// `ProfileView` row, and that whole screen is rebuilt in one pass in Step 7.
-/// A single Circa card sitting among eight material ones would read as a bug.
 struct ProfileHealthSection: View {
     let userId: String
     let preferredColorScheme: ColorScheme?
@@ -19,7 +15,7 @@ struct ProfileHealthSection: View {
         // Nothing to offer on hardware with no Health database.
         if healthWeightSync.isAvailable {
             VStack(spacing: 12) {
-                ProfileSectionHeader(title: "Apple Health", systemImage: "heart.text.square")
+                ProfileSectionHeader(title: "Apple Health")
 
                 Button {
                     if healthWeightSync.isConnected {
@@ -31,21 +27,19 @@ struct ProfileHealthSection: View {
                     ProfileSettingsRow(
                         title: "Weight Sync",
                         systemImage: "scalemass.fill",
-                        value: rowValue,
-                        tint: .fuelBlue
+                        value: rowValue
                     )
                 }
                 .buttonStyle(.plain)
                 .background(ProfileCardBackground())
                 .disabled(healthWeightSync.isSyncing)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, Circa.Space.screenMargin)
             .sheet(isPresented: $showDetails) {
                 detailSheet
                     .preferredColorScheme(preferredColorScheme)
-                    .presentationDetents([.medium])
-                    .presentationDragIndicator(.hidden)
-                    .presentationCornerRadius(34)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -66,31 +60,30 @@ struct ProfileHealthSection: View {
                     showDetails = false
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 36, height: 36)
-                        .background(Color(.secondarySystemBackground), in: Circle())
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk2)
+                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                        .background(Color.circaSunken, in: Circle())
                 }
                 .buttonStyle(.plain)
                 .disabled(healthWeightSync.isSyncing)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 14)
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 12)
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    VStack(spacing: 7) {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        CircaSectionLabel("Apple Health")
                         Text("Weigh-ins arrive on their own")
-                            .font(.title2.weight(.bold))
-                            .multilineTextAlignment(.center)
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaInk)
 
-                        Text("If your scale writes to Apple Health, LiftEats picks those weights up and adds them to your trend.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                        Text("If your scale writes to Apple Health, Circa picks those weights up and adds them to your trend.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(.horizontal, 16)
 
                     VStack(spacing: 10) {
                         detailRow(
@@ -101,7 +94,7 @@ struct ProfileHealthSection: View {
                         detailRow(
                             symbol: "arrow.down.circle.fill",
                             title: "Read, never written",
-                            detail: "LiftEats never writes anything back into Apple Health."
+                            detail: "Circa never writes anything back into Apple Health."
                         )
                         detailRow(
                             symbol: "hand.raised.fill",
@@ -113,54 +106,43 @@ struct ProfileHealthSection: View {
                     // No "denied" state is possible: iOS reports a refused read
                     // and an empty Health database identically. So point at the
                     // place the user can actually check, and claim nothing.
-                    Text("Weights not showing up? Open the Health app → Sharing → Apps to see what LiftEats can read.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                    Text("Weights not showing up? Open the Health app → Sharing → Apps to see what Circa can read.")
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
                         .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, 8)
 
                     Button {
                         Task { await syncNow() }
                     } label: {
-                        HStack(spacing: 8) {
-                            if healthWeightSync.isSyncing {
-                                ProgressView().controlSize(.small)
-                            }
-                            Text(healthWeightSync.isSyncing ? "Syncing…" : "Sync now")
-                                .font(.headline.weight(.semibold))
-                        }
+                        Text(healthWeightSync.isSyncing ? "Syncing…" : "Sync now")
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color.liftEatsCoral, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        .foregroundStyle(.white)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.circa(.primary, height: 52))
                     .disabled(healthWeightSync.isSyncing)
                 }
-                .padding(.horizontal, 18)
+                .padding(.horizontal, Circa.Space.screenMargin)
                 .padding(.bottom, 20)
             }
         }
-        .background(Color(.systemBackground))
+        .circaPaper()
     }
 
     private func detailRow(symbol: String, title: String, detail: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Color.fuelBlue)
-                .frame(width: 48, height: 48)
-                .background(Color.fuelBlue.opacity(0.13), in: Circle())
+                .font(.circaRow)
+                .foregroundStyle(Color.circaAccent)
+                .frame(width: 44, height: 44)
+                .background(Color.circaWell, in: RoundedRectangle(cornerRadius: Circa.Radius.thumb))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk)
 
                 Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaInk2)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -168,7 +150,11 @@ struct ProfileHealthSection: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                .strokeBorder(Color.circaCardBorder, lineWidth: 1)
+        }
     }
 
     // MARK: - Actions

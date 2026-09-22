@@ -8,89 +8,64 @@
 import SwiftUI
 
 struct OnboardingGenderStepView: View {
-    @Environment(\.colorScheme) private var colorScheme
-    
     let name: String
     @Binding var gender: Gender
-    
     let onNext: () -> Void
-  
+
     var body: some View {
-        AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 4) {
-                 
-                  
-                  Text("Whats your gender ?")
-                        .font(.title).bold()
-                      .foregroundStyle(.primary)
-            
-                Text("This lets us calculate your target macros more precisely")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.leading)
-                    Spacer()
-                  
-                 // Vstack for gender
-                
-            VStack(spacing: 18) {
-                genderOption(.male, emoji: "👨", subtitle: "Use male-based macro equations.", tint: .fuelBlue)
-                genderOption(.female, emoji: "👩", subtitle: "Use female-based macro equations.", tint: .pink)
-                genderOption(.preferNotToSay, emoji: "✨", subtitle: "Keep things private and balanced.", tint: .fuelOrange)
+        OnboardingMetricPage(
+            title: "Which starting equation should we use?",
+            detail: "This sets your starting calorie estimate. Your weigh-ins will show whether it fits.",
+            onContinue: onNext
+        ) {
+            VStack(spacing: 12) {
+                ForEach(Gender.allCases, id: \.rawValue) { option in
+                    genderOption(option)
+                }
             }
-            
-            Spacer()
-                 
-            Button {
-                handleNext()
-            } label: {
-                Text("Confirm")
-                    .font(.headline).bold()
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-                
-              }
-                .padding()
         }
     }
-    
-    private func genderOption(_ option: Gender, emoji: String, subtitle: String, tint: Color) -> some View {
-        Button {
+
+    private func genderOption(_ option: Gender) -> some View {
+        let isSelected = gender == option
+
+        return Button {
             gender = option
         } label: {
-            HStack(spacing: 14) {
-                Text(emoji)
-                    .font(.title2)
-                    .frame(width: 46, height: 46)
-                    .background(tint.opacity(colorScheme == .dark ? 0.22 : 0.13), in: Circle())
-
+            HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(option.displayName)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.circaEntryTitle)
+                        .foregroundStyle(Color.circaInk)
+                    Text(subtitle(for: option))
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Spacer()
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.circaAccent : Color.circaInk3)
+                    .accessibilityHidden(true)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(gender == option ? tint : Color(.secondarySystemBackground), lineWidth: gender == option ? 2 : 1)
-            )
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 68)
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+            .overlay {
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                    .strokeBorder(isSelected ? Color.circaAccent : Color.circaCardBorder, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
     }
 
-    private func handleNext() {
-        onNext()
+    private func subtitle(for option: Gender) -> String {
+        switch option {
+        case .male: return "Male-based estimate"
+        case .female: return "Female-based estimate"
+        case .preferNotToSay: return "Uses a midpoint starting estimate"
+        }
     }
 }
 

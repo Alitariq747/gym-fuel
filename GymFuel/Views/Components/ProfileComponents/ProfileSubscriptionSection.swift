@@ -8,7 +8,7 @@ struct ProfileSubscriptionSection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            ProfileSectionHeader(title: "Subscription", systemImage: "crown")
+            ProfileSectionHeader(title: "Subscription")
 
             Button {
                 if status.hasProAccess {
@@ -17,77 +17,63 @@ struct ProfileSubscriptionSection: View {
                     onOpenPaywall()
                 }
             } label: {
-                HStack(spacing: 14) {
-                    icon
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 12) {
+                        icon
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(ProfileSubscriptionCopy.title(for: status))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(ProfileSubscriptionCopy.title(for: status))
+                                .font(.circaRow)
+                                .foregroundStyle(Color.circaInk)
 
-                        if let subtitle = ProfileSubscriptionCopy.subtitle(for: status) {
-                            Text(subtitle)
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                            if let subtitle = ProfileSubscriptionCopy.subtitle(for: status) {
+                                Text(subtitle)
+                                    .font(.circaCaption)
+                                    .foregroundStyle(Color.circaInk2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
+                        Spacer(minLength: 0)
                     }
 
-                    Spacer(minLength: 12)
+                    CircaHairline(weight: .inCard)
 
-                    if isSyncingStatus {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else if let badge = ProfileSubscriptionCopy.badge(for: status) {
-                        Text(badge)
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(statusTint)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(statusTint.opacity(0.12), in: Capsule())
-                    }
+                    HStack(spacing: 8) {
+                        if isSyncingStatus {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else if let badge = ProfileSubscriptionCopy.badge(for: status) {
+                            Text(badge)
+                                .font(.circaMono)
+                                .foregroundStyle(Color.circaAccent)
+                        }
 
-                    HStack(spacing: 4) {
+                        Spacer(minLength: 0)
                         Text(ProfileSubscriptionCopy.actionLabel(for: status))
-                            .font(.caption2.weight(.semibold))
+                            .font(.circaMono)
                         Image(systemName: "chevron.right")
-                            .font(.footnote.weight(.semibold))
+                            .font(.circaCaption)
                     }
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.circaInk2)
                 }
-                .contentShape(Rectangle())
                 .padding(16)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .background(ProfileCardBackground())
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(statusTint.opacity(0.14), lineWidth: 1)
-            )
         }
-        .padding(.horizontal)
+        .padding(.horizontal, Circa.Space.screenMargin)
     }
 
     private var icon: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(statusTint.opacity(0.12))
-            .frame(width: 52, height: 52)
+        RoundedRectangle(cornerRadius: Circa.Radius.thumb, style: .continuous)
+            .fill(Color.circaWell)
+            .frame(width: 40, height: 40)
             .overlay(
                 Image(systemName: status.hasProAccess ? "crown.fill" : "sparkles")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(statusTint)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk2)
             )
-    }
-
-    private var statusTint: Color {
-        switch status.state {
-        case .free:
-            return Color.liftEatsCoral
-        case .trial:
-            return Color.liftEatsCoral
-        case .active:
-            return Color.fuelGreen
-        }
     }
 }
 
@@ -95,17 +81,17 @@ private enum ProfileSubscriptionCopy {
     static func title(for status: SubscriptionStatus) -> String {
         switch status.state {
         case .free:
-            return "Get LiftEats Pro"
+            return "Get Circa Pro"
         case .trial:
             return "Pro trial active"
         case .active:
             switch status.productKind {
             case .monthly:
-                return "LiftEats Pro Monthly"
+                return "Circa Pro Monthly"
             case .yearly:
-                return "LiftEats Pro Yearly"
+                return "Circa Pro Yearly"
             case .unknown:
-                return "LiftEats Pro"
+                return "Circa Pro"
             }
         }
     }

@@ -10,65 +10,21 @@ import SwiftUI
 /// Step: What does a normal week look like, including exercise?
 struct OnboardingActivityLevelStepView: View {
     @Binding var selectedLevel: ActivityLevel?
-    @Environment(\.colorScheme) private var colorScheme
-    
-    
     let onNext: () -> Void
-    
-    @State private var tempSelection: ActivityLevel = .mostlySitting
-    @State private var errorMessage: String?
-    
-    var body: some View {
-        AdaptiveScrollContainer {
-            VStack(spacing: 16) {
-            Text("🚶")
-                .font(.system(size: 48))
-                .frame(width: 96, height: 96)
-                .background(Color.fuelBlue.opacity(0.13), in: Circle())
-            
-            
-            Text("Set your Activity Level")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.primary)
-                .multilineTextAlignment(.center)
 
-            Text("Pick the one closest to a normal week for you, including any exercise.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 12)
-            
-            Spacer()
-            
+    @State private var tempSelection: ActivityLevel = .mostlySitting
+
+    var body: some View {
+        OnboardingMetricPage(
+            title: "What does a normal week look like?",
+            detail: "Include work, walking and any exercise. Choose the closest match, not your busiest day.",
+            onContinue: handleNext
+        ) {
             VStack(spacing: 12) {
                 ForEach(ActivityLevel.allCases, id: \.self) { level in
                     activityOption(level)
                 }
             }
-            
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-   
-            Spacer()
-            Button {
-                handleNext()
-            } label: {
-                Text("Next")
-                    .font(.headline).bold()
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-            
-        }
-            .padding()
         }
         .onAppear {
             if let existing = selectedLevel {
@@ -76,48 +32,42 @@ struct OnboardingActivityLevelStepView: View {
             }
         }
     }
-    
+
     private func activityOption(_ level: ActivityLevel) -> some View {
-        Button {
+        let isSelected = tempSelection == level
+
+        return Button {
             tempSelection = level
-            errorMessage = nil
         } label: {
-            HStack(alignment: .top, spacing: 14) {
-                Text(activityEmoji(for: level))
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-                    .background(Color.fuelBlue.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+            HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(level.displayName)
-                        .font(.headline.weight(.semibold))
+                        .font(.circaEntryTitle)
+                        .foregroundStyle(Color.circaInk)
                     Text(level.detail)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.circaAccent : Color.circaInk3)
+                    .accessibilityHidden(true)
             }
-            .padding(14)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(tempSelection == level ? Color.fuelBlue : Color.gray.opacity(0.24), lineWidth: tempSelection == level ? 2 : 1)
-            )
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 68)
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+            .overlay {
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                    .strokeBorder(isSelected ? Color.circaAccent : Color.circaCardBorder, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
-    }
-
-    private func activityEmoji(for level: ActivityLevel) -> String {
-        switch level {
-        case .mostlySitting: return "🪑"
-        case .lightlyActive: return "🚶"
-        case .active: return "🏃"
-        case .veryActive: return "🏗️"
-        }
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
     }
 
     private func handleNext() {
         selectedLevel = tempSelection
-        errorMessage = nil
         onNext()
     }
 }

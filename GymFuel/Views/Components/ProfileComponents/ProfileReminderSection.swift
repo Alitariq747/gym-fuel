@@ -17,7 +17,7 @@ struct ProfileReminderSection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            ProfileSectionHeader(title: "Reminders", systemImage: "bell.badge")
+            ProfileSectionHeader(title: "Reminders")
 
             Button {
                 showPreferences = true
@@ -25,27 +25,25 @@ struct ProfileReminderSection: View {
                 ProfileSettingsRow(
                     title: "Logging Reminders",
                     systemImage: "bell.badge.fill",
-                    value: selectedMode.displayName,
-                    tint: .liftEatsCoral
+                    value: selectedMode.displayName
                 )
             }
             .buttonStyle(.plain)
             .background(ProfileCardBackground())
         }
-        .padding(.horizontal)
+        .padding(.horizontal, Circa.Space.screenMargin)
         .sheet(isPresented: $showPreferences) {
             preferenceSheet
                 .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.hidden)
-                .presentationCornerRadius(34)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .alert("Reminders unavailable", isPresented: $showError) {
             Button("OK", role: .cancel) {
                 errorMessage = nil
             }
         } message: {
-            Text(errorMessage ?? "LiftEats could not update your reminder preference.")
+            Text(errorMessage ?? "Circa could not update your reminder preference.")
         }
     }
 
@@ -58,31 +56,30 @@ struct ProfileReminderSection: View {
                     showPreferences = false
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 36, height: 36)
-                        .background(Color(.secondarySystemBackground), in: Circle())
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk2)
+                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                        .background(Color.circaSunken, in: Circle())
                 }
                 .buttonStyle(.plain)
                 .disabled(isUpdatingMode)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 14)
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 12)
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    VStack(spacing: 7) {
-                        Text("Stay consistent, your way")
-                            .font(.title2.weight(.bold))
-                            .multilineTextAlignment(.center)
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        CircaSectionLabel("Reminders")
+                        Text("A gentle nudge to log")
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaInk)
 
-                        Text("Choose how often LiftEats reminds you to log meals.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                        Text("Choose how often Circa reminds you to log meals.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(.horizontal, 16)
 
                     VStack(spacing: 10) {
                         ForEach(ReminderMode.allCases) { mode in
@@ -90,35 +87,33 @@ struct ProfileReminderSection: View {
                         }
                     }
                 }
-                .padding(.horizontal, 18)
+                .padding(.horizontal, Circa.Space.screenMargin)
                 .padding(.bottom, 20)
             }
         }
-        .background(Color(.systemBackground))
+        .circaPaper()
     }
 
     private func modeButton(_ mode: ReminderMode) -> some View {
         let isSelected = selectedMode == mode
-        let tint = tint(for: mode)
-
         return Button {
             Task { await select(mode) }
         } label: {
             HStack(spacing: 14) {
                 Image(systemName: symbol(for: mode))
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(tint)
-                    .frame(width: 48, height: 48)
-                    .background(tint.opacity(0.13), in: Circle())
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaAccent)
+                    .frame(width: 44, height: 44)
+                    .background(Color.circaWell, in: RoundedRectangle(cornerRadius: Circa.Radius.thumb))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(mode.displayName)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(.primary)
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk)
 
                     Text(mode.scheduleDescription)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -130,15 +125,15 @@ struct ProfileReminderSection: View {
                 } else if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title3)
-                        .foregroundStyle(Color.liftEatsCoral)
+                        .foregroundStyle(Color.circaAccent)
                 }
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(isSelected ? Color.liftEatsCoral : Color.primary.opacity(0.06), lineWidth: isSelected ? 2 : 1)
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                    .strokeBorder(isSelected ? Color.circaAccent : Color.circaCardBorder, lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -174,11 +169,4 @@ struct ProfileReminderSection: View {
         }
     }
 
-    private func tint(for mode: ReminderMode) -> Color {
-        switch mode {
-        case .quiet: .secondary
-        case .normal: .fuelBlue
-        case .aggressive: .liftEatsCoral
-        }
-    }
 }

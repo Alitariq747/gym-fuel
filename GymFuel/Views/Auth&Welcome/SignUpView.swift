@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @State private var email = ""
@@ -17,74 +16,74 @@ struct SignUpView: View {
     @State private var isLoading = false
 
     var body: some View {
-
         AdaptiveScrollContainer {
-            VStack(spacing: 20) {
-            Spacer()
-            Image(systemName: "figure.strengthtraining.traditional.circle.fill")
-                .renderingMode(.original)
-                .font(.system(size: 70, weight: .bold))
-                .foregroundStyle(colorScheme == .light ? .black : Color(.secondarySystemBackground))
-              
-            VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Enter Email")
-                        .font(.subheadline)
-                    TextField("", text: $email)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .frame(maxWidth: .infinity, alignment: .leading)               .padding(.vertical, 12)
-                        .padding(.leading, 12)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 12) {
+                    CircaSectionLabel("Your account")
+                    Text("Create your account")
+                        .font(.circaTitle)
+                        .foregroundStyle(Color.circaInk)
+                    Text("Keep your meals and corrections ready for next time.")
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
                 }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Enter Password")
-                        .font(.subheadline)
-                    SecureField("", text: $password)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 12)
-                        .padding(.leading, 12)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-                }
-            }
-            
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            Spacer()
-            Button {
-                Task {
-                    await signUp()
-                }
-            } label: {
-                HStack(spacing: 10) {
-                    if isLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                    Text(isLoading ? "Creating account…" : "Confirm")
-                        .font(.headline).bold()
-                }
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.white)
-                .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-            .disabled(isLoading)
 
-            LegalAgreementText(context: .creatingAccount)
-                .padding(.horizontal, 8)
+                Spacer(minLength: 24)
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Email")
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk2)
+                    TextField("Email address", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .authFieldStyle()
+
+                    Text("Password")
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk2)
+                    SecureField("Password", text: $password)
+                        .textContentType(.newPassword)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .authFieldStyle()
+                }
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 24)
+
+                Button {
+                    Task { await signUp() }
+                } label: {
+                    HStack(spacing: 10) {
+                        if isLoading {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text(isLoading ? "Creating account…" : "Create account")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.circa(.primary, height: 52))
+                .disabled(isLoading)
+
+                LegalAgreementText(context: .creatingAccount)
+            }
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 28)
+            .padding(.bottom, 24)
         }
-            .padding()
-        }
-        .navigationTitle("Sign up to LiftEats")
+        .circaPaper()
+        .navigationTitle("")
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -92,16 +91,14 @@ struct SignUpView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.headline)
-                        .frame(width: 36, height: 36)
-                        .background(Color(.secondarySystemBackground), in: Circle())
-                        .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
-
+                        .foregroundStyle(Color.circaInk)
+                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                        .background(Color.circaCard, in: Circle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Back")
             }
         }
-
     }
 
     private func signUp() async {
@@ -122,6 +119,20 @@ struct SignUpView: View {
                 fallback: "We couldn't create your account. Please try again."
             )
         }
+    }
+}
+
+extension View {
+    func authFieldStyle() -> some View {
+        font(.circaRow)
+            .foregroundStyle(Color.circaInk)
+            .padding(.horizontal, 16)
+            .frame(minHeight: 52)
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.button))
+            .overlay {
+                RoundedRectangle(cornerRadius: Circa.Radius.button)
+                    .strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+            }
     }
 }
 

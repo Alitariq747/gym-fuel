@@ -14,11 +14,10 @@ private enum WeightUnit: String, CaseIterable {
 
 /// Step: Ask for the user's weight (stored in kilograms).
 struct OnboardingWeightStepView: View {
-
     @Binding var weightKg: Double?
-
-  
     let onNext: () -> Void
+
+    @ScaledMetric(relativeTo: .body) private var pickerHeight: CGFloat = 160
 
     @State private var selectedUnit: WeightUnit = .kilograms
 
@@ -34,36 +33,23 @@ struct OnboardingWeightStepView: View {
     private let lbsRange = Array(66...440)
 
     var body: some View {
-        AdaptiveScrollContainer {
-            VStack(spacing: 20) {
-            header
+        OnboardingMetricPage(
+            title: "What do you weigh?",
+            detail: "Your starting weight sets the plan. Future weights come from weigh-ins, so the trend stays meaningful.",
+            onContinue: handleNext
+        ) {
+            VStack(alignment: .leading, spacing: 18) {
+                UnitSegmentedControl(selectedUnit: $selectedUnit)
+                summaryCard
+                inputCard
 
-            UnitSegmentedControl(selectedUnit: $selectedUnit)
-
-            summaryCard
-            inputCard
-
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-
-            Spacer()
-
-            Button(action: handleNext) {
-                Text("Next")
-                    .font(.headline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .foregroundStyle(Color(.systemBackground))
-                    .background(Color.primary, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-        }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .top)
         }
         .onAppear { initializeFromBindingIfNeeded() }
         .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
@@ -79,48 +65,32 @@ struct OnboardingWeightStepView: View {
 
     // MARK: - UI
 
-    private var header: some View {
-        VStack(spacing: 14) {
-            Text("💪")
-                .font(.system(size: 48))
-                .frame(width: 96, height: 96)
-                .background(Color.fuelOrange.opacity(0.14), in: Circle())
-                .shadow(color: Color.fuelOrange.opacity(0.12), radius: 18, y: 10)
-                .padding(.top, 12)
-
-            Text("Tell us your weight to calculate accurate macros and fueling targets.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-    }
-
     private var summaryCard: some View {
         VStack(spacing: 6) {
             Text(primaryWeightText)
-                .font(.system(size: 42, weight: .bold, design: .rounded))
+                .font(.system(.largeTitle, design: .monospaced).weight(.semibold))
+                .foregroundStyle(Color.circaInk)
                 .monospacedDigit()
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(secondaryWeightText)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.circaMono)
+                .foregroundStyle(Color.circaInk2)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.systemGray5), lineWidth: 1)
-        )
+        .padding(18)
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+        .overlay {
+            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                .strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+        }
     }
 
     private var inputCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(selectedUnit == .kilograms ? "Weight (kg)" : "Weight (lbs)")
-                .font(.headline)
+                .font(.circaRow)
+                .foregroundStyle(Color.circaInk2)
 
             if selectedUnit == .kilograms {
                 Picker("Kilograms", selection: $selectedKg) {
@@ -129,7 +99,7 @@ struct OnboardingWeightStepView: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 160)
+                .frame(height: pickerHeight)
                 .clipped()
                 .labelsHidden()
             } else {
@@ -139,21 +109,18 @@ struct OnboardingWeightStepView: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 160)
+                .frame(height: pickerHeight)
                 .clipped()
                 .labelsHidden()
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.systemGray5), lineWidth: 1)
-        )
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+        .overlay {
+            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                .strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+        }
     }
 
     // MARK: - Derived values
@@ -243,7 +210,7 @@ private struct UnitSegmentedControl: View {
             segment(title: "lbs", unit: .pounds)
         }
         .padding(4)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: Circa.Radius.button))
         
     }
 
@@ -254,14 +221,14 @@ private struct UnitSegmentedControl: View {
             selectedUnit = unit
         } label: {
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(.circaRow.weight(.semibold))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .frame(minHeight: Circa.minHitTarget)
                 .background(
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(isSelected ? Color(.systemBackground) : Color.clear)
+                        .fill(isSelected ? Color.circaCard : Color.clear)
                 )
-                .foregroundStyle(isSelected ? .primary : .secondary)
+                .foregroundStyle(isSelected ? Color.circaInk : Color.circaInk2)
         }
         .buttonStyle(.plain)
     }

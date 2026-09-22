@@ -29,24 +29,23 @@ private enum MethodFigures {
         .joined(separator: ", ")
 }
 
-/// Discloses the science behind the targets and estimates LiftEats shows.
+/// Discloses the methods behind Circa's targets and meal estimates.
 /// Presented as a sheet from Settings, the onboarding summary, and the
-/// LiftEats Analysis card.
+/// meal explanation card.
 struct NutritionSourcesView: View {
     var primaryButtonTitle: String = "Done"
     var onPrimaryAction: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
 
     private let methods: [NutritionMethod] = [
         NutritionMethod(
             id: "calories",
             index: "01",
-            emoji: "🔥",
+            systemImage: "target",
             title: "Your daily calorie target",
-            tint: .fuelOrange,
-            body: "We start with your resting energy — the calories your body uses at rest — using the Mifflin–St Jeor equation, the most widely validated predictive equation for healthy adults. Multiplied by how active a normal week is for you, it estimates what it takes to stay at your weight. Your target then moves off that estimate at a steady pace: \(MethodFigures.losingPace) of your body weight a week to lose fat, \(MethodFigures.gainingPace) a week to gain.",
+            tint: .circaAccent,
+            body: "We estimate resting energy with the Mifflin–St Jeor equation, then multiply by the activity level you chose to estimate the calories needed to stay at your weight. The initial target uses a planned pace of \(MethodFigures.losingPace) of body weight a week to lose fat or \(MethodFigures.gainingPace) to gain. Your saved target changes only when you edit or recalculate it, or change your plan.",
             formula: """
             Resting energy (kcal/day)
             (10 × weight kg) + (6.25 × height cm) − (5 × age)
@@ -66,10 +65,10 @@ struct NutritionSourcesView: View {
         NutritionMethod(
             id: "macros",
             index: "02",
-            emoji: "💪",
+            systemImage: "chart.bar.xaxis",
             title: "Your protein, carb, and fat split",
-            tint: .fuelBlue,
-            body: "Protein is set at \(MethodFigures.proteinPerKg) g per kg and fat at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both are worked out from your goal weight — your current weight if you are maintaining — capped at the top of the healthy range for your height, a BMI of \(MethodFigures.topHealthyBMI), so a larger body is not given more protein and fat than it can use. Carbohydrate fills whatever calories remain.",
+            tint: .circaAccent,
+            body: "Protein is set at \(MethodFigures.proteinPerKg) g per kg and fat at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both use your goal weight — your current weight if maintaining — capped at the weight corresponding to a BMI of \(MethodFigures.topHealthyBMI), so the targets do not scale indefinitely with body weight. Carbohydrate fills the remaining calories.",
             formula: """
             basis kg  = the lower of goal weight kg and the BMI \(MethodFigures.topHealthyBMI) weight
                         (current weight kg when maintaining)
@@ -83,20 +82,20 @@ struct NutritionSourcesView: View {
         NutritionMethod(
             id: "ai",
             index: "03",
-            emoji: "🤖",
-            title: "Food estimates and LiftEats Analysis",
-            tint: .cyan,
-            body: "Calories and macros for a logged meal are estimated by an AI model from your description or photo. They are approximations, not laboratory measurements, and every entry shows a confidence level so you can see how certain the estimate is.",
+            systemImage: "fork.knife",
+            title: "Food estimates and assumptions",
+            tint: .circaAccent,
+            body: "Circa estimates a meal from your words or photo, including its likely ingredients and portions. The breakdown shows material assumptions so you can correct amounts or preparation. A corrected or saved estimate remains an estimate; changing a portion does not verify its nutrient values.",
             formula: nil,
-            footnote: "The analysis describes the ingredients and portions behind the estimate. It does not infer nutrients it cannot estimate or give medical advice. Reference nutrient data comes from USDA FoodData Central.",
-            sourceIDs: ["usda"]
+            footnote: "A value is reference-based only when a specific label or documented source is identified with it. If you override a logged total, it is marked as your total. The studies below explain target calculations; they do not validate the calories in an individual meal.",
+            sourceIDs: []
         ),
         NutritionMethod(
             id: "trend",
             index: "04",
-            emoji: "⚖️",
+            systemImage: "scalemass",
             title: "Your weight trend",
-            tint: .fuelBlue,
+            tint: .circaAccent,
             body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with an exponential moving average, weighting the newest reading at 25% and everything before it at 75%, so it moves slower than the scale on purpose.",
             formula: "trend = 0.25 × today's weigh-in\n      + 0.75 × previous trend",
             footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is streaked.",
@@ -166,12 +165,6 @@ struct NutritionSourcesView: View {
             url: URL(string: "https://www.fao.org/4/y5022e/y5022e00.htm")
         ),
         NutritionSource(
-            id: "usda",
-            shortLabel: "USDA FoodData Central",
-            citation: "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central.",
-            url: URL(string: "https://fdc.nal.usda.gov")
-        ),
-        NutritionSource(
             id: "zheng",
             shortLabel: "Zheng Y, et al. Obesity. 2015;23(2):256–265",
             citation: "Zheng Y, Klem ML, Sereika SM, Danford CA, Ewing LJ, Burke LE. Self-weighing in weight management: a systematic literature review. Obesity (Silver Spring). 2015;23(2):256–265.",
@@ -185,17 +178,8 @@ struct NutritionSourcesView: View {
         )
     ]
 
-    private var background: Color {
-        colorScheme == .dark ? Color.black : Color(.systemBackground)
-    }
-
-    private var cardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground).opacity(0.82) : Color(.systemBackground)
-    }
-
-    private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color(.quaternaryLabel)
-    }
+    private let cardBackground = Color.circaCard
+    private let cardStroke = Color.circaCardBorder
 
     private func source(_ id: String) -> NutritionSource? {
         sources.first { $0.id == id }
@@ -207,6 +191,7 @@ struct NutritionSourcesView: View {
                 VStack(spacing: 22) {
                     header
                     disclaimerCard
+                    provenanceCard
 
                     VStack(spacing: 12) {
                         ForEach(methods) { method in
@@ -230,22 +215,21 @@ struct NutritionSourcesView: View {
 
             primaryButton
         }
-        .background(background.ignoresSafeArea())
+        .circaPaper()
     }
 
     private var header: some View {
         VStack(spacing: 10) {
-            Image("LiftEatsWelcomeIcon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 64, height: 36)
+            Image(systemName: "books.vertical")
+                .font(.title2)
+                .foregroundStyle(Color.circaAccent)
 
             VStack(spacing: 6) {
                 Text("Where our numbers come from")
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
 
-                Text("See how LiftEats calculates targets and estimates meals, and where its reference figures come from.")
+                Text("How Circa sets your targets, estimates food, and labels the source of each number.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -261,16 +245,16 @@ struct NutritionSourcesView: View {
             HStack(spacing: 11) {
                 Image(systemName: "cross.case.fill")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.fuelRed)
+                    .foregroundStyle(Color.circaDanger)
                     .frame(width: 34, height: 34)
-                    .background(Color.fuelRed.opacity(colorScheme == .dark ? 0.2 : 0.12), in: Circle())
+                    .background(Color.circaDangerGround, in: Circle())
 
                 Text("This is not medical advice")
                     .font(.headline.weight(.bold))
                     .foregroundStyle(.primary)
             }
 
-            Text("LiftEats is a nutrition tracking tool for generally healthy adults. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease or condition.\n\nTalk to a doctor or a registered dietitian before making significant changes to how you eat or train — particularly if you are pregnant or nursing, under 18, managing a medical condition, taking medication, or have any history of disordered eating.")
+            Text("Circa is a nutrition tracking tool for generally healthy adults. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease or condition.\n\nTalk to a doctor or a registered dietitian before making significant changes to how you eat — particularly if you are pregnant or nursing, under 18, managing a medical condition, taking medication, or have any history of disordered eating.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .lineSpacing(2)
@@ -281,15 +265,38 @@ struct NutritionSourcesView: View {
         .background(cardBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.fuelRed.opacity(colorScheme == .dark ? 0.4 : 0.2), lineWidth: 1)
+                .stroke(Color.circaDangerBorder, lineWidth: 1)
         )
-        .shadow(color: Color.fuelRed.opacity(colorScheme == .dark ? 0.14 : 0.07), radius: 18, y: 9)
+    }
+
+    private var provenanceCard: some View {
+        CircaCard {
+            VStack(alignment: .leading, spacing: 11) {
+                CircaSectionLabel("Reading a meal estimate")
+                provenanceRow("Estimated", "Ingredients, portions, and nutrients inferred from your words or photo.")
+                provenanceRow("You set the amount", "Your portion correction is saved; its nutrient estimate remains uncertain.")
+                provenanceRow("Reference values", "A label or documented source is named beside the value.")
+                provenanceRow("You set this total", "Your typed total replaces the old breakdown; it is not verified.")
+            }
+        }
+    }
+
+    private func provenanceRow(_ title: String, _ detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.circaRow.weight(.semibold))
+                .foregroundStyle(Color.circaInk)
+            Text(detail)
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk2)
+        }
     }
 
     private var preferNotToSayCard: some View {
         HStack(alignment: .top, spacing: 12) {
-            Text("⚖️")
-                .font(.system(size: 18))
+            Image(systemName: "equal.circle")
+                .font(.title3)
+                .foregroundStyle(Color.circaAccent)
                 .frame(width: 34, height: 34)
                 .background(Color(.tertiarySystemFill), in: Circle())
 
@@ -297,7 +304,7 @@ struct NutritionSourcesView: View {
                 Text("A note on “Prefer not to say”")
                     .font(.subheadline.weight(.semibold))
 
-                Text("The Mifflin–St Jeor equation publishes two constants: +5 for men and −161 for women. There is no published constant for an unspecified sex. When you choose “Prefer not to say,” LiftEats uses −78, the exact midpoint between the two.\n\nThat midpoint is our own choice, not a research finding. It keeps your target reasonable without asking for information you would rather not give, but it is less precise than selecting male or female. You can change this at any time in Settings.")
+                Text("The Mifflin–St Jeor equation publishes two constants: +5 for men and −161 for women. There is no published constant for an unspecified sex. When you choose “Prefer not to say,” Circa uses −78, the midpoint between the two.\n\nThat midpoint is our own choice, not a research finding. It gives a starting estimate without asking for information you would rather not give. You can change this in Settings.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .lineSpacing(2)
@@ -339,7 +346,7 @@ struct NutritionSourcesView: View {
 
     private var closingNote: some View {
         VStack(spacing: 6) {
-            Text("Targets are starting points, not prescriptions. Bodies differ, and the equations above describe averages. Adjust based on how you actually respond over time.")
+            Text("Targets are starting estimates. Meal values depend on the portions and ingredients assumed; a saved or adjusted estimate is still uncertain. You decide when to change your targets.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -363,16 +370,9 @@ struct NutritionSourcesView: View {
             }
         } label: {
             Text(primaryButtonTitle)
-                .font(.headline.bold())
-                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black,
-                    in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.circa(.primary, height: 52))
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 16)
@@ -388,7 +388,6 @@ struct NutritionSourcesLinkButton: View {
     var systemImage: String = "books.vertical.fill"
 
     @State private var isPresented = false
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button {
@@ -405,15 +404,10 @@ struct NutritionSourcesLinkButton: View {
                     .font(.system(size: 9, weight: .bold))
                     .opacity(0.7)
             }
-            .foregroundStyle(Color.fuelBlue)
+            .foregroundStyle(Color.circaAccent)
             .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .background(
-                Capsule().fill(Color.fuelBlue.opacity(colorScheme == .dark ? 0.16 : 0.10))
-            )
-            .overlay(
-                Capsule().stroke(Color.fuelBlue.opacity(colorScheme == .dark ? 0.32 : 0.20), lineWidth: 1)
-            )
+            .frame(minHeight: Circa.minHitTarget)
+            .background(Color.circaSunken, in: Capsule())
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -428,7 +422,7 @@ struct NutritionSourcesLinkButton: View {
 private struct NutritionMethod: Identifiable {
     let id: String
     let index: String
-    let emoji: String
+    let systemImage: String
     let title: String
     let tint: Color
     let body: String
@@ -459,8 +453,9 @@ private struct NutritionMethodCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
-                Text(method.emoji)
-                    .font(.system(size: 21))
+                Image(systemName: method.systemImage)
+                    .font(.title3)
+                    .foregroundStyle(method.tint)
                     .frame(width: 48, height: 48)
                     .background(method.tint.opacity(colorScheme == .dark ? 0.18 : 0.12), in: Circle())
                     .overlay(Circle().stroke(method.tint.opacity(0.24), lineWidth: 1))
@@ -516,7 +511,7 @@ private struct NutritionMethodCard: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 7) {
-                    Text("Based on")
+                    Text("References")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.tertiary)
                         .textCase(.uppercase)

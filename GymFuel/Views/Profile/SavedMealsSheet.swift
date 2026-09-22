@@ -1,142 +1,81 @@
-//
-//  SavedMealsSheet.swift
-//  GymFuel
-//
-//  Created by Ahmad Ali Tariq on 06/03/2026.
-//
-
 import SwiftUI
 
 struct SavedMealsSheet: View {
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
     @Environment(\.dismiss) private var dismiss
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
-    @State private var showAddSavedMealSheet: Bool = false
+    @State private var showAddSavedMealSheet = false
     @State private var selectedMeal: SavedMeal?
+    @State private var searchText = ""
 
     private var preferredColorScheme: ColorScheme? {
         AppColorSchemePreference(rawValue: colorSchemePreference)?.colorScheme
     }
 
+    private var matchingMeals: [SavedMeal] {
+        guard !searchText.isEmpty else { return savedMealsViewModel.savedMeals }
+        return savedMealsViewModel.savedMeals.filter { $0.searchText.localizedStandardContains(searchText) }
+    }
+
     var body: some View {
-        ZStack {
+        NavigationStack {
             ScrollView {
-                VStack(spacing: 12) {
-                HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.headline).bold()
-                            .foregroundStyle(.primary)
-                            .padding(10)
-                            .background(Color(.systemBackground), in: Circle())
-                            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-                    }
-                    .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Meals you can reuse. A saved estimate keeps its assumptions and any portions you corrected.")
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
 
-                    Spacer()
-
-                    Text("Saved Meals")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Button {
-                        showAddSavedMealSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.primary)
-                            .padding(8)
-                            .background(Color(.systemBackground), in: Circle())
-                            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-                    }
-                    .buttonStyle(.plain)
-                }
-                if savedMealsViewModel.savedMeals.isEmpty {
-                    VStack(spacing: 6) {
-                        Image(systemName: "bookmark.slash")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                        Text("No saved meals yet")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                        Text("Save a meal to re-use it later.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 12)
-                } else {
-                    LazyVStack(alignment: .leading, spacing: 8) {
-                        ForEach(savedMealsViewModel.savedMeals) { meal in
-                            let trimmedName = meal.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                            let trimmedDescription = meal.description?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                            let displayTitle = !trimmedName.isEmpty ? trimmedName : (trimmedDescription.isEmpty ? "Saved meal" : trimmedDescription.truncated(to: 25, addEllipsis: true))
-
-                            Button {
-                                selectedMeal = meal
-                            } label: {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(displayTitle)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.primary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                                    HStack(spacing: 12) {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "flame.fill")
-                                                .font(.caption.weight(.semibold))
-                                                .foregroundStyle(Color.fuelOrange)
-                                            Text("\(Int(meal.macros.calories)) cal")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        HStack(spacing: 4) {
-                                            Text("P:")
-                                                .font(.caption)
-                                                .foregroundStyle(Color.green.opacity(0.8))
-                                            Text("\(Int(meal.macros.protein))")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        HStack(spacing: 4) {
-                                            Text("C:")
-                                                .font(.caption)
-                                                .foregroundStyle(Color.orange.opacity(0.8))
-                                            Text("\(Int(meal.macros.carbs))")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        HStack(spacing: 4) {
-                                            Text("F:")
-                                                .font(.caption)
-                                                .foregroundStyle(Color.cyan)
-                                            Text("\(Int(meal.macros.fat))")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-                                }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 14)
-                                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20))
-                            }
-                            .buttonStyle(.plain)
+                    if let error = savedMealsViewModel.errorMessage {
+                        CircaCard(.danger) {
+                            Text(error).font(.circaBody)
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 6)
+
+                    if savedMealsViewModel.savedMeals.isEmpty {
+                        CircaCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("No saved meals yet", systemImage: "bookmark")
+                                    .font(.circaRow.weight(.semibold))
+                                Text("Save a logged meal to keep its breakdown, or add a meal with your own totals.")
+                                    .font(.circaBody)
+                                    .foregroundStyle(Color.circaInk2)
+                            }
+                        }
+                    } else if matchingMeals.isEmpty {
+                        CircaCard {
+                            Text("No matching meals. Try a meal name or ingredient.")
+                                .font(.circaBody)
+                        }
+                    } else {
+                        LazyVStack(spacing: Circa.Space.rowGap) {
+                            ForEach(matchingMeals) { meal in
+                                Button { selectedMeal = meal } label: {
+                                    SavedMealCard(meal: meal, actionTitle: "Edit this saved meal")
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                 }
-                }
-                .padding()
+                .padding(Circa.Space.screenMargin)
             }
+            .scrollDismissesKeyboard(.interactively)
+            .searchable(text: $searchText, prompt: "Find a meal or ingredient")
+            .navigationTitle("Saved meals")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                        .foregroundStyle(Color.circaAccent)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { showAddSavedMealSheet = true } label: {
+                        Label("Add meal", systemImage: "plus")
+                    }
+                    .foregroundStyle(Color.circaAccent)
+                }
+            }
+            .circaPaper()
         }
         .presentationDetents([.large])
         .sheet(isPresented: $showAddSavedMealSheet) {
@@ -152,23 +91,6 @@ struct SavedMealsSheet: View {
 
 #Preview {
     let vm = SavedMealsViewModel()
-    vm._setSavedMealsForPreview([
-        SavedMeal(
-            id: UUID().uuidString,
-            userId: "preview-user",
-            name: "Chicken rice bowl",
-            description: "Chicken, rice, avocado, and salsa",
-            macros: Macros(calories: 620, protein: 45, carbs: 70, fat: 18)
-        ),
-        SavedMeal(
-            id: UUID().uuidString,
-            userId: "preview-user",
-            name: "",
-            description: "Greek yogurt with berries",
-            macros: Macros(calories: 280, protein: 22, carbs: 30, fat: 6)
-        )
-    ])
-
-    return SavedMealsSheet()
-        .environmentObject(vm)
+    vm._setSavedMealsForPreview([.demo])
+    return SavedMealsSheet().environmentObject(vm)
 }

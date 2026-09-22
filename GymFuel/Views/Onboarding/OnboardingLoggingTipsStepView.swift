@@ -3,32 +3,27 @@ import SwiftUI
 struct OnboardingLoggingTipsStepView: View {
     let onNext: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hasAppeared = false
 
     private let mealExamples: [LoggingTipExample] = [
         .init(
-            vagueLabel: "Too vague",
-            helpfulLabel: "More helpful",
+            vagueLabel: "Without details",
+            helpfulLabel: "With details",
             simpleTitle: "protein shake",
             refinedTitle: "1 scoop whey with 250 ml milk and 1 banana",
-            simpleConfidence: 33,
-            refinedConfidence: 88,
-            simpleCalories: 180,
-            refinedCalories: 360,
+            simpleDetail: "The portion and liquid are unknown.",
+            refinedDetail: "The ingredients and amounts are named.",
             simpleImageName: "shake_simple",
             refinedImageName: "shake_refined"
         ),
         .init(
-            vagueLabel: "Too vague",
-            helpfulLabel: "More helpful",
+            vagueLabel: "Without details",
+            helpfulLabel: "With details",
             simpleTitle: "pasta",
             refinedTitle: "1 bowl chicken pasta with tomato sauce",
-            simpleConfidence: 38,
-            refinedConfidence: 87,
-            simpleCalories: 320,
-            refinedCalories: 520,
+            simpleDetail: "The serving and sauce are unknown.",
+            refinedDetail: "The bowl, protein and sauce are named.",
             simpleImageName: "pasta_simple",
             refinedImageName: "pasta_refined"
         )
@@ -44,36 +39,20 @@ struct OnboardingLoggingTipsStepView: View {
                     examplesSection(title: "Meals", symbol: "fork.knife", examples: mealExamples)
                         .loggingTipEntrance(isVisible: hasAppeared, delay: 0.14, reduceMotion: reduceMotion)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Circa.Space.screenMargin)
                 .padding(.top, 4)
                 .padding(.bottom, 8)
             }
 
             Button(action: onNext) {
-                HStack(spacing: 10) {
-                    Text("Continue")
-                        .font(.headline.bold())
-                    Image(systemName: "arrow.right")
-                        .font(.headline.weight(.bold))
-                }
-                .padding(.vertical, 13)
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.white)
-                .background(
-                    LinearGradient(
-                        colors: [Color.fuelBlue, Color.fuelBlue.opacity(0.82)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                )
-                .shadow(color: Color.fuelBlue.opacity(colorScheme == .dark ? 0 : 0.25), radius: 16, y: 8)
+                Text("Continue").frame(maxWidth: .infinity)
             }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 4)
+            .buttonStyle(.circa(.primary, height: 52))
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.bottom, 16)
             .loggingTipEntrance(isVisible: hasAppeared, delay: 0.28, reduceMotion: reduceMotion)
         }
+        .circaPaper()
         .onAppear {
             hasAppeared = false
             DispatchQueue.main.async {
@@ -83,47 +62,34 @@ struct OnboardingLoggingTipsStepView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 12) {
-            Text("Quick tip")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(Color.fuelBlue)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 7)
-                .background(Color.fuelBlue.opacity(0.13), in: Capsule())
-
-            VStack(spacing: 2) {
-                (Text("Better ") + Text("details.").foregroundStyle(Color.fuelBlue))
-                (Text("Better ") + Text("estimates.").foregroundStyle(Color.fuelBlue))
-            }
-            .font(.system(size: 34, weight: .black, design: .rounded))
-            .multilineTextAlignment(.center)
-            .lineSpacing(-2)
-            .minimumScaleFactor(0.8)
-
-            Text("Add portions, brands, and cooking style so LiftEats can judge meals more accurately.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+        VStack(alignment: .leading, spacing: 10) {
+            CircaSectionLabel("How to write a meal")
+            Text("A little detail helps.")
+                .font(.circaTitle)
+                .foregroundStyle(Color.circaInk)
+            Text("Mention portions, ingredients and cooking style when you know them. Then review what Circa assumed.")
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk2)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 10)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func examplesSection(title: String, symbol: String, examples: [LoggingTipExample]) -> some View {
         VStack(spacing: 10) {
             HStack(spacing: 10) {
                 Image(systemName: symbol)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaAccent)
                     .frame(width: 34, height: 34)
-                    .background(Color.fuelBlue, in: Circle())
+                    .background(Color.circaWell, in: Circle())
 
                 Text(title)
-                    .font(.title3.weight(.bold))
+                    .font(.circaRow.weight(.semibold))
+                    .foregroundStyle(Color.circaInk)
 
                 Rectangle()
-                    .fill(Color(.separator).opacity(0.45))
+                    .fill(Color.circaRule)
                     .frame(height: 1)
             }
 
@@ -142,10 +108,8 @@ private struct LoggingTipExample: Identifiable {
     let helpfulLabel: String
     let simpleTitle: String
     let refinedTitle: String
-    let simpleConfidence: Int
-    let refinedConfidence: Int
-    let simpleCalories: Int
-    let refinedCalories: Int
+    let simpleDetail: String
+    let refinedDetail: String
     let simpleImageName: String
     let refinedImageName: String
 }
@@ -154,111 +118,51 @@ private struct LoggingTipComparisonCard: View {
     let example: LoggingTipExample
 
     var body: some View {
-        ZStack {
-            HStack(alignment: .top, spacing: 0) {
+        CircaCard {
+            VStack(alignment: .leading, spacing: 12) {
                 LoggingTipExampleSide(
                     label: example.vagueLabel,
-                    labelTone: .fuelOrange,
                     title: example.simpleTitle,
-                    confidence: example.simpleConfidence,
-                    calories: example.simpleCalories,
-                    imageName: example.simpleImageName,
-                    isHelpful: false
+                    detail: example.simpleDetail,
+                    imageName: example.simpleImageName
                 )
-
-                Rectangle()
-                    .fill(Color.fuelGreen.opacity(0.18))
-                    .frame(width: 1)
-
+                CircaHairline(weight: .inCard)
                 LoggingTipExampleSide(
                     label: example.helpfulLabel,
-                    labelTone: .fuelGreen,
                     title: example.refinedTitle,
-                    confidence: example.refinedConfidence,
-                    calories: example.refinedCalories,
-                    imageName: example.refinedImageName,
-                    isHelpful: true
+                    detail: example.refinedDetail,
+                    imageName: example.refinedImageName
                 )
             }
-
-            Image(systemName: "arrow.right")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(Color.fuelBlue)
-                .frame(width: 42, height: 42)
-                .background(Color(.systemBackground), in: Circle())
-                .overlay {
-                    Circle()
-                        .stroke(Color(.separator).opacity(0.35), lineWidth: 1)
-                }
-                .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color(.separator).opacity(0.28), lineWidth: 1)
-        }
-        .shadow(color: .black.opacity(0.07), radius: 14, y: 6)
     }
 }
 
 private struct LoggingTipExampleSide: View {
     let label: String
-    let labelTone: Color
     let title: String
-    let confidence: Int
-    let calories: Int
+    let detail: String
     let imageName: String
-    let isHelpful: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(labelTone)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(labelTone.opacity(0.12), in: Capsule())
-
-            HStack(alignment: .center, spacing: 8) {
-                Image(imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 70, height: 70)
-                    .padding(6)
-                    .background(labelTone.opacity(isHelpful ? 0.12 : 0.10), in: Circle())
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(title)
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("Confidence")
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(labelTone)
-                        Text("\(confidence)%")
-                            .font(.title3.weight(.black))
-                            .foregroundStyle(labelTone)
-                    }
-
-                    Divider()
-
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color.fuelOrange)
-                        Text("\(calories) cal")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.secondary)
-                    }
-                }
+        HStack(alignment: .top, spacing: 12) {
+            Image(imageName)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.thumb))
+            VStack(alignment: .leading, spacing: 5) {
+                CircaSectionLabel(label)
+                Text(title)
+                    .font(.circaEntryTitle)
+                    .foregroundStyle(Color.circaInk)
+                Text(detail)
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaInk2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, minHeight: 136, alignment: .topLeading)
-        .background(isHelpful ? Color.fuelGreen.opacity(0.045) : Color.clear)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

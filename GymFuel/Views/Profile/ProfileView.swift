@@ -30,6 +30,7 @@ struct ProfileView: View {
     @State private var showSavedMealsSheet: Bool = false
     @State private var showNutritionSourcesSheet: Bool = false
     @State private var showTargetsSheet: Bool = false
+    @State private var showWeightScreen: Bool = false
     @State private var showSubscriptionPaywall: Bool = false
     @State private var deleteEmail: String = ""
     @State private var deletePassword: String = ""
@@ -79,87 +80,72 @@ struct ProfileView: View {
                     VStack(spacing: 12) {
                         ProgressView()
                         Text(isDeletingAccount ? "Deleting account…" : "Signing out…")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .font(.circaCaption)
+                            .foregroundStyle(Color.circaInk2)
                     }
                 } else if profileVm.profile != nil {
                     if let draftBinding {
                         ScrollView {
                             VStack(spacing: 16) {
-                                ZStack {
-                                    Text("Settings")
-                                        .font(.title2.weight(.semibold))
-                                        .foregroundStyle(.primary)
-
+                                VStack(alignment: .leading, spacing: 12) {
                                     HStack {
-                                        Group {
-                                            if profileVm.isSaving {
-                                                ProgressView()
-                                            } else {
-                                                Button {
-                                                    Task {
-                                                        guard let uid = authManager.user?.uid else { return }
-                                                        guard let draft else { return }
-
-                                                        await profileVm.saveProfileEdits(for: uid, draft: draft)
-
-                                                        if let updated = profileVm.profile {
-                                                            self.draft = updated
-                                                        }
-
-                                                        if profileVm.errorMessage == nil {
-                                                            showSaveToast = true
-                                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                                                showSaveToast = false
-                                                                dismiss()
-                                                            }
-                                                        }
-                                                    }
-                                                } label: {
-                                                    HStack(spacing: 6) {
-                                                        Image(systemName: "checkmark")
-                                                            .font(.caption.weight(.bold))
-                                                        Text("Save")
-                                                            .font(.caption.weight(.bold))
-                                                    }
-                                                    .foregroundStyle(canSave && !isBusy ? .primary : .secondary)
-                                                    .frame(height: 32)
-                                                    .padding(.horizontal, 12)
-                                                    .background(Color(.secondarySystemBackground), in: Capsule())
-                                                    .overlay(Capsule().stroke(Color.black.opacity(0.05), lineWidth: 1))
-                                                }
-                                                .buttonStyle(.plain)
-                                                .shadow(color: .black.opacity(canSave && !isBusy ? 0.06 : 0), radius: 8, y: 3)
-                                                .disabled(!canSave || isBusy)
-                                            }
-                                        }
-                                        .frame(width: 72, alignment: .leading)
-
+                                        CircaSectionLabel("Your journal")
                                         Spacer()
-
                                         Button {
                                             dismiss()
                                         } label: {
                                             Image(systemName: "xmark")
-                                                .font(.caption.weight(.bold))
-                                                .foregroundStyle(.primary)
-                                                .frame(width: 32, height: 32)
-                                                .background(Color(.secondarySystemBackground), in: Circle())
-                                                .overlay(Circle().stroke(Color.black.opacity(0.05), lineWidth: 1))
+                                                .foregroundStyle(Color.circaInk)
+                                                .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                                                .background(Color.circaCard, in: Circle())
                                         }
                                         .buttonStyle(.plain)
-                                        .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
+                                        .accessibilityLabel("Close Settings")
                                         .disabled(isBusy)
-                                        .frame(width: 72, alignment: .trailing)
+                                    }
+
+                                    Text("Settings")
+                                        .font(.circaTitle)
+                                        .foregroundStyle(Color.circaInk)
+
+                                    if profileVm.isSaving {
+                                        ProgressView("Saving changes…")
+                                    } else if canSave {
+                                        Button {
+                                            Task {
+                                                guard let uid = authManager.user?.uid else { return }
+                                                guard let draft else { return }
+
+                                                await profileVm.saveProfileEdits(for: uid, draft: draft)
+
+                                                if let updated = profileVm.profile {
+                                                    self.draft = updated
+                                                }
+
+                                                if profileVm.errorMessage == nil {
+                                                    showSaveToast = true
+                                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                                        showSaveToast = false
+                                                        dismiss()
+                                                    }
+                                                }
+                                            }
+                                        } label: {
+                                            Label("Save changes", systemImage: "checkmark")
+                                                .frame(maxWidth: .infinity)
+                                        }
+                                        .buttonStyle(.circa(.primary))
+                                        .disabled(isBusy)
                                     }
                                 }
-                                .padding(.horizontal)
-                                .padding(.top)
+                                .padding(.horizontal, Circa.Space.screenMargin)
+                                .padding(.top, 18)
 
                                 ProfileEditorView(
                                     draft: draftBinding,
                                     email: authManager.user?.email,
-                                    onOpenTargets: { showTargetsSheet = true }
+                                    onOpenTargets: { showTargetsSheet = true },
+                                    onOpenWeight: { showWeightScreen = true }
                                 )
                                     .disabled(isBusy)
                                     .opacity(isBusy ? 0.6 : 1)
@@ -209,10 +195,10 @@ struct ProfileView: View {
                                 
                                 if let signOutError {
                                     Text(signOutError)
-                                        .font(.footnote)
-                                        .foregroundStyle(.red)
+                                        .font(.circaCaption)
+                                        .foregroundStyle(Color.circaDanger)
                                         .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.horizontal)
+                                        .padding(.horizontal, Circa.Space.screenMargin)
                                 }
                                 
                                 accountSection
@@ -228,40 +214,41 @@ struct ProfileView: View {
                 } else if let message = profileVm.errorMessage {
                     Text(message)
                         .padding()
-                        .font(.subheadline)
-                        .foregroundStyle(.red.opacity(0.7))
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaDanger)
                 } else {
                     ProgressView("Preparing your profile…")
                 }
             }
 
         }
+        .circaPaper()
         .overlay(alignment: .bottom) {
             if showSaveToast {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.fuelGreen)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaAccent)
                     Text("Profile updated")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.primary)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color(.systemGray5), lineWidth: 1)
-                        )
-                )
+                .background(Color.circaCard, in: Capsule())
                 .padding(.bottom, 24)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.easeInOut(duration: 0.2), value: showSaveToast)
         .toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(isPresented: $showWeightScreen) {
+            WeightView()
+                .toolbar(.visible, for: .navigationBar)
+        }
+        .onChange(of: showWeightScreen) { _, isPresented in
+            if !isPresented { adoptTargetsScreenChanges() }
+        }
         .task(id: profileVm.profile?.id) {
             if let profile = profileVm.profile {
                 draft = profile
@@ -283,13 +270,13 @@ struct ProfileView: View {
         .sheet(isPresented: $showDeleteAccountConfirmation) {
             deleteAccountWarningSheet
                 .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.height(390)])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSignOutConfirmation) {
             signOutConfirmationSheet
                 .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.height(310)])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .alert("Confirm your password", isPresented: $showEmailReauthPrompt) {
@@ -351,91 +338,90 @@ struct ProfileView: View {
     }
 
     private var deleteAccountWarningSheet: some View {
-        VStack(spacing: 18) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 42, weight: .semibold))
-                .foregroundStyle(Color.fuelRed)
-                .frame(width: 74, height: 74)
-                .background(Color.fuelRed.opacity(0.12), in: Circle())
-
-            VStack(spacing: 8) {
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 20) {
+                CircaSectionLabel("Account")
                 Text("Delete your account?")
-                    .font(.title3.weight(.bold))
-                    .multilineTextAlignment(.center)
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
 
-                Text("This permanently removes your LiftEats account, profile, saved meals, and logged history. This action cannot be undone.\n\nDeleting your LiftEats account does not cancel an Apple subscription. Manage or cancel your subscription through Apple before deleting your account.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                CircaCard(.danger) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaDanger)
+                            .accessibilityHidden(true)
+                        Text("This permanently removes your Circa account, profile, saved meals, and logged history. This action cannot be undone.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                Text("Deleting your Circa account does not cancel an Apple subscription. Manage or cancel your subscription through Apple before deleting your account.")
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaInk2)
                     .fixedSize(horizontal: false, vertical: true)
-            }
 
-            VStack(spacing: 10) {
                 Button(role: .destructive) {
                     showDeleteAccountConfirmation = false
                     Task { await startDeleteFlow() }
                 } label: {
                     Text("Delete Account")
-                        .font(.headline.bold())
+                        .font(.circaRow)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .frame(minHeight: 52)
+                        .foregroundStyle(Color.circaDanger)
+                        .background(Color.circaDangerGround, in: RoundedRectangle(cornerRadius: Circa.Radius.button))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: Circa.Radius.button)
+                                .strokeBorder(Color.circaDangerBorder, lineWidth: 1)
+                        }
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.fuelRed)
+                .buttonStyle(.plain)
 
                 Button("Cancel") {
                     showDeleteAccountConfirmation = false
                 }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+                .buttonStyle(.circa(.quiet))
             }
+            .padding(Circa.Space.screenMargin)
         }
-        .padding(24)
+        .circaPaper()
     }
 
     private var signOutConfirmationSheet: some View {
-        VStack(spacing: 18) {
-            Image(systemName: "rectangle.portrait.and.arrow.right")
-                .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(Color.fuelOrange)
-                .frame(width: 68, height: 68)
-                .background(Color.fuelOrange.opacity(0.12), in: Circle())
-
-            VStack(spacing: 7) {
-                Text("Sign out of LiftEats?")
-                    .font(.title3.weight(.bold))
-                    .multilineTextAlignment(.center)
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 20) {
+                CircaSectionLabel("Account")
+                Text("Sign out of Circa?")
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
 
                 Text("You can sign back in anytime. Your saved profile and logs will remain available.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .font(.circaBody)
+                    .foregroundStyle(Color.circaInk2)
                     .fixedSize(horizontal: false, vertical: true)
-            }
 
-            VStack(spacing: 10) {
                 Button(role: .destructive) {
                     showSignOutConfirmation = false
                     Task { await handleSignOut() }
                 } label: {
                     Text("Sign Out")
-                        .font(.headline.weight(.semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.fuelRed)
+                .buttonStyle(.circa(.primary, height: 52))
 
                 Button("Cancel") {
                     showSignOutConfirmation = false
                 }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+                .buttonStyle(.circa(.quiet))
             }
+            .padding(Circa.Space.screenMargin)
         }
-        .padding(24)
+        .circaPaper()
     }
 
     /// The targets screen saves through the view model, so this draft is stale the
@@ -472,82 +458,80 @@ struct ProfileView: View {
 
     private var accountSection: some View {
         VStack(spacing: 12) {
-            ProfileSectionHeader(title: "Account", systemImage: "person.crop.circle")
+            ProfileSectionHeader(title: "Account")
             VStack(spacing: 0) {
                 Button(role: .destructive) {
                     showSignOutConfirmation = true
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 18)
+                            .font(.circaRow)
+                            .frame(width: 30)
 
                         Text(isSigningOut ? "Signing out…" : "Sign out")
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(.primary)
+                            .font(.circaRow)
 
                         Spacer()
 
                         if isSigningOut {
                             ProgressView()
                                 .controlSize(.small)
+                        } else {
+                            Image(systemName: "chevron.right")
+                                .font(.circaCaption)
                         }
                     }
+                    .foregroundStyle(Color.circaInk)
                     .contentShape(Rectangle())
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 14)
+                    .frame(minHeight: 56)
                 }
                 .buttonStyle(.plain)
                 .disabled(isBusy)
 
-                Divider()
+                CircaHairline(weight: .inCard)
 
                 Button(role: .destructive) {
                     showDeleteAccountConfirmation = true
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "trash.fill")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.red)
-                            .frame(width: 18)
+                            .font(.circaRow)
+                            .frame(width: 30)
 
                         Text("Delete Account")
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(.red)
+                            .font(.circaRow)
 
                         Spacer()
 
                         Image(systemName: "chevron.right")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.red.opacity(0.6))
+                            .font(.circaCaption)
                     }
+                    .foregroundStyle(Color.circaDanger)
                     .contentShape(Rectangle())
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 14)
+                    .frame(minHeight: 56)
                 }
                 .buttonStyle(.plain)
                 .disabled(isBusy)
             }
             .background(ProfileCardBackground())
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.red.opacity(0.14), lineWidth: 1)
-            )
         }
-        .padding(.horizontal)
+        .padding(.horizontal, Circa.Space.screenMargin)
     }
 
     private var appleReauthSheet: some View {
-        NavigationStack {
-            VStack(spacing: 18) {
+        AdaptiveScrollContainer {
+            VStack(alignment: .leading, spacing: 20) {
+                CircaSectionLabel("Account security")
                 Text("Verify with Apple")
-                    .font(.headline)
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
 
                 Text("To delete your account, confirm your Apple sign-in first.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .font(.circaBody)
+                    .foregroundStyle(Color.circaInk2)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 SignInWithAppleButton(.continue) { request in
                     let nonce = authManager.generateNonce()
@@ -558,7 +542,7 @@ struct ProfileView: View {
                     Task { await handleAppleReauthForDelete(result) }
                 }
                 .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-                .frame(height: 48)
+                .frame(height: 52)
                 .frame(maxWidth: .infinity)
                 .id(colorScheme)
 
@@ -566,13 +550,13 @@ struct ProfileView: View {
                     showAppleReauthSheet = false
                     signOutError = verificationCancelledMessage
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+                .buttonStyle(.circa(.quiet))
             }
-            .padding(24)
-            .navigationTitle("Delete Account")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(Circa.Space.screenMargin)
         }
-        .presentationDetents([.medium])
+        .circaPaper()
+        .presentationDetents([.medium, .large])
     }
 
     @MainActor

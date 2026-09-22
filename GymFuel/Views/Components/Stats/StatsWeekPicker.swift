@@ -12,6 +12,7 @@ struct StatsWeekPicker: View {
     let canGoNext: Bool
     let onPrevious: () -> Void
     let onNext: () -> Void
+    let onDateTap: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
@@ -19,16 +20,24 @@ struct StatsWeekPicker: View {
             Button(action: onPrevious) {
                 Image(systemName: "chevron.left")
                     .font(.title3)
-                    .padding(12)
+                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
                     .background(Color(.secondarySystemBackground),in: Circle())
                     
             }
-            Text(weekLabel)
-                .font(.headline.weight(.semibold))
+            Button(action: onDateTap) {
+                HStack(spacing: 4) {
+                    Text(weekLabel)
+                    Image(systemName: "calendar")
+                }
+                .font(.circaRow.weight(.semibold))
+                .foregroundStyle(Color.circaInk)
+                .frame(minHeight: Circa.minHitTarget)
+            }
+            .accessibilityLabel("Choose date and Day or Week view")
             Button(action: onNext) {
                 Image(systemName: "chevron.right")
                     .font(.title3)
-                    .padding(12)
+                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
                     .background(Color(.secondarySystemBackground),in: Circle())
             }
             .disabled(!canGoNext)
@@ -43,7 +52,8 @@ struct StatsWeekPicker: View {
         weekLabel: "May 4 - May 10",
         canGoNext: false,
         onPrevious: {},
-        onNext: {}
+        onNext: {},
+        onDateTap: {}
     )
     .padding()
 }

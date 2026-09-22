@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LogEntryDetailSheet: View {
     let entry: LogEntry
+    var canModify: Bool = true
     /// Opened from the timeline's assumption line, so go straight to the editor.
     var opensEditor: Bool = false
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
@@ -183,7 +184,8 @@ struct LogEntryDetailSheet: View {
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            if canModify {
+                ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     if editableBreakdown != nil {
                         Button("Edit amounts", systemImage: "ruler") {
@@ -215,6 +217,7 @@ struct LogEntryDetailSheet: View {
                         Divider()
                         Button("Save Meal", systemImage: "bookmark") {
                             onClearActionError?()
+                            savedMealsViewModel.clearErrorMessage()
                             showSaveMealSheet = true
                         }
                         .disabled(!canSaveAsMeal || isPerformingAction)
@@ -233,10 +236,11 @@ struct LogEntryDetailSheet: View {
 //                        .background(Color(.secondarySystemBackground), in: Circle())
                 }
                 .disabled(isPerformingAction)
+                }
             }
         }
         .onAppear {
-            if opensEditor, editableBreakdown != nil {
+            if canModify, opensEditor, editableBreakdown != nil {
                 showBreakdownEditor = true
             }
         }
@@ -293,7 +297,9 @@ struct LogEntryDetailSheet: View {
                 SaveLoggedMealSheet(
                     initialName: entry.title,
                     initialDescription: nil,
-                    macros: saveableMealMacros
+                    macros: saveableMealMacros,
+                    isSaving: savedMealsViewModel.isLoading,
+                    errorMessage: savedMealsViewModel.errorMessage
                 ) { name, description, macros in
                     let meal = savedMeal(named: name, description: description, macros: macros)
                     Task {

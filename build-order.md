@@ -72,7 +72,7 @@ fresh session reads this file, not the chat history.
 - [x] **4e** · The Weight screen
 - [x] **4f** · The plan screen in onboarding
 - [x] **5** · Meal contract and editable meal client
-- [ ] **6** · Meal backend, references and saved-meal round trip
+- [x] **6** · Meal backend, references and saved-meal round trip
 - [ ] **7** · Visual sweep and final share card
 - [ ] **8** · Rename
 - [ ] **9** · App Store Connect metadata
@@ -667,7 +667,11 @@ a change to the shape is a two-repo edit that Step 6 may not make alone.
 - **Preserve photo uncertainty.** Recognition must pass ambiguity and assumed
   quantities to nutrition estimation, rather than turning the most likely guess
   into a user-confirmed fact. Distinguish user text from a generated description.
-- **Verify household measures.** Begin with roughly 30–50 documented meal/recipe
+- **Verify household measures.** *Done 22 September with 16 cases, not 30–50 —
+  see `gymfuel-ai-service/evaluation/results.md`.* Agreed to stop there: the two
+  problems worth finding turned up by reading output, not by averaging error, and
+  the marginal value of cases 17–50 did not look worth the drafting. Originally:
+  roughly 30–50 documented meal/recipe
   cases and preparation variants, using weighed recipes or credible references.
   Use Pakistani/home-cooked examples the founder and testers can evaluate, plus
   everyday meals across cuisines. Step 0's brand remains cuisine-agnostic. State
@@ -689,34 +693,86 @@ a change to the shape is a two-repo edit that Step 6 may not make alone.
 totals reconcile, quantity edits preserve unrelated items, saved versions round-
 trip correctly, and per-completed-meal cost and observed errors are recorded.
 
+**Closed 22 September**, in nine parts. Five things carried forward rather than fixed:
+
+- **Scoped reinterpretation (`meal-contract.md` §9) was not built.** §9 says "built in
+  Step 6"; the Step 6 bullets and its done-when never mention it, and whole-meal
+  *Edit with AI* already works. Decided out on 21 September. The contract section
+  stands as the design for whenever it lands.
+- **16 verification cases, not 30–50**, as above. `evaluation/` holds the harness:
+  30 USDA-pinned ingredients, the cases, and a results file that regenerates.
+- **Most assumptions carry no number** — 19 of 69 did. A prompt demanding numbers in
+  every assumption was tried (`meal-v14`) and rejected as worse to read; only its
+  fat-separation rule was kept, as `meal-v15`.
+- **Per-meal quality telemetry was built and reverted.** Cost is already recorded by
+  the existing `logAIMetrics`; breakdown-quality signals live in the evaluation
+  harness instead of in the request path.
+- **The client still sends `goal`** and still maps `interpretation/invalid-goal`,
+  which the server can no longer return, after scoring was removed on 22 September.
+
 ---
 
 ## Step 7 — Visual sweep and final share card · M
 
-The screens no other step rebuilds. By here, Steps 3, 3a, 4, 5 and 6 have built
-their own surfaces in the new language; this is the remainder, and it is the last
-thing that changes what a screenshot shows.
+The screens no other step rebuilds. Step 6's meal-editing front end is complete;
+its backend work can proceed separately. These parts are presentation and
+navigation work. Do not change the meal contract or editor behavior here. Each
+part gets its own plan and manual check before the next starts; if its code change
+looks likely to exceed roughly 200 lines, split that part before implementation.
+Keep the parent Step 7 box unticked until every part is done.
 
-**Scope, from `design.md`'s inventory:**
-
-- **Auth** — Welcome, Sign up, Sign in, reset password. Four screens, one pattern.
-- **Settings** — the hub, reminders, appearance, delete account. The targets screen
-  is built in 4d. Weight is **shown, never edited** — it comes from weigh-ins or the
-  trend stops being a measurement.
-- **Saved meals** — finish styling the picker/list; Steps 5–6 own editor behavior.
-- **Explainers** — align nutrition sources with the final meal estimate.
-- **Share card** — finalize after meal editing. Render the meal image,
-  description, nutrition, key assumption and explanation, with a share sheet and
-  watermark. Do not publish weight, targets or other meals implicitly. Verify the supported
-  system share flow; do not promise one-tap Instagram posting before testing it.
-- **Onboarding metric steps** — gender, age, height, weight, activity. One
-  template, five screens; the canvas draws it once as `Onboarding · weight`.
-- **Day picker and menu** — the two-scale nav model. Day and Week only, no Month.
-  The menu gets **Weight** and **Your targets** rows and becomes the way into the
-  screens 4e and 4d built, which open from the Week card and Settings until then.
-
-Then delete the old system: `Color.liftEatsCoral`, the four `Fuel*` colorsets, and
-any remaining emoji in view code (the paywall carried eight, the summary step four).
+- [x] **7a · Welcome.** Apply the Circa auth pattern to the first screen, including
+  the entry points to Sign up and Sign in. Keep the existing auth actions. **Done
+  when** Welcome works in light/dark and at large text sizes.
+- [x] **7b · Sign up, Sign in and password reset.** Carry the same pattern through
+  the forms and reset sheet, preserving validation and Firebase Auth behavior.
+  **Done when** each auth path, error and reset confirmation is readable and usable.
+- [x] **7c · Onboarding metrics, part one.** Use one repeatable visual pattern for
+  gender and age; preserve their existing values and validation. **Done when**
+  both steps match the Circa system without changing their answers.
+- [x] **7d · Onboarding metrics, part two.** Apply that pattern to height, weight
+  and activity. Weight remains an onboarding input and later a weigh-in, never a
+  directly editable Settings value. **Done when** all five metric steps read as one
+  sequence in both themes and at large text sizes.
+- [x] **7e · Settings hub.** Restyle the Profile/Settings landing screen and its
+  reusable rows; link the existing Your targets and Weight screens without
+  changing either screen's rules. **Done when** every row has a clear destination
+  and the hub uses Circa tokens.
+- [x] **7f · Settings details.** Restyle reminders, appearance, account deletion
+  and the remaining settings sheets. Preserve reminder scheduling, theme choice,
+  reauthentication and deletion behavior. Show weight but offer no direct edit.
+  **Done when** each settings path and its destructive confirmation works in both
+  themes.
+- [x] **7g · Saved meals and sources.** Finish the saved-meal picker/list and
+  Nutrition Sources presentation. Align source wording with the final estimate,
+  assumptions and provenance. Steps 5–6 retain ownership of editor behavior and
+  saved-meal persistence. **Done when** a corrected saved meal is easy to find and
+  reuse, and sources make no accuracy claim the estimate cannot support.
+- [x] **7h · Day/Week picker.** Build the two-scale Day/Week navigation and the
+  date jump. No Month view. State that older days can be read but logging is limited
+  to today and the previous seven days. **Done when** switching scale/date preserves
+  the selected day and never offers a log action outside that window.
+- [x] **7i · Menu and destinations.** Replace the separate flame/gear entry points
+  with the menu from `design.md`; add Weight and Your targets rows to their already
+  built screens. Keep the Week weight card route. **Done when** those destinations
+  are reachable from the menu and existing routes still work.
+- [x] **7j · Paywall and remaining onboarding chrome.** Apply the light/dark Circa
+  treatment, replace emoji with SF Symbols, and use launch-accurate reminder and
+  plan copy. Keep all six paywall requirements in `CLAUDE.md`, including live
+  StoreKit price/trial text and a visible dismiss control. **Done when** the paywall
+  and onboarding summary fit the same visual system without changing purchases.
+- [ ] **7k · Final meal share card.** After the Step 6 backend returns the final
+  meal shape, render the selected meal's image, description, nutrition, key
+  assumption and explanation with a watermark; export through the system share
+  sheet. Share only that meal, not weight, targets or other meals. **Done when** a
+  corrected text or photo meal produces a readable card and the system share flow
+  works. Destination-specific variants and one-tap Instagram posting are outside
+  this part.
+- [ ] **7l · Legacy visual cleanup.** Audit remaining views in both themes and
+  at accessibility text sizes, replace residual old-palette styling and view emoji,
+  then delete `Color.liftEatsCoral` and the four `Fuel*` colorsets once unused.
+  Limit any touches to completed Step 5–6 screens to presentation. **Done when**
+  no screen renders from the old palette and no view code contains emoji.
 
 **Done when** no screen in the app still renders from the old palette, a walk
 from launch to paywall to settings looks like one app in both themes, and the final

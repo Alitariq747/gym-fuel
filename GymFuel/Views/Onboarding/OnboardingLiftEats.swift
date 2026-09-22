@@ -1,184 +1,71 @@
-//
-//  OnboardingLiftEats.swift
-//  GymFuel
-//
-//  Created by Ahmad Ali Tariq on 18/05/2026.
-//
-
 import SwiftUI
 
 struct OnboardingLiftEats: View {
     let onNext: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var cardsAppeared = false
-
     var body: some View {
-        AdaptiveScrollContainer {
-            VStack {
-            VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Small changes; Better results.")
-                }
-                .font(.title2.bold())
+        VStack(spacing: 0) {
+            AdaptiveScrollContainer {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        CircaSectionLabel("See the reasoning")
+                        Text("Make it your meal.")
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaInk)
+                        Text("Circa shows what it estimated and the portions and ingredients behind the numbers.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
+                    }
 
-                Text("After every log, LiftEats shows what it estimated and the portions and ingredients behind the numbers.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+                    CircaCard {
+                        VStack(alignment: .leading, spacing: 14) {
+                            HStack(spacing: 12) {
+                                Image("eggs_toast_coffee")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 72, height: 72)
+                                    .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.thumb))
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("One egg, toast and coffee")
+                                        .font(.circaEntryTitle)
+                                    CircaEstimate("200 kcal", certainty: .estimated)
+                                    Text("Example estimate")
+                                        .font(.circaMono)
+                                        .foregroundStyle(Color.circaInk3)
+                                }
+                            }
+                            CircaHairline(weight: .inCard)
+                            CircaSectionLabel("Circa's assumptions")
+                            Text("One egg, two slices of toast and a cup of coffee. Check the amounts and change anything that differs from your breakfast.")
+                                .font(.circaBody)
+                                .foregroundStyle(Color.circaInk2)
+                        }
+                    }
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top, spacing: 12) {
-                    Image("eggs_toast_coffee")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 72, height: 72)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("1 Egg 2 Toast & Coffee")
-                            .font(.headline.weight(.semibold))
-
-                        HStack(spacing: 18) {
-                            macroValue("200", label: "CAL")
-                            macroValue("10g", label: "PRO")
-                            macroValue("15g", label: "CARB")
-                            macroValue("8g", label: "FAT")
+                    CircaCard(.sunken) {
+                        HStack(alignment: .top, spacing: 12) {
+                            Image(systemName: "slider.horizontal.3")
+                                .foregroundStyle(Color.circaAccent)
+                                .accessibilityHidden(true)
+                            Text("Change two slices of toast to one, and the meal total updates with it.")
+                                .font(.circaBody)
+                                .foregroundStyle(Color.circaInk2)
                         }
                     }
                 }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(cardBackground, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color(.quaternaryLabel), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
-            .cardEntrance(isVisible: cardsAppeared, delay: 0.12, reduceMotion: reduceMotion)
-
-            analysisCard
-                .cardEntrance(isVisible: cardsAppeared, delay: 0.32, reduceMotion: reduceMotion)
-            adjustmentCard
-                .cardEntrance(isVisible: cardsAppeared, delay: 0.52, reduceMotion: reduceMotion)
-
-            Spacer()
-
-            Button {
-                onNext()
-            } label: {
-                Text("Continue")
-                    .font(.headline.bold())
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-        }
-            .padding()
-        }
-        .onAppear {
-            cardsAppeared = false
-            DispatchQueue.main.async {
-                cardsAppeared = true
-            }
-        }
-    }
-
-    private var cardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
-    }
-
-    private var analysisCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image("LiftEatsWelcomeIcon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-
-                Text("LiftEats analysis")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                .padding(.horizontal, Circa.Space.screenMargin)
+                .padding(.top, 18)
+                .padding(.bottom, 20)
             }
 
-            Text("We estimated one egg, two slices of toast and a cup of coffee. Check the amounts and change anything that differs from your breakfast.")
-                .font(.caption)
-                .fixedSize(horizontal: false, vertical: true)
-
-            HStack(alignment: .top, spacing: 10) {
-                Text("🔎")
-                    .frame(width: 30, height: 30)
-                    .background(Color.fuelOrange.opacity(0.14), in: Circle())
-                Text("The estimate explains the portions it used, so you can see what changes the total.")
-                    .font(.caption.weight(.medium))
-                    .fixedSize(horizontal: false, vertical: true)
+            Button(action: onNext) {
+                Text("Continue").frame(maxWidth: .infinity)
             }
-            .padding(12)
-            .background(Color.fuelOrange.opacity(0.10), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .buttonStyle(.circa(.primary, height: 52))
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.bottom, 16)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(cardBackground, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color(.quaternaryLabel), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
-    }
-
-    private var adjustmentCard: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(Color.fuelGreen)
-                .frame(width: 40, height: 40)
-                .background(Color.fuelGreen.opacity(0.14), in: Circle())
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Make it your meal")
-                    .font(.headline.weight(.bold))
-
-                Text("Change two slices of toast to one, and the meal total updates with it.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(cardBackground, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color(.quaternaryLabel), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
-    }
-
-    private func macroValue(_ value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.subheadline.weight(.bold))
-            Text(label)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-
-private extension View {
-    func cardEntrance(isVisible: Bool, delay: Double, reduceMotion: Bool) -> some View {
-        opacity(isVisible ? 1 : 0)
-            .offset(y: reduceMotion || isVisible ? 0 : 18)
-            .animation(reduceMotion ? nil : .spring(response: 0.85, dampingFraction: 0.88).delay(delay), value: isVisible)
+        .circaPaper()
     }
 }
 

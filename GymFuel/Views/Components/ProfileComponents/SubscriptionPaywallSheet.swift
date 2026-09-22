@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SubscriptionPaywallSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
 
     private let privacyURL = URL(string: "https://ahmadtariq.co/apps/lifteats/privacy")!
@@ -12,134 +13,103 @@ struct SubscriptionPaywallSheet: View {
         subscriptionViewModel.selectedPackage
     }
 
-    private var features: [(emoji: String, title: String, detail: String)] {
+    private var features: [(symbol: String, title: String, detail: String)] {
         [
-            ("📊", "500 AI scans a month",
-             "About 16 a day, on both monthly and yearly plans — plenty to log and reinterpret every meal."),
-            ("🥗", "Food logging", "Log meals with text or photos in seconds."),
-            ("⚡️", "Very low friction", "Built for quick logging throughout the day."),
-            ("✨", "Quick insights", "See the portions and ingredients behind each estimate."),
-            ("🔔", "Smart reminders", "Stay consistent with gentle local nudges."),
+            ("text.viewfinder", "Describe or photograph a meal", "Get an estimate for food you actually eat."),
+            ("list.bullet.rectangle", "See what was assumed", "Review portions, ingredients and preparation behind the numbers."),
+            ("slider.horizontal.3", "Correct your version", "Adjust item amounts and see how the meal total changes."),
+            ("bookmark", "Save it for next time", "Reuse a corrected meal with its breakdown and assumptions."),
         ]
     }
 
     var body: some View {
-        ZStack {
-            paywallBackground
-
-            VStack(spacing: 0) {
-                headerBar
-
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 18) {
-                        heroSection
-                        featureList
-                        restoreAndLegalSection
-                    }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 18)
+        VStack(spacing: 0) {
+            headerBar
+            ScrollView {
+                VStack(spacing: 20) {
+                    heroSection
+                    featureList
+                    purchaseSection
+                    restoreAndLegalSection
                 }
-
-                purchaseSection
+                .padding(.horizontal, Circa.Space.screenMargin)
+                .padding(.bottom, 24)
             }
         }
+        .circaPaper()
         .task {
             await subscriptionViewModel.loadPaywallPackages()
         }
     }
 
-    private var paywallBackground: some View {
-        ZStack {
-            Color(.systemBackground)
-                .ignoresSafeArea()
-
-            LinearGradient(
-                colors: [
-                    Color.liftEatsCoral.opacity(0.18),
-                    Color(.systemBackground).opacity(0.2),
-                    Color(.systemBackground),
-                ],
-                startPoint: .top,
-                endPoint: .center
-            )
-            .ignoresSafeArea()
-
-            Circle()
-                .fill(Color.liftEatsCoral.opacity(0.16))
-                .frame(width: 220, height: 220)
-                .blur(radius: 38)
-                .offset(x: 140, y: -180)
-        }
-    }
-
     private var headerBar: some View {
         HStack {
+            CircaSectionLabel("Circa Pro")
             Spacer()
 
             Button {
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 34, height: 34)
-                    .background(Color(.secondarySystemBackground), in: Circle())
+                    .foregroundStyle(Color.circaInk)
+                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                    .background(Color.circaCard, in: Circle())
             }
             .buttonStyle(.plain)
-            .padding(.trailing, 20)
-            .padding(.top, 16)
+            .accessibilityLabel("Close paywall")
         }
+        .padding(.horizontal, Circa.Space.screenMargin)
+        .padding(.top, 12)
     }
 
     private var heroSection: some View {
-        VStack(spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             Image("LiftEatsWelcomeIcon")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 88, height: 88)
-                .shadow(color: Color.liftEatsCoral.opacity(0.25), radius: 18, y: 10)
+                .frame(width: 64, height: 64)
 
-            Text("Unlock LiftEats Pro")
-                .font(.system(size: 32, weight: .heavy, design: .rounded))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
+            Text("Understand the food you actually eat.")
+                .font(.circaTitle)
+                .foregroundStyle(Color.circaInk)
 
-            Text("Log faster, understand your macros, and keep your nutrition aligned with your goal.")
-                .font(.subheadline.weight(.medium))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
+            Text("See what went into an estimate, correct what differs, and save your version.")
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk2)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var featureList: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 0) {
             ForEach(features, id: \.title) { feature in
                 HStack(spacing: 12) {
-                    Text(feature.emoji)
-                        .font(.title3)
+                    Image(systemName: feature.symbol)
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaAccent)
                         .frame(width: 42, height: 42)
-                        .background(Color(.secondarySystemBackground), in: Circle())
+                        .background(Color.circaWell, in: RoundedRectangle(cornerRadius: Circa.Radius.thumb))
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(feature.title)
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(.primary)
+                            .font(.circaRow.weight(.semibold))
+                            .foregroundStyle(Color.circaInk)
 
                         Text(feature.detail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(.circaCaption)
+                            .foregroundStyle(Color.circaInk2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer(minLength: 0)
                 }
                 .padding(12)
-                .background(Color(.secondarySystemBackground).opacity(0.72), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                if feature.title != features.last?.title {
+                    CircaHairline(weight: .inCard).padding(.horizontal, 12)
+                }
             }
         }
+        .background(ProfileCardBackground())
     }
 
     private var restoreAndLegalSection: some View {
@@ -160,23 +130,19 @@ struct SubscriptionPaywallSheet: View {
                         Text("Restore Subscription")
                     }
                 }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 11)
-                .background(Color(.secondarySystemBackground), in: Capsule())
+                .font(.circaRow)
+                .foregroundStyle(Color.circaInk)
+                .frame(minHeight: Circa.minHitTarget)
             }
             .buttonStyle(.plain)
             .disabled(subscriptionViewModel.isPurchasing || subscriptionViewModel.isRestoring)
 
-            HStack(spacing: 8) {
+            VStack(spacing: 4) {
                 Link("Privacy Policy", destination: privacyURL)
-                Text("·")
-                    .foregroundStyle(.tertiary)
                 Link("Terms of Service", destination: termsURL)
             }
-            .font(.caption.weight(.medium))
-            .foregroundStyle(.secondary)
+            .font(.circaCaption)
+            .foregroundStyle(Color.circaInk2)
         }
         .frame(maxWidth: .infinity)
     }
@@ -185,28 +151,22 @@ struct SubscriptionPaywallSheet: View {
         VStack(spacing: 12) {
             if let errorMessage = subscriptionViewModel.errorMessage {
                 Text(errorMessage)
-                    .font(.caption.weight(.medium))
+                    .font(.circaCaption)
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Color.fuelRed)
+                    .foregroundStyle(Color.circaDanger)
                     .padding(.horizontal, 12)
             }
 
-            ZStack {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: Color.black.opacity(0.12), radius: 20, y: -4)
-
-                VStack(spacing: 10) {
+            CircaCard {
+                VStack(spacing: 12) {
+                    CircaSectionLabel("Choose your plan")
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     packageOptions
                     continueButton
                     renewalFooter
                 }
-                .padding(16)
             }
-            .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 14)
-        .padding(.bottom, 10)
     }
 
     @ViewBuilder
@@ -217,8 +177,8 @@ struct SubscriptionPaywallSheet: View {
         } else if subscriptionViewModel.paywallPackages.isEmpty {
             VStack(spacing: 12) {
                 Text("Subscription options are unavailable. Please try again.")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaInk2)
                     .multilineTextAlignment(.center)
 
                 Button {
@@ -227,11 +187,9 @@ struct SubscriptionPaywallSheet: View {
                     }
                 } label: {
                     Text("Retry")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 8)
-                        .background(Color(.secondarySystemBackground), in: Capsule())
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaAccent)
+                        .frame(minHeight: Circa.minHitTarget)
                 }
                 .buttonStyle(.plain)
             }
@@ -248,58 +206,61 @@ struct SubscriptionPaywallSheet: View {
     private func packageCard(for package: Package) -> some View {
         let isSelected = selectedPackage?.identifier == package.identifier
         let isYearly = package.storeProduct.productIdentifier == RevenueCatConfig.proYearlyProductIdentifier
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
 
         return Button {
             guard subscriptionViewModel.isPurchasing == false,
                   subscriptionViewModel.isRestoring == false else { return }
             subscriptionViewModel.selectPackage(package)
         } label: {
-            HStack(spacing: 12) {
+            layout {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.liftEatsCoral : Color.secondary.opacity(0.6))
+                    .foregroundStyle(isSelected ? Color.circaAccent : Color.circaInk3)
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(isYearly ? "Pro Yearly" : "Pro Monthly")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(.primary)
+                            .font(.circaRow.weight(.semibold))
+                            .foregroundStyle(Color.circaInk)
 
                         if isYearly {
                             Text("Best value")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(.white)
+                                .font(.circaMono)
+                                .foregroundStyle(Color.circaAccent)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.liftEatsCoral, in: Capsule())
+                                .background(Color.circaSunken, in: Capsule())
                         }
                     }
 
                     Text(packageSubtitle(for: package))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
                 }
 
-                Spacer()
+                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
 
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: 2) {
                     Text(package.localizedPriceString)
-                        .font(.headline.weight(.heavy))
-                        .foregroundStyle(.primary)
+                        .font(.circaMonoValue)
+                        .foregroundStyle(Color.circaInk)
 
                     Text(isYearly ? "/ year" : "/ month")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk2)
                 }
             }
-            .padding(14)
+            .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(isSelected ? Color.liftEatsCoral.opacity(0.10) : Color(.secondarySystemBackground).opacity(0.72))
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                    .fill(isSelected ? Color.circaSunken : Color.circaCard)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(isSelected ? Color.liftEatsCoral : Color.black.opacity(0.06), lineWidth: isSelected ? 1.5 : 1)
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                    .stroke(isSelected ? Color.circaAccent : Color.circaCardBorder, lineWidth: isSelected ? 1.5 : 1)
             )
         }
         .buttonStyle(.plain)
@@ -315,25 +276,16 @@ struct SubscriptionPaywallSheet: View {
                 }
             }
         } label: {
-            HStack {
-                Spacer()
-
+            Group {
                 if subscriptionViewModel.isPurchasing {
                     ProgressView()
-                        .tint(.white)
                 } else {
                     Text(continueButtonTitle)
-                        .font(.headline.weight(.bold))
                 }
-
-                Spacer()
             }
-            .foregroundStyle(.white)
-            .padding(.vertical, 16)
-            .background(Color.liftEatsCoral, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: Color.liftEatsCoral.opacity(0.28), radius: 14, y: 8)
+            .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.circa(.primary, height: 52))
         .disabled(
             selectedPackage == nil ||
             subscriptionViewModel.isLoadingPackages ||
@@ -353,9 +305,9 @@ struct SubscriptionPaywallSheet: View {
 
     private var renewalFooter: some View {
         Text(selectedPackage.map(footerText(for:)) ?? "Subscription renews automatically unless cancelled at least 24 hours before renewal.")
-            .font(.caption2)
+            .font(.circaMono)
             .multilineTextAlignment(.center)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.circaInk2)
             .padding(.horizontal, 8)
     }
 

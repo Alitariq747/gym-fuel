@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct ProfileEditorView: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var typeSize
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
     @Binding var draft: UserProfile
     let email: String?
     /// Opens the targets screen (Step 4d). `ProfileView` presents it, because the
     /// screen saves through the profile view model rather than through this draft.
     let onOpenTargets: () -> Void
+    let onOpenWeight: () -> Void
 
     private var preferredColorScheme: ColorScheme? {
         switch colorSchemePreference {
@@ -74,16 +75,16 @@ struct ProfileEditorView: View {
             profileHeader
 
             VStack(spacing: 12) {
-                sectionHeader(title: "Body Metrics", systemImage: "figure.stand")
+                ProfileSectionHeader(title: "Body Metrics")
                 bodyMetricsCard
             }
 
             VStack(spacing: 12) {
-                sectionHeader(title: "Targets", systemImage: "scope")
+                ProfileSectionHeader(title: "Targets")
                 targetsCard
             }
         }
-        .padding()
+        .padding(.horizontal, Circa.Space.screenMargin)
         .contentShape(Rectangle())
         .onTapGesture {
             isAgeFieldFocused = false
@@ -101,7 +102,7 @@ struct ProfileEditorView: View {
         .sheet(isPresented: $showGenderSheet) {
             genderPickerSheet
                 .preferredColorScheme(preferredColorScheme)
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
     }
@@ -111,40 +112,29 @@ struct ProfileEditorView: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.accentColor.opacity(0.9),
-                                    Color.accentColor.opacity(0.5)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.circaSunken)
                         .frame(width: 52, height: 52)
                     Text(initials)
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(.white)
+                        .font(.circaMonoValue)
+                        .foregroundStyle(Color.circaInk)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
                     TextField("Your name", text: $draft.name)
-                        .font(.title2.weight(.semibold))
+                        .font(.circaEntryTitle)
+                        .foregroundStyle(Color.circaInk)
                         .textInputAutocapitalization(.words)
                         .disableAutocorrection(true)
                     Text(email ?? "—")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk2)
                 }
-
-                Spacer()
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(Color.primary.opacity(0.3))
+                Spacer(minLength: 0)
             }
         }
         .padding(18)
-        .background(cardBackground)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(ProfileCardBackground())
     }
 
     private var bodyMetricsCard: some View {
@@ -163,11 +153,11 @@ struct ProfileEditorView: View {
             }
             if let problem = SafetyLimits.ageProblem(draft.age) {
                 Text(problem)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaDanger)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Divider()
+            CircaHairline(weight: .inCard)
             rowButton(
                 title: "Gender",
                 systemImage: "person.fill",
@@ -176,7 +166,7 @@ struct ProfileEditorView: View {
             ) {
                 showGenderSheet = true
             }
-            Divider()
+            CircaHairline(weight: .inCard)
             rowButton(
                 title: "Height",
                 systemImage: "ruler",
@@ -185,67 +175,88 @@ struct ProfileEditorView: View {
             ) {
                 isEditHeightPresented = true
             }
-            Divider()
-            // Read-only on purpose. Weight comes from weigh-ins only — if it can
-            // be edited here, the trend the adaptive engine rests on stops being
-            // a measurement. Recording one lives on the Week screen, beside the
-            // chart it feeds.
-            HStack {
-                rowLabel("Weight", systemImage: "scalemass")
-                Spacer()
-                Text(weightPrimaryText)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(weightPrimaryText == "—" ? .secondary : .primary)
-            }
-            .padding(.vertical, 2)
-            .accessibilityElement(children: .combine)
+            CircaHairline(weight: .inCard)
+            // Weight is still read from weigh-ins; this row opens their history.
+            rowButton(
+                title: "Weight",
+                systemImage: "scalemass",
+                value: weightPrimaryText,
+                isPlaceholder: weightPrimaryText == "—",
+                action: onOpenWeight
+            )
         }
         .padding(14)
-        .background(cardBackground)
+        .background(ProfileCardBackground())
     }
 
     private var genderPickerSheet: some View {
         AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 14) {
-                pickerSheetHeader(
-                    title: "Choose gender",
-                    subtitle: "This helps tune your calorie and macro estimates.",
-                    dismiss: { showGenderSheet = false }
-                )
-                genderOption(.male, emoji: "👨", subtitle: "Use male-based macro equations.", tint: .fuelBlue)
-                genderOption(.female, emoji: "👩", subtitle: "Use female-based macro equations.", tint: .pink)
-                genderOption(.preferNotToSay, emoji: "✨", subtitle: "Keep things private and balanced.", tint: .fuelOrange)
-                Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 20) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        CircaSectionLabel("About you")
+                        Text("Starting equation")
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaInk)
+                        Text("This sets your starting calorie estimate. Your weigh-ins will show whether it fits.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 8)
+                    Button {
+                        showGenderSheet = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.circaRow)
+                            .foregroundStyle(Color.circaInk2)
+                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                            .background(Color.circaSunken, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                VStack(spacing: 12) {
+                    genderOption(.male, subtitle: "Male-based estimate")
+                    genderOption(.female, subtitle: "Female-based estimate")
+                    genderOption(.preferNotToSay, subtitle: "Uses a midpoint starting estimate")
+                }
             }
-            .padding(18)
+            .padding(Circa.Space.screenMargin)
         }
-        .background(Color(.systemGroupedBackground))
+        .circaPaper()
     }
 
-    private func genderOption(_ option: Gender, emoji: String, subtitle: String, tint: Color) -> some View {
-        Button {
+    private func genderOption(_ option: Gender, subtitle: String) -> some View {
+        let isSelected = draft.gender == option
+        return Button {
             draft.gender = option
             showGenderSheet = false
         } label: {
-            HStack(spacing: 14) {
-                Text(emoji)
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
-                    .background(tint.opacity(colorScheme == .dark ? 0.22 : 0.12), in: Circle())
+            HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(option.displayName)
-                        .font(.headline.weight(.semibold))
+                        .font(.circaEntryTitle)
+                        .foregroundStyle(Color.circaInk)
                     Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.circaAccent : Color.circaInk3)
+                    .accessibilityHidden(true)
             }
-            .padding(14)
-            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(draft.gender == option ? tint : Color.gray.opacity(0.24), lineWidth: draft.gender == option ? 2 : 1))
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 68)
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
+            .overlay {
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
+                    .strokeBorder(isSelected ? Color.circaAccent : Color.circaCardBorder, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
     }
 
     private var targetsCard: some View {
@@ -259,47 +270,7 @@ struct ProfileEditorView: View {
             )
         }
         .padding(14)
-        .background(cardBackground)
-    }
-
-    private func pickerSheetHeader(title: String, subtitle: String, dismiss: @escaping () -> Void) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline.weight(.bold))
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Button(action: dismiss) {
-                Image(systemName: "xmark")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 34, height: 34)
-                    .background(Color(.secondarySystemBackground), in: Circle())
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func pickerOptionContent(isSelected: Bool, title: String, detail: String, tint: Color) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.subheadline)
-                .foregroundStyle(isSelected ? tint : Color.secondary)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline.weight(.bold))
-                Text(detail)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer()
-        }
-        .padding(12)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(ProfileCardBackground())
     }
 
     private var initials: String {
@@ -312,33 +283,17 @@ struct ProfileEditorView: View {
         return String(trimmed.prefix(2)).uppercased()
     }
 
-    private func sectionHeader(title: String, systemImage: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.primary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, 2)
-    }
-
     private func rowLabel(_ title: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.fuelBlue.opacity(colorScheme == .dark ? 0.2 : 0.12))
-                    .frame(width: 30, height: 30)
-
-                Image(systemName: systemImage)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.fuelBlue)
-            }
+            Image(systemName: systemImage)
+                .font(.circaRow)
+                .foregroundStyle(Color.circaInk2)
+                .frame(width: 30, height: 30)
+                .background(Color.circaWell, in: RoundedRectangle(cornerRadius: Circa.Radius.thumb))
+                .accessibilityHidden(true)
             Text(title)
-                .font(.callout.weight(.medium))
-                .foregroundStyle(.secondary)
+                .font(.circaRow)
+                .foregroundStyle(Color.circaInk)
         }
     }
 
@@ -350,37 +305,36 @@ struct ProfileEditorView: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            HStack {
-                rowLabel(title, systemImage: systemImage)
-                Spacer()
-                Text(value)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(isPlaceholder ? .secondary : .primary)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-                    .padding(.leading, 8)
+            Group {
+                if typeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 8) {
+                        rowLabel(title, systemImage: systemImage)
+                        rowValue(value, isPlaceholder: isPlaceholder)
+                    }
+                } else {
+                    HStack {
+                        rowLabel(title, systemImage: systemImage)
+                        Spacer(minLength: 8)
+                        rowValue(value, isPlaceholder: isPlaceholder)
+                    }
+                }
             }
-            .padding(.vertical, 2)
+            .frame(minHeight: Circa.minHitTarget)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(.ultraThinMaterial)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(.primary.opacity(0.06), lineWidth: 1)
-            )
-            .shadow(
-                color: colorScheme == .dark ? Color.black.opacity(0.25) : Color.black.opacity(0.08),
-                radius: colorScheme == .dark ? 14 : 10,
-                x: 0,
-                y: colorScheme == .dark ? 8 : 6
-            )
+    private func rowValue(_ value: String, isPlaceholder: Bool) -> some View {
+        HStack {
+            Text(value)
+                .font(.circaMono)
+                .foregroundStyle(isPlaceholder ? Color.circaInk3 : Color.circaInk2)
+            Image(systemName: "chevron.right")
+                .font(.circaCaption)
+                .foregroundStyle(Color.circaInk3)
+                .padding(.leading, 8)
+                .accessibilityHidden(true)
+        }
     }
 }
-

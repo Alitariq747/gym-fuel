@@ -9,6 +9,7 @@ struct MainTabTimelineContentView: View {
     let onDeleteFailedEntry: (LogEntry) -> Void
     let onSuccessRevealCompleted: (String) -> Void
     let bottomContentInset: CGFloat
+    let canModifyEntries: Bool
 
     @State private var lastAutoScrolledPendingEntryID: String?
 
@@ -72,13 +73,13 @@ struct MainTabTimelineContentView: View {
             TimelineEntryRow(
                 entry: entry,
                 localPreviewData: localPreviewData(entry.id),
-                onRetry: entry.status == .failed ? { onRetryEntry(entry) } : nil,
-                onDelete: entry.status == .failed ? { onDeleteFailedEntry(entry) } : nil,
+                onRetry: canModifyEntries && entry.status == .failed ? { onRetryEntry(entry) } : nil,
+                onDelete: canModifyEntries && entry.status == .failed ? { onDeleteFailedEntry(entry) } : nil,
                 shouldAnimateSuccessReveal: shouldAnimateSuccessReveal,
                 onSuccessRevealCompleted: shouldAnimateSuccessReveal ? {
                     onSuccessRevealCompleted(entry.id)
                 } : nil,
-                onTapAssumption: { onEditEntryAmounts(entry) }
+                onTapAssumption: canModifyEntries ? { onEditEntryAmounts(entry) } : nil
             )
         }
         .buttonStyle(.plain)

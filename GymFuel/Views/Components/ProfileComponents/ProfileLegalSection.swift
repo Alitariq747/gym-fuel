@@ -6,55 +6,46 @@ struct ProfileLegalSection: View {
     let supportURL: URL?
     let onOpenNutritionSources: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
-
     var body: some View {
         VStack(spacing: 12) {
-            ProfileSectionHeader(title: "Legal", systemImage: "doc.text")
+            ProfileSectionHeader(title: "Legal")
 
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
                 buttonRow(title: "Nutrition Sources & Methodology", systemImage: "books.vertical.fill", action: onOpenNutritionSources)
-                Divider()
+                CircaHairline(weight: .inCard)
                 linkRow(title: "Privacy Policy", systemImage: "hand.raised.fill", url: privacyURL)
-                Divider()
+                CircaHairline(weight: .inCard)
                 linkRow(title: "Terms of Service", systemImage: "checkmark.seal.fill", url: termsURL)
-                Divider()
+                CircaHairline(weight: .inCard)
                 linkRow(title: "Contact Support", systemImage: "envelope.fill", url: supportURL)
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(.secondarySystemBackground).opacity(colorScheme == .dark ? 0.75 : 0.9))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.primary.opacity(0.04), lineWidth: 1)
-            )
+            .padding(.horizontal, 14)
+            .background(ProfileCardBackground())
         }
-        .padding(.horizontal)
-        .opacity(0.92)
+        .padding(.horizontal, Circa.Space.screenMargin)
     }
 
     private func rowContent(title: String, systemImage: String) -> some View {
         HStack {
             HStack(spacing: 10) {
                 Image(systemName: systemImage)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.fuelBlue)
-                    .frame(width: 18)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk2)
+                    .frame(width: 30)
 
                 Text(title)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
+                .font(.circaCaption)
+                .foregroundStyle(Color.circaInk3)
                 .padding(.leading, 6)
         }
+        .frame(minHeight: Circa.minHitTarget)
         .contentShape(Rectangle())
     }
 

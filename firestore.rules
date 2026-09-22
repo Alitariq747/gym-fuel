@@ -83,6 +83,14 @@ service cloud.firestore {
       match /savedMeals/{mealId} {
         allow read: if isOwner(uid);
 
+        // Step 5 added `breakdown`, `assumptions` and `macrosProvenance` as
+        // top-level fields on a saved meal. They were missing here, so every
+        // save of a *logged* meal was rejected while a hand-typed one still
+        // worked — a hand-typed meal leaves all three nil, and encoding omits
+        // them. Same hasOnly() failure as the `activityLevel` note above.
+        //
+        // `logEntries` was unaffected because a breakdown lives inside the
+        // `feedback` map there, and hasOnly() only inspects top-level keys.
         allow create, update: if isOwner(uid)
           && onlyAllowedKeys([
             "id",
@@ -90,6 +98,9 @@ service cloud.firestore {
             "name",
             "description",
             "macros",
+            "breakdown",
+            "assumptions",
+            "macrosProvenance",
             "createdAt",
             "updatedAt"
           ])

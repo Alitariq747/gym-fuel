@@ -6,8 +6,8 @@ struct MainTabHeaderView: View {
     let navigationDirection: DayNavigationDirection
     let onPreviousDateTap: () -> Void
     let onNextDateTap: () -> Void
-    let onStatsTap: () -> Void
-    let onProfileTap: () -> Void
+    let onDateTap: () -> Void
+    let onMenuTap: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -61,56 +61,50 @@ struct MainTabHeaderView: View {
                 dateChevronButton(
                     systemName: "chevron.left",
                     isEnabled: true,
-                    size: compact ? 28 : 34,
+                    size: Circa.minHitTarget,
                     action: onPreviousDateTap
                 )
 
-                ZStack {
-                    Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
-                        .id(selectedDate)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .transition(dateChangeTransition)
+                Button(action: onDateTap) {
+                    ZStack {
+                        Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
+                            .id(selectedDate)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .transition(dateChangeTransition)
+                    }
+                    .frame(minWidth: compact ? 50 : 58, minHeight: Circa.minHitTarget)
+                    .padding(.horizontal, compact ? 8 : 12)
+                    .background(chipBackground, in: Capsule())
+                    .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
+                    .shadow(color: chipShadow, radius: 10, y: 4)
                 }
-                .frame(minWidth: compact ? 50 : 58)
-                .clipped()
-                .padding(.horizontal, compact ? 8 : 12)
-                .padding(.vertical, compact ? 8 : 9)
-                .background(chipBackground, in: Capsule())
-                .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
-                .shadow(color: chipShadow, radius: 10, y: 4)
+                .buttonStyle(.plain)
+                .accessibilityLabel("Choose date and Day or Week view")
                 .animation(.easeInOut(duration: 0.24), value: selectedDate)
 
                 dateChevronButton(
                     systemName: "chevron.right",
                     isEnabled: canNavigateToNextDate,
-                    size: compact ? 28 : 34,
+                    size: Circa.minHitTarget,
                     action: onNextDateTap
                 )
             }
 
             Spacer(minLength: compact ? 2 : 8)
 
-            HStack(spacing: compact ? 10 : 14) {
-                Button(action: onStatsTap) {
-                    Image(systemName: "flame.fill")
-                        .frame(width: 18, height: 18)
-                        .foregroundStyle(Color.fuelOrange)
-                }
-
-                Button(action: onProfileTap) {
-                    Image(systemName: "gearshape")
-                        .frame(width: 18, height: 18)
-                }
+            Button(action: onMenuTap) {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Color.circaInk)
+                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                    .background(chipBackground, in: Circle())
+                    .overlay(Circle().stroke(chipStroke, lineWidth: 1))
+                    .shadow(color: chipShadow, radius: 10, y: 4)
             }
             .buttonStyle(.plain)
-            .font(.system(size: 16, weight: .semibold))
-            .padding(.horizontal, compact ? 10 : 12)
-            .padding(.vertical, compact ? 9 : 10)
-            .background(chipBackground, in: Capsule())
-            .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
-            .shadow(color: chipShadow, radius: 10, y: 4)
-            .frame(width: compact ? 68 : 76, alignment: .trailing)
+            .accessibilityLabel("Open menu")
+            .frame(width: compact ? 44 : 76, alignment: .trailing)
         }
     }
 
@@ -140,8 +134,8 @@ struct MainTabHeaderView: View {
         navigationDirection: .previous,
         onPreviousDateTap: {},
         onNextDateTap: {},
-        onStatsTap: {},
-        onProfileTap: {}
+        onDateTap: {},
+        onMenuTap: {}
     )
     .padding()
 }

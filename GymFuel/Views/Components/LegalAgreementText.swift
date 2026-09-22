@@ -20,26 +20,24 @@ struct LegalAgreementText: View {
     var body: some View {
         WrappingHStack(horizontalSpacing: 4, verticalSpacing: 2) {
             Text(context.prefix)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
 
             Link("Terms of Service", destination: termsURL)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaAccent)
                 .underline()
 
             Text("and acknowledge our")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
 
             Link("Privacy Policy", destination: privacyURL)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaAccent)
                 .underline()
 
             Text(".")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
-        .font(.caption2)
-        .tint(.primary)
+        .font(.circaCaption)
         .frame(maxWidth: .infinity)
-        .opacity(0.74)
         .accessibilityElement(children: .contain)
     }
 }

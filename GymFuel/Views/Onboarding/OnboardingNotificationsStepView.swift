@@ -88,7 +88,7 @@ struct OnboardingNotificationsStepView: View {
         VStack(alignment: .leading, spacing: 9) {
             CircaSectionLabel("Reminders · \(stepPosition) of \(stepCount)")
 
-            Text("Want a nudge when you forget?")
+            Text("Want a reminder to write?")
                 .font(.circaTitle)
                 .foregroundStyle(Color.circaInk)
                 .fixedSize(horizontal: false, vertical: true)

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SignInView: View {
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @State private var email = ""
@@ -23,82 +22,83 @@ struct SignInView: View {
 
     var body: some View {
         AdaptiveScrollContainer {
-            VStack(spacing: 20) {
-            Spacer()
-            Image(systemName: "figure.strengthtraining.traditional.circle.fill")
-                .renderingMode(.original)
-                .font(.system(size: 70, weight: .bold))
-                .foregroundStyle(colorScheme == .light ? .black : Color(.secondarySystemBackground))
-              
-            VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 12) {
+                    CircaSectionLabel("Your account")
+                    Text("Welcome back")
+                        .font(.circaTitle)
+                        .foregroundStyle(Color.circaInk)
+                    Text("Pick up where you left off in your food journal.")
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
+                }
+
+                Spacer(minLength: 24)
+
+                VStack(alignment: .leading, spacing: 16) {
                     Text("Email")
-                        .font(.subheadline)
-                    TextField("", text: $email)
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk2)
+                    TextField("Email address", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 12)
-                        .padding(.leading, 12)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-                }
-                
-                VStack(alignment: .leading, spacing: 2) {
+                        .authFieldStyle()
+
                     HStack {
                         Text("Password")
-                            .font(.subheadline)
+                            .font(.circaRow)
+                            .foregroundStyle(Color.circaInk2)
                         Spacer()
                         Button("Forgot?") {
                             resetEmail = email
                             resetMessage = nil
                             showResetPasswordSheet = true
                         }
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.fuelRed)
+                        .font(.circaCaption.weight(.semibold))
+                        .foregroundStyle(Color.circaAccent)
+                        .frame(minHeight: Circa.minHitTarget)
                         .disabled(isLoading)
                     }
-                    SecureField("", text: $password)
+                    SecureField("Password", text: $password)
+                        .textContentType(.password)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 12)
-                        .padding(.leading, 12)
-                        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                        .authFieldStyle()
                 }
-            }
-            
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            Spacer()
-            Button {
-                Task {
-                    await signIn()
-                }
-            } label: {
-                HStack(spacing: 10) {
-                    if isLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                    Text(isLoading ? "Signing in…" : "Log in")
-                        .font(.headline).bold()
-                }
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.white)
-                .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-            .disabled(isLoading)
 
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 24)
+
+                Button {
+                    Task { await signIn() }
+                } label: {
+                    HStack(spacing: 10) {
+                        if isLoading {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text(isLoading ? "Signing in…" : "Sign in")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.circa(.primary, height: 52))
+                .disabled(isLoading)
+            }
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 28)
+            .padding(.bottom, 24)
         }
-            .padding()
-        }
-        .navigationTitle("Welcome Back")
+        .circaPaper()
+        .navigationTitle("")
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -106,13 +106,12 @@ struct SignInView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.headline)
-                        .frame(width: 36, height: 36)
-                        .background(Color(.secondarySystemBackground), in: Circle())
-                        .shadow(color: .black.opacity(0.06), radius: 4, x: 0, y: 2)
-
+                        .foregroundStyle(Color.circaInk)
+                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                        .background(Color.circaCard, in: Circle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Back")
             }
         }
         .sheet(isPresented: $showResetPasswordSheet) {
@@ -129,52 +128,60 @@ struct SignInView: View {
 
     private var resetPasswordSheet: some View {
         AdaptiveScrollContainer {
-            VStack(spacing: 12) {
-            Image("LiftEatsWelcomeIcon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 58, height: 58)
-            Text("Reset Password")
-                .font(.title3.weight(.semibold))
-            Text("Enter your email to receive a reset link.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    CircaSectionLabel("Password help")
+                    Spacer()
+                    Button {
+                        showResetPasswordSheet = false
+                    } label: {
+                        Image(systemName: "xmark")
+                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.circaInk2)
+                    .accessibilityLabel("Close")
+                }
+
+                Text("Reset your password")
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
+                Text("Enter your email and we'll send you a reset link.")
+                    .font(.circaBody)
+                    .foregroundStyle(Color.circaInk2)
+
                 Text("Email")
-                    .font(.subheadline)
-                TextField("", text: $resetEmail)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk2)
+                TextField("Email address", text: $resetEmail)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .padding(.vertical, 12)
-                    .padding(.leading, 12)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(.separator).opacity(0.45), lineWidth: 1)
-                    )
+                    .authFieldStyle()
+
+                if let resetMessage {
+                    Text(resetMessage)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaDanger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Button {
+                    Task { await sendResetLink() }
+                } label: {
+                    Text(isSendingResetLink ? "Sending…" : "Send reset link")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.circa(.primary, height: 52))
+                .disabled(isSendingResetLink)
             }
-            if let resetMessage {
-                Text(resetMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            Button {
-                Task { await sendResetLink() }
-            } label: {
-                Text(isSendingResetLink ? "Sending..." : "Send Reset Link")
-                    .font(.headline.bold())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .foregroundStyle(.white)
-                    .background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color.black, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-            .disabled(isSendingResetLink)
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 20)
+            .padding(.bottom, 24)
         }
-            .padding(24)
-        }
+        .circaPaper()
     }
 
     private func sendResetLink() async {
