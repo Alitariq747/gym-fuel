@@ -2,15 +2,14 @@ import SwiftUI
 
 struct LiftEatsAnalysisCard: View {
     let explanation: String
-    @Environment(\.colorScheme) private var colorScheme
     @State private var showNutritionSources = false
 
     private var cardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+        Color.circaCard
     }
 
     private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color(.quaternaryLabel)
+        Color.circaCardBorder
     }
 
     var body: some View {
@@ -24,12 +23,12 @@ struct LiftEatsAnalysisCard: View {
 
                 Text("LiftEats Analysis")
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.circaInk)
             }
 
             Text(explanation)
                 .font(.subheadline)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaInk)
                 .fixedSize(horizontal: false, vertical: true)
 
             Divider()
@@ -40,19 +39,19 @@ struct LiftEatsAnalysisCard: View {
                 HStack(spacing: 8) {
                     Image(systemName: "books.vertical.fill")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(Color.fuelBlue)
+                        .foregroundStyle(Color.circaAccent)
                         .frame(width: 24, height: 24)
-                        .background(Color.fuelBlue.opacity(colorScheme == .dark ? 0.18 : 0.12), in: Circle())
+                        .background(Color.circaWell, in: Circle())
 
                     Text("AI estimate · How this works & sources")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.circaInk2)
 
                     Spacer(minLength: 4)
 
                     Image(systemName: "chevron.right")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(Color.circaInk3)
                 }
                 .contentShape(Rectangle())
             }
@@ -74,14 +73,13 @@ struct AIDetailsCard: View {
     let confidenceColor: Color
     let assumptions: [String]
     @Binding var isExpanded: Bool
-    @Environment(\.colorScheme) private var colorScheme
 
     private var cardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+        Color.circaCard
     }
 
     private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color(.quaternaryLabel)
+        Color.circaCardBorder
     }
 
     var body: some View {
@@ -93,7 +91,7 @@ struct AIDetailsCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Confidence level")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                         Text(confidenceLevel)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(confidenceColor)
@@ -102,10 +100,10 @@ struct AIDetailsCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("AI Details")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.circaInk)
                         Text("Additional interpretation notes")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                     }
                 }
 
@@ -119,9 +117,9 @@ struct AIDetailsCard: View {
                     } label: {
                         Image(systemName: "chevron.down")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                             .frame(width: 30, height: 30)
-                            .background(Color(.secondarySystemBackground), in: Circle())
+                            .background(Color.circaWell, in: Circle())
                             .rotationEffect(.degrees(isExpanded ? 180 : 0))
                     }
                     .buttonStyle(.plain)
@@ -135,17 +133,17 @@ struct AIDetailsCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "questionmark.circle.fill")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.fuelBlue)
+                            .foregroundStyle(Color.circaAccent)
 
                         Text("Assumptions")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                     }
 
                     ForEach(assumptions, id: \.self) { assumption in
                         Text(assumption)
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }

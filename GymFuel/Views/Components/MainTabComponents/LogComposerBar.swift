@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LogActionDock: View {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let isSubmitting: Bool
     let onCameraTap: () -> Void
@@ -18,12 +18,11 @@ struct LogActionDock: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(dockBackgroundColor, in: Capsule(style: .continuous))
+        .background(Color.circaCard, in: Capsule(style: .continuous))
         .overlay {
             Capsule(style: .continuous)
-                .stroke(dockStrokeColor, lineWidth: 1)
+                .stroke(Color.circaCardBorder, lineWidth: 1)
         }
-        .shadow(color: dockShadowColor, radius: colorScheme == .dark ? 12 : 20, y: colorScheme == .dark ? 4 : 10)
         .opacity(isSubmitting ? 0.72 : 1)
         .disabled(isSubmitting)
     }
@@ -33,32 +32,23 @@ struct LogActionDock: View {
             VStack(spacing: 5) {
                 Image(systemName: systemName)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.primary.opacity(0.72))
+                    .foregroundStyle(Color.circaInk)
 
-                Text(title)
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Color.primary.opacity(0.58))
-                    .lineLimit(1)
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Text(title)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color.circaInk2)
+                        .lineLimit(1)
+                }
             }
             .padding(.vertical, 4)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: 56)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
     }
 
-    private var dockBackgroundColor: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
-    }
-
-    private var dockStrokeColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
-    }
-
-    private var dockShadowColor: Color {
-        colorScheme == .dark ? Color.black.opacity(0.22) : Color.black.opacity(0.12)
-    }
 }
 
 #Preview {

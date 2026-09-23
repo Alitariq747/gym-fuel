@@ -10,7 +10,6 @@ import SwiftUI
 struct StatsView: View {
     let profile: UserProfile
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
@@ -95,7 +94,7 @@ struct StatsView: View {
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.circaInk2)
                 } else {
                     VStack(spacing: 12) {
                         StatsStreakCard(snapshot: snapshot)
@@ -107,6 +106,7 @@ struct StatsView: View {
             }
             .padding()
         }
+        .background(LinearGradient.circaPaper.ignoresSafeArea())
         .task(id: viewModel.selectedWeekStart) {
             await viewModel.loadStats(userId: profile.id, targetMacros: targetMacros)
         }
@@ -178,19 +178,18 @@ struct StatsView: View {
         HStack {
             if viewModel.isLoading {
                 ProgressView()
-                    .tint(Color.fuelOrange)
+                    .tint(Color.circaAccent)
             }
             Spacer()
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 32, height: 32)
-                    .background(Color(.secondarySystemBackground), in: Circle())
-                    .overlay(Circle().stroke(Color.black.opacity(0.05), lineWidth: 1))
+                    .foregroundStyle(Color.circaInk)
+                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                    .background(Color.circaCard, in: Circle())
+                    .overlay(Circle().stroke(Color.circaCardBorder, lineWidth: 1))
             }
             .buttonStyle(.plain)
-            .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
         }
     }
 
@@ -207,7 +206,7 @@ struct StatsView: View {
                     labels: macroWeekdayLabels,
                     average: snapshot.averageProtein,
                     target: proteinTarget,
-                    color: Color.fuelGreen
+                    color: Color.circaInk
                 )
                 Divider()
             }
@@ -218,7 +217,7 @@ struct StatsView: View {
                     labels: macroWeekdayLabels,
                     average: snapshot.averageCarbs,
                     target: carbsTarget,
-                    color: Color.fuelBlue.opacity(0.8)
+                    color: Color.circaInk2
                 )
                 Divider()
             }
@@ -229,27 +228,14 @@ struct StatsView: View {
                     labels: macroWeekdayLabels,
                     average: snapshot.averageFat,
                     target: fatTarget,
-                    color: Color.fuelOrange.opacity(0.75)
+                    color: Color.circaAccentLarge
                 )
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(statsCardBackground, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(statsCardStroke, lineWidth: 1))
-        .shadow(color: statsCardShadow, radius: 12, y: 6)
-    }
-
-    private var statsCardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
-    }
-
-    private var statsCardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
-    }
-
-    private var statsCardShadow: Color {
-        colorScheme == .dark ? Color.clear : Color.black.opacity(0.05)
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous).stroke(Color.circaCardBorder, lineWidth: 1))
     }
 
 }
@@ -264,13 +250,20 @@ private struct MacroMiniBarRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(title)
-                    .font(.caption.weight(.bold))
-                Spacer()
-                Text("Avg \(Int(average.rounded()))g · Target \(Int(target))g")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text(title).font(.caption.weight(.bold))
+                    Spacer()
+                    Text("Avg \(Int(average.rounded()))g · Target \(Int(target))g")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color.circaInk2)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title).font(.caption.weight(.bold))
+                    Text("Avg \(Int(average.rounded()))g · Target \(Int(target))g")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color.circaInk2)
+                }
             }
             HStack(alignment: .bottom, spacing: 8) {
                 ForEach(Array(values.enumerated()), id: \.offset) { index, value in
@@ -278,16 +271,16 @@ private struct MacroMiniBarRow: View {
                         GeometryReader { proxy in
                             let ratio = target > 0 ? min(value / target, 1.15) : 0
                             RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(Color(.tertiarySystemFill))
+                                .fill(Color.circaBarTrack)
                                 .overlay(alignment: .bottom) {
                                     RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .fill(value > target ? Color.fuelRed.opacity(0.8) : color)
+                                        .fill(value > target ? Color.circaAccentLarge : color)
                                         .frame(height: value > 0 ? max(5, proxy.size.height * ratio / 1.15) : 0)
                                 }
                         }
                         Text(labels.indices.contains(index) ? labels[index] : "")
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 150)

@@ -9,46 +9,33 @@ import SwiftUI
 
 struct StatsActivitySummaryRow: View {
     let foodLogs: Int
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 12) {
-            statTile(title: "Meals", value: "\(foodLogs)", emoji: "🥗")
+            statTile(title: "Meals", value: "\(foodLogs)", symbol: "fork.knife")
         }
     }
 
-    private func statTile(title: String, value: String, emoji: String) -> some View {
+    private func statTile(title: String, value: String, symbol: String) -> some View {
         HStack(spacing: 10) {
-            Text(emoji)
+            Image(systemName: symbol)
                 .font(.headline)
                 .frame(width: 34, height: 34)
-                .background(Color(.tertiarySystemFill), in: Circle())
+                .foregroundStyle(Color.circaInk2)
+                .background(Color.circaWell, in: Circle())
             HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Text(value)
                     .font(.title3.weight(.bold))
                 Text(title)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .padding(.horizontal, 12)
-        .background(tileBackground, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(tileStroke, lineWidth: 1))
-        .shadow(color: tileShadow, radius: 10, y: 5)
-    }
-
-    private var tileBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
-    }
-
-    private var tileStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
-    }
-
-    private var tileShadow: Color {
-        colorScheme == .dark ? Color.clear : Color.black.opacity(0.05)
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous).stroke(Color.circaCardBorder, lineWidth: 1))
     }
 }
 

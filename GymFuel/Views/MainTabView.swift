@@ -233,11 +233,10 @@ struct MainTabView: View {
                     Text("Future logging is not allowed")
                         .font(.subheadline.weight(.semibold))
                 }
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaInk)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color(.systemBackground).opacity(0.96), in: Capsule())
-                .shadow(color: Color.black.opacity(0.12), radius: 14, y: 7)
+                .background(Color.circaCard, in: Capsule())
                 .padding(.bottom, 18)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -568,19 +567,19 @@ struct MainTabView: View {
         } else {
             HStack(spacing: 10) {
                 Image(systemName: "calendar.badge.clock")
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(Color.circaInk2)
                 Text("Logging is available for today and the past 7 days")
                     .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 16)
             .frame(minHeight: 64)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                    .stroke(Color.circaCardBorder, lineWidth: 1)
             )
         }
     }

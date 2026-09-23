@@ -6,7 +6,6 @@ struct TimelineEntryLeadingVisual: View {
     let width: CGFloat
     let height: CGFloat
 
-    @Environment(\.colorScheme) private var colorScheme
 
     private let symbolCircleSize: CGFloat = 46
 
@@ -54,12 +53,12 @@ struct TimelineEntryLeadingVisual: View {
     private func leadingSymbol(_ symbol: String) -> some View {
         Image(systemName: symbol)
             .font(.system(size: 18, weight: .regular))
-            .foregroundStyle(Color.primary)
+            .foregroundStyle(Color.circaInk)
             .frame(width: symbolCircleSize, height: symbolCircleSize)
-            .background(Color(.systemBackground), in: Circle())
+            .background(Color.circaWell, in: Circle())
             .overlay {
                 Circle()
-                    .stroke(colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04), lineWidth: 1)
+                    .stroke(Color.circaCardBorder, lineWidth: 1)
             }
     }
 }

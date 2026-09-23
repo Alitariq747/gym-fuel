@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TimelineEntryRow: View {
     let entry: LogEntry
-    @Environment(\.colorScheme) private var colorScheme
     var localPreviewData: Data? = nil
     var onRetry: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
@@ -176,7 +175,7 @@ struct TimelineEntryRow: View {
                             Spacer(minLength: 8)
                             Text(entry.loggedAt.formatted(date: .omitted, time: .shortened))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.circaInk2)
                                 .fixedSize()
                         }
                         TimelineEntryMetricsView(
@@ -194,12 +193,12 @@ struct TimelineEntryRow: View {
                     if entry.status == .analyzing, !rowState.isAnalyzingTextEntry, !rowState.isAnalyzingImageEntry {
                         Text(entry.rawInput == "Meal image" ? "Analyzing your meal image..." : entry.rawInput)
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                             .lineLimit(2)
                     } else if let failureMessage = rowState.failureMessage, !rowState.isFailedImageEntry {
                         Text(failureMessage)
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.circaDanger)
                             .lineLimit(2)
                     }
                 }
@@ -212,7 +211,7 @@ struct TimelineEntryRow: View {
             if let failureMessage = rowState.failureMessage, rowState.isFailedImageEntry {
                 Text(failureMessage)
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.circaDanger)
                     .lineLimit(2)
             }
         }
@@ -264,16 +263,16 @@ struct TimelineEntryRow: View {
                 Button(action: { onRetry?() }) {
                     Image(systemName: "arrow.clockwise")
                         .frame(width: 30, height: 30)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .background(Color.circaWell, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
                 Button(action: { onDelete?() }) {
                     Image(systemName: "trash")
                         .frame(width: 30, height: 30)
-                        .background(Color.fuelRed.opacity(0.10), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .background(Color.circaDangerGround, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
             }
             .font(.caption.weight(.semibold))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.circaInk2)
             .buttonStyle(.plain)
         }
     }
@@ -282,7 +281,7 @@ struct TimelineEntryRow: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaInk)
                 .lineLimit(2)
 
             AnalysisLoadingStatusLine(text: status, symbolName: symbolName)
@@ -297,21 +296,17 @@ struct TimelineEntryRow: View {
     private func infoChip(_ text: String) -> some View {
         Text(text)
             .font(.caption.weight(.medium))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.circaInk2)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Color(.tertiarySystemFill), in: Capsule())
+            .background(Color.circaSunken, in: Capsule())
     }
 
     private var rowBackground: AnyShapeStyle {
-        AnyShapeStyle(Color(.systemGray6))
+        AnyShapeStyle(Color.circaCard)
     }
 
     private var rowStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color(.systemGray5).opacity(0.72)
-    }
-
-    private var rowShadow: Color {
-        colorScheme == .dark ? Color.clear : Color.black.opacity(0.07)
+        Color.circaCardBorder
     }
 }

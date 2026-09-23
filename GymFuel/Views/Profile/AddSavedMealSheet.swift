@@ -12,6 +12,7 @@ struct AddSavedMealSheet: View {
     @EnvironmentObject private var authManager: FirebaseAuthManager
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var nameText: String = ""
     @State private var descriptionText: String = ""
     @State private var caloriesText: String = ""
@@ -29,36 +30,36 @@ struct AddSavedMealSheet: View {
                             .font(.title3.weight(.bold))
                         Text("Build a reusable meal with clean macros for quick logging.")
                             .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                     }
 
                     VStack(spacing: 12) {
-                        premiumField("fork.knife", title: "Meal name", text: $nameText, color: .fuelOrange)
-                        premiumField("text.alignleft", title: "Description", text: $descriptionText, color: .fuelBlue, lineLimit: 3...6)
+                        premiumField("fork.knife", title: "Meal name", text: $nameText, color: .circaInk)
+                        premiumField("text.alignleft", title: "Description", text: $descriptionText, color: .circaInk2, lineLimit: 3...6)
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
                         Label("Macros", systemImage: "chart.bar.fill")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondary)
-                        macroField("Calories", emoji: "🔥", text: $caloriesText, color: .fuelOrange)
-                        macroField("Protein", emoji: "💪", text: $proteinText, color: .fuelBlue)
-                        macroField("Carbs", emoji: "⚡️", text: $carbsText, color: .fuelGreen)
-                        macroField("Fat", emoji: "💧", text: $fatText, color: .pink)
+                            .foregroundStyle(Color.circaInk2)
+                        macroField("Calories", symbol: "flame", text: $caloriesText)
+                        macroField("Protein", symbol: "fish", text: $proteinText)
+                        macroField("Carbs", symbol: "leaf", text: $carbsText)
+                        macroField("Fat", symbol: "drop", text: $fatText)
                     }
                     .padding(16)
-                    .background(Color(.secondarySystemBackground),
+                    .background(Color.circaCard,
                         in: RoundedRectangle(cornerRadius: 24, style: .continuous)
                     )
                     if let errorMessage {
                         Text(errorMessage)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.circaDanger)
                             .font(.footnote)
                     }
 
                     if let viewModelError = savedMealsViewModel.errorMessage {
                         Text(viewModelError)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.circaDanger)
                             .font(.footnote)
                     }
                 }
@@ -70,6 +71,7 @@ struct AddSavedMealSheet: View {
                 .onChange(of: carbsText) { _, _ in clearErrors() }
                 .onChange(of: fatText) { _, _ in clearErrors() }
             }
+            .background(LinearGradient.circaPaper.ignoresSafeArea())
             .navigationTitle("Add Meal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -77,9 +79,9 @@ struct AddSavedMealSheet: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.subheadline.weight(.bold))
-                            .foregroundStyle(Color.fuelRed)
-                            .frame(width: 34, height: 34)
-                            .background(Color.fuelRed.opacity(0.10), in: Circle())
+                            .foregroundStyle(Color.circaInk2)
+                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                            .background(Color.circaWell, in: Circle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -91,10 +93,9 @@ struct AddSavedMealSheet: View {
                         } else {
                             Image(systemName: "checkmark")
                                 .font(.subheadline.weight(.bold))
-                                .foregroundStyle(canCreate ? Color.white : Color.secondary)
-                                .frame(width: 34, height: 34)
-                                .background(canCreate ? Color.fuelGreen : Color(.tertiarySystemFill), in: Circle())
-                                .shadow(color: Color.fuelGreen.opacity(canCreate ? 0.24 : 0), radius: 10, y: 5)
+                                .foregroundStyle(canCreate ? Color.circaPaperTop : Color.circaInk3)
+                                .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                                .background(canCreate ? Color.circaInk : Color.circaSunken, in: Circle())
                         }
                     }
                     .buttonStyle(.plain)
@@ -131,7 +132,7 @@ struct AddSavedMealSheet: View {
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(color)
                 .frame(width: 30, height: 30)
-                .background(color.opacity(0.12), in: Circle())
+                .background(Color.circaWell, in: Circle())
             Group {
                 if let lineLimit {
                     TextField(title, text: text, axis: .vertical)
@@ -143,27 +144,29 @@ struct AddSavedMealSheet: View {
             .font(.subheadline.weight(.medium))
         }
         .padding(14)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    private func macroField(_ title: String, emoji: String, text: Binding<String>, color: Color) -> some View {
-        HStack(spacing: 12) {
-            Text(emoji)
+    private func macroField(_ title: String, symbol: String, text: Binding<String>) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+            : AnyLayout(HStackLayout(spacing: 12))
+        return layout {
+            Image(systemName: symbol)
+                .foregroundStyle(Color.circaInk2)
                 .frame(width: 30, height: 30)
-                .background(color.opacity(0.12), in: Circle())
+                .background(Color.circaWell, in: Circle())
             Text(title)
                 .font(.subheadline.weight(.semibold))
-            Spacer()
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
             TextField("0", text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(.subheadline.weight(.bold))
-                .frame(width: 74)
+                .frame(minWidth: 74, alignment: .trailing)
         }
         .padding(12)
-        .background(Color(.systemBackground).opacity(0.82), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: color.opacity(0.08), radius: 10, y: 5)
-        .shadow(color: Color.black.opacity(0.035), radius: 6, y: 3)
+        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private func createSavedMeal() {

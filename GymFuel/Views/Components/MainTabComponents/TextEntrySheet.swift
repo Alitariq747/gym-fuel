@@ -24,9 +24,9 @@ struct TextEntrySheet: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(Color.primary.opacity(0.82))
+                            .foregroundStyle(Color.circaInk)
                             .frame(width: 48, height: 48)
-                            .background(Color(.secondarySystemBackground), in: Circle())
+                            .background(Color.circaCard, in: Circle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Close")
@@ -40,20 +40,20 @@ struct TextEntrySheet: View {
                         .font(.system(size: 17, weight: .bold))
                         .tracking(0.2)
                         .multilineTextAlignment(.center)
-                        .foregroundStyle(Color.primary.opacity(0.88))
+                        .foregroundStyle(Color.circaInk)
 
                     ZStack(alignment: .topLeading) {
                         if text.isEmpty {
                             VStack(spacing: 16) {
                                 Text("e.g 200 grams of cooked chicken with one cup of boiled rice")
                                     .font(.system(size: 18, weight: .medium))
-                                    .foregroundStyle(Color.primary.opacity(0.18))
+                                    .foregroundStyle(Color.circaInk3)
                                     .multilineTextAlignment(.center)
                                     .frame(maxWidth: .infinity)
 
                                 Text("e.g Two rotis with a katori of chicken curry and a spoon of ghee")
                                     .font(.system(size: 18, weight: .medium))
-                                    .foregroundStyle(Color.primary.opacity(0.18))
+                                    .foregroundStyle(Color.circaInk3)
                                     .multilineTextAlignment(.center)
                                     .frame(maxWidth: .infinity)
                             }
@@ -91,11 +91,11 @@ struct TextEntrySheet: View {
                             Text("Interpret with AI")
                                 .font(.system(size: 17, weight: .bold))
                         }
-                        .foregroundStyle(canAnalyze ? Color.white : Color.secondary)
+                        .foregroundStyle(canAnalyze ? Color.circaPaperTop : Color.circaInk3)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                         .background(
-                            canAnalyze ? Color.liftEatsCoral : Color(.tertiarySystemFill),
+                            canAnalyze ? Color.circaInk : Color.circaSunken,
                             in: RoundedRectangle(cornerRadius: 24, style: .continuous)
                         )
                     }
@@ -107,7 +107,7 @@ struct TextEntrySheet: View {
 
             }
                 .frame(maxWidth: .infinity)
-                .background(Color(.systemBackground))
+                .background(LinearGradient.circaPaper)
             }
         }
         .presentationDetents([.medium, .large])

@@ -9,18 +9,12 @@ struct MainTabHeaderView: View {
     let onDateTap: () -> Void
     let onMenuTap: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
-
     private var chipBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
+        Color.circaCard
     }
 
     private var chipStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.clear
-    }
-
-    private var chipShadow: Color {
-        colorScheme == .dark ? Color.clear : Color.black.opacity(0.08)
+        Color.circaCardBorder
     }
 
     private var dateChangeTransition: AnyTransition {
@@ -70,14 +64,13 @@ struct MainTabHeaderView: View {
                         Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
                             .id(selectedDate)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.circaInk)
                             .transition(dateChangeTransition)
                     }
                     .frame(minWidth: compact ? 50 : 58, minHeight: Circa.minHitTarget)
                     .padding(.horizontal, compact ? 8 : 12)
                     .background(chipBackground, in: Capsule())
                     .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
-                    .shadow(color: chipShadow, radius: 10, y: 4)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Choose date and Day or Week view")
@@ -100,7 +93,6 @@ struct MainTabHeaderView: View {
                     .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
                     .background(chipBackground, in: Circle())
                     .overlay(Circle().stroke(chipStroke, lineWidth: 1))
-                    .shadow(color: chipShadow, radius: 10, y: 4)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open menu")
@@ -117,11 +109,8 @@ struct MainTabHeaderView: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(isEnabled ? Color.primary : Color.secondary.opacity(0.55))
+                .foregroundStyle(isEnabled ? Color.circaInk : Color.circaInk3)
                 .frame(width: size, height: size)
-//                .background(chipBackground.opacity(isEnabled ? 1 : 0.65), in: Circle())
-//                .overlay(Circle().stroke(chipStroke, lineWidth: 1))
-//                .shadow(color: chipShadow.opacity(isEnabled ? 1 : 0.45), radius: 10, y: 4)
         }
         .buttonStyle(.plain)
     }

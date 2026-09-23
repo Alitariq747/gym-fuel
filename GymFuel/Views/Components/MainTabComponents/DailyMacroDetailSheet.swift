@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct DailyMacroDetailSheet: View {
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let targetMacros: Macros
@@ -51,26 +50,17 @@ struct DailyMacroDetailSheet: View {
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 20)
-        .background(backgroundStyle)
+        .background(Color.circaCard)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(cardStrokeColor, lineWidth: 1)
+                .stroke(Color.circaCardBorder, lineWidth: 1)
         }
-        .shadow(color: cardShadowColor, radius: colorScheme == .dark ? 6 : 10, y: colorScheme == .dark ? 2 : 5)
-    }
-
-    private var cardStrokeColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
-    }
-
-    private var cardShadowColor: Color {
-        colorScheme == .dark ? Color.black.opacity(0.18) : Color.black.opacity(0.05)
     }
 
     private var calorieProgressRing: some View {
         let progress = min(max(consumedMacros.calories / max(targetMacros.calories, 1), 0), 1)
-        let ringColor: Color = consumedMacros.calories > targetMacros.calories ? .fuelRed : .fuelOrange
+        let ringColor: Color = consumedMacros.calories > targetMacros.calories ? .circaAccentLarge : .circaInk
 
         return ZStack {
             Circle()
@@ -86,7 +76,7 @@ struct DailyMacroDetailSheet: View {
                     .animation(progressAnimation, value: remainingCalories)
                 Text(remainingLabel)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
                     .animation(.easeOut(duration: 0.2), value: remainingLabel)
             }
         }
@@ -97,11 +87,11 @@ struct DailyMacroDetailSheet: View {
     private func summaryTile(_ short: String, symbol: String, current: Double, target: Double) -> some View {
         let progress = min(max(current / max(target, 1), 0), 1)
         let baseColor: Color = switch short {
-        case "PRO": .fuelBlue
-        case "CARB": .fuelGreen
-        default: .pink
+        case "PRO": .circaInk
+        case "CARB": .circaInk2
+        default: .circaAccentLarge
         }
-        let fillColor: Color = current > target ? .fuelRed : baseColor
+        let fillColor: Color = current > target ? .circaAccentLarge : baseColor
 
         return VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 5) {
@@ -111,7 +101,7 @@ struct DailyMacroDetailSheet: View {
                     .frame(width: 14, height: 14)
                 Text(short)
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
             }
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text("\(Int(current.rounded()))")
@@ -120,13 +110,13 @@ struct DailyMacroDetailSheet: View {
                     .animation(progressAnimation, value: current)
                 Text("/ \(Int(target.rounded()))g")
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
             }
             Capsule()
-                .fill(fillColor.opacity(0.10))
+                .fill(Color.circaBarTrack)
                 .overlay(alignment: .leading) {
                     Capsule()
-                        .fill(fillColor.opacity(0.85))
+                        .fill(fillColor)
                         .frame(maxWidth: .infinity)
                         .scaleEffect(x: progress, y: 1, anchor: .leading)
                         .animation(progressAnimation, value: progress)
@@ -135,53 +125,28 @@ struct DailyMacroDetailSheet: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(tileBackgroundColor, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(tileStrokeColor, lineWidth: 1)
+                .stroke(Color.circaCardBorder, lineWidth: 1)
         }
-        .shadow(color: tileShadowColor, radius: colorScheme == .dark ? 6 : 8, y: colorScheme == .dark ? 3 : 4)
     }
 
     private func calorieMeta(_ label: String, value: Int, alignment: HorizontalAlignment = .leading) -> some View {
         VStack(alignment: alignment, spacing: 4) {
             Text(label)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
             Text("\(value)")
                 .font(.headline.weight(.bold))
                 .contentTransition(.numericText())
                 .animation(progressAnimation, value: value)
             Text("kcal")
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
     }
 
-    @ViewBuilder
-    private var backgroundStyle: some View {
-        if colorScheme == .dark {
-            Color(.secondarySystemBackground)
-        } else {
-            LinearGradient(
-                colors: [Color(.secondarySystemBackground), Color(.secondarySystemBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-    }
-
-    private var tileBackgroundColor: Color {
-        colorScheme == .dark ? Color(.systemBackground) : Color(.systemBackground).opacity(0.8)
-    }
-
-    private var tileStrokeColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.06) : Color.clear
-    }
-
-    private var tileShadowColor: Color {
-        colorScheme == .dark ? Color.black.opacity(0.18) : Color.black.opacity(0.035)
-    }
 }
 
 #Preview {

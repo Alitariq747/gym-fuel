@@ -95,9 +95,9 @@ struct LogEntryDetailSheet: View {
     }
     private var confidenceColor: Color {
         guard let confidenceValue else { return .secondary }
-        if confidenceValue >= 0.8 { return .fuelGreen }
-        if confidenceValue >= 0.6 { return .fuelOrange }
-        return .fuelRed
+        if confidenceValue >= 0.8 { return .circaInk2 }
+        if confidenceValue >= 0.6 { return .circaAccent }
+        return .circaInk3
     }
     private var assumptions: [String] {
         entry.feedback?.assumptions ?? []
@@ -231,9 +231,8 @@ struct LogEntryDetailSheet: View {
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.circaInk)
 //                        .padding(10)
-//                        .background(Color(.secondarySystemBackground), in: Circle())
                 }
                 .disabled(isPerformingAction)
                 }
@@ -347,7 +346,7 @@ struct LogEntryDetailSheet: View {
                     HStack(alignment: .top, spacing: 10) {
                         TextField("", text: $editedRawInput, axis: .vertical)
                             .font(.title2.weight(.bold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.circaInk)
                             .textFieldStyle(.plain)
                             .focused($isRawInputFocused)
                             .lineLimit(2...6)
@@ -355,7 +354,7 @@ struct LogEntryDetailSheet: View {
                             .disabled(isPerformingAction)
                             .overlay(alignment: .bottomLeading) {
                                 Rectangle()
-                                    .fill(Color.primary)
+                                    .fill(Color.circaInk)
                                     .frame(height: 1)
                                     .offset(y: 5)
                             }
@@ -373,7 +372,7 @@ struct LogEntryDetailSheet: View {
                                 } label: {
                                     Image(systemName: "xmark")
                                         .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(Color.fuelRed)
+                                        .foregroundStyle(Color.circaInk2)
                                 }
                                 .buttonStyle(.plain)
 
@@ -387,7 +386,7 @@ struct LogEntryDetailSheet: View {
                                         .foregroundStyle(
                                             editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                                             ? .secondary
-                                            : Color.fuelBlue
+                                            : Color.circaAccent
                                         )
                                 }
                                 .buttonStyle(.plain)
@@ -405,7 +404,7 @@ struct LogEntryDetailSheet: View {
                     if shouldShowRawInputDescription {
                         Text(rawInputDescription)
                             .font(.footnote.weight(.medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                             .underline()
                             .lineLimit(3)
                             .fixedSize(horizontal: false, vertical: true)
@@ -413,7 +412,7 @@ struct LogEntryDetailSheet: View {
 
                     Text(displayTitle)
                         .font(.system(size: 30, weight: .bold, design: .default))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.circaInk)
                         .lineLimit(4)
                         .minimumScaleFactor(0.82)
                         .fixedSize(horizontal: false, vertical: true)
@@ -430,11 +429,11 @@ struct LogEntryDetailSheet: View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: "exclamationmark.circle.fill")
                 .font(.caption)
-                .foregroundStyle(Color.fuelRed)
+                .foregroundStyle(Color.circaDanger)
 
             Text(message)
                 .font(.footnote)
-                .foregroundStyle(Color.fuelRed)
+                .foregroundStyle(Color.circaDanger)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -442,14 +441,13 @@ struct LogEntryDetailSheet: View {
     private var savedMealToast: some View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(Color.fuelGreen)
+                .foregroundStyle(Color.circaAccent)
             Text("Meal saved")
                 .font(.subheadline.weight(.semibold))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color(.systemBackground).opacity(0.96), in: Capsule())
-        .shadow(color: Color.fuelGreen.opacity(0.16), radius: 14, y: 7)
+        .background(Color.circaCard, in: Capsule())
     }
 
     private func presentSavedMealToast() {

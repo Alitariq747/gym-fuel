@@ -44,7 +44,7 @@ struct MealImageThumbnailView: View {
         Group {
             if let image {
                 ZStack {
-                    Color(.systemGray6)
+                    Color.circaMediaWell
 
                     Image(uiImage: image)
                         .resizable()
@@ -55,7 +55,7 @@ struct MealImageThumbnailView: View {
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color(.systemGray6))
+                        .fill(Color.circaMediaWell)
 
                     if isLoading {
                         ProgressView()
@@ -63,7 +63,7 @@ struct MealImageThumbnailView: View {
                     } else {
                         Image(systemName: didFail ? "photo" : "fork.knife")
                             .font(.title3)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.circaInk2)
                     }
                 }
             }

@@ -768,7 +768,7 @@ Keep the parent Step 7 box unticked until every part is done.
   corrected text or photo meal produces a readable card and the system share flow
   works. Destination-specific variants and one-tap Instagram posting are outside
   this part.
-- [ ] **7l · Legacy visual cleanup.** Audit remaining views in both themes and
+- [x] **7l · Legacy visual cleanup.** Audit remaining views in both themes and
   at accessibility text sizes, replace residual old-palette styling and view emoji,
   then delete `Color.liftEatsCoral` and the four `Fuel*` colorsets once unused.
   Limit any touches to completed Step 5–6 screens to presentation. **Done when**

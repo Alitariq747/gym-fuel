@@ -63,7 +63,7 @@ struct EditWeightSheet: View {
                 if let message = errorMessage ?? viewModel.errorMessage {
                     Text(message)
                         .font(.footnote)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.circaDanger)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
@@ -95,26 +95,25 @@ struct EditWeightSheet: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.circle)
-        .tint(.secondary)
+        .tint(Color.circaInk2)
     }
 
     private var header: some View {
         VStack(spacing: 14) {
             Image(systemName: "scalemass")
                 .font(.system(size: 40, weight: .regular))
-                .foregroundStyle(Color.fuelOrange)
+                .foregroundStyle(Color.circaAccent)
                 .frame(width: 96, height: 96)
-                .background(Color.fuelOrange.opacity(0.14), in: Circle())
-                .shadow(color: Color.fuelOrange.opacity(0.12), radius: 18, y: 10)
+                .background(Color.circaWell, in: Circle())
                 .padding(.top, 12)
 
             Text("Weigh in under the same conditions each time — first thing in the morning is easiest to repeat.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .multilineTextAlignment(.center)
         }
     }
@@ -127,17 +126,17 @@ struct EditWeightSheet: View {
 
             Text(secondaryWeightText)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color.circaCard)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.systemGray5), lineWidth: 1)
+                .stroke(Color.circaCardBorder, lineWidth: 1)
         )
     }
 
@@ -176,11 +175,11 @@ struct EditWeightSheet: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color.circaCard)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(.systemGray5), lineWidth: 1)
+                .stroke(Color.circaCardBorder, lineWidth: 1)
         )
     }
 
@@ -275,7 +274,7 @@ private struct WeightUnitSegmentedControl: View {
             segment(unit: .pounds)
         }
         .padding(4)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private func segment(unit: BodyWeightUnit) -> some View {
@@ -290,7 +289,7 @@ private struct WeightUnitSegmentedControl: View {
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(isSelected ? Color(.systemBackground) : Color.clear)
+                        .fill(isSelected ? Color.circaCard : Color.clear)
                 )
                 .foregroundStyle(isSelected ? .primary : .secondary)
         }

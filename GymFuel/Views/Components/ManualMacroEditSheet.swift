@@ -30,10 +30,11 @@ struct ManualMacroEditSheet: View {
             AdaptiveScrollContainer {
                 VStack(alignment: .leading, spacing: 18) {
                 Text("Edit Macros")
-                    .font(.title3.weight(.bold))
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
                 Text(editorSubtitle)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
                 LazyVGrid(columns: gridColumns, spacing: 12) {
                     macroBox("Calories", suffix: "kcal", text: $caloriesText)
                     macroBox("Protein", suffix: "g", text: $proteinText)
@@ -61,10 +62,10 @@ struct ManualMacroEditSheet: View {
                         .frame(maxWidth: .infinity)
                 }
                 .font(.headline.weight(.semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.circaPaperTop)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.liftEatsCoral, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .background(Color.circaInk, in: RoundedRectangle(cornerRadius: Circa.Radius.button, style: .continuous))
                 .disabled(updatedMacros == nil)
             }
                 .padding()
@@ -72,6 +73,7 @@ struct ManualMacroEditSheet: View {
             .navigationBarHidden(true)
         }
         .presentationDetents([.medium, .large])
+        .presentationBackground(LinearGradient.circaPaper)
         .presentationContentInteraction(.scrolls)
     }
 
@@ -102,7 +104,7 @@ struct ManualMacroEditSheet: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 TextField("0", text: text)
                     .font(.title3.weight(.bold))
@@ -110,22 +112,15 @@ struct ManualMacroEditSheet: View {
                     .focused($isInputFocused)
                 Text(suffix)
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk3)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
-        .background(
-            LinearGradient(
-                colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-        )
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color(.quaternaryLabel).opacity(0.65), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                .stroke(Color.circaCardBorder, lineWidth: 1)
         )
     }
 

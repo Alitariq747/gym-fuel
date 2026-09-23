@@ -21,7 +21,7 @@ struct CalorieDayBar: View {
     }
 
     private var eatenColor: Color {
-        isOverEffectiveTarget ? Color.fuelRed.opacity(0.85) : Color.fuelBlue.opacity(0.8)
+        isOverEffectiveTarget ? Color.circaAccentLarge : Color.circaInk
     }
 
     var body: some View {
@@ -31,11 +31,11 @@ struct CalorieDayBar: View {
                 let targetHeight = height / 1.15
                 let fillHeight = day.caloriesEaten > 0 ? max(8, targetHeight * eatenRatio) : 0
                 ZStack(alignment: .bottom) {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color(.tertiarySystemFill))
+                    RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.circaBarTrack)
                     RoundedRectangle(cornerRadius: 8, style: .continuous).fill(eatenColor).frame(height: fillHeight)
                 }
             }
-            Text(day.date.formatted(.dateTime.weekday(.narrow))).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+            Text(day.date.formatted(.dateTime.weekday(.narrow))).font(.caption2.weight(.bold)).foregroundStyle(Color.circaInk2)
         }
     }
 }

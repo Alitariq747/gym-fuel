@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CaloriesStatsCard: View {
     let snapshot: StatsSnapshot
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var calorieTargetLabel: String? {
         guard let target = snapshot.dailyStats.compactMap(\.targetCalories).first else { return nil }
@@ -24,21 +24,8 @@ struct CaloriesStatsCard: View {
             summaryRow
         }
         .padding(16)
-        .background(cardBackground, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(cardStroke, lineWidth: 1))
-        .shadow(color: cardShadow, radius: 12, y: 6)
-    }
-
-    private var cardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground)
-    }
-
-    private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
-    }
-
-    private var cardShadow: Color {
-        colorScheme == .dark ? Color.clear : Color.black.opacity(0.05)
+        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous).stroke(Color.circaCardBorder, lineWidth: 1))
     }
 
     private var header: some View {
@@ -47,7 +34,7 @@ struct CaloriesStatsCard: View {
                 .font(.headline.weight(.bold))
             Text("Eaten and target by day")
                 .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
     }
 
@@ -68,22 +55,25 @@ struct CaloriesStatsCard: View {
                     path.move(to: CGPoint(x: 0, y: y))
                     path.addLine(to: CGPoint(x: proxy.size.width, y: y))
                 }
-                .stroke(Color.primary.opacity(0.24), style: StrokeStyle(lineWidth: 1, dash: [4, 5]))
+                .stroke(Color.circaDotted, style: StrokeStyle(lineWidth: 1, dash: [4, 5]))
             }
         }
     }
 
     private var legend: some View {
-        HStack(spacing: 12) {
-            legendItem(color: Color.fuelBlue.opacity(0.8), title: "Eaten")
-            legendItem(color: Color.fuelRed.opacity(0.85), title: "Over")
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(spacing: 12))
+        return layout {
+            legendItem(color: Color.circaInk, title: "Eaten")
+            legendItem(color: Color.circaAccentLarge, title: "Over")
             HStack(spacing: 5) {
                 Capsule()
-                    .stroke(Color.primary.opacity(0.28), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                    .stroke(Color.circaDotted, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
                     .frame(width: 18, height: 6)
                 Text("Target\(calorieTargetLabel.map { " = \($0)" } ?? "")")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
             }
         }
     }
@@ -102,7 +92,7 @@ struct CaloriesStatsCard: View {
                 .frame(width: 7, height: 7)
             Text(title)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
     }
 
@@ -112,7 +102,7 @@ struct CaloriesStatsCard: View {
                 .font(.caption.weight(.bold))
             Text(title)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
         }
         .frame(maxWidth: .infinity)
     }

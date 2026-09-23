@@ -7,22 +7,22 @@ struct AppLoadingView: View {
         VStack(spacing: 18) {
             Text("LiftEats")
                 .font(.title2.weight(.bold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaInk)
 
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(Color.circaBarTrack)
                     .frame(width: 128, height: 4)
 
                 Capsule()
-                    .fill(Color.primary)
+                    .fill(Color.circaInk)
                     .frame(width: 46, height: 4)
                     .offset(x: isAnimating ? 82 : 0)
             }
             .clipShape(Capsule())
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
+        .background(LinearGradient.circaPaper.ignoresSafeArea())
         .onAppear {
             withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
                 isAnimating = true

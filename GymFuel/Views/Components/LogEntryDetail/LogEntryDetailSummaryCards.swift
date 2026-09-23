@@ -2,14 +2,14 @@ import SwiftUI
 
 struct DetailMacroSummaryCard: View {
     let macros: Macros
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var cardBackground: Color {
-        colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.secondarySystemGroupedBackground)
+        Color.circaCard
     }
 
     private var cardStroke: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.05)
+        Color.circaCardBorder
     }
 
     var body: some View {
@@ -17,7 +17,7 @@ struct DetailMacroSummaryCard: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Image(systemName: "flame.fill")
                     .font(.title2.weight(.semibold))
-                    .foregroundStyle(Color.fuelOrange)
+                    .foregroundStyle(Color.circaAccent)
 
                 Text("\(Int(macros.calories.rounded()))")
                     .font(.system(size: 38, weight: .bold, design: .rounded))
@@ -25,14 +25,19 @@ struct DetailMacroSummaryCard: View {
 
                 Text("total calories")
                     .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
             }
             .frame(maxWidth: .infinity)
 
-            HStack(spacing: 12) {
-                macroColumn(title: "Protein", value: macros.protein, symbol: "fish", color: .fuelBlue)
-                macroColumn(title: "Carbs", value: macros.carbs, symbol: "leaf.fill", color: .fuelGreen)
-                macroColumn(title: "Fat", value: macros.fat, symbol: "drop.fill", color: .pink)
+            Group {
+                let layout = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(spacing: 12))
+                    : AnyLayout(HStackLayout(spacing: 12))
+                layout {
+                    macroColumn(title: "Protein", value: macros.protein, symbol: "fish", color: .circaInk2)
+                    macroColumn(title: "Carbs", value: macros.carbs, symbol: "leaf.fill", color: .circaInk2)
+                    macroColumn(title: "Fat", value: macros.fat, symbol: "drop.fill", color: .circaInk2)
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -42,7 +47,6 @@ struct DetailMacroSummaryCard: View {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .stroke(cardStroke, lineWidth: 1)
         }
-        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.14 : 0.065), radius: 14, y: 7)
     }
 
     private func macroColumn(title: String, value: Double, symbol: String, color: Color) -> some View {
@@ -59,7 +63,7 @@ struct DetailMacroSummaryCard: View {
                     .foregroundStyle(color)
                 Text(title)
                     .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
             }
         }
         .frame(maxWidth: .infinity)

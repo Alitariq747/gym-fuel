@@ -11,13 +11,13 @@ struct AnalysisLoadingStatusLine: View {
         HStack(spacing: 6) {
             Image(systemName: symbolName)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(Color.fuelBlue.opacity(0.78))
+                .foregroundStyle(Color.circaAccent)
                 .opacity(reduceMotion ? 0.82 : (isBreathing ? 0.42 : 0.86))
                 .accessibilityHidden(true)
 
             Text(text)
                 .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .lineLimit(1)
                 .minimumScaleFactor(0.82)
                 .id(text)
@@ -51,15 +51,15 @@ struct AnalysisProgressRail: View {
 
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color(.tertiarySystemFill))
+                    .fill(Color.circaBarTrack)
 
                 Capsule()
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.fuelBlue.opacity(0.10),
-                                Color.fuelBlue.opacity(0.42),
-                                Color.fuelGreen.opacity(0.28)
+                                Color.circaAccent.opacity(0.10),
+                                Color.circaAccent.opacity(0.42),
+                                Color.circaInk.opacity(0.28)
                             ],
                             startPoint: .leading,
                             endPoint: .trailing

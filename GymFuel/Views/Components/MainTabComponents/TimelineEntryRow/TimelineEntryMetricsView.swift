@@ -24,10 +24,10 @@ struct TimelineEntryMetricsView: View {
 
             HStack(spacing: 7) {
                 if showRevealedProtein {
-                    secondaryMetricStat(symbol: "fish", value: "\(Int(macros.protein.rounded()))g", color: .fuelBlue)
+                    secondaryMetricStat(symbol: "fish", value: "\(Int(macros.protein.rounded()))g", color: .circaInk2)
                 }
                 if showRevealedCarbs {
-                    secondaryMetricStat(symbol: "leaf.fill", value: "\(Int(macros.carbs.rounded()))g", color: .fuelGreen)
+                    secondaryMetricStat(symbol: "leaf.fill", value: "\(Int(macros.carbs.rounded()))g", color: .circaInk2)
                 }
                 if showRevealedFat {
                     secondaryMetricStat(symbol: "drop.fill", value: "\(Int(macros.fat.rounded()))g", color: .pink)
@@ -46,7 +46,7 @@ struct TimelineEntryMetricsView: View {
                 .foregroundStyle(color)
             Text(value)
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.circaInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.82)
         }
@@ -62,7 +62,7 @@ struct TimelineEntryMetricsView: View {
                 .frame(width: 14, height: 14)
             Text(value)
                 .font(.caption2.weight(.regular))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .lineLimit(1)
                 .minimumScaleFactor(0.78)
         }

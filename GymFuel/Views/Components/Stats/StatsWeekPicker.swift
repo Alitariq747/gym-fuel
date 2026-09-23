@@ -21,7 +21,7 @@ struct StatsWeekPicker: View {
                 Image(systemName: "chevron.left")
                     .font(.title3)
                     .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                    .background(Color(.secondarySystemBackground),in: Circle())
+                    .background(Color.circaCard, in: Circle())
                     
             }
             Button(action: onDateTap) {
@@ -38,7 +38,7 @@ struct StatsWeekPicker: View {
                 Image(systemName: "chevron.right")
                     .font(.title3)
                     .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                    .background(Color(.secondarySystemBackground),in: Circle())
+                    .background(Color.circaCard, in: Circle())
             }
             .disabled(!canGoNext)
             Spacer()

@@ -91,7 +91,7 @@ struct MainTabTimelineContentView: View {
                 .font(.headline)
             Text(message)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .multilineTextAlignment(.center)
         }
     }

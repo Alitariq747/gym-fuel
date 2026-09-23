@@ -231,7 +231,7 @@ struct NutritionSourcesView: View {
 
                 Text("How Circa sets your targets, estimates food, and labels the source of each number.")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
             }
@@ -251,12 +251,12 @@ struct NutritionSourcesView: View {
 
                 Text("This is not medical advice")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.circaInk)
             }
 
             Text("Circa is a nutrition tracking tool for generally healthy adults. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease or condition.\n\nTalk to a doctor or a registered dietitian before making significant changes to how you eat — particularly if you are pregnant or nursing, under 18, managing a medical condition, taking medication, or have any history of disordered eating.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -298,7 +298,7 @@ struct NutritionSourcesView: View {
                 .font(.title3)
                 .foregroundStyle(Color.circaAccent)
                 .frame(width: 34, height: 34)
-                .background(Color(.tertiarySystemFill), in: Circle())
+                .background(Color.circaWell, in: Circle())
 
             VStack(alignment: .leading, spacing: 5) {
                 Text("A note on “Prefer not to say”")
@@ -306,7 +306,7 @@ struct NutritionSourcesView: View {
 
                 Text("The Mifflin–St Jeor equation publishes two constants: +5 for men and −161 for women. There is no published constant for an unspecified sex. When you choose “Prefer not to say,” Circa uses −78, the midpoint between the two.\n\nThat midpoint is our own choice, not a research finding. It gives a starting estimate without asking for information you would rather not give. You can change this in Settings.")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -322,10 +322,10 @@ struct NutritionSourcesView: View {
             HStack(spacing: 8) {
                 Image(systemName: "books.vertical.fill")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.circaInk2)
                 Text("Full reference list")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.circaInk)
             }
 
             VStack(spacing: 0) {
@@ -348,14 +348,14 @@ struct NutritionSourcesView: View {
         VStack(spacing: 6) {
             Text("Targets are starting estimates. Meal values depend on the portions and ingredients assumed; a saved or adjusted estimate is still uncertain. You decide when to change your targets.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("Last reviewed September 2026")
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.circaInk3)
         }
         .padding(.horizontal, 4)
         .padding(.top, 2)
@@ -467,7 +467,7 @@ private struct NutritionMethodCard: View {
 
                     Text(method.title)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.circaInk)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -476,7 +476,7 @@ private struct NutritionMethodCard: View {
 
             Text(method.body)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -502,7 +502,7 @@ private struct NutritionMethodCard: View {
             if let footnote = method.footnote {
                 Text(footnote)
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.circaInk3)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -513,7 +513,7 @@ private struct NutritionMethodCard: View {
                 VStack(alignment: .leading, spacing: 7) {
                     Text("References")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(Color.circaInk3)
                         .textCase(.uppercase)
 
                     ForEach(sources) { source in
@@ -542,7 +542,7 @@ private struct NutritionSourceChip: View {
 
             Text(source.shortLabel)
                 .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -569,13 +569,13 @@ private struct NutritionSourceRow: View {
         let content = HStack(alignment: .top, spacing: 10) {
             Text("\(number)")
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .frame(width: 24, height: 24)
-                .background(Color(.tertiarySystemFill), in: Circle())
+                .background(Color.circaWell, in: Circle())
 
             Text(source.citation)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.circaInk2)
                 .lineSpacing(2)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
@@ -585,7 +585,7 @@ private struct NutritionSourceRow: View {
             if source.url != nil {
                 Image(systemName: "arrow.up.right")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.circaInk3)
                     .padding(.top, 3)
             }
         }
