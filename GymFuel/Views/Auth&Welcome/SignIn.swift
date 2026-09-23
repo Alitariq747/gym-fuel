@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SignInView: View {
+    var onAuthenticated: ((AuthAccountOutcome) -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authManager: FirebaseAuthManager
     @State private var email = ""
@@ -212,8 +213,9 @@ struct SignInView: View {
         isLoading = true
         defer { isLoading = false }
         do {
-            try await authManager.signIn(email: email, password: password)
+            let outcome = try await authManager.signIn(email: email, password: password)
             errorMessage = nil
+            onAuthenticated?(outcome)
         } catch {
             errorMessage = AppErrorMessage.message(
                 for: error,

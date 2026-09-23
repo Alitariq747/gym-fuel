@@ -17,6 +17,11 @@ import UIKit
 import CryptoKit
 import os.log
 
+struct AuthAccountOutcome: Sendable {
+    let uid: String
+    let isNewUser: Bool
+}
+
 @MainActor
 final class FirebaseAuthManager: ObservableObject {
     private static let logger = Logger(subsystem: "com.gymfuel.app", category: "auth")
@@ -44,28 +49,26 @@ final class FirebaseAuthManager: ObservableObject {
     }
     
 
-    /// Identifiers of the providers backing the current account, e.g. "password",
-    /// "google.com", "apple.com".
-    var signInProviderIDs: Set<String> {
-        Set(user?.providerData.map(\.providerID) ?? [])
-    }
-
-    func signUp(email: String, password: String) async throws {
+    @discardableResult
+    func signUp(email: String, password: String) async throws -> AuthAccountOutcome {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.user = result.user
             FirebaseTelemetryService.logAuthEvent("sign_up_succeeded", method: "email")
+            return AuthAccountOutcome(uid: result.user.uid, isNewUser: true)
         } catch {
             // Convert Firebase NSError into our own error type
             throw mapFirebaseAuthError(error)
         }
     }
     
-    func signIn(email: String, password: String) async throws {
+    @discardableResult
+    func signIn(email: String, password: String) async throws -> AuthAccountOutcome {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.user = result.user
             FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "email")
+            return AuthAccountOutcome(uid: result.user.uid, isNewUser: false)
         } catch {
             throw mapFirebaseAuthError(error)
         }
@@ -95,7 +98,8 @@ final class FirebaseAuthManager: ObservableObject {
         }
     }
 
-    func signInWithGoogle() async throws {
+    @discardableResult
+    func signInWithGoogle() async throws -> AuthAccountOutcome {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             throw AuthManagerError.unknown
         }
@@ -126,6 +130,10 @@ final class FirebaseAuthManager: ObservableObject {
             let authResult = try await Auth.auth().signIn(with: credential)
             self.user = authResult.user
             FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "google")
+            return AuthAccountOutcome(
+                uid: authResult.user.uid,
+                isNewUser: authResult.additionalUserInfo?.isNewUser == true
+            )
         } catch {
             throw mapFirebaseAuthError(error)
         }
@@ -135,7 +143,7 @@ final class FirebaseAuthManager: ObservableObject {
         idTokenString: String,
         rawNonce: String,
         fullName: PersonNameComponents? = nil
-    ) async throws {
+    ) async throws -> AuthAccountOutcome {
         let credential = OAuthProvider.credential(
             providerID: .apple,
             idToken: idTokenString,
@@ -164,6 +172,10 @@ final class FirebaseAuthManager: ObservableObject {
 
             self.user = authResult.user
             FirebaseTelemetryService.logAuthEvent("sign_in_succeeded", method: "apple")
+            return AuthAccountOutcome(
+                uid: authResult.user.uid,
+                isNewUser: authResult.additionalUserInfo?.isNewUser == true
+            )
         } catch {
             throw mapFirebaseAuthError(error)
         }

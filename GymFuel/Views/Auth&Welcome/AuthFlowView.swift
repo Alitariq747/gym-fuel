@@ -8,27 +8,33 @@
 import SwiftUI
 
 enum AuthRoute: Hashable {
-    case signIn
-    case signUp
+    case signInChoices
+    case signInEmail
 }
 
 
 struct AuthFlowView: View {
-    
+    let onGetStarted: () -> Void
     @State private var path: [AuthRoute] = []
     
     var body: some View {
         NavigationStack(path: $path) {
             WelcomeView(
-                           onSignIn: { path.append(.signIn) },
-                           onSignUp: { path.append(.signUp) }
+                onGetStarted: onGetStarted,
+                onSignIn: { path.append(.signInChoices) }
             )
             .navigationDestination(for: AuthRoute.self) { route in
                 switch route {
-                case .signIn:
+                case .signInChoices:
+                    AuthChoicesView(
+                        mode: .signIn,
+                        onBack: { _ = path.popLast() },
+                        onEmail: { path.append(.signInEmail) },
+                        onSignIn: nil,
+                        onAuthenticated: { _ in }
+                    )
+                case .signInEmail:
                     SignInView()
-                case .signUp:
-                    SignUpView()
                 }
             }
 
@@ -37,5 +43,6 @@ struct AuthFlowView: View {
 }
 
 #Preview {
-    AuthFlowView()
+    AuthFlowView(onGetStarted: { })
+        .environmentObject(FirebaseAuthManager())
 }

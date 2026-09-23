@@ -191,8 +191,7 @@ extension UserProfile {
 
 /// In-memory onboarding answers. Never persisted. Every answer the user actively
 /// provides during onboarding is optional because it may not have been given yet.
-/// (`name` and `gender` keep non-optional defaults so the step views can bind to
-/// them directly, matching the previous onboarding data flow.)
+/// A provider name can be added after authentication; email accounts may keep it empty.
 struct OnboardingAnswers {
     var name: String = ""
     var gender: Gender = .preferNotToSay

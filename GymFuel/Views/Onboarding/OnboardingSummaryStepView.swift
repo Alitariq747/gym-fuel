@@ -2,11 +2,11 @@
 //  OnboardingSummaryStepView.swift
 //  GymFuel
 //
-//  Step 4f — the plan screen, the last step before the paywall: where the plan
+//  Step 4f — the plan screen, the last onboarding step: where the plan
 //  heads, roughly when, and one reason for each number. `Onboarding · your
 //  numbers` on the canvas, with the words from design.md's Canvas drift table.
 //  Built from the 2a kit. Nothing here works a number out: it shows what
-//  `plannedProfile` saves, and Start writing saves exactly that.
+//  `plannedProfile` will save after authentication.
 //
 
 import SwiftUI
@@ -37,7 +37,7 @@ struct OnboardingSummaryStepView: View {
         dynamicTypeSize.isAccessibilitySize
     }
 
-    /// What Start writing saves, with any edit made here. Nil only while an answer
+    /// What account creation will save, with any edit made here. Nil only while an answer
     /// is missing, which the flow never allows this far.
     private var planned: UserProfile? {
         var shown = answers
@@ -70,7 +70,7 @@ struct OnboardingSummaryStepView: View {
                 Button {
                     onStartTracking(editedTargets)
                 } label: {
-                    Text("Start writing").frame(maxWidth: .infinity)
+                    Text("Save my progress").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.circa(.primary, height: 52))
 

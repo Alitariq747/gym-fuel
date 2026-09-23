@@ -19,6 +19,11 @@ struct RootView: View {
     @State private var showPostOnboardingPaywall = false
     @State private var isFinishingOnboarding = false
     @State private var pendingOnboarding: OnboardingAnswers?
+    @State private var guestOnboardingActive = false
+    @State private var showSaveProgress = false
+    @State private var guestAuthOutcome: AuthAccountOutcome?
+    @State private var guestCompletionReady = false
+    @State private var guestCompletionNeedsPaywall = false
 
     private var onboardingSaveFailed: Binding<Bool> {
         Binding(
@@ -47,11 +52,12 @@ struct RootView: View {
     private func saveOnboarding(_ answers: OnboardingAnswers) {
         guard let uid = authManager.user?.uid else { return }
 
-        pendingOnboarding = answers
+        let namedAnswers = answersWithAccountName(answers)
+        pendingOnboarding = namedAnswers
         isFinishingOnboarding = true
 
         Task {
-            await profileViewModel.completeOnboarding(for: uid, answers: answers)
+            await profileViewModel.completeOnboarding(for: uid, answers: namedAnswers)
 
             isFinishingOnboarding = false
 
@@ -65,23 +71,113 @@ struct RootView: View {
             }
         }
     }
- 
-        
-    
+
+    private func answersWithAccountName(_ answers: OnboardingAnswers) -> OnboardingAnswers {
+        var named = answers
+        let existingName = profileViewModel.profile?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let providerName = authManager.user?.displayName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        named.name = existingName.isEmpty ? providerName : existingName
+        return named
+    }
+
+    @MainActor
+    private func authenticatedAfterGuestOnboarding(_ outcome: AuthAccountOutcome) {
+        guard guestOnboardingActive, pendingOnboarding != nil else { return }
+        guestAuthOutcome = outcome
+        finishGuestOnboarding()
+    }
+
+    private func finishGuestPresentation() {
+        guard guestCompletionReady else { return }
+        guestCompletionReady = false
+        pendingOnboarding = nil
+        guestAuthOutcome = nil
+        guestOnboardingActive = false
+
+        if guestCompletionNeedsPaywall {
+            guestCompletionNeedsPaywall = false
+            FirebaseTelemetryService.logOnboardingEvent("paywall_presented")
+            showPostOnboardingPaywall = true
+        }
+    }
+
+    @MainActor
+    private func finishGuestOnboarding() {
+        guard !isFinishingOnboarding,
+              let outcome = guestAuthOutcome,
+              authManager.user?.uid == outcome.uid else { return }
+
+        isFinishingOnboarding = true
+        Task {
+            let uid = outcome.uid
+            await profileViewModel.loadProfile(for: uid)
+
+            guard let profile = profileViewModel.profile, profile.id == uid else {
+                isFinishingOnboarding = false
+                return
+            }
+
+            var completedNewOnboarding = false
+            if outcome.isNewUser && !profile.isOnboardingComplete {
+                guard let answers = pendingOnboarding else {
+                    profileViewModel.errorMessage = "Your plan is no longer available. Please start onboarding again."
+                    isFinishingOnboarding = false
+                    return
+                }
+                let namedAnswers = answersWithAccountName(answers)
+                pendingOnboarding = namedAnswers
+                await profileViewModel.completeOnboarding(for: uid, answers: namedAnswers)
+                guard profileViewModel.profile?.isOnboardingComplete == true else {
+                    isFinishingOnboarding = false
+                    return
+                }
+                completedNewOnboarding = true
+            }
+
+            await subscriptionViewModel.syncUser(userId: uid)
+            await savedMealsViewModel.loadSavedMeals(userId: uid)
+            await importHealthWeight(for: uid)
+
+            isFinishingOnboarding = false
+            guestCompletionNeedsPaywall = completedNewOnboarding && !subscriptionViewModel.hasProAccess
+            guestCompletionReady = true
+            let wasPresented = showSaveProgress
+            showSaveProgress = false
+            if !wasPresented { finishGuestPresentation() }
+        }
+    }
+
     var body: some View {
         Group {
-                if authManager.user == nil {
-                    AuthFlowView()
+                if guestOnboardingActive {
+                    OnboardingFlowView(
+                        onExit: authManager.user == nil ? {
+                            pendingOnboarding = nil
+                            guestOnboardingActive = false
+                        } : nil
+                    ) { answers in
+                        pendingOnboarding = answers
+                        showSaveProgress = true
+                    }
+                    .fullScreenCover(isPresented: $showSaveProgress, onDismiss: finishGuestPresentation) {
+                        PostOnboardingAuthView(
+                            isFinishing: isFinishingOnboarding,
+                            accountIsNew: guestAuthOutcome?.isNewUser,
+                            errorMessage: profileViewModel.errorMessage,
+                            onBack: { showSaveProgress = false },
+                            onRetry: finishGuestOnboarding,
+                            onAuthenticated: authenticatedAfterGuestOnboarding
+                        )
+                        .interactiveDismissDisabled(isFinishingOnboarding)
+                    }
+                } else if authManager.user == nil {
+                    AuthFlowView(onGetStarted: { guestOnboardingActive = true })
                 }  else if let profile = profileViewModel.profile {
                     if profile.isOnboardingComplete {
                         MainTabView(profile: profile)
                             .environmentObject(savedMealsViewModel)
                     } else {
-                        OnboardingFlowView(
-                            prefilledName: authManager.user?.displayName ?? "",
-                            showsNameStep: authManager.signInProviderIDs.contains("password")
-                                && (authManager.user?.displayName ?? "").isEmpty
-                        ) { answers in
+                        OnboardingFlowView { answers in
                             saveOnboarding(answers)
                         }
                         .overlay {
@@ -115,6 +211,7 @@ struct RootView: View {
         }
         .task(id: authManager.user?.uid) {
             if let user = authManager.user {
+                if guestOnboardingActive { return }
                 await subscriptionViewModel.syncUser(userId: user.uid)
                 await profileViewModel.loadProfile(for: user.uid)
                 await savedMealsViewModel.loadSavedMeals(userId: user.uid)

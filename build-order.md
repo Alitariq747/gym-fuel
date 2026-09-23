@@ -703,12 +703,32 @@ trip correctly, and per-completed-meal cost and observed errors are recorded.
   30 USDA-pinned ingredients, the cases, and a results file that regenerates.
 - **Most assumptions carry no number** — 19 of 69 did. A prompt demanding numbers in
   every assumption was tried (`meal-v14`) and rejected as worse to read; only its
-  fat-separation rule was kept, as `meal-v15`.
+  fat-separation rule was kept, as `meal-v15`. **Superseded by the model change
+  below**: `gpt-5.6-luna` returns 38 of 55 with a number, unprompted.
 - **Per-meal quality telemetry was built and reverted.** Cost is already recorded by
   the existing `logAIMetrics`; breakdown-quality signals live in the evaluation
   harness instead of in the request path.
 - **The client still sends `goal`** and still maps `interpretation/invalid-goal`,
   which the server can no longer return, after scoring was removed on 22 September.
+
+**Both models changed on 23 September, after closing.** Text `gpt-5.4-mini` and
+vision `gpt-5.4` both became `gpt-5.6-luna`: 72% cheaper, mean absolute error 14%
+on the 16 cases against mini's 12–16% over four runs, and markedly more readable
+assumptions. Vision was compared by eye on the same photos. **`.env` is
+`.gcloudignore`d, so Cloud Run needs both variables set there** —
+`imageRecognizer.js` still defaults to `gpt-5.4`.
+
+The run also checked per-node density against USDA for the first time — flour 364
+against 364, bacon 540 against 541, and 61 of 64 nodes agreeing with their own
+macros. **So `meal-contract.md` §4's `nutrition × scale` rests on measured ground,
+and the remaining error is portion assumptions** — what the editor already exposes.
+A quantity edit must still never call the model: the same input moved one dish 44
+points across three runs, so re-asking would add noise to a correction.
+
+**Three references were corrected the same day** — aloo paratha flour and filling,
+pizza slice weight, chowmein oil. `it-margherita-pizza` is overcorrected at 250 g
+and now reads −26%; its pinned USDA food is a *frozen* pizza, which is the deeper
+problem. Reports generated before this are not comparable to later ones.
 
 ---
 

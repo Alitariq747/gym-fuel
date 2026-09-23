@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct OnboardingGenderStepView: View {
-    let name: String
     @Binding var gender: Gender
     let onNext: () -> Void
 
@@ -70,5 +69,5 @@ struct OnboardingGenderStepView: View {
 }
 
 #Preview {
-    OnboardingGenderStepView(name: "Ali", gender: .constant(.female), onNext: { print("")})
+    OnboardingGenderStepView(gender: .constant(.female), onNext: { print("")})
 }

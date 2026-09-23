@@ -114,9 +114,16 @@ struct ProfileEditorView: View {
                     Circle()
                         .fill(Color.circaSunken)
                         .frame(width: 52, height: 52)
-                    Text(initials)
-                        .font(.circaMonoValue)
-                        .foregroundStyle(Color.circaInk)
+                    if initials.isEmpty {
+                        Image(systemName: "person.fill")
+                            .font(.circaRow)
+                            .foregroundStyle(Color.circaInk2)
+                            .accessibilityHidden(true)
+                    } else {
+                        Text(initials)
+                            .font(.circaMonoValue)
+                            .foregroundStyle(Color.circaInk)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -275,7 +282,7 @@ struct ProfileEditorView: View {
 
     private var initials: String {
         let trimmed = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return "GF" }
+        guard !trimmed.isEmpty else { return "" }
         let parts = trimmed.split(separator: " ")
         if let first = parts.first, let last = parts.last, first != last {
             return "\(first.prefix(1))\(last.prefix(1))".uppercased()
