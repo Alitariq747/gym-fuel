@@ -62,6 +62,29 @@ enum MealCopy {
         return count > 1 ? "\(count) assumptions · \(lead)" : lead
     }
 
+    /// What a failed entry kept. design.md rule 6 — the card leads with what
+    /// survived, which is what makes **Try again** cost the user nothing.
+    enum Preserved {
+        case words
+        case photo
+    }
+
+    /// "You're offline. Reconnect and try again. Your words are saved — nothing
+    /// to retype." The reason comes from the attempt; the clause is the rule.
+    static func failure(reason: String?, preserved: Preserved) -> String {
+        let trimmed = reason?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        var lead = trimmed.isEmpty ? "We couldn't reach Circa." : trimmed
+
+        if let last = lead.last, !".!?".contains(last) {
+            lead += "."
+        }
+
+        switch preserved {
+        case .words: return "\(lead) Your words are saved — nothing to retype."
+        case .photo: return "\(lead) Your photo is saved — nothing to re-shoot."
+        }
+    }
+
     /// What to say about where a number came from, or `nil` when there is nothing
     /// worth saying.
     ///

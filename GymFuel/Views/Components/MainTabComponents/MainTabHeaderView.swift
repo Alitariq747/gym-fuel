@@ -1,22 +1,29 @@
 import SwiftUI
 
+/// The Day screen's header, from the `Day` artboard: a stacked title and mono
+/// date that together open the date picker, and the menu.
+///
+/// There are no date chevrons. Days change by swiping the journal
+/// (`MainTabView.handleDaySwipe`), so the only thing this header navigates to is
+/// the picker.
 struct MainTabHeaderView: View {
     let selectedDate: Date
-    let canNavigateToNextDate: Bool
     let navigationDirection: DayNavigationDirection
-    let onPreviousDateTap: () -> Void
-    let onNextDateTap: () -> Void
     let onDateTap: () -> Void
     let onMenuTap: () -> Void
 
-    private var chipBackground: Color {
-        Color.circaCard
+    private var title: String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(selectedDate) { return "Today" }
+        if calendar.isDateInYesterday(selectedDate) { return "Yesterday" }
+        return shortDate
     }
 
-    private var chipStroke: Color {
-        Color.circaCardBorder
+    private var shortDate: String {
+        selectedDate.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
     }
 
+    /// Directional, so a swiped day enters from the side it was swiped from.
     private var dateChangeTransition: AnyTransition {
         switch navigationDirection {
         case .previous:
@@ -33,98 +40,69 @@ struct MainTabHeaderView: View {
     }
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            headerLayout(compact: false)
-                .frame(minWidth: 330)
-
-            headerLayout(compact: true)
-        }
-    }
-
-    private func headerLayout(compact: Bool) -> some View {
-        HStack(spacing: compact ? 6 : 8) {
-            Image("LiftEatsWelcomeIcon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: compact ? 30 : 34, height: compact ? 30 : 34)
-                .frame(width: compact ? 34 : 76, alignment: .leading)
-
-            Spacer(minLength: compact ? 2 : 8)
-
-            HStack(spacing: compact ? 4 : 8) {
-                dateChevronButton(
-                    systemName: "chevron.left",
-                    isEnabled: true,
-                    size: Circa.minHitTarget,
-                    action: onPreviousDateTap
-                )
-
-                Button(action: onDateTap) {
-                    ZStack {
-                        Text(selectedDate.formatted(.dateTime.month(.abbreviated).day()))
-                            .id(selectedDate)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Color.circaInk)
-                            .transition(dateChangeTransition)
-                    }
-                    .frame(minWidth: compact ? 50 : 58, minHeight: Circa.minHitTarget)
-                    .padding(.horizontal, compact ? 8 : 12)
-                    .background(chipBackground, in: Capsule())
-                    .overlay(Capsule().stroke(chipStroke, lineWidth: 1))
+        HStack(alignment: .top, spacing: 12) {
+            Button(action: onDateTap) {
+                ZStack(alignment: .topLeading) {
+                    dateBlock
+                        .id(selectedDate)
+                        .transition(dateChangeTransition)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Choose date and Day or Week view")
-                .animation(.easeInOut(duration: 0.24), value: selectedDate)
-
-                dateChevronButton(
-                    systemName: "chevron.right",
-                    isEnabled: canNavigateToNextDate,
-                    size: Circa.minHitTarget,
-                    action: onNextDateTap
-                )
+                .frame(minHeight: Circa.minHitTarget, alignment: .topLeading)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(title), \(shortDate)")
+            .accessibilityHint("Choose a date")
+            .animation(.easeInOut(duration: 0.24), value: selectedDate)
 
-            Spacer(minLength: compact ? 2 : 8)
+            Spacer(minLength: 8)
 
             Button(action: onMenuTap) {
                 Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 19, weight: .medium))
                     .foregroundStyle(Color.circaInk)
-                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                    .background(chipBackground, in: Circle())
-                    .overlay(Circle().stroke(chipStroke, lineWidth: 1))
+                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget, alignment: .trailing)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open menu")
-            .frame(width: compact ? 44 : 76, alignment: .trailing)
         }
     }
 
-    private func dateChevronButton(
-        systemName: String,
-        isEnabled: Bool,
-        size: CGFloat,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(isEnabled ? Color.circaInk : Color.circaInk3)
-                .frame(width: size, height: size)
+    private var dateBlock: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
+                Image(systemName: "chevron.down")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Color.circaInk)
+            }
+            Text(shortDate.uppercased())
+                .font(.circaMono)
+                .tracking(Circa.sectionLabelTracking)
+                .foregroundStyle(Color.circaInk3)
         }
-        .buttonStyle(.plain)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
 #Preview {
-    MainTabHeaderView(
-        selectedDate: .now,
-        canNavigateToNextDate: false,
-        navigationDirection: .previous,
-        onPreviousDateTap: {},
-        onNextDateTap: {},
-        onDateTap: {},
-        onMenuTap: {}
-    )
-    .padding()
+    VStack(spacing: 24) {
+        MainTabHeaderView(
+            selectedDate: .now,
+            navigationDirection: .previous,
+            onDateTap: {},
+            onMenuTap: {}
+        )
+        MainTabHeaderView(
+            selectedDate: Calendar.current.date(byAdding: .day, value: -3, to: .now) ?? .now,
+            navigationDirection: .previous,
+            onDateTap: {},
+            onMenuTap: {}
+        )
+    }
+    .padding(Circa.Space.screenMargin)
+    .circaPaper()
 }

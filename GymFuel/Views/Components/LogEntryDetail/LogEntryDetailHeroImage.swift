@@ -4,23 +4,16 @@ struct DetailHeroImage: View {
     let entry: LogEntry
 
     var body: some View {
-        HStack {
-            Spacer(minLength: 0)
-
+        GeometryReader { geometry in
             MealImageThumbnailView(
                 entryId: entry.id,
                 storagePath: entry.image?.storagePath,
-                width: 250,
-                height: 190
+                width: geometry.size.width,
+                height: 168
             )
-            .background(Color.circaMediaWell, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.circaCardBorder, lineWidth: 6)
-            }
-
-            Spacer(minLength: 0)
         }
-        .padding(.vertical, 2)
+        .frame(height: 168)
+        .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous))
+        .accessibilityLabel("Meal photo")
     }
 }

@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    :root{
+      --paper-top:#FBFAF6; --paper-bot:#F4F1E8;
+      --ink:#1A1917; --ink-2:#56534C; --ink-3:#6E6B64;
+      --rule:#E3DFD3; --accent:#8F6420; --accent-lg:#A8762A;
+      --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+    }
+    body{margin:0;font-family:var(--sans);color:var(--ink);
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:880px; height:820px; box-sizing:border-box; padding:36px 40px; display:flex; flex-direction:column; gap:26px;">
+
+  <div style="display:flex; align-items:baseline; justify-content:space-between;">
+    <div style="font-size:26px; font-weight:600; letter-spacing:-0.4px;">Circa — foundations</div>
+    <div style="font-family:var(--mono); font-size:11px; letter-spacing:1.2px; color:#6E6B64; text-transform:uppercase;">round 1 · proposed</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:34px;">
+
+    <!-- LEFT COLUMN -->
+    <div style="display:flex; flex-direction:column; gap:26px;">
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Paper · light</div>
+        <div style="display:flex; gap:10px;">
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:44px; border-radius:8px; background:#FBFAF6; border:1px solid #E3DFD3;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#6E6B64;">FBFAF6</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:44px; border-radius:8px; background:#F4F1E8; border:1px solid #E3DFD3;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#6E6B64;">F4F1E8</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:44px; border-radius:8px; background:#1A1917;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#6E6B64;">1A1917 · 16.8:1</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:44px; border-radius:8px; background:#6E6B64;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#6E6B64;">6E6B64 · 5.1:1</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:44px; border-radius:8px; background:#8F6420;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#6E6B64;">8F6420 · 5.0:1</div>
+          </div>
+        </div>
+        <div style="font-size:12.5px; color:#56534C; line-height:1.5;">The first two are grounds; the three ink values all clear WCAG AA on paper — 16.8:1, 5.1:1 and 5.0:1. The lighter ochre <span style="font-family:var(--mono);">A8762A</span> is 3.8:1 — large numerals only, never body text.</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; background:#171612; border-radius:12px; padding:18px;">
+        <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; color:#8B8679; text-transform:uppercase;">Paper · dark</div>
+        <div style="display:flex; gap:10px;">
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:40px; border-radius:8px; background:#171612; border:1px solid #2D2A23;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#8B8679;">171612</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:40px; border-radius:8px; background:#F2F0E8;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#8B8679;">F2F0E8 · 15.9:1</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:40px; border-radius:8px; background:#8B8679;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#8B8679;">8B8679 · 5.0:1</div>
+          </div>
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:6px;">
+            <div style="height:40px; border-radius:8px; background:#D9A94E;"></div>
+            <div style="font-family:var(--mono); font-size:10px; color:#8B8679;">D9A94E · 8.4:1</div>
+          </div>
+        </div>
+        <div style="font-size:12.5px; color:#ACA79B; line-height:1.5;">Warm near-black, never <span style="font-family:var(--mono);">000000</span> — pure black loses the paper character entirely.</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Certainty is a texture</div>
+        <div style="display:flex; gap:28px; align-items:flex-end;">
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="font-family:var(--mono); font-size:23px; font-weight:600; border-bottom:1.5px dotted #9A9488; padding-bottom:3px; width:fit-content;">780</div>
+            <div style="font-family:var(--mono); font-size:10.5px; color:#6E6B64;">estimated</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:7px;">
+            <div style="font-family:var(--mono); font-size:23px; font-weight:600; padding-bottom:3px;">180</div>
+            <div style="font-family:var(--mono); font-size:10.5px; color:#6E6B64;">known · saved or edited</div>
+          </div>
+        </div>
+        <div style="font-size:12.5px; color:#56534C; line-height:1.5;">The dotted rule is the name of the app rendered as a mark. It carries <span style="font-family:var(--mono);">confidence</span> — already on every entry — onto every screen without a word of copy.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex; flex-direction:column; gap:26px;">
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Two faces, two jobs</div>
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <div style="font-size:22px; font-weight:500; letter-spacing:-0.3px; line-height:1.25;">two roti, chicken karahi, half a katori rice</div>
+          <div style="font-family:var(--mono); font-size:11px; color:#6E6B64; letter-spacing:0.2px;">13:45 · 42P 78C 32F · assumed 2 tbsp ghee</div>
+          <div style="height:1px; background:#E3DFD3; margin:4px 0;"></div>
+          <div style="font-size:12.5px; color:#56534C; line-height:1.55;"><strong style="font-weight:600;">SF Pro</strong> carries what a person wrote. <strong style="font-weight:600;">SF Mono</strong> carries what the machine added — times, macros, assumptions, section labels, scan quota.</div>
+          <div style="font-size:12.5px; color:#56534C; line-height:1.55;">Both are system faces reached through <span style="font-family:var(--mono); font-size:11.5px;">design: .monospaced</span>. Nothing to bundle, Dynamic Type intact, and SF Arabic covers the Step 9 localisation — which most geometric sans faces do not.</div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Four tiers, no colour needed</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; gap:10px;">
+            <div style="flex-grow:1; height:46px; border-radius:13px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600;">Looks right</div>
+            <div style="width:104px; height:46px; border-radius:13px; background:#FFFFFF; border:1px solid #E3DFD3; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:500;">Edit</div>
+          </div>
+          <div style="height:46px; border-radius:13px; border:1px solid #DDD8CA; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:500; color:#1A1917;">Confirm all 3</div>
+          <div style="display:flex; align-items:center; gap:8px; margin-left:-10px;">
+            <div style="min-height:44px; padding:0 10px; display:flex; align-items:center; font-size:15px; font-weight:500; color:#8F6420;">See the week</div>
+            <div style="min-height:44px; padding:0 10px; display:flex; align-items:center; font-size:15px; font-weight:500; color:#6E6B64;">Not now</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:9px; border-top:1px solid #E3DFD3; padding-top:16px;">
+        <div style="font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Held to</div>
+        <div style="font-size:12.5px; color:#56534C; line-height:1.7;">
+          44 pt minimum on every hit target · Dynamic Type to AX3 without truncation · a designed dark twin, not an inversion · full RTL mirror for Arabic · each timeline entry one VoiceOver element
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

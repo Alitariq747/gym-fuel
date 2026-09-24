@@ -46,6 +46,7 @@ struct MainTabView: View {
     @State var showPhotoLibraryPicker = false
     @State var selectedPhotoPickerItem: PhotosPickerItem?
     @State private var dayNavigationDirection: DayNavigationDirection = .previous
+    @Environment(\.layoutDirection) private var layoutDirection
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
 
     private var preferredColorScheme: ColorScheme? {
@@ -63,27 +64,18 @@ struct MainTabView: View {
     private var consumedMacros: Macros {
         timelineViewModel.consumedMacros
     }
+
+    private let loggingWindow = LoggingWindow()
+
     private var canLogForSelectedDate: Bool {
-        isDateWithinLoggingWindow(timelineViewModel.selectedDate)
+        loggingWindow.canLog(on: timelineViewModel.selectedDate)
     }
 
     private var canNavigateToNextDate: Bool {
         guard let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: timelineViewModel.selectedDate) else {
             return false
         }
-        return !isFutureDate(nextDay)
-    }
-
-    private func isFutureDate(_ date: Date, calendar: Calendar = .current, now: Date = .now) -> Bool {
-        calendar.startOfDay(for: date) > calendar.startOfDay(for: now)
-    }
-
-    private func isDateWithinLoggingWindow(_ date: Date, calendar: Calendar = .current, now: Date = .now) -> Bool {
-        let selectedDay = calendar.startOfDay(for: date)
-        let today = calendar.startOfDay(for: now)
-        guard selectedDay <= today else { return false }
-        guard let oldestAllowedDay = calendar.date(byAdding: .day, value: -7, to: today) else { return false }
-        return selectedDay >= oldestAllowedDay
+        return loggingWindow.canSelect(nextDay)
     }
 
     private func presentFutureLoggingToast() {
@@ -122,14 +114,7 @@ struct MainTabView: View {
             VStack(spacing: 20) {
                 MainTabHeaderView(
                     selectedDate: timelineViewModel.selectedDate,
-                    canNavigateToNextDate: canNavigateToNextDate,
                     navigationDirection: dayNavigationDirection,
-                    onPreviousDateTap: {
-                        navigateToPreviousDate()
-                    },
-                    onNextDateTap: {
-                        navigateToNextDate()
-                    },
                     onDateTap: {
                         showDatePicker = true
                     },
@@ -137,9 +122,6 @@ struct MainTabView: View {
                         showMenu = true
                     }
                 )
-                DayWeekScaleControl(selected: .day) { scale in
-                    if scale == .week { openWeek() }
-                }
                 ZStack {
                     dayContent
                         .id(timelineViewModel.selectedDate)
@@ -147,6 +129,15 @@ struct MainTabView: View {
                 }
                 .clipped()
                 .animation(dayChangeAnimation, value: timelineViewModel.selectedDate)
+                .contentShape(Rectangle())
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 24).onEnded(handleDaySwipe)
+                )
+                // The swipe replaced the date chevrons, and a drag is unreachable
+                // under VoiceOver and Switch Control.
+                .accessibilityElement(children: .contain)
+                .accessibilityAction(named: "Previous day") { navigateToPreviousDate() }
+                .accessibilityAction(named: "Next day") { navigateToNextDate() }
             }
             .padding(.horizontal)
             .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -156,6 +147,7 @@ struct MainTabView: View {
                         .padding(.bottom, -10)
                 }
             }
+            .circaPaper()
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showProfile) {
                 ProfileView()
@@ -169,7 +161,7 @@ struct MainTabView: View {
             .navigationDestination(item: $selectedEntry) { entry in
             LogEntryDetailSheet(
                 entry: entry,
-                canModify: isDateWithinLoggingWindow(entry.loggedAt),
+                canModify: loggingWindow.canLog(on: entry.loggedAt),
                 opensEditor: opensEditorForEntryID == entry.id,
                 isPerformingAction: logEntryDetailViewModel.isSaving,
                 aiErrorMessage: logEntryDetailViewModel.aiErrorMessage,
@@ -422,6 +414,21 @@ struct MainTabView: View {
         Task { await timelineViewModel.setSelectedDate(date, userId: profile.id) }
     }
 
+    /// Horizontal swipes change the day. Vertical movement belongs to the
+    /// timeline's scroll view, so a drag only counts when it is clearly sideways.
+    private func handleDaySwipe(_ value: DragGesture.Value) {
+        let horizontal = value.translation.width
+        let vertical = value.translation.height
+        guard abs(horizontal) > 48, abs(horizontal) > abs(vertical) * 1.5 else { return }
+
+        let movesForward = layoutDirection == .rightToLeft ? horizontal > 0 : horizontal < 0
+        if movesForward {
+            navigateToNextDate()
+        } else {
+            navigateToPreviousDate()
+        }
+    }
+
     private func navigateToNextDate() {
         guard canNavigateToNextDate else {
             presentFutureLoggingToast()
@@ -439,13 +446,10 @@ struct MainTabView: View {
             if let targetMacros {
                 DailyMacroDetailSheet(
                     targetMacros: targetMacros,
-                    consumedMacros: consumedMacros
+                    consumedMacros: consumedMacros,
+                    analysingCount: timelineViewModel.analysingCount
                 )
             }
-
-            Text("Logged meals")
-                .font(.title3.weight(.bold))
-                .frame(maxWidth: .infinity, alignment: .leading)
 
             MainTabTimelineContentView(
                 viewModel: timelineViewModel,
@@ -456,18 +460,11 @@ struct MainTabView: View {
                     opensEditorForEntryID = nil
                     selectedEntry = entry
                 },
-                onEditEntryAmounts: { entry in
-                    opensEditorForEntryID = entry.id
-                    selectedEntry = entry
-                },
                 onRetryEntry: { entry in
                     retryFailedEntry(entry)
                 },
                 onDeleteFailedEntry: { entry in
                     deleteFailedEntry(entry)
-                },
-                onSuccessRevealCompleted: { entryId in
-                    timelineViewModel.markSuccessRevealed(for: entryId)
                 },
                 bottomContentInset: canLogForSelectedDate ? 118 : 24,
                 canModifyEntries: canLogForSelectedDate

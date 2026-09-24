@@ -712,10 +712,11 @@ trip correctly, and per-completed-meal cost and observed errors are recorded.
   which the server can no longer return, after scoring was removed on 22 September.
 
 **Both models changed on 23 September, after closing.** Text `gpt-5.4-mini` and
-vision `gpt-5.4` both became `gpt-5.6-luna`: 72% cheaper, mean absolute error 14%
-on the 16 cases against mini's 12–16% over four runs, and markedly more readable
-assumptions. Vision was compared by eye on the same photos. **`.env` is
-`.gcloudignore`d, so Cloud Run needs both variables set there** —
+vision `gpt-5.4` both became `gpt-5.6-luna`: 72% cheaper, mean absolute error 15%
+on the 16 cases against mini's 12–16%, worst case 29% against mini's 45%, and
+markedly more readable assumptions. Vision was compared by eye on the same
+photos. **`.env` is `.gcloudignore`d, so Cloud Run needs both variables set
+there** —
 `imageRecognizer.js` still defaults to `gpt-5.4`.
 
 The run also checked per-node density against USDA for the first time — flour 364
@@ -725,10 +726,11 @@ and the remaining error is portion assumptions** — what the editor already exp
 A quantity edit must still never call the model: the same input moved one dish 44
 points across three runs, so re-asking would add noise to a correction.
 
-**Three references were corrected the same day** — aloo paratha flour and filling,
-pizza slice weight, chowmein oil. `it-margherita-pizza` is overcorrected at 250 g
-and now reads −26%; its pinned USDA food is a *frozen* pizza, which is the deeper
-problem. Reports generated before this are not comparable to later ones.
+**Two references were corrected the same day** — aloo paratha flour and filling,
+chowmein oil. A pizza slice-weight change was tried and reverted: 80 g a slice is
+right for a 12-inch pizza, and the real weakness in `it-margherita-pizza` is that
+its pinned USDA food is a *frozen* pizza. `results.md` regenerates; reports from
+before these corrections are not comparable and were deleted.
 
 ---
 
@@ -793,6 +795,49 @@ Keep the parent Step 7 box unticked until every part is done.
   then delete `Color.liftEatsCoral` and the four `Fuel*` colorsets once unused.
   Limit any touches to completed Step 5–6 screens to presentation. **Done when**
   no screen renders from the old palette and no view code contains emoji.
+
+> **7m–7t were added on 23 September**, after a sweep of these screens produced
+> colour-only changes. Parts 7a–7l never name the Day screen, the Week screen,
+> the entry detail sheet or the composer, because the ordering above assumed
+> Steps 3, 5 and 6 would each ship their own surfaces in the new language. They
+> did not. `Color.liftEatsCoral` and the `Fuel*` colorsets are gone and no view
+> code carries emoji, so 7l's own done-when holds — what is left on these four
+> surfaces is **typography and shape**. The kit's `CircaMacroBars`, `CircaDock`,
+> `CircaEntryRow` and `CircaEstimate` were written for the Day screen and the
+> Day screen uses none of them, so the certainty rule (`design.md` rule 1) does
+> not appear there at all. These parts are mostly adoption and deletion.
+>
+> Build them from the canvas artboards, corrected by `design.md`'s *Canvas
+> drift* table. `page-2` of the canvas is the round that lost: the live Entry
+> artboard is `DetailB`, not `DetailA` or `DetailC`.
+
+- [x] **7m · Day summary and dock.** `DailyMacroDetailSheet` takes `CircaCard` and
+  `CircaMacroBars`; `LogActionDock` takes `CircaDock`. **Done when** the summary
+  card and dock match the `Day` artboard and hold at AX3 without truncating.
+- [x] **7n · The journal row, settled.** `TimelineEntryRow` takes `CircaEntryRow`
+  and `CircaEstimate`; rows sit on paper rather than in cards; the metrics view
+  folds into the mono meta line. **Done when** a logged meal shows a dotted
+  calorie number and the row goes vertical at AX3.
+- [x] **7o · The journal row, analysing and failed.** Built from
+  `Analysing · text + photo` and `Failed · retry`. **Done when** a pending row
+  shows the rule alone and nothing jumps as the estimate lands, and a failed row
+  keeps the sentence and the photo.
+- [x] **7p · The Day screen frame.** Paper, the `Today ⌄` header, the empty day,
+  and a horizontal swipe replacing the date chevrons. **Done when** the Day
+  screen matches the `Day` and `Empty day` artboards and swiping still respects
+  the today−7d window.
+- [x] **7q · The text entry sheet.** Built from `Composer`. **Done when** no
+  point size is hardcoded and the sheet scales to AX3.
+- [x] **7r · Entry detail, the top half.** Built from `Entry`: hero, the raw
+  sentence as title, the dotted total and macros. **Done when** the total carries
+  the certainty rule and the title scales.
+- [x] **7s · Entry detail, the analysis cards.** Remove the confidence ring and
+  the numeric confidence per `design.md`; give the assumptions the room.
+  **Done when** no screen presents model confidence as an accuracy figure.
+- [x] **7t · The Week screen.** `StatsView` and its cards take `CircaCard` and
+  the Circa type scale; the streak tile goes, its data stays for Step 12.
+  **Done when** the Week screen shows the week's food and the weight card, with
+  no check-in, no burn number and no streak.
 
 **Done when** no screen in the app still renders from the old palette, a walk
 from launch to paywall to settings looks like one app in both themes, and the final

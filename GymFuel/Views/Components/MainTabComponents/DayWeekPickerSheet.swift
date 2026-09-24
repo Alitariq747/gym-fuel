@@ -7,30 +7,6 @@ enum DayWeekScale: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
-struct DayWeekScaleControl: View {
-    let selected: DayWeekScale
-    let onSelect: (DayWeekScale) -> Void
-
-    var body: some View {
-        HStack(spacing: 4) {
-            ForEach(DayWeekScale.allCases) { scale in
-                Button(scale.rawValue) { onSelect(scale) }
-                    .font(.circaRow.weight(.semibold))
-                    .foregroundStyle(selected == scale ? Color.circaInk : Color.circaInk3)
-                    .frame(maxWidth: .infinity, minHeight: Circa.minHitTarget)
-                    .background(
-                        selected == scale ? Color.circaCard : Color.clear,
-                        in: RoundedRectangle(cornerRadius: Circa.Radius.button)
-                    )
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(selected == scale ? .isSelected : [])
-            }
-        }
-        .padding(4)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
-    }
-}
-
 struct DayWeekPickerSheet: View {
     let onApply: (Date, DayWeekScale) -> Void
     @Environment(\.dismiss) private var dismiss

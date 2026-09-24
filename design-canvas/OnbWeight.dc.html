@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:56px; flex-shrink:0;"></div>
+
+  <!-- onboarding chrome: back + progress, on every step -->
+  <div style="padding:0 8px; height:44px; flex-shrink:0; display:flex; align-items:center; gap:8px;">
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <div style="flex-grow:1; height:3px; border-radius:2px; background:#E3DFD3; overflow:hidden; margin-right:16px;">
+      <div style="width:45%; height:3px; background:#1A1917;"></div>
+    </div>
+  </div>
+
+  <div style="padding:18px 20px 0 20px; display:flex; flex-direction:column; gap:22px; flex-grow:1;">
+
+    <div style="display:flex; flex-direction:column; gap:9px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">About you · 5 of 11</div>
+      <div style="font-size:29px; font-weight:600; letter-spacing:-0.6px; line-height:1.2;">What do you weigh?</div>
+      <div style="font-size:15.5px; color:#56534C; line-height:1.5; text-wrap:pretty;">Your protein and fat targets are set per kilo of bodyweight, so this one does real work. You can change it any time.</div>
+    </div>
+
+    <div style="background:#EDE9DD; border-radius:14px; padding:3px; display:flex; gap:3px;">
+      <div style="flex-grow:1; min-height:44px; border-radius:11px; background:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:15.5px; font-weight:600; box-shadow:0 1px 2px rgba(26,25,23,0.06);">Kilograms</div>
+      <div style="flex-grow:1; min-height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15.5px; font-weight:500; color:#56534C;">Pounds</div>
+    </div>
+
+    <div style="display:flex; align-items:baseline; justify-content:center; gap:8px; padding-top:4px;">
+      <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:58px; font-weight:600; letter-spacing:-1.8px; line-height:1;">85</span>
+      <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:19px; color:#6E6B64;">kg</span>
+    </div>
+
+    <!-- wheel: the selected row is the only solid one -->
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:18px; padding:10px 0; display:flex; flex-direction:column; align-items:center;">
+      <div style="height:38px; display:flex; align-items:center; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:17px; color:#D2CCBC;">83</div>
+      <div style="height:38px; display:flex; align-items:center; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:19px; color:#A8A296;">84</div>
+      <div style="width:100%; height:46px; display:flex; align-items:center; justify-content:center; background:#F4F1E6; border-top:1px solid #E9E5D9; border-bottom:1px solid #E9E5D9;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:22px; font-weight:600; color:#1A1917;">85</span>
+      </div>
+      <div style="height:38px; display:flex; align-items:center; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:19px; color:#A8A296;">86</div>
+      <div style="height:38px; display:flex; align-items:center; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:17px; color:#D2CCBC;">87</div>
+    </div>
+
+    <div style="flex-grow:1;"></div>
+
+    <div style="padding-bottom:16px;">
+      <div style="height:52px; border-radius:14px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600;">Continue</div>
+    </div>
+  </div>
+
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

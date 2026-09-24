@@ -7,24 +7,50 @@ private struct PreviewSavedMealService: SavedMealService {
     func deleteMeal(userId: String, mealId: String) async throws { }
 }
 
-#Preview {
-    NavigationStack {
-        LogEntryDetailSheet(
-            entry: LogEntry(
-                userId: "preview",
-                title: "Chicken Bowl",
-                rawInput: "Chicken bowl with some salad and fruits with one cup of boiled rice",
-                feedback: LogEntryFeedback(
-                    explanation: "High protein and moderate calories fit well into the day.",
-                    assumptions: [
-                        "Rice was treated as roughly 1 cooked cup.",
-                        "Salad dressing was assumed to be light and not separately logged.",
-                    ],
-                    confidence: 0.72,
-                    macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20)
+private struct EntryDetailPreview: View {
+    var source: LogEntrySource = .text
+
+    var body: some View {
+        NavigationStack {
+            LogEntryDetailSheet(
+                entry: LogEntry(
+                    userId: "preview",
+                    source: source,
+                    title: "Chicken Bowl",
+                    rawInput: "Chicken bowl with some salad and fruits with one cup of boiled rice",
+                    feedback: LogEntryFeedback(
+                        explanation: "High protein and moderate calories fit well into the day.",
+                        assumptions: [
+                            "Rice was treated as roughly 1 cooked cup.",
+                            "Salad dressing was assumed to be light and not separately logged.",
+                            "The chicken was taken as grilled, with 1 tbsp of oil.",
+                        ],
+                        confidence: 0.72,
+                        macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20)
+                    )
                 )
             )
-        )
-        .environmentObject(SavedMealsViewModel(service: PreviewSavedMealService()))
+            .environmentObject(SavedMealsViewModel(service: PreviewSavedMealService()))
+        }
     }
+}
+
+#Preview("Long text") {
+    EntryDetailPreview()
+}
+
+#Preview("Photo placeholder") {
+    EntryDetailPreview(source: .image)
+}
+
+#Preview("Dark") {
+    EntryDetailPreview().preferredColorScheme(.dark)
+}
+
+#Preview("AX3 · narrow", traits: .fixedLayout(width: 320, height: 800)) {
+    EntryDetailPreview().environment(\.dynamicTypeSize, .accessibility3)
+}
+
+#Preview("RTL") {
+    EntryDetailPreview().environment(\.layoutDirection, .rightToLeft)
 }

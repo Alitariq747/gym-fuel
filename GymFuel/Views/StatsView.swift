@@ -43,11 +43,11 @@ struct StatsView: View {
     private var snapshot: StatsSnapshot {
         viewModel.snapshot
     }
+    private var weekTitle: String {
+        WeekCopy.title(weekStart: viewModel.selectedWeekStart)
+    }
     private var weekLabel: String {
-        guard let weekEnd = Calendar.current.date(byAdding: .day, value: 6, to: viewModel.selectedWeekStart) else {
-            return viewModel.selectedWeekStart.formatted(.dateTime.month(.abbreviated).day())
-        }
-        return "\(viewModel.selectedWeekStart.formatted(.dateTime.month(.abbreviated).day())) - \(weekEnd.formatted(.dateTime.month(.abbreviated).day()))"
+        WeekCopy.range(weekStart: viewModel.selectedWeekStart)
     }
     private var proteinTarget: Double? {
         snapshot.dailyStats.compactMap(\.targetProtein).first
@@ -58,55 +58,65 @@ struct StatsView: View {
     private var fatTarget: Double? {
         snapshot.dailyStats.compactMap(\.targetFat).first
     }
-    private var macroWeekdayLabels: [String] {
-        snapshot.dailyStats.map { $0.date.formatted(.dateTime.weekday(.narrow)) }
-    }
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                topControlsRow
-                DayWeekScaleControl(selected: .week) { scale in
-                    if scale == .day { onShowDay(selectedDate) }
-                }
+            VStack(alignment: .leading, spacing: 16) {
                 StatsWeekPicker(
-                    weekLabel: weekLabel,
+                    title: weekTitle,
+                    rangeLabel: weekLabel,
+                    isLoading: viewModel.isLoading,
                     canGoNext: viewModel.canGoToNextWeek(),
                     onPrevious: { moveWeek(by: -1) },
                     onNext: { moveWeek(by: 1) },
                     onDateTap: { isDatePickerPresented = true }
                 )
+                .padding(.horizontal, Circa.Space.screenMargin)
 
-                // Outside the error branch on purpose: the weight trend loads
-                // independently of the food stats, so neither failure should be
-                // able to hide the other.
-                if let window = viewModel.trendWindow() {
-                    WeightTrendCard(
-                        series: viewModel.weightTrend,
-                        unit: BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms,
-                        windowStart: window.start,
-                        windowEnd: window.end,
-                        onWeighIn: { isWeighInPresented = true },
-                        onConnectHealth: showsHealthPrompt ? { Task { await connectHealth() } } : nil,
-                        onOpen: { isWeightPresented = true }
-                    )
-                }
+                VStack(spacing: 14) {
+                    // Outside the error branch on purpose: the weight trend loads
+                    // independently of the food stats, so neither failure should be
+                    // able to hide the other.
+                    if let window = viewModel.trendWindow() {
+                        WeightTrendCard(
+                            series: viewModel.weightTrend,
+                            unit: BodyWeightUnit(rawValue: weightUnitRawValue) ?? .kilograms,
+                            windowStart: window.start,
+                            windowEnd: window.end,
+                            onWeighIn: { isWeighInPresented = true },
+                            onConnectHealth: showsHealthPrompt ? { Task { await connectHealth() } } : nil,
+                            onOpen: { isWeightPresented = true }
+                        )
+                    }
 
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .font(.footnote)
-                        .foregroundStyle(Color.circaInk2)
-                } else {
-                    VStack(spacing: 12) {
-                        StatsStreakCard(snapshot: snapshot)
-                        StatsActivitySummaryRow(foodLogs: snapshot.foodLogsThisWeek)
+                    if let errorMessage = viewModel.errorMessage {
+                        CircaCard(.sunken) {
+                            Text(errorMessage)
+                                .font(.circaBody)
+                                .foregroundStyle(Color.circaInk2)
+                        }
+                    } else {
                         CaloriesStatsCard(snapshot: snapshot)
                         macroSection
+                        StatsMealsWrittenTile(foodLogs: snapshot.foodLogsThisWeek)
                     }
                 }
+                .padding(.horizontal, Circa.Space.screenMarginWide)
             }
-            .padding()
+            .padding(.vertical, 16)
         }
-        .background(LinearGradient.circaPaper.ignoresSafeArea())
+        .circaPaper()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(Color.circaInk)
+                }
+                .accessibilityLabel("Close")
+            }
+        }
         .task(id: viewModel.selectedWeekStart) {
             await viewModel.loadStats(userId: profile.id, targetMacros: targetMacros)
         }
@@ -174,118 +184,77 @@ struct StatsView: View {
         await viewModel.loadWeightTrend(userId: profile.id)
     }
 
-    private var topControlsRow: some View {
-        HStack {
-            if viewModel.isLoading {
-                ProgressView()
-                    .tint(Color.circaAccent)
-            }
-            Spacer()
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.circaInk)
-                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                    .background(Color.circaCard, in: Circle())
-                    .overlay(Circle().stroke(Color.circaCardBorder, lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
+    /// Daily average against target, from the `Week` artboard.
+    ///
+    /// `Week · day 2` has no such card, and this follows it: a "daily average"
+    /// over two days is the same overclaim `CaloriesStatsCard`'s gate exists to
+    /// avoid, so the whole card waits for the fourth day with food.
+    @ViewBuilder
     private var macroSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Macros")
-                    .font(.headline.weight(.bold))
-            }
-            if let proteinTarget {
-                MacroMiniBarRow(
-                    title: "Protein",
-                    values: snapshot.dailyStats.map(\.protein),
-                    labels: macroWeekdayLabels,
-                    average: snapshot.averageProtein,
-                    target: proteinTarget,
-                    color: Color.circaInk
-                )
-                Divider()
-            }
-            if let carbsTarget {
-                MacroMiniBarRow(
-                    title: "Carbs",
-                    values: snapshot.dailyStats.map(\.carbs),
-                    labels: macroWeekdayLabels,
-                    average: snapshot.averageCarbs,
-                    target: carbsTarget,
-                    color: Color.circaInk2
-                )
-                Divider()
-            }
-            if let fatTarget {
-                MacroMiniBarRow(
-                    title: "Fat",
-                    values: snapshot.dailyStats.map(\.fat),
-                    labels: macroWeekdayLabels,
-                    average: snapshot.averageFat,
-                    target: fatTarget,
-                    color: Color.circaAccentLarge
-                )
+        if snapshot.hasEnoughDaysForAverages {
+            CircaCard {
+                VStack(alignment: .leading, spacing: 15) {
+                    CircaSectionLabel("Daily average vs target")
+                    VStack(alignment: .leading, spacing: 13) {
+                        if let proteinTarget {
+                            macroRow("Protein", average: snapshot.averageProtein, target: proteinTarget)
+                        }
+                        if let carbsTarget {
+                            macroRow("Carbs", average: snapshot.averageCarbs, target: carbsTarget)
+                        }
+                        if let fatTarget {
+                            macroRow("Fat", average: snapshot.averageFat, target: fatTarget)
+                        }
+                    }
+                }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous).stroke(Color.circaCardBorder, lineWidth: 1))
     }
 
-}
+    private func macroRow(_ title: String, average: Double, target: Double) -> some View {
+        let value = Int(average.rounded())
+        let goal = Int(target.rounded())
+        let fraction = goal > 0 ? min(max(Double(value) / Double(goal), 0), 1) : 0
 
-private struct MacroMiniBarRow: View {
-    let title: String
-    let values: [Double]
-    let labels: [String]
-    let average: Double
-    let target: Double
-    let color: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 6) {
             ViewThatFits(in: .horizontal) {
-                HStack {
-                    Text(title).font(.caption.weight(.bold))
-                    Spacer()
-                    Text("Avg \(Int(average.rounded()))g · Target \(Int(target))g")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(Color.circaInk2)
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(title)
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk)
+                    Spacer(minLength: 8)
+                    macroValue(value, of: goal)
                 }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(.caption.weight(.bold))
-                    Text("Avg \(Int(average.rounded()))g · Target \(Int(target))g")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(Color.circaInk2)
-                }
-            }
-            HStack(alignment: .bottom, spacing: 8) {
-                ForEach(Array(values.enumerated()), id: \.offset) { index, value in
-                    VStack(spacing: 6) {
-                        GeometryReader { proxy in
-                            let ratio = target > 0 ? min(value / target, 1.15) : 0
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(Color.circaBarTrack)
-                                .overlay(alignment: .bottom) {
-                                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                        .fill(value > target ? Color.circaAccentLarge : color)
-                                        .frame(height: value > 0 ? max(5, proxy.size.height * ratio / 1.15) : 0)
-                                }
-                        }
-                        Text(labels.indices.contains(index) ? labels[index] : "")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color.circaInk2)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 150)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.circaRow)
+                        .foregroundStyle(Color.circaInk)
+                    macroValue(value, of: goal)
                 }
             }
+            // Clamped rather than recoloured: the calorie chart's ochre marks a
+            // defined range, and there is no such band here to be outside of.
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.circaBarTrack)
+                    Capsule().fill(Color.circaInk).frame(width: proxy.size.width * fraction)
+                }
+            }
+            .frame(height: 4)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title), averaging \(value) of \(goal) grams a day")
+    }
+
+    private func macroValue(_ value: Int, of target: Int) -> some View {
+        HStack(spacing: 4) {
+            Text(value.formatted())
+                .foregroundStyle(Color.circaInk2)
+            Text("/ \(target.formatted()) g")
+                .foregroundStyle(Color.circaInk3)
+        }
+        .font(.circaMono)
+        .monospacedDigit()
+        .fixedSize(horizontal: false, vertical: true)
     }
 }

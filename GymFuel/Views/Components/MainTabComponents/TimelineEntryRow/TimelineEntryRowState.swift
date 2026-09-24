@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 struct TimelineEntryRowState {
     let entry: LogEntry
@@ -12,24 +12,12 @@ struct TimelineEntryRowState {
         entry.image?.storagePath
     }
 
-    var statusText: String? {
-        if entry.status == .analyzing || isFailedTextEntry || isFailedImageEntry {
-            return nil
-        }
-
-        switch entry.status {
-        case .analyzing:
-            return "Analyzing..."
-        case .failed:
-            return "Failed"
-        case .succeeded:
-            return nil
-        }
-    }
-
-    var failureMessage: String? {
-        guard entry.status == .failed else { return nil }
-        return feedback?.explanation ?? "We couldn't process this entry."
+    /// What the failure card says: why it failed, then what survived it.
+    var failureLine: String {
+        MealCopy.failure(
+            reason: feedback?.explanation,
+            preserved: isMealImageEntry ? .photo : .words
+        )
     }
 
     var isAnalyzingTextEntry: Bool {
@@ -48,8 +36,13 @@ struct TimelineEntryRowState {
         entry.status == .failed && entry.source == .image
     }
 
-    var hasConsumedMacros: Bool {
-        feedback?.macros != nil
+    /// design.md rule 1. An adjusted estimate keeps its dotted rule — correcting
+    /// an amount removes one source of uncertainty and leaves the rest — and a
+    /// saved meal keeps the provenance it was saved with, which is why this does
+    /// not test `source == .savedMeal`. Same mapping as `MealBreakdownCard`.
+    var certainty: CircaCertainty {
+        guard let breakdown = feedback?.breakdown else { return .estimated }
+        return MealBreakdownCalculator().provenance(of: breakdown) == .estimated ? .estimated : .known
     }
 
     /// The one assumption line the row shows, or nil when there is nothing to
@@ -57,12 +50,6 @@ struct TimelineEntryRowState {
     var assumptionLine: String? {
         let all = MealBreakdownCalculator().assumptions(of: feedback)
         return MealCopy.assumptionLine(count: all.count, lead: all.first)
-    }
-
-    /// Whether tapping that line has an editor to open.
-    var hasEditableBreakdown: Bool {
-        guard let breakdown = feedback?.breakdown else { return false }
-        return breakdown.isSupported
     }
 
     var isMealImageEntry: Bool {

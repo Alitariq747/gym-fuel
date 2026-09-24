@@ -4,14 +4,13 @@ struct MainTabTimelineContentView: View {
     @ObservedObject var viewModel: TimelineViewModel
     let localPreviewData: (String) -> Data?
     let onSelectEntry: (LogEntry) -> Void
-    let onEditEntryAmounts: (LogEntry) -> Void
     let onRetryEntry: (LogEntry) -> Void
     let onDeleteFailedEntry: (LogEntry) -> Void
-    let onSuccessRevealCompleted: (String) -> Void
     let bottomContentInset: CGFloat
     let canModifyEntries: Bool
 
     @State private var lastAutoScrolledPendingEntryID: String?
+    @ScaledMetric(relativeTo: .largeTitle) private var emptyGlyphSize: CGFloat = 34
 
     var body: some View {
         Group {
@@ -22,16 +21,37 @@ struct MainTabTimelineContentView: View {
             } else if !viewModel.timeline.entries.isEmpty {
                 timelineList
             } else {
-                Color.clear
+                emptyDay
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
+    /// The `Empty day` artboard. An empty log is not an error and not a card —
+    /// the summary card above still carries the whole day as the headline.
+    private var emptyDay: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "square.and.pencil")
+                .font(.system(size: emptyGlyphSize, weight: .light))
+                .foregroundStyle(Color.circaInk3)
+            Text("Nothing written yet")
+                .font(.circaEntryTitle)
+                .foregroundStyle(Color.circaInk2)
+            Text("A sentence is enough. \u{201C}Two roti and daal\u{201D} gets you a number and a list of what Circa assumed.")
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk3)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 44)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private var timelineList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                // Rows sit directly on paper and bring their own padding, so
+                // there is no gap between them — the `Day` artboard.
+                VStack(alignment: .leading, spacing: 0) {
                     ForEach(viewModel.timeline.entries) { entry in
                         timelineButton(for: entry)
                             .id(entry.id)
@@ -65,21 +85,14 @@ struct MainTabTimelineContentView: View {
     }
 
     private func timelineButton(for entry: LogEntry) -> some View {
-        let shouldAnimateSuccessReveal = viewModel.shouldAnimateSuccessReveal(for: entry)
-
-        return Button {
+        Button {
             onSelectEntry(entry)
         } label: {
             TimelineEntryRow(
                 entry: entry,
                 localPreviewData: localPreviewData(entry.id),
                 onRetry: canModifyEntries && entry.status == .failed ? { onRetryEntry(entry) } : nil,
-                onDelete: canModifyEntries && entry.status == .failed ? { onDeleteFailedEntry(entry) } : nil,
-                shouldAnimateSuccessReveal: shouldAnimateSuccessReveal,
-                onSuccessRevealCompleted: shouldAnimateSuccessReveal ? {
-                    onSuccessRevealCompleted(entry.id)
-                } : nil,
-                onTapAssumption: canModifyEntries ? { onEditEntryAmounts(entry) } : nil
+                onDelete: canModifyEntries && entry.status == .failed ? { onDeleteFailedEntry(entry) } : nil
             )
         }
         .buttonStyle(.plain)

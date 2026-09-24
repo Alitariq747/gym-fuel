@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:1400px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:56px; flex-shrink:0;"></div>
+
+  <div style="padding:0 8px; height:44px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#1A1917"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+    </div>
+  </div>
+
+  <div style="padding:6px 20px 0 20px; display:flex; flex-direction:column; gap:18px;">
+
+    <div style="height:168px; border-radius:16px; background:#EAE6DA; display:flex; align-items:center; justify-content:center;">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M7 13.5a5 5 0 0 1 10 0"/></svg>
+    </div>
+
+    <!-- the raw sentence is the title, and editing it is the ONE edit path -->
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Your words · Wed 9 Sep 13:45</div>
+      <div style="font-size:23px; font-weight:600; letter-spacing:-0.4px; line-height:1.25;">two roti, chicken karahi, half a katori rice</div>
+      <div style="min-height:44px; display:flex; align-items:center; gap:6px; margin-top:-2px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/></svg>
+        <span style="font-size:15px; font-weight:500; color:#8F6420;">Reword this and re-estimate</span>
+      </div>
+    </div>
+
+    <div style="height:1px; background:#E3DFD3;"></div>
+
+    <!-- totals -->
+    <div style="display:flex; align-items:flex-end; justify-content:space-between;">
+      <div style="display:flex; align-items:baseline; gap:8px;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:44px; font-weight:600; letter-spacing:-1.4px; border-bottom:2px dotted #9A9488; padding-bottom:4px;">780</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:14px; color:#6E6B64;">kcal</span>
+      </div>
+      <div style="display:flex; gap:18px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600;">42</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#6E6B64;">PROT</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600;">78</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#6E6B64;">CARB</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600;">32</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#6E6B64;">FAT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOAL FIT — the loudest block on the screen -->
+    <div style="background:#1A1917; border-radius:20px; padding:20px; display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px;">
+        <div style="display:flex; flex-direction:column; gap:5px;">
+          <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#A8A296; text-transform:uppercase;">Lose fat · fit score</div>
+          <div style="display:flex; align-items:baseline; gap:6px;">
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:52px; font-weight:600; letter-spacing:-1.8px; color:#FBFAF6; line-height:1;">74</span>
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:15px; color:#A8A296;">/ 100</span>
+          </div>
+        </div>
+        <div style="min-height:44px; display:flex; align-items:center; gap:5px;">
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#D9A94E;">how this works</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#D9A94E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+      <div style="height:5px; border-radius:3px; background:#38352D; overflow:hidden;"><div style="width:74%; height:5px; border-radius:3px; background:#FBFAF6;"></div></div>
+      <div style="font-size:14.5px; color:#CFCABC; line-height:1.5; text-wrap:pretty;">Strong protein for the middle of your day. The ghee is where most of the fat sits — it is the one number worth checking.</div>
+    </div>
+
+    <!-- CONFIDENCE — the dotted ring ties it to the certainty texture -->
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:18px; display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; align-items:center; gap:15px;">
+        <svg width="56" height="56" viewBox="0 0 56 56" style="flex-shrink:0;">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#C9C3B4" stroke-width="3" stroke-dasharray="2 4.6" stroke-linecap="round"/>
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#1A1917" stroke-width="3" stroke-dasharray="99.5 138.2" stroke-linecap="round" transform="rotate(-90 28 28)"/>
+          <text x="28" y="33" text-anchor="middle" font-size="15" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#1A1917">72</text>
+        </svg>
+        <div style="display:flex; flex-direction:column; gap:4px; flex-grow:1;">
+          <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Circa's confidence</div>
+          <div style="font-size:19px; font-weight:600; letter-spacing:-0.3px;">Moderate</div>
+          <div style="font-size:13.5px; color:#56534C; line-height:1.45;">Described in words, with nothing weighed.</div>
+        </div>
+      </div>
+
+      <div style="height:1px; background:#F0ECE0;"></div>
+
+      <div style="display:flex; flex-direction:column; gap:9px;">
+        <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">What Circa assumed</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="display:flex; gap:9px; align-items:baseline;">
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296;">01</span>
+            <span style="font-size:14.5px; color:#1A1917; line-height:1.4;">2 tbsp of ghee in the karahi</span>
+          </div>
+          <div style="display:flex; gap:9px; align-items:baseline;">
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296;">02</span>
+            <span style="font-size:14.5px; color:#1A1917; line-height:1.4;">a 30 cm roti, not a paratha</span>
+          </div>
+          <div style="display:flex; gap:9px; align-items:baseline;">
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296;">03</span>
+            <span style="font-size:14.5px; color:#1A1917; line-height:1.4;">a medium katori of rice</span>
+          </div>
+        </div>
+        <div style="font-size:13px; color:#6E6B64; line-height:1.45; padding-top:2px;">Wrong? Reword the sentence above — Circa re-reads the whole meal in one go.</div>
+      </div>
+    </div>
+
+    <!-- ITEMS — calories loud, macros present -->
+    <div style="display:flex; flex-direction:column; gap:11px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Three items</div>
+
+      <div style="display:flex; flex-direction:column;">
+        <div style="min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:14px; border-bottom:1px solid #E9E5D9;">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span style="font-size:16px; color:#1A1917;">2 roti</span>
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64;">11P · 52C · 4F</span>
+          </div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:18px; font-weight:600; border-bottom:1.5px dotted #9A9488; padding-bottom:2px;">260</span>
+        </div>
+        <div style="min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:14px; border-bottom:1px solid #E9E5D9;">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span style="font-size:16px; color:#1A1917;">chicken karahi</span>
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64;">29P · 12C · 24F</span>
+          </div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:18px; font-weight:600; border-bottom:1.5px dotted #9A9488; padding-bottom:2px;">380</span>
+        </div>
+        <div style="min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:14px;">
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <span style="font-size:16px; color:#1A1917;">½ katori rice</span>
+            <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64;">2P · 14C · 4F</span>
+          </div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:18px; font-weight:600; border-bottom:1.5px dotted #9A9488; padding-bottom:2px;">140</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- sources -->
+    <div style="min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid #E3DFD3;">
+      <span style="font-size:13.5px; color:#56534C;">AI estimate · how this works & sources</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A296" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow:1;"></div>
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

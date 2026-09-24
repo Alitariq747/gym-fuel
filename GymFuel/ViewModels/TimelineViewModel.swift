@@ -26,14 +26,18 @@ final class TimelineViewModel: ObservableObject {
         }
     }
 
+    /// How many of the day's entries are still being read. The summary names
+    /// them rather than guessing at them — the total counts only what settled.
+    var analysingCount: Int {
+        timeline.entries.count { $0.status == .analyzing }
+    }
+
     private let service: LogEntryService
     private let hapticFeedbackService: HapticFeedbackProviding
     private var observationCancellation: LogEntryObservationCancellation?
     private var localImagePreviewDataByEntryId: [String: Data] = [:]
     private var localPreparedImageDataByEntryId: [String: Data] = [:]
-    private var revealedSuccessEntryIDs: Set<String> = []
     private var previousEntryStatusesByID: [String: LogEntryStatus] = [:]
-    private var pendingSuccessRevealEntryIDs: Set<String> = []
     private var attemptedImageUploadRetryEntryIDs: Set<String> = []
     private var timelineLoadTrace: Trace?
 
@@ -50,7 +54,10 @@ final class TimelineViewModel: ObservableObject {
     }
 
     func loadTimeline(for date: Date, userId: String, calendar: Calendar = .current) async {
-        let startOfDay = calendar.startOfDay(for: date)
+        // The single funnel every date mutator goes through, so the future rule
+        // is enforced once here rather than at each caller.
+        let selectable = LoggingWindow(calendar: calendar).clampToSelectable(date)
+        let startOfDay = calendar.startOfDay(for: selectable)
         guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
             errorMessage = "Failed to compute date range."
             return
@@ -147,21 +154,6 @@ final class TimelineViewModel: ObservableObject {
         localPreparedImageDataByEntryId.removeValue(forKey: entryId)
     }
 
-    func hasRevealedSuccess(for entryId: String) -> Bool {
-        revealedSuccessEntryIDs.contains(entryId)
-    }
-
-    func shouldAnimateSuccessReveal(for entry: LogEntry) -> Bool {
-        entry.status == .succeeded &&
-        pendingSuccessRevealEntryIDs.contains(entry.id) &&
-        !revealedSuccessEntryIDs.contains(entry.id)
-    }
-
-    func markSuccessRevealed(for entryId: String) {
-        revealedSuccessEntryIDs.insert(entryId)
-        pendingSuccessRevealEntryIDs.remove(entryId)
-    }
-
     func imageUploadRetryCandidates() -> [LogEntry] {
         let candidates = timeline.entries.filter {
             $0.source == .image &&
@@ -178,7 +170,6 @@ final class TimelineViewModel: ObservableObject {
         for entry in entries {
             let previousStatus = previousEntryStatusesByID[entry.id]
             if previousStatus == .analyzing, entry.status == .succeeded {
-                pendingSuccessRevealEntryIDs.insert(entry.id)
                 hapticFeedbackService.notifySuccess()
             }
             previousEntryStatusesByID[entry.id] = entry.status

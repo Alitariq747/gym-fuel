@@ -380,6 +380,15 @@ weekly page that was going to settle it is gone.
 ## References
 
 - Canvas: https://claude.ai/code/artifact/5039f517-40d9-4e28-860f-336719ab0cef
+
+  **Reading it as a coding agent.** The link is a design-canvas editor whose
+  whole content is one JSON blob, so fetching the page is not enough. Read the
+  URL with the `Artifact` tool's `read` action — it saves the full HTML locally
+  — then take the `<script type="application/json" id="appifact-doc">` block and
+  read `content.files`: 33 `.dc.html` artboards plus `canvas.json`, which maps
+  each file to its artboard title and page. **`page-2` is `Round 1 · not
+  chosen`.** So the live Entry artboard is `DetailB.dc.html`; `DetailA` and
+  `DetailC` are the two directions that lost.
 - `build-order.md` — where the design work sits in the sequence
 - `store-copy.md` — the copy the onboarding intro and paywall are built from
 - `product-as-built.md` — what the code does today, which is not this

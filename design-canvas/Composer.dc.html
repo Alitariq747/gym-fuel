@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:20px; flex-shrink:0;"></div>
+
+  <!-- sheet grabber -->
+  <div style="height:22px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+    <div style="width:38px; height:5px; border-radius:3px; background:#DCD7C8;"></div>
+  </div>
+
+  <div style="padding:4px 12px 0 20px; height:48px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+    <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">What did you eat?</div>
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </div>
+  </div>
+
+  <!-- the writing surface -->
+  <div style="padding:14px 20px 0 20px; flex-grow:1; display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:flex-start; gap:3px;">
+      <div style="font-size:27px; font-weight:500; letter-spacing:-0.5px; line-height:1.35; color:#1A1917;">two roti, chicken karahi,<br>half a katori rice</div>
+      <div style="width:2px; height:34px; background:#8F6420; margin-top:3px;"></div>
+    </div>
+
+    <div style="height:26px;"></div>
+
+    <div style="display:flex; flex-direction:column; gap:9px; border-top:1px solid #E3DFD3; padding-top:16px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Say it how you'd say it to a person</div>
+      <div style="font-size:14.5px; color:#56534C; line-height:1.5; text-wrap:pretty;">Quantities in whatever measure you actually use — rotis, katoris, a plate, half a bowl. How it was cooked helps most: ghee or oil, fried or dry.</div>
+      <div style="font-size:14.5px; color:#56534C; line-height:1.5;">The more you say, the fewer assumptions Circa has to make.</div>
+    </div>
+
+    <div style="flex-grow:1;"></div>
+
+    <!-- keyboard accessory: the two other input paths stay reachable -->
+    <div style="display:flex; align-items:center; gap:10px; padding-bottom:14px;">
+      <div style="height:48px; border-radius:13px; background:#1A1917; color:#FBFAF6; flex-grow:1; display:flex; align-items:center; justify-content:center; gap:9px; font-size:16px; font-weight:600;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBFAF6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
+        Estimate this
+      </div>
+      <div style="width:48px; height:48px; border-radius:13px; background:#FFFFFF; border:1px solid #E3DFD3; display:flex; align-items:center; justify-content:center;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- the system keyboard renders here; nothing of ours is drawn in this space -->
+  <div style="height:302px; flex-shrink:0; border-top:1px solid #E3DFD3; background:#EFEBDF; display:flex; align-items:center; justify-content:center;">
+    <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.2px; color:#A8A296; text-transform:uppercase;">system keyboard</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

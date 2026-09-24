@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:56px; flex-shrink:0;"></div>
+
+  <div style="padding:0 8px; height:44px; flex-shrink:0; display:flex; align-items:center; gap:8px;">
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <div style="flex-grow:1; height:3px; border-radius:2px; background:#E3DFD3; overflow:hidden; margin-right:16px;">
+      <div style="width:100%; height:3px; background:#1A1917;"></div>
+    </div>
+  </div>
+
+  <div style="padding:18px 20px 0 20px; display:flex; flex-direction:column; gap:22px; flex-grow:1;">
+
+    <div style="display:flex; flex-direction:column; gap:9px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Your starting numbers</div>
+      <div style="font-size:29px; font-weight:600; letter-spacing:-0.6px; line-height:1.2;">Here's where you begin.</div>
+      <div style="font-size:15.5px; color:#56534C; line-height:1.5; text-wrap:pretty;">Worked out from your height, weight, age and goal. They are a starting point, not a verdict.</div>
+    </div>
+
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:20px 18px; display:flex; flex-direction:column; gap:18px;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">Every day</span>
+        <div style="display:flex; align-items:baseline; gap:7px;">
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:38px; font-weight:600; letter-spacing:-1.1px; line-height:1;">2,400</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:14px; color:#6E6B64;">kcal</span>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:0; border-top:1px solid #F0ECE0;">
+        <div style="min-height:52px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #F0ECE0;">
+          <span style="font-size:16px; color:#1A1917;">Protein</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600;">165 <span style="font-size:12px; font-weight:400; color:#6E6B64;">g</span></span>
+        </div>
+        <div style="min-height:52px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #F0ECE0;">
+          <span style="font-size:16px; color:#1A1917;">Carbs</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600;">240 <span style="font-size:12px; font-weight:400; color:#6E6B64;">g</span></span>
+        </div>
+        <div style="min-height:52px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:16px; color:#1A1917;">Fat</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600;">80 <span style="font-size:12px; font-weight:400; color:#6E6B64;">g</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- the promise the adaptive engine has to keep -->
+    <div style="background:#EFEBDF; border-radius:16px; padding:15px 17px; display:flex; align-items:flex-start; gap:12px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><path d="M4 16l5-5 4 3.5L20 7"/></svg>
+      <div style="font-size:14.5px; color:#3D3B35; line-height:1.5; text-wrap:pretty;">These will not stay the same. Weigh in through the week and Circa moves them to match what your body is actually doing.</div>
+    </div>
+
+    <div style="min-height:44px; display:flex; align-items:center; gap:7px;">
+      <span style="font-size:15px; font-weight:500; color:#8F6420;">How these were worked out</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+
+    <div style="flex-grow:1;"></div>
+
+    <div style="padding-bottom:16px;">
+      <div style="height:52px; border-radius:14px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600;">Start writing</div>
+    </div>
+  </div>
+
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

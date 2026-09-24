@@ -192,4 +192,38 @@ struct MealCopyTests {
             #expect(!line.lowercased().contains("accurate"))
         }
     }
+
+    // MARK: - Failure
+
+    @Test("The reason leads, and what survived follows")
+    func failureKeepsTheReason() {
+        #expect(
+            MealCopy.failure(reason: "You're offline. Reconnect and try again.", preserved: .words)
+                == "You're offline. Reconnect and try again. Your words are saved — nothing to retype."
+        )
+    }
+
+    @Test("A reason without a full stop gets one, and one with a stop keeps just the one")
+    func failurePunctuatesOnce() {
+        #expect(MealCopy.failure(reason: "Couldn't reach Circa", preserved: .words)
+            .hasPrefix("Couldn't reach Circa. Your words"))
+        #expect(!MealCopy.failure(reason: "Couldn't reach Circa.", preserved: .words).contains(".."))
+        #expect(MealCopy.failure(reason: "Is the plate empty?", preserved: .photo)
+            .hasPrefix("Is the plate empty? Your photo"))
+    }
+
+    @Test("A missing or blank reason still says something true")
+    func failureFallsBack() {
+        let expected = "We couldn't reach Circa. Your words are saved — nothing to retype."
+        #expect(MealCopy.failure(reason: nil, preserved: .words) == expected)
+        #expect(MealCopy.failure(reason: "   \n ", preserved: .words) == expected)
+    }
+
+    @Test("A photo failure promises the photo, not the words")
+    func failureKeepsThePhoto() {
+        let line = MealCopy.failure(reason: "That was too dark to read.", preserved: .photo)
+        #expect(line.hasSuffix("Your photo is saved — nothing to re-shoot."))
+        #expect(!line.contains("retype"))
+    }
 }
+

@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:660px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:12px; flex-shrink:0;"></div>
+  <div style="height:22px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+    <div style="width:38px; height:5px; border-radius:3px; background:#DCD7C8;"></div>
+  </div>
+
+  <div style="padding:14px 20px 0 20px; display:flex; flex-direction:column; gap:16px;">
+
+    <!-- the one action the engine depends on gets its own card, not a list row -->
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:18px; display:flex; align-items:center; justify-content:space-between; gap:14px;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <span style="font-size:17px; font-weight:600; letter-spacing:-0.2px;">Weigh in</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#6E6B64;">last · 85.0 kg, Monday</span>
+      </div>
+      <div style="min-height:44px; padding:0 18px; border-radius:12px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; font-size:15px; font-weight:600;">Add</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column;">
+
+      <div style="min-height:58px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #E9E5D9;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D3B35" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+        <span style="font-size:16.5px; flex-grow:1;">Last week</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#8F6420;">check-in ready</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+      <div style="min-height:58px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #E9E5D9;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D3B35" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+        <span style="font-size:16.5px; flex-grow:1;">Saved meals</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#6E6B64;">4</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+      <div style="min-height:58px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #E9E5D9;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D3B35" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 3l2.4 2.1 3.2-.4.9 3.1 2.8 1.6-1.3 2.9 1.3 2.9-2.8 1.6-.9 3.1-3.2-.4L12 21.6l-2.4-2.1-3.2.4-.9-3.1L2.7 15.2 4 12.3 2.7 9.4l2.8-1.6.9-3.1 3.2.4z"/><circle cx="12" cy="12.3" r="3.1"/></svg>
+        <span style="font-size:16.5px; flex-grow:1;">Your targets</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#6E6B64;">lose fat</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+      <div style="min-height:58px; display:flex; align-items:center; gap:14px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3D3B35" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+        <span style="font-size:16.5px; flex-grow:1;">Settings</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+    </div>
+
+    <!-- subscription state, quiet, with the quota where it belongs -->
+    <div style="background:#EFEBDF; border-radius:18px; padding:16px 18px; display:flex; flex-direction:column; gap:9px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:3px;">
+          <span style="font-size:16px; font-weight:600; letter-spacing:-0.2px;">Circa Pro</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#6E6B64;">trial · 11 days left</span>
+        </div>
+        <div style="min-height:44px; padding:0 10px; display:flex; align-items:center; font-size:15px; font-weight:500; color:#8F6420;">Manage ›</div>
+      </div>
+      <div style="height:1px; background:#E1DCCC;"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64;">482 of 500 estimates left</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296;">resets 1 Oct</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="flex-grow:1;"></div>
+  <div style="height:24px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

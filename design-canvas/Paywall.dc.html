@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:1010px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:56px; flex-shrink:0;"></div>
+
+  <!-- INVARIANT 6 · a visible dismiss control -->
+  <div style="padding:0 12px; height:44px; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end;">
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </div>
+  </div>
+
+  <div style="padding:6px 22px 0 22px; display:flex; flex-direction:column; gap:22px;">
+
+    <div style="display:flex; flex-direction:column; gap:9px;">
+      <div style="font-size:31px; font-weight:600; letter-spacing:-0.7px; line-height:1.15;">Circa Pro</div>
+      <div style="font-size:15.5px; color:#56534C; line-height:1.5; text-wrap:pretty;">The whole app, and targets that keep up with you.</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:13px;">
+      <div style="display:flex; gap:12px; align-items:baseline;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296; flex-shrink:0;">01</span>
+        <span style="font-size:15.5px; color:#1A1917; line-height:1.45;">Targets that move with your weight, not a formula that guessed once</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:baseline;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296; flex-shrink:0;">02</span>
+        <span style="font-size:15.5px; color:#1A1917; line-height:1.45;">Any food, described in your own words — no database to search</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:baseline;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296; flex-shrink:0;">03</span>
+        <span style="font-size:15.5px; color:#1A1917; line-height:1.45;">Every assumption shown, and yours to correct</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:baseline;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296; flex-shrink:0;">04</span>
+        <span style="font-size:15.5px; color:#1A1917; line-height:1.45;">Photos, for when you'd rather not type</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:baseline;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296; flex-shrink:0;">05</span>
+        <span style="font-size:15.5px; color:#1A1917; line-height:1.45;">A weekly check-in that shows its working</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:baseline;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#A8A296; flex-shrink:0;">06</span>
+        <span style="font-size:15.5px; color:#1A1917; line-height:1.45;">Reminders that stay quiet when you've already logged</span>
+      </div>
+    </div>
+
+    <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64; border-top:1px solid #E3DFD3; padding-top:14px;">Fair use: 500 estimates a month, about 16 a day.</div>
+
+    <!-- INVARIANT 3 · restore, present and reachable · INVARIANT 2 · terms and privacy -->
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <div style="min-height:44px; padding:0 20px; border-radius:22px; background:#FFFFFF; border:1px solid #E3DFD3; display:flex; align-items:center; gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+        <span style="font-size:15px; font-weight:600;">Restore Subscription</span>
+      </div>
+      <div style="min-height:44px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:13.5px; font-weight:500; color:#8F6420;">Privacy Policy</span>
+        <span style="font-size:13.5px; color:#C0BAA8;">·</span>
+        <span style="font-size:13.5px; font-weight:500; color:#8F6420;">Terms of Service</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow:1;"></div>
+
+  <!-- pinned purchase block -->
+  <div style="margin:0 14px 10px 14px; background:#FFFFFF; border:1px solid #E9E5D9; border-radius:24px; padding:16px; display:flex; flex-direction:column; gap:11px; box-shadow:0 2px 6px rgba(26,25,23,0.05), 0 12px 30px rgba(26,25,23,0.08);">
+
+    <!-- INVARIANT 1 · every price renders from package.localizedPriceString -->
+    <div style="border:1.5px solid #1A1917; border-radius:18px; padding:14px 15px; display:flex; align-items:center; gap:13px;">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="9.2"/><path d="M8 12.4l2.6 2.6L16 9.6"/></svg>
+      <div style="display:flex; flex-direction:column; gap:3px; flex-grow:1;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px; font-weight:600; letter-spacing:-0.2px;">Yearly</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; letter-spacing:0.8px; color:#FBFAF6; background:#8F6420; padding:3px 7px; border-radius:5px; text-transform:uppercase;">Save 43%</span>
+        </div>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#6E6B64;">14-day free trial, then $4.58 a month</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px; flex-shrink:0;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:17px; font-weight:600;">$54.99</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; color:#6E6B64;">/ year</span>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E9E5D9; border-radius:18px; padding:14px 15px; display:flex; align-items:center; gap:13px;">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="9.2"/></svg>
+      <div style="display:flex; flex-direction:column; gap:3px; flex-grow:1;">
+        <span style="font-size:16px; font-weight:600; letter-spacing:-0.2px;">Monthly</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11.5px; color:#6E6B64;">14-day free trial</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px; flex-shrink:0;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:17px; font-weight:600;">$7.99</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; color:#6E6B64;">/ month</span>
+      </div>
+    </div>
+
+    <div style="height:54px; border-radius:15px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600;">Start 14-day free trial</div>
+
+    <!-- INVARIANT 4 · auto-renewal and the 24-hour rule · INVARIANT 5 · no purchase path outside Apple IAP -->
+    <div style="font-size:11px; color:#6E6B64; line-height:1.5; text-align:center; padding:0 4px;">14-day free trial, then $54.99 per year. Renews automatically unless cancelled at least 24 hours before renewal. Cancel anytime in your Apple account settings.</div>
+  </div>
+
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

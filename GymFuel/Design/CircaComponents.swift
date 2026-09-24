@@ -83,7 +83,7 @@ struct CircaHairline: View {
 
 /// The four grounds a block can sit on. Chosen by meaning, not by colour.
 enum CircaSurface {
-    /// Raised — the day summary, the confidence card.
+    /// Raised — the day summary, the meal analysis card.
     case raised
     /// Recessed — the check-in prompt, an inline note.
     case sunken
@@ -469,6 +469,45 @@ struct CircaMacroBars: View {
     }
 }
 
+// MARK: - Progress rail
+
+/// The sweep under a pending row. It says *working* where a percentage would
+/// claim progress nobody is measuring, and it lives beside the certainty rule
+/// because the two say the same thing: not yet known.
+struct CircaProgressRail: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isSweeping = false
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = max(geo.size.width, 1)
+            let sweepWidth = max(width * 0.34, 44)
+
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.circaBarTrack)
+
+                Capsule()
+                    .fill(Color.circaAccent)
+                    .frame(width: reduceMotion ? width * 0.42 : sweepWidth)
+                    .offset(x: reduceMotion ? 0 : (isSweeping ? width : -sweepWidth))
+            }
+            .clipShape(Capsule())
+        }
+        .frame(height: Kit.barHeight)
+        .accessibilityHidden(true)
+        .onAppear {
+            guard !reduceMotion else { return }
+            isSweeping = false
+            withAnimation(.easeInOut(duration: 1.45).repeatForever(autoreverses: false)) {
+                isSweeping = true
+            }
+        }
+        .onChange(of: reduceMotion) { _, isEnabled in
+            if isEnabled { isSweeping = false }
+        }
+    }
+}
+
 // MARK: - Entry row
 
 /// What sits at the head of a journal entry.
@@ -477,6 +516,10 @@ enum CircaEntryLeading {
     case glyph(String)
     /// A photo, or its placeholder well when the image has not loaded.
     case photo(Image?)
+    /// A photo whose loading the caller owns — the timeline fetches from cache,
+    /// then from storage, so there is no `Image` to hand over up front. The kit
+    /// still owns the well, the radius and the AX3 drop.
+    case photoContent(AnyView)
     /// Nothing. Also what the row falls back to at accessibility sizes.
     case none
 }
@@ -500,6 +543,12 @@ struct CircaEntryRow: View {
     /// The ochre line — `"3 assumptions · 2 tbsp ghee…"`. Optional.
     var assumption: String? = nil
     var leading: CircaEntryLeading = .none
+    /// The pending state — design.md rule 1's third row. The number has not
+    /// arrived, so `meta` carries the status in ochre, the rail sweeps under it,
+    /// and the assumption line waits. It is a mode of this row rather than a row
+    /// of its own, because two components cannot promise the number lands in the
+    /// place the rule is already holding.
+    var isAnalysing: Bool = false
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -526,7 +575,7 @@ struct CircaEntryRow: View {
                 HStack(alignment: .top, spacing: 14) {
                     Text(title)
                         .font(.circaEntryTitle)
-                        .foregroundStyle(Color.circaInk)
+                        .foregroundStyle(titleInk)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Spacer(minLength: 8)
@@ -535,15 +584,26 @@ struct CircaEntryRow: View {
                         .layoutPriority(1)
                 }
 
-                VStack(alignment: .leading, spacing: 3) {
-                    metaLine
-                    if let assumption {
-                        Text(assumption)
-                            .font(.circaMono)
-                            .foregroundStyle(Color.circaAccent)
-                            .lineLimit(1)
+                Group {
+                    if isAnalysing {
+                        VStack(alignment: .leading, spacing: 5) {
+                            metaLine
+                            CircaProgressRail()
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 3) {
+                            metaLine
+                            if let assumption {
+                                Text(assumption)
+                                    .font(.circaMono)
+                                    .foregroundStyle(Color.circaAccent)
+                                    .lineLimit(1)
+                            }
+                        }
                     }
                 }
+                // The same band under the title in both states, so the row keeps
+                // its height when the estimate lands — design.md rule 1.
                 .frame(minHeight: 40, alignment: .center)
             }
         }
@@ -555,19 +615,26 @@ struct CircaEntryRow: View {
         VStack(alignment: .leading, spacing: 7) {
             Text(title)
                 .font(.circaEntryTitle)
-                .foregroundStyle(Color.circaInk)
+                .foregroundStyle(titleInk)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 CircaEstimate(calories, certainty: certainty)
-                Text("kcal")
-                    .font(.circaMono)
-                    .foregroundStyle(Color.circaInk3)
+                // Nothing to label while the rule stands alone.
+                if calories != nil {
+                    Text("kcal")
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk3)
+                }
             }
 
             metaLine
 
-            if let assumption {
+            if isAnalysing {
+                CircaProgressRail()
+            }
+
+            if let assumption, !isAnalysing {
                 HStack(spacing: 6) {
                     Text(assumption)
                         .font(.circaMono)
@@ -586,11 +653,15 @@ struct CircaEntryRow: View {
 
     // MARK: Parts
 
+    private var titleInk: Color {
+        isAnalysing ? .circaInk2 : .circaInk
+    }
+
     private var metaLine: some View {
         Text(meta)
             .font(.circaMono)
             .monospacedDigit()
-            .foregroundStyle(Color.circaInk3)
+            .foregroundStyle(isAnalysing ? Color.circaAccent : Color.circaInk3)
             .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -624,6 +695,12 @@ struct CircaEntryRow: View {
                             .clipShape(shape)
                     }
                 }
+
+        case .photoContent(let content):
+            shape
+                .fill(Color.circaMediaWell)
+                .frame(width: Kit.entryWell, height: Kit.entryWell)
+                .overlay { content.clipShape(shape) }
 
         case .none:
             EmptyView()
@@ -827,7 +904,8 @@ private struct CircaGallery: View {
                         calories: nil,
                         certainty: .pending,
                         meta: "estimating",
-                        leading: .photo(nil)
+                        leading: .photo(nil),
+                        isAnalysing: true
                     )
                     CircaEntryRow(
                         title: "whey shake",

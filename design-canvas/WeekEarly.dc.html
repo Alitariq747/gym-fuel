@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:1000px; box-sizing:border-box; display:flex; flex-direction:column;">
+
+  <div style="height:56px; flex-shrink:0;"></div>
+
+  <div style="padding:0 20px 16px 20px; display:flex; align-items:flex-start; justify-content:space-between;">
+    <div style="display:flex; flex-direction:column; gap:3px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:27px; font-weight:600; letter-spacing:-0.5px;">This week</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; color:#6E6B64;">MON 8 – SUN 14 SEP · DAY 2</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:2px;">
+      <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#DCD7C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px; display:flex; flex-direction:column; gap:14px;">
+
+    <!-- the engine's weakest link, addressed directly -->
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:20px; display:flex; flex-direction:column; gap:14px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">First check-in · Sunday</div>
+
+      <div style="font-size:19px; font-weight:500; letter-spacing:-0.3px; line-height:1.4; text-wrap:pretty;">Circa needs two weigh-ins before it can tell you anything true.</div>
+
+      <div style="display:flex; flex-direction:column; gap:11px;">
+        <div style="display:flex; align-items:center; gap:11px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 12.5l5 5L20 6.5"/></svg>
+          <span style="font-size:15.5px; color:#1A1917;">Monday · 85.0 kg</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:11px;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#C0BAA8" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="8.5" stroke-dasharray="2 3.4"/></svg>
+          <span style="font-size:15.5px; color:#6E6B64;">One more, any morning this week</span>
+        </div>
+      </div>
+
+      <div style="height:48px; border-radius:13px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; justify-content:center; gap:9px; font-size:16px; font-weight:600;">
+        Weigh in
+      </div>
+    </div>
+
+    <!-- two days of bars, five still to come -->
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:18px; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;">What you ate</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64;">2 of 7 days</span>
+      </div>
+
+      <div style="display:flex; align-items:flex-end; gap:8px; height:112px; position:relative;">
+        <div style="position:absolute; left:0; right:0; bottom:38px; border-top:1px dashed #C9C3B4;"></div>
+
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:68px; border-radius:5px 5px 0 0; background:#1A1917;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#6E6B64;">M</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#A8A296;">2410</span>
+        </div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:39px; border-radius:5px 5px 0 0; background:#1A1917;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#6E6B64;">T</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#A8A296;">1380</span>
+        </div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:74px; border-radius:5px 5px 0 0; border:1.5px dashed #DCD7C8; box-sizing:border-box;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#A8A296;">W</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#C0BAA8;">—</span>
+        </div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:74px; border-radius:5px 5px 0 0; border:1.5px dashed #E3DFD3; box-sizing:border-box;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#C0BAA8;">T</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#C0BAA8;">—</span>
+        </div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:74px; border-radius:5px 5px 0 0; border:1.5px dashed #E3DFD3; box-sizing:border-box;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#C0BAA8;">F</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#C0BAA8;">—</span>
+        </div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:74px; border-radius:5px 5px 0 0; border:1.5px dashed #E3DFD3; box-sizing:border-box;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#C0BAA8;">S</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#C0BAA8;">—</span>
+        </div>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; gap:7px;">
+          <div style="width:100%; height:74px; border-radius:5px 5px 0 0; border:1.5px dashed #E3DFD3; box-sizing:border-box;"></div>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10px; color:#C0BAA8;">S</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:9.5px; color:#C0BAA8;">—</span>
+        </div>
+      </div>
+
+      <div style="font-size:13.5px; color:#6E6B64; line-height:1.45; border-top:1px solid #F0ECE0; padding-top:13px;">Averages appear once there are four days to average.</div>
+    </div>
+
+    <div style="display:flex; gap:12px;">
+      <div style="flex-grow:1; background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:16px 18px; display:flex; flex-direction:column; gap:5px;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:26px; font-weight:600; letter-spacing:-0.5px;">2</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.2px; color:#6E6B64; text-transform:uppercase;">day streak</span>
+      </div>
+      <div style="flex-grow:1; background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:16px 18px; display:flex; flex-direction:column; gap:5px;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:26px; font-weight:600; letter-spacing:-0.5px;">5</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.2px; color:#6E6B64; text-transform:uppercase;">meals written</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="flex-grow:1;"></div>
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

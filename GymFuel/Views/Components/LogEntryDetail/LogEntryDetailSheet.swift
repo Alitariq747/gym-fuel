@@ -23,7 +23,6 @@ struct LogEntryDetailSheet: View {
     @State private var showSaveMealSheet = false
     @State private var showSavedMealToast = false
     @State private var showDeleteConfirmation = false
-    @State private var isAIDetailsExpanded = false
     @State private var isEditingRawInput = false
     @State private var editedRawInput = ""
     @State private var editedLoggedAt = Date()
@@ -60,9 +59,15 @@ struct LogEntryDetailSheet: View {
     /// plain estimate returns nil, so no row gains a line that adds nothing.
     private var macrosProvenanceLine: String? {
         MealCopy.provenance(
-            source: entry.feedback?.macrosProvenance ?? .estimated,
+            source: macrosProvenance,
             isAdjusted: false
         )
+    }
+    private var macrosProvenance: MealProvenance {
+        if let breakdown = editableBreakdown {
+            return MealBreakdownCalculator().provenance(of: breakdown)
+        }
+        return entry.feedback?.macrosProvenance ?? .estimated
     }
     /// The breakdown this build can render, and therefore the one it can edit.
     private var editableBreakdown: MealBreakdown? {
@@ -84,45 +89,25 @@ struct LogEntryDetailSheet: View {
     private var canSaveAsMeal: Bool {
         saveableMealMacros != nil
     }
-    private var confidenceValue: Double? {
-        entry.feedback?.confidence
-    }
-    private var confidenceLevel: String {
-        guard let confidenceValue else { return "Unknown" }
-        if confidenceValue >= 0.8 { return "High" }
-        if confidenceValue >= 0.6 { return "Moderate" }
-        return "Low"
-    }
-    private var confidenceColor: Color {
-        guard let confidenceValue else { return .secondary }
-        if confidenceValue >= 0.8 { return .circaInk2 }
-        if confidenceValue >= 0.6 { return .circaAccent }
-        return .circaInk3
-    }
     private var assumptions: [String] {
         entry.feedback?.assumptions ?? []
-    }
-    private var hasExpandableAIDetails: Bool {
-        !assumptions.isEmpty
-    }
-    private var showsAIDetails: Bool {
-        confidenceValue != nil || hasExpandableAIDetails
     }
     private var analysisExplanation: String {
         entry.feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
-    private var rawInputDescription: String {
-        entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    private var shouldShowRawInputDescription: Bool {
-        !isSavedMealEntry && !rawInputDescription.isEmpty
+    private var sourceLabel: String {
+        switch entry.source {
+        case .text: return "Your words"
+        case .image: return "Circa’s interpretation"
+        case .savedMeal: return "Saved meal"
+        }
     }
     private var displayTitle: String {
+        if !isImageMealEntry, !entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return entry.rawInput
+        }
         let title = entry.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !title.isEmpty { return title }
-
-        let rawInput = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        return rawInput.isEmpty ? "Meal" : rawInput
+        return title.isEmpty ? "Meal" : entry.title
     }
     private var isImageMealEntry: Bool {
         entry.source == .image
@@ -130,16 +115,20 @@ struct LogEntryDetailSheet: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 18) {
+                if isImageMealEntry {
+                    DetailHeroImage(entry: entry)
+                }
+
                 headerSection
 
-                VStack(alignment: .leading, spacing: 16) {
-                    if isImageMealEntry {
-                        DetailHeroImage(entry: entry)
-                    }
-
+                VStack(alignment: .leading, spacing: 18) {
                     if let macros = entry.feedback?.macros {
-                        DetailMacroSummaryCard(macros: macros)
+                        CircaHairline()
+                        DetailMacroSummaryCard(
+                            macros: macros,
+                            certainty: macrosProvenance == .estimated ? .estimated : .known
+                        )
 
                         if let macrosProvenanceLine {
                             Text(macrosProvenanceLine)
@@ -155,25 +144,23 @@ struct LogEntryDetailSheet: View {
                         MealBreakdownCard(breakdown: breakdown)
                     }
 
-                    if !analysisExplanation.isEmpty {
-                        LiftEatsAnalysisCard(explanation: analysisExplanation)
-                    }
-
-                    if showsAIDetails {
-                        AIDetailsCard(
-                            confidenceValue: confidenceValue,
-                            confidenceLevel: confidenceLevel,
-                            confidenceColor: confidenceColor,
-                            assumptions: assumptions,
-                            isExpanded: $isAIDetailsExpanded
+                    if !analysisExplanation.isEmpty || !assumptions.isEmpty {
+                        MealAnalysisCard(
+                            explanation: analysisExplanation,
+                            assumptions: assumptions
                         )
                     }
+
+                    MealSourcesRow()
                 }
                 .opacity(isPerformingAction ? 0.5 : 1)
                 .allowsHitTesting(!isPerformingAction)
             }
-            .padding()
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.top, 6)
+            .padding(.bottom, 20)
         }
+        .circaPaper()
         .overlay(alignment: .bottom) {
             if showSavedMealToast {
                 savedMealToast
@@ -181,8 +168,10 @@ struct LogEntryDetailSheet: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .navigationTitle("Details")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.visible, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
             if canModify {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -230,10 +219,11 @@ struct LogEntryDetailSheet: View {
                     .disabled(isPerformingAction)
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(Color.circaInk)
-//                        .padding(10)
+                        .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
                 }
+                .accessibilityLabel("Meal actions")
                 .disabled(isPerformingAction)
                 }
             }
@@ -340,16 +330,20 @@ struct LogEntryDetailSheet: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 6) {
+            CircaSectionLabel("\(sourceLabel) · \(entry.loggedAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute()))")
+                .fixedSize(horizontal: false, vertical: true)
+
             if isEditingRawInput {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .top, spacing: 10) {
                         TextField("", text: $editedRawInput, axis: .vertical)
-                            .font(.title2.weight(.bold))
+                            .font(.title2.weight(.semibold))
                             .foregroundStyle(Color.circaInk)
                             .textFieldStyle(.plain)
                             .focused($isRawInputFocused)
-                            .lineLimit(2...6)
+                            .lineLimit(2...)
+                            .accessibilityLabel("Meal description")
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .disabled(isPerformingAction)
                             .overlay(alignment: .bottomLeading) {
@@ -373,8 +367,10 @@ struct LogEntryDetailSheet: View {
                                     Image(systemName: "xmark")
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(Color.circaInk2)
+                                        .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Cancel rewording")
 
                                 Button {
                                     let trimmedText = editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -388,8 +384,10 @@ struct LogEntryDetailSheet: View {
                                             ? .secondary
                                             : Color.circaAccent
                                         )
+                                        .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Re-estimate meal")
                                 .disabled(editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             }
                         }
@@ -400,22 +398,29 @@ struct LogEntryDetailSheet: View {
                     }
                 }
             } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    if shouldShowRawInputDescription {
-                        Text(rawInputDescription)
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(Color.circaInk2)
-                            .underline()
-                            .lineLimit(3)
+                Text(verbatim: displayTitle)
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(Color.circaInk)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+
+                if canModify, editableBreakdown != nil || !isSavedMealEntry {
+                    Button {
+                        if editableBreakdown != nil {
+                            onClearActionError?()
+                            showBreakdownEditor = true
+                        } else {
+                            onClearAIError?()
+                            editedRawInput = entry.rawInput
+                            isEditingRawInput = true
+                        }
+                    } label: {
+                        Label(editableBreakdown != nil ? "Edit amounts" : "Reword and re-estimate", systemImage: "pencil")
                             .fixedSize(horizontal: false, vertical: true)
                     }
-
-                    Text(displayTitle)
-                        .font(.system(size: 30, weight: .bold, design: .default))
-                        .foregroundStyle(Color.circaInk)
-                        .lineLimit(4)
-                        .minimumScaleFactor(0.82)
-                        .fixedSize(horizontal: false, vertical: true)
+                    .buttonStyle(.circa(.link))
+                    .padding(.leading, -10)
+                    .disabled(isPerformingAction)
                 }
             }
 

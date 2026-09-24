@@ -53,18 +53,17 @@ struct StatsCalculator {
         var snapshot = StatsSnapshot.empty
         snapshot.currentStreakDays = currentStreakDays(from: currentStreakEntries, calendar: calendar)
         snapshot.daysLoggedThisWeek = loggedDays.count
-        snapshot.calorieTargetDays = dailyStats.filter { day in
-            guard let target = day.targetCalories, target > 0 else { return false }
-            return abs(day.caloriesEaten - target) <= target * 0.15
-        }.count
-        snapshot.proteinTargetDays = dailyStats.filter { day in
-            guard let target = day.targetProtein, target > 0 else { return false }
-            return day.protein >= target * 0.9
-        }.count
-        snapshot.averageCalories = dailyStats.reduce(0) { $0 + $1.caloriesEaten } / Double(dailyStats.count)
-        snapshot.averageProtein = dailyStats.reduce(0) { $0 + $1.protein } / Double(dailyStats.count)
-        snapshot.averageCarbs = dailyStats.reduce(0) { $0 + $1.carbs } / Double(dailyStats.count)
-        snapshot.averageFat = dailyStats.reduce(0) { $0 + $1.fat } / Double(dailyStats.count)
+        snapshot.calorieTargetDays = dailyStats.filter(\.isWithinCalorieRange).count
+
+        // Over the days with food, not over seven. A half-logged week divided by
+        // seven reports an average nobody ate, and the Week card gates the figure
+        // on `minimumDaysForAverages` precisely because the denominator is days
+        // that happened.
+        let averagedDays = Double(max(dailyStats.filter(\.hasFood).count, 1))
+        snapshot.averageCalories = dailyStats.reduce(0) { $0 + $1.caloriesEaten } / averagedDays
+        snapshot.averageProtein = dailyStats.reduce(0) { $0 + $1.protein } / averagedDays
+        snapshot.averageCarbs = dailyStats.reduce(0) { $0 + $1.carbs } / averagedDays
+        snapshot.averageFat = dailyStats.reduce(0) { $0 + $1.fat } / averagedDays
         snapshot.foodLogsThisWeek = foodLogs
         snapshot.dailyStats = dailyStats
         return snapshot

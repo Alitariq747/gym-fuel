@@ -1,10 +1,20 @@
 import SwiftUI
 
+/// The day's headline: calories left, what that is out of, and the three macro
+/// bars. Built from the `Day` artboard.
+///
+/// One number is obviously the most important on the screen — `design.md`, "the
+/// tension to watch". The ring, the Eaten/Target pair and the three glyph tiles
+/// it replaced were three competing focal points.
 struct DailyMacroDetailSheet: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let targetMacros: Macros
     let consumedMacros: Macros
+    /// Entries still being read. Built from the `Analysing · text + photo`
+    /// artboard: while any are, this line names them instead of the of-target
+    /// figure, because the figure beside it counts only what has settled.
+    var analysingCount: Int = 0
 
     private var remainingCalories: Int {
         Int((targetMacros.calories - consumedMacros.calories).rounded())
@@ -14,144 +24,92 @@ struct DailyMacroDetailSheet: View {
         remainingCalories < 0 ? "over" : "left"
     }
 
-    private var progressAnimation: Animation? {
+    private var consumed: Int { Int(consumedMacros.calories.rounded()) }
+    private var target: Int { Int(targetMacros.calories.rounded()) }
+
+    private var countAnimation: Animation? {
         reduceMotion ? nil : .easeOut(duration: 0.55)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .center, spacing: 18) {
-                calorieMeta("Eaten", value: Int(consumedMacros.calories.rounded()))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                calorieProgressRing
-
-                calorieMeta("Target", value: Int(targetMacros.calories.rounded()), alignment: .trailing)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+        CircaCard(
+            .raised,
+            inset: EdgeInsets(top: 15, leading: Circa.Space.cardInset,
+                              bottom: 15, trailing: Circa.Space.cardInset)
+        ) {
+            VStack(alignment: .leading, spacing: 13) {
+                headline
+                CircaMacroBars(
+                    protein: macro(consumedMacros.protein, targetMacros.protein),
+                    carbs: macro(consumedMacros.carbs, targetMacros.carbs),
+                    fat: macro(consumedMacros.fat, targetMacros.fat)
+                )
             }
-
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) {
-                    summaryTile("PRO", symbol: "fish", current: consumedMacros.protein, target: targetMacros.protein)
-                        .frame(minWidth: 90)
-                    summaryTile("CARB", symbol: "leaf.fill", current: consumedMacros.carbs, target: targetMacros.carbs)
-                        .frame(minWidth: 90)
-                    summaryTile("FAT", symbol: "drop.fill", current: consumedMacros.fat, target: targetMacros.fat)
-                        .frame(minWidth: 90)
-                }
-
-                VStack(spacing: 8) {
-                    summaryTile("PRO", symbol: "fish", current: consumedMacros.protein, target: targetMacros.protein)
-                    summaryTile("CARB", symbol: "leaf.fill", current: consumedMacros.carbs, target: targetMacros.carbs)
-                    summaryTile("FAT", symbol: "drop.fill", current: consumedMacros.fat, target: targetMacros.fat)
-                }
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .padding(.bottom, 20)
-        .background(Color.circaCard)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.circaCardBorder, lineWidth: 1)
         }
     }
 
-    private var calorieProgressRing: some View {
-        let progress = min(max(consumedMacros.calories / max(targetMacros.calories, 1), 0), 1)
-        let ringColor: Color = consumedMacros.calories > targetMacros.calories ? .circaAccentLarge : .circaInk
-
-        return ZStack {
-            Circle()
-                .stroke(ringColor.opacity(0.10), lineWidth: 9)
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(ringColor, style: StrokeStyle(lineWidth: 9, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-            VStack(spacing: 2) {
-                Text("\(abs(remainingCalories))")
-                    .font(.title3.weight(.bold))
+    private var headline: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                Text(abs(remainingCalories).formatted())
+                    .font(.circaMonoLarge)
+                    .monospacedDigit()
                     .contentTransition(.numericText())
-                    .animation(progressAnimation, value: remainingCalories)
+                    .animation(countAnimation, value: remainingCalories)
                 Text(remainingLabel)
-                    .font(.caption2)
+                    .font(.circaRow)
                     .foregroundStyle(Color.circaInk2)
                     .animation(.easeOut(duration: 0.2), value: remainingLabel)
             }
+
+            Spacer(minLength: 8)
+
+            Text(trailingLine)
+                .font(.circaMono)
+                .monospacedDigit()
+                .foregroundStyle(analysingCount > 0 ? Color.circaAccent : Color.circaInk3)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(width: 108, height: 108)
-        .animation(progressAnimation, value: progress)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(abs(remainingCalories)) calories \(remainingLabel), \(trailingLine)"
+        )
     }
 
-    private func summaryTile(_ short: String, symbol: String, current: Double, target: Double) -> some View {
-        let progress = min(max(current / max(target, 1), 0), 1)
-        let baseColor: Color = switch short {
-        case "PRO": .circaInk
-        case "CARB": .circaInk2
-        default: .circaAccentLarge
+    private var trailingLine: String {
+        if analysingCount > 0 {
+            return "\(analysingCount) still estimating"
         }
-        let fillColor: Color = current > target ? .circaAccentLarge : baseColor
 
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 5) {
-                Image(systemName: symbol)
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(baseColor)
-                    .frame(width: 14, height: 14)
-                Text(short)
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Color.circaInk2)
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text("\(Int(current.rounded()))")
-                    .font(.headline.weight(.bold))
-                    .contentTransition(.numericText())
-                    .animation(progressAnimation, value: current)
-                Text("/ \(Int(target.rounded()))g")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(Color.circaInk2)
-            }
-            Capsule()
-                .fill(Color.circaBarTrack)
-                .overlay(alignment: .leading) {
-                    Capsule()
-                        .fill(fillColor)
-                        .frame(maxWidth: .infinity)
-                        .scaleEffect(x: progress, y: 1, anchor: .leading)
-                        .animation(progressAnimation, value: progress)
-                }
-                .frame(height: 6)
+        // The `Empty day` artboard. An untouched day reads as the whole day
+        // still ahead, not as a zero.
+        if consumed == 0 {
+            return "the whole day"
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.circaCardBorder, lineWidth: 1)
-        }
+
+        return "\(consumed.formatted()) of \(target.formatted())"
     }
 
-    private func calorieMeta(_ label: String, value: Int, alignment: HorizontalAlignment = .leading) -> some View {
-        VStack(alignment: alignment, spacing: 4) {
-            Text(label)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(Color.circaInk2)
-            Text("\(value)")
-                .font(.headline.weight(.bold))
-                .contentTransition(.numericText())
-                .animation(progressAnimation, value: value)
-            Text("kcal")
-                .font(.caption2)
-                .foregroundStyle(Color.circaInk2)
-        }
+    private func macro(_ current: Double, _ target: Double) -> CircaMacroValue {
+        CircaMacroValue(consumed: Int(current.rounded()), target: Int(target.rounded()))
     }
-
 }
 
 #Preview {
     DailyMacroDetailSheet(
-        targetMacros: Macros(calories: 2400, protein: 170, carbs: 250, fat: 70),
-        consumedMacros: Macros(calories: 1480, protein: 212, carbs: 80, fat: 26)
+        targetMacros: Macros(calories: 2400, protein: 165, carbs: 240, fat: 80),
+        consumedMacros: Macros(calories: 1380, protein: 81, carbs: 134, fat: 56)
     )
+    .padding()
+    .circaPaper()
+}
+
+#Preview("Still estimating") {
+    DailyMacroDetailSheet(
+        targetMacros: Macros(calories: 2400, protein: 165, carbs: 240, fat: 80),
+        consumedMacros: Macros(calories: 420, protein: 9, carbs: 48, fat: 21),
+        analysingCount: 2
+    )
+    .padding()
+    .circaPaper()
 }

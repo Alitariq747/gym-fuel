@@ -5,308 +5,286 @@ struct TimelineEntryRow: View {
     var localPreviewData: Data? = nil
     var onRetry: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
-    var shouldAnimateSuccessReveal: Bool = false
-    var onSuccessRevealCompleted: (() -> Void)? = nil
-    var onTapAssumption: (() -> Void)? = nil
-    @State private var showRevealedTitle = false
-    @State private var showRevealedCalories = false
-    @State private var showRevealedProtein = false
-    @State private var showRevealedCarbs = false
-    @State private var showRevealedFat = false
-    @State private var revealSequenceTask: Task<Void, Never>?
-    @State private var imageAnalysisMessage = "Reading your meal"
+    @State private var imageAnalysisMessage = Self.firstImageAnalysisMessage
     @State private var imageAnalysisMessageTask: Task<Void, Never>?
-    @State private var runningSuccessRevealEntryID: String?
-    private let revealStepDelay: Duration = .milliseconds(220)
-    private let revealAnimationDuration = 0.3
-    private let leadingMediaWidth: CGFloat = 72
-    private let leadingMediaHeight: CGFloat = 88
+    @Environment(\.dynamicTypeSize) private var typeSize
+    private let settleAnimationDuration = 0.3
+    private static let firstImageAnalysisMessage = "reading your meal"
 
     private var rowState: TimelineEntryRowState {
         TimelineEntryRowState(entry: entry, localPreviewData: localPreviewData)
-    }
-
-    /// The most consequential assumption, on the row — ochre mono, design.md's
-    /// assumption colour.
-    ///
-    /// Tapping it goes straight to the editor. The row is itself one big `Button`,
-    /// so if the outer one wins the hit test instead, the tap still opens the
-    /// entry: the same destination, one step further away.
-    @ViewBuilder
-    private func assumptionRow(_ line: String) -> some View {
-        if rowState.hasEditableBreakdown, let onTapAssumption {
-            Button(action: onTapAssumption) { assumptionText(line) }
-                .buttonStyle(.plain)
-        } else {
-            assumptionText(line)
-        }
-    }
-
-    private func assumptionText(_ line: String) -> some View {
-        Text(line)
-            .font(.circaMono)
-            .foregroundStyle(Color.circaAccent)
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-    }
-
-    private func applyImmediateRevealState() {
-        showRevealedTitle = true
-        showRevealedCalories = rowState.hasConsumedMacros
-        showRevealedProtein = rowState.hasConsumedMacros
-        showRevealedCarbs = rowState.hasConsumedMacros
-        showRevealedFat = rowState.hasConsumedMacros
-    }
-
-    private func resetRevealState() {
-        showRevealedTitle = false
-        showRevealedCalories = false
-        showRevealedProtein = false
-        showRevealedCarbs = false
-        showRevealedFat = false
-    }
-
-    private func syncRevealStateForCurrentEntry() {
-        guard entry.status == .succeeded else {
-            revealSequenceTask?.cancel()
-            revealSequenceTask = nil
-            runningSuccessRevealEntryID = nil
-            resetRevealState()
-            return
-        }
-
-        if shouldAnimateSuccessReveal {
-            guard runningSuccessRevealEntryID != entry.id else { return }
-            revealSequenceTask?.cancel()
-            revealSequenceTask = nil
-            runningSuccessRevealEntryID = entry.id
-            resetRevealState()
-            startSuccessRevealSequence()
-        } else {
-            revealSequenceTask?.cancel()
-            revealSequenceTask = nil
-            runningSuccessRevealEntryID = nil
-            applyImmediateRevealState()
-        }
     }
 
     private func syncImageAnalysisMessageState() {
         guard rowState.isAnalyzingImageEntry else {
             imageAnalysisMessageTask?.cancel()
             imageAnalysisMessageTask = nil
-            imageAnalysisMessage = "Reading your meal"
+            imageAnalysisMessage = Self.firstImageAnalysisMessage
             return
         }
 
         guard imageAnalysisMessageTask == nil else { return }
-        imageAnalysisMessage = "Reading your meal"
+        imageAnalysisMessage = Self.firstImageAnalysisMessage
         imageAnalysisMessageTask = Task {
             try? await Task.sleep(for: .seconds(3))
             guard !Task.isCancelled else { return }
-            await MainActor.run { imageAnalysisMessage = "Estimating calories and macros" }
+            await MainActor.run { imageAnalysisMessage = "estimating calories and macros" }
 
             try? await Task.sleep(for: .seconds(3))
             guard !Task.isCancelled else { return }
-            await MainActor.run { imageAnalysisMessage = "Preparing your meal summary" }
-        }
-    }
-
-    private func startSuccessRevealSequence() {
-        revealSequenceTask = Task {
-            await reveal(\.showRevealedTitle)
-            await reveal(\.showRevealedCalories)
-
-            if rowState.hasConsumedMacros {
-                await reveal(\.showRevealedProtein)
-                await reveal(\.showRevealedCarbs)
-                await reveal(\.showRevealedFat)
-            }
-
-            runningSuccessRevealEntryID = nil
-            onSuccessRevealCompleted?()
-        }
-    }
-
-    private func reveal(_ keyPath: ReferenceWritableKeyPath<TimelineEntryRow, Bool>) async {
-        try? await Task.sleep(for: revealStepDelay)
-        guard !Task.isCancelled else { return }
-        await MainActor.run {
-            self[keyPath: keyPath] = true
+            await MainActor.run { imageAnalysisMessage = "preparing your summary" }
         }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .center, spacing: 12) {
-                TimelineEntryLeadingVisual(
-                    entry: entry,
-                    state: rowState,
-                    width: leadingMediaWidth,
-                    height: leadingMediaHeight
-                )
-                VStack(alignment: .leading, spacing: 6) {
-                    if let statusText = rowState.statusText {
-                        HStack(spacing: 8) {
-                            infoChip(statusText)
-                        }
-                    }
-                    if rowState.isAnalyzingTextEntry {
-                        loadingContent(
-                            title: entry.rawInput,
-                            status: "Estimating",
-                            symbolName: "sparkles"
-                        )
-                    } else if rowState.isAnalyzingImageEntry {
-                        loadingContent(
-                            title: "Analyzing",
-                            status: imageAnalysisMessage,
-                            symbolName: "camera.macro"
-                        )
-                    } else if rowState.isFailedTextEntry {
-                        Text(entry.rawInput)
-                            .font(.subheadline.weight(.medium))
-                            .lineLimit(2)
-                    } else if !rowState.isAnalyzingImageEntry && !rowState.isFailedImageEntry && (entry.status != .succeeded || showRevealedTitle) {
-                        HStack(alignment: .top, spacing: 10) {
-                            Text(entry.title)
-                                .font(.subheadline.bold())
-                                .lineLimit(2)
-                            Spacer(minLength: 8)
-                            Text(entry.loggedAt.formatted(date: .omitted, time: .shortened))
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(Color.circaInk2)
-                                .fixedSize()
-                        }
-                        TimelineEntryMetricsView(
-                            entry: entry,
-                            state: rowState,
-                            showRevealedCalories: showRevealedCalories,
-                            showRevealedProtein: showRevealedProtein,
-                            showRevealedCarbs: showRevealedCarbs,
-                            showRevealedFat: showRevealedFat
-                        )
-                        if let assumptionLine = rowState.assumptionLine {
-                            assumptionRow(assumptionLine)
-                        }
-                    }
-                    if entry.status == .analyzing, !rowState.isAnalyzingTextEntry, !rowState.isAnalyzingImageEntry {
-                        Text(entry.rawInput == "Meal image" ? "Analyzing your meal image..." : entry.rawInput)
-                            .font(.subheadline)
-                            .foregroundStyle(Color.circaInk2)
-                            .lineLimit(2)
-                    } else if let failureMessage = rowState.failureMessage, !rowState.isFailedImageEntry {
-                        Text(failureMessage)
-                            .font(.caption)
-                            .foregroundStyle(Color.circaDanger)
-                            .lineLimit(2)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                if hasTrailingAccessory {
-                    Spacer(minLength: 12)
-                    trailingAccessory
-                }
-            }
-            if let failureMessage = rowState.failureMessage, rowState.isFailedImageEntry {
-                Text(failureMessage)
-                    .font(.caption)
-                    .foregroundStyle(Color.circaDanger)
-                    .lineLimit(2)
+        Group {
+            switch entry.status {
+            case .succeeded: settledRow
+            case .analyzing: analysingRow
+            case .failed: failedCard
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(rowBackground, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(rowStroke, lineWidth: 1)
-        )
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedTitle)
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedCalories)
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedProtein)
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedCarbs)
-        .animation(.easeInOut(duration: revealAnimationDuration), value: showRevealedFat)
+        // The estimate fades in over the pending rule that is already there.
+        // design.md rule 1 — nothing jumps when the number lands, so this is one
+        // transition on the value, never a sequence that grows the row.
+        .animation(.easeInOut(duration: settleAnimationDuration), value: entry.feedback?.macros)
         .onAppear {
-            syncRevealStateForCurrentEntry()
             syncImageAnalysisMessageState()
         }
         .onDisappear {
-            revealSequenceTask?.cancel()
-            revealSequenceTask = nil
             imageAnalysisMessageTask?.cancel()
             imageAnalysisMessageTask = nil
-            runningSuccessRevealEntryID = nil
-        }
-        .onChange(of: entry.id) { _, _ in
-            syncRevealStateForCurrentEntry()
         }
         .onChange(of: entry.status) { _, _ in
-            syncRevealStateForCurrentEntry()
             syncImageAnalysisMessageState()
-        }
-        .onChange(of: shouldAnimateSuccessReveal) { _, _ in
-            syncRevealStateForCurrentEntry()
         }
     }
 
-    private var hasTrailingAccessory: Bool {
-        entry.status == .failed
+    // MARK: - Settled
+
+    /// A meal that has landed. The whole row is the kit's — including the
+    /// certainty rule under the number and the AX3 vertical layout, neither of
+    /// which this screen re-solves.
+    private var settledRow: some View {
+        CircaEntryRow(
+            title: displayTitle,
+            calories: MealCopy.calories(rowState.feedback?.macros),
+            certainty: rowState.certainty,
+            meta: metaLine,
+            assumption: rowState.assumptionLine,
+            leading: leading
+        )
+    }
+
+    /// design.md rule 3 — `rawInput` verbatim, never the model's laundered
+    /// `title`. A photo entry's `rawInput` is the server's description of the
+    /// plate, which `metaLine` marks as the app's reading; when there is none
+    /// the server sends the literal "Meal image" and `title` is all there is.
+    private var displayTitle: String {
+        let raw = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        return raw.isEmpty || raw == "Meal image" ? entry.title : raw
+    }
+
+    /// `"13:45 · 42P 78C 32F"`, then where the meal came from when that is not
+    /// the user typing.
+    private var metaLine: String {
+        var parts = [entry.loggedAt.formatted(date: .omitted, time: .shortened)]
+
+        if let macros = rowState.feedback?.macros {
+            parts.append(
+                "\(Int(macros.protein.rounded()))P \(Int(macros.carbs.rounded()))C \(Int(macros.fat.rounded()))F"
+            )
+        }
+
+        switch entry.source {
+        case .savedMeal: parts.append("saved")
+        case .image: parts.append("from your photo")
+        case .text: break
+        }
+
+        return parts.joined(separator: " · ")
+    }
+
+    private var leading: CircaEntryLeading {
+        guard rowState.isMealImageEntry else {
+            return .glyph(entry.source == .savedMeal ? "bookmark" : "square.and.pencil")
+        }
+
+        return .photoContent(AnyView(photoContent))
+    }
+
+    /// The photo, and the sweep across it while it is being read. The kit owns
+    /// the well, its radius and the AX3 drop; only the sweep is this screen's.
+    private var photoContent: some View {
+        Group {
+            if let localPreviewData = rowState.localPreviewData,
+               let previewImage = UIImage(data: localPreviewData) {
+                Image(uiImage: previewImage)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                MealImageThumbnailView(
+                    entryId: entry.id,
+                    storagePath: rowState.imageStoragePath,
+                    size: Circa.minHitTarget
+                )
+            }
+        }
+        .overlay {
+            if rowState.isAnalyzingImageEntry {
+                ImageAnalysisScannerOverlay()
+            }
+        }
+    }
+
+    /// The same well, for the failure card, which draws its own leading.
+    private var photoWell: some View {
+        let shape = RoundedRectangle(cornerRadius: Circa.Radius.thumb, style: .continuous)
+
+        return shape
+            .fill(Color.circaMediaWell)
+            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+            .overlay { photoContent.clipShape(shape) }
+    }
+
+    // MARK: - Analysing
+
+    /// Built from the `Analysing · text + photo` artboard. The same row, the same
+    /// well and the same place for the number — only the number is missing, and
+    /// the rule is already holding its spot (design.md rule 1).
+    private var analysingRow: some View {
+        CircaEntryRow(
+            title: rowState.isAnalyzingImageEntry ? "your photo" : entry.rawInput,
+            calories: nil,
+            certainty: .pending,
+            meta: rowState.isAnalyzingImageEntry ? imageAnalysisMessage : "estimating",
+            leading: leading,
+            isAnalysing: true
+        )
+    }
+
+    // MARK: - Failed
+
+    /// Built from the `Failed · retry` artboard. design.md rule 6 — the sentence
+    /// and the photo survive, so the card leads with them and **Try again** costs
+    /// the user nothing.
+    private var failedCard: some View {
+        CircaCard(.danger, radius: Circa.Radius.cardSmall) {
+            HStack(alignment: .top, spacing: 11) {
+                failedLeading
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(rowState.isMealImageEntry ? "your photo" : displayTitle)
+                        .font(.circaEntryTitle)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(rowState.failureLine)
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaDanger)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    // Outside the logging window the callbacks are nil, and a
+                    // button that silently does nothing is worse than no button.
+                    if onRetry != nil || onDelete != nil {
+                        failedActions
+                            .padding(.top, 5)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, Circa.Space.screenMarginWide)
+        .padding(.vertical, 6)
     }
 
     @ViewBuilder
-    private var trailingAccessory: some View {
-        if entry.status == .failed {
-            HStack(spacing: 8) {
-                Button(action: { onRetry?() }) {
-                    Image(systemName: "arrow.clockwise")
-                        .frame(width: 30, height: 30)
-                        .background(Color.circaWell, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                }
-                Button(action: { onDelete?() }) {
-                    Image(systemName: "trash")
-                        .frame(width: 30, height: 30)
-                        .background(Color.circaDangerGround, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                }
-            }
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(Color.circaInk2)
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func loadingContent(title: String, status: String, symbolName: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.circaInk)
-                .lineLimit(2)
-
-            AnalysisLoadingStatusLine(text: status, symbolName: symbolName)
-                .padding(.top, 1)
-
-            AnalysisProgressRail()
+    private var failedLeading: some View {
+        if rowState.isMealImageEntry {
+            photoWell
+        } else {
+            Image(systemName: "exclamationmark.circle")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Color.circaDanger)
                 .padding(.top, 2)
         }
     }
 
     @ViewBuilder
-    private func infoChip(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.medium))
-            .foregroundStyle(Color.circaInk2)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color.circaSunken, in: Capsule())
-    }
+    private var failedActions: some View {
+        let tryAgain = Group {
+            if let onRetry {
+                Button(action: onRetry) {
+                    Label("Try again", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.circa(.primary))
+            }
+        }
 
-    private var rowBackground: AnyShapeStyle {
-        AnyShapeStyle(Color.circaCard)
-    }
+        let delete = Group {
+            if let onDelete {
+                Button("Delete", action: onDelete)
+                    .buttonStyle(.circa(.quiet))
+            }
+        }
 
-    private var rowStroke: Color {
-        Color.circaCardBorder
+        // At accessibility sizes the pair stacks rather than shrinking — the
+        // 44pt floor is not negotiable (design.md rule 8).
+        if typeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 4) {
+                tryAgain
+                delete
+            }
+        } else {
+            HStack(spacing: 8) {
+                tryAgain
+                delete
+                Spacer(minLength: 0)
+            }
+        }
+    }
+}
+
+/// The sweep across a photo that is being read. Paired with `CircaProgressRail`
+/// under the row, never with a percentage.
+private struct ImageAnalysisScannerOverlay: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isScanning = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = max(proxy.size.width, 1)
+            let scannerWidth = max(width * 0.28, 18)
+
+            ZStack(alignment: .leading) {
+                Color.clear
+
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.clear,
+                                Color.white.opacity(0.26),
+                                Color.white.opacity(0.18),
+                                Color.clear
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: scannerWidth)
+                    .offset(x: reduceMotion ? width * 0.36 : (isScanning ? width : -scannerWidth))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onAppear {
+            guard !reduceMotion else { return }
+            isScanning = false
+            withAnimation(.easeInOut(duration: 1.55).repeatForever(autoreverses: false)) {
+                isScanning = true
+            }
+        }
+        .onChange(of: reduceMotion) { _, isEnabled in
+            if isEnabled { isScanning = false }
+        }
     }
 }
