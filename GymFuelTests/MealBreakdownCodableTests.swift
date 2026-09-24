@@ -63,7 +63,6 @@ struct MealBreakdownCodableTests {
     private func feedback(with breakdown: MealBreakdown?) -> LogEntryFeedback {
         LogEntryFeedback(
             explanation: "Estimated from typical home portions.",
-            assumptions: ["Ghee, not oil", "One katori is about 200 ml"],
             confidence: 0.62,
             macros: Macros(calories: 919, protein: 36.8, carbs: 80.1, fat: 52.1),
             breakdown: breakdown,

@@ -5,7 +5,7 @@ extension SavedMeal {
         let itemWords = breakdown?.items.flatMap { item in
             [item.name, item.assumption ?? ""] + item.components.flatMap { [$0.name, $0.assumption ?? ""] }
         } ?? []
-        return ([name, description ?? ""] + (assumptions ?? []) + itemWords).joined(separator: " ")
+        return ([name, description ?? ""] + itemWords).joined(separator: " ")
     }
 }
 

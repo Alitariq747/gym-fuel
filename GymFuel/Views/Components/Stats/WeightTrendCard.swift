@@ -19,9 +19,6 @@ struct WeightTrendCard: View {
     let windowStart: Date
     let windowEnd: Date
     let onWeighIn: () -> Void
-    /// Non-nil only while Apple Health is available and not yet connected, so
-    /// the prompt removes itself the moment it is used.
-    var onConnectHealth: (() -> Void)? = nil
     /// Opens the Weight screen.
     var onOpen: (() -> Void)? = nil
 
@@ -51,13 +48,6 @@ struct WeightTrendCard: View {
 
                 if let onOpen {
                     Button("See weigh-ins and plan", action: onOpen)
-                        .buttonStyle(.circa(.link, height: 32))
-                }
-
-                if let onConnectHealth {
-                    // The cheapest possible second weigh-in: a scale that
-                    // already writes to Health.
-                    Button("Sync from Apple Health", action: onConnectHealth)
                         .buttonStyle(.circa(.link, height: 32))
                 }
 

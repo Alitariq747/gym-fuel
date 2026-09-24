@@ -1,64 +1,28 @@
 import SwiftUI
 
-/// What the estimate was read as, and what it assumed.
+/// What the estimate was read as.
+///
+/// The prose only. What Circa assumed sits on the breakdown rows instead, beside
+/// the amount it is an assumption about — an assumption listed away from its
+/// ingredient names something the reader cannot then go and correct.
 ///
 /// No confidence figure, by rule: `design.md` rule 1 asks for specific
 /// uncertainty copy — "2 tbsp of ghee in the karahi" — in place of a percentage
 /// nothing has calibrated and a reader would take for an accuracy rate.
 struct MealAnalysisCard: View {
     let explanation: String
-    let assumptions: [String]
-
-    private var showsExplanation: Bool { !explanation.isEmpty }
-    private var showsAssumptions: Bool { !assumptions.isEmpty }
 
     var body: some View {
         CircaCard {
-            VStack(alignment: .leading, spacing: 14) {
-                if showsExplanation {
-                    VStack(alignment: .leading, spacing: 6) {
-                        CircaSectionLabel("How this was estimated")
+            VStack(alignment: .leading, spacing: 6) {
+                CircaSectionLabel("How this was estimated")
 
-                        Text(explanation)
-                            .font(.circaBody)
-                            .foregroundStyle(Color.circaInk2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                if showsExplanation, showsAssumptions {
-                    CircaHairline(weight: .inCard)
-                }
-
-                if showsAssumptions {
-                    VStack(alignment: .leading, spacing: 9) {
-                        CircaSectionLabel("What Circa assumed")
-
-                        VStack(alignment: .leading, spacing: 7) {
-                            ForEach(Array(assumptions.enumerated()), id: \.offset) { index, assumption in
-                                assumptionRow(number: index + 1, text: assumption)
-                            }
-                        }
-                    }
-                }
+                Text(explanation)
+                    .font(.circaBody)
+                    .foregroundStyle(Color.circaInk2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
-    }
-
-    private func assumptionRow(number: Int, text: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 9) {
-            Text(number.formatted(.number.precision(.integerLength(2))))
-                .font(.circaMono)
-                .monospacedDigit()
-                .foregroundStyle(Color.circaInk3)
-
-            Text(text)
-                .font(.circaBody)
-                .foregroundStyle(Color.circaInk)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Assumption \(number). \(text)")
     }
 }
 

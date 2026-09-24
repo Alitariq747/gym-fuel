@@ -29,7 +29,6 @@ struct SavedMealSnapshotTests {
             description: "with mayo",
             macros: breakdown.map { MealBreakdownCalculator().total(of: $0) } ?? .zero,
             breakdown: breakdown,
-            assumptions: ["A 25 g packet of crisps"],
             macrosProvenance: .estimated
         )
     }
@@ -38,7 +37,6 @@ struct SavedMealSnapshotTests {
     private func relogged(_ meal: SavedMeal) -> LogEntryFeedback {
         LogEntryFeedback(
             explanation: "Saved meal logged directly.",
-            assumptions: meal.assumptions ?? [],
             confidence: nil,
             macros: meal.macros,
             breakdown: meal.breakdown,
@@ -63,9 +61,8 @@ struct SavedMealSnapshotTests {
     func contextSurvivesRelogging() {
         let feedback = relogged(snapshot(of: corrected))
 
-        #expect(feedback.assumptions == ["A 25 g packet of crisps"])
         #expect(feedback.macrosProvenance == .estimated)
-        #expect(MealBreakdownCalculator().assumptions(of: feedback).first == "Full-fat, not light")
+        #expect(MealBreakdownCalculator().assumptions(of: feedback) == ["Full-fat, not light"])
     }
 
     @Test("Every field of a snapshot survives encoding and decoding")
@@ -89,7 +86,6 @@ struct SavedMealSnapshotTests {
         let decoded = try JSONDecoder().decode(SavedMeal.self, from: data)
 
         #expect(decoded.breakdown == nil)
-        #expect(decoded.assumptions == nil)
         #expect(decoded.macros.calories == 620)
     }
 
@@ -104,7 +100,7 @@ struct SavedMealSnapshotTests {
         let feedback = relogged(typed)
 
         #expect(feedback.breakdown == nil)
-        #expect(feedback.assumptions.isEmpty)
+        #expect(MealBreakdownCalculator().assumptions(of: feedback).isEmpty)
         #expect(feedback.macros?.calories == 300)
     }
 
@@ -131,7 +127,6 @@ struct SavedMealSnapshotTests {
         let result = MealBreakdownCalculator.superseding(snapshot(of: corrected), withUserTotal: typed)
 
         #expect(result.breakdown == nil)
-        #expect(result.assumptions == nil)
         #expect(result.macros == typed)
         #expect(result.macrosProvenance == .userTotal)
     }

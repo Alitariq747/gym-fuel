@@ -130,11 +130,14 @@ struct TimelineEntryRow: View {
                 )
             }
         }
+        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+        .clipped()
         .overlay {
             if rowState.isAnalyzingImageEntry {
                 ImageAnalysisScannerOverlay()
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.thumb, style: .continuous))
     }
 
     /// The same well, for the failure card, which draws its own leading.
@@ -154,7 +157,7 @@ struct TimelineEntryRow: View {
     /// the rule is already holding its spot (design.md rule 1).
     private var analysingRow: some View {
         CircaEntryRow(
-            title: rowState.isAnalyzingImageEntry ? "your photo" : entry.rawInput,
+            title: rowState.isAnalyzingImageEntry ? "Meal photo" : entry.rawInput,
             calories: nil,
             certainty: .pending,
             meta: rowState.isAnalyzingImageEntry ? imageAnalysisMessage : "estimating",

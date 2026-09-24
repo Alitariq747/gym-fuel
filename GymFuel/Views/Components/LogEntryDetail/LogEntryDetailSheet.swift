@@ -45,7 +45,6 @@ struct LogEntryDetailSheet: View {
             description: description,
             macros: stored,
             breakdown: editableBreakdown,
-            assumptions: entry.feedback?.assumptions,
             macrosProvenance: entry.feedback?.macrosProvenance
         )
 
@@ -88,9 +87,6 @@ struct LogEntryDetailSheet: View {
     }
     private var canSaveAsMeal: Bool {
         saveableMealMacros != nil
-    }
-    private var assumptions: [String] {
-        entry.feedback?.assumptions ?? []
     }
     private var analysisExplanation: String {
         entry.feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -144,11 +140,8 @@ struct LogEntryDetailSheet: View {
                         MealBreakdownCard(breakdown: breakdown)
                     }
 
-                    if !analysisExplanation.isEmpty || !assumptions.isEmpty {
-                        MealAnalysisCard(
-                            explanation: analysisExplanation,
-                            assumptions: assumptions
-                        )
+                    if !analysisExplanation.isEmpty {
+                        MealAnalysisCard(explanation: analysisExplanation)
                     }
 
                     MealSourcesRow()

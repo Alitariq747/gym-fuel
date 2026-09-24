@@ -61,19 +61,20 @@ struct MealBreakdownCalculator {
 
     // MARK: - Assumptions
 
-    /// Every assumption this meal rests on — the breakdown's and the meal's own —
-    /// deduplicated, **most consequential first**, so `.first` is the one worth a
-    /// single line on the timeline.
+    /// Every assumption this meal rests on, **most consequential first**, so
+    /// `.first` is the one worth a single line on the timeline.
     ///
-    /// A meal whose total the user typed has neither source left, so it has no
-    /// assumptions at all. That falls out of §6 rather than being special-cased.
+    /// The breakdown is the only source. An assumption with no node to sit on has
+    /// nothing the user can correct, so a meal with no breakdown — one the model
+    /// could price no part of, or one whose total the user typed — says nothing
+    /// rather than reaching for a sentence that fits every meal equally.
     func assumptions(of feedback: LogEntryFeedback?) -> [String] {
         guard let feedback else { return [] }
 
         var seen = Set<String>()
-        return (ranked(feedback) + feedback.assumptions)
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty && seen.insert($0).inserted }
+        return ranked(feedback)
+            .compactMap { MealCopy.assumption($0) }
+            .filter { seen.insert($0).inserted }
     }
 
     private struct RankedAssumption {
@@ -129,7 +130,6 @@ struct MealBreakdownCalculator {
     ) -> LogEntryFeedback {
         LogEntryFeedback(
             explanation: "",
-            assumptions: [],
             confidence: nil,
             macros: macros,
             breakdown: nil,
@@ -144,7 +144,6 @@ struct MealBreakdownCalculator {
         var updated = meal
         updated.macros = macros
         updated.breakdown = nil
-        updated.assumptions = nil
         updated.macrosProvenance = .userTotal
         return updated
     }

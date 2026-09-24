@@ -64,6 +64,11 @@ struct RootView: View {
             if profileViewModel.profile?.isOnboardingComplete == true {
                 pendingOnboarding = nil
 
+                // The uid was already in hand, so `.task(id:)` will not re-fire
+                // and nothing else would import until the next foreground. The
+                // guest path gets this from `finishGuestOnboarding`.
+                await importHealthWeight(for: uid)
+
                 if !subscriptionViewModel.hasProAccess {
                     FirebaseTelemetryService.logOnboardingEvent("paywall_presented")
                     showPostOnboardingPaywall = true

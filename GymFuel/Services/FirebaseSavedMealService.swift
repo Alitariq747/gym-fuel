@@ -18,7 +18,6 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
         let macros: Macros
         let createdAt: Date
         @Lenient var breakdown: MealBreakdown? = nil
-        let assumptions: [String]?
         let macrosProvenance: MealProvenance?
     }
 
@@ -36,7 +35,6 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
             macros: document.macros,
             createdAt: document.createdAt,
             breakdown: document.breakdown,
-            assumptions: document.assumptions,
             macrosProvenance: document.macrosProvenance
         )
     }
@@ -63,7 +61,6 @@ final class FirebaseSavedMealService: SavedMealService, @unchecked Sendable {
                 macros: meal.macros,
                 createdAt: meal.createdAt,
                 breakdown: meal.breakdown,
-                assumptions: meal.assumptions,
                 macrosProvenance: meal.macrosProvenance
             )
         )

@@ -9,7 +9,6 @@ import Foundation
 
 struct LogEntryFeedback: Codable, Equatable, Hashable, Sendable {
     var explanation: String
-    var assumptions: [String]
     var confidence: Double?
     var macros: Macros?
     /// The editable tree — `meal-contract.md`. `nil` when the model could price

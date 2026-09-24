@@ -222,6 +222,7 @@ struct ProfileView: View {
             }
 
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .circaPaper()
         .overlay(alignment: .bottom) {
             if showSaveToast {

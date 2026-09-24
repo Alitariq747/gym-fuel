@@ -9,11 +9,15 @@ struct DetailHeroImage: View {
                 entryId: entry.id,
                 storagePath: entry.image?.storagePath,
                 width: geometry.size.width,
-                height: 168
+                height: geometry.size.width,
+                displayMode: .fullPhoto
             )
+            .overlay {
+                RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                    .strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+            }
         }
-        .frame(height: 168)
-        .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous))
+        .aspectRatio(1, contentMode: .fit)
         .accessibilityLabel("Meal photo")
     }
 }

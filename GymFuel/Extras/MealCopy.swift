@@ -53,6 +53,13 @@ enum MealCopy {
         return "\(before) → \(after) kcal · \(change > 0 ? "+" : "−")\(abs(change))"
     }
 
+    /// A node's assumption as it is shown, or `nil` when the node has nothing to
+    /// say. Blank is not an assumption, wherever it is read.
+    static func assumption(_ text: String?) -> String? {
+        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed?.isEmpty == false ? trimmed : nil
+    }
+
     /// "2 assumptions · Full-fat, not light" — the timeline's single line, naming
     /// the assumption that moves the number most. One assumption stands alone, and
     /// a count with nothing to name is not worth a line at all.

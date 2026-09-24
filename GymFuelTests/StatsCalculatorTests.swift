@@ -36,7 +36,6 @@ struct StatsCalculatorTests {
             rawInput: "meal",
             feedback: LogEntryFeedback(
                 explanation: "",
-                assumptions: [],
                 macros: Macros(calories: calories, protein: 40, carbs: 60, fat: 20)
             )
         )

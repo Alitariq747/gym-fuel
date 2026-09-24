@@ -10,6 +10,7 @@ struct ProfileHealthSection: View {
 
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @State private var showDetails = false
+    @State private var showAsksOnce = false
 
     var body: some View {
         // Nothing to offer on hardware with no Health database.
@@ -21,13 +22,14 @@ struct ProfileHealthSection: View {
                     if healthWeightSync.isConnected {
                         showDetails = true
                     } else {
-                        Task { await connect() }
+                        Task { await turnOn() }
                     }
                 } label: {
                     ProfileSettingsRow(
                         title: "Weight Sync",
                         systemImage: "scalemass.fill",
-                        value: rowValue
+                        value: rowValue,
+                        detail: rowDetail
                     )
                 }
                 .buttonStyle(.plain)
@@ -41,12 +43,30 @@ struct ProfileHealthSection: View {
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
+            // Switching on without a sheet appearing looks like the tap failed,
+            // so it says why and where the switch the app cannot reach lives.
+            .alert(HealthSyncCopy.asksOnceTitle, isPresented: $showAsksOnce) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(HealthSyncCopy.asksOnceBody)
+            }
         }
     }
 
     private var rowValue: String {
-        if healthWeightSync.isSyncing { return "Syncing…" }
-        return healthWeightSync.isConnected ? "Connected" : "Not connected"
+        HealthSyncCopy.status(
+            isConnected: healthWeightSync.isConnected,
+            isSyncing: healthWeightSync.isSyncing
+        )
+    }
+
+    private var rowDetail: String? {
+        HealthSyncCopy.detail(
+            isConnected: healthWeightSync.isConnected,
+            isSyncing: healthWeightSync.isSyncing,
+            hasSynced: healthWeightSync.hasSynced,
+            lastFoundDateKey: healthWeightSync.lastFoundDateKey
+        )
     }
 
     // MARK: - Detail sheet
@@ -111,14 +131,31 @@ struct ProfileHealthSection: View {
                         .foregroundStyle(Color.circaInk2)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Button {
-                        Task { await syncNow() }
-                    } label: {
-                        Text(healthWeightSync.isSyncing ? "Syncing…" : "Sync now")
-                        .frame(maxWidth: .infinity)
+                    VStack(spacing: 10) {
+                        Button {
+                            Task { await syncNow() }
+                        } label: {
+                            Text(healthWeightSync.isSyncing ? HealthSyncCopy.syncing : "Sync now")
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.circa(.primary, height: 52))
+                        .disabled(healthWeightSync.isSyncing)
+
+                        // Stops future imports. Weigh-ins already imported stay:
+                        // they are measurements, and Step 4e permits deleting
+                        // typed ones only. It cannot revoke the iOS permission
+                        // either — no API does — which is what the line above
+                        // points at the Health app for.
+                        Button {
+                            healthWeightSync.disconnect()
+                            showDetails = false
+                        } label: {
+                            Text("Disconnect")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.circa(.outline, height: 52))
+                        .disabled(healthWeightSync.isSyncing)
                     }
-                    .buttonStyle(.circa(.primary, height: 52))
-                    .disabled(healthWeightSync.isSyncing)
                 }
                 .padding(.horizontal, Circa.Space.screenMargin)
                 .padding(.bottom, 20)
@@ -159,10 +196,22 @@ struct ProfileHealthSection: View {
 
     // MARK: - Actions
 
-    private func connect() async {
+    /// Switches sync on, whether or not iOS will show its sheet.
+    ///
+    /// Read the state *before* connecting — connecting answers the prompt and
+    /// would make every tap look like the first. When iOS has already been
+    /// asked no sheet appears, so the row goes on silently and the alert
+    /// explains it; switching on regardless is what makes a trip to the Health
+    /// app worth taking, since a read enabled there needs this flag on to reach
+    /// the trend.
+    private func turnOn() async {
+        let willAsk = await healthWeightSync.willAskForAccess()
+
         if let kg = await healthWeightSync.connect(userId: userId) {
             onWeightImported(kg)
         }
+
+        if !willAsk { showAsksOnce = true }
     }
 
     private func syncNow() async {

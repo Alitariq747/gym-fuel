@@ -13,6 +13,10 @@ struct ProfileSettingsRow: View {
     let title: String
     let systemImage: String
     let value: String
+    /// A second line under the title, for state the `value` cannot carry on its
+    /// own. `var` with a default so the memberwise init keeps every existing
+    /// caller unchanged.
+    var detail: String? = nil
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
@@ -48,9 +52,17 @@ struct ProfileSettingsRow: View {
                 .frame(width: 40, height: 40)
                 .background(Color.circaWell, in: RoundedRectangle(cornerRadius: Circa.Radius.thumb))
                 .accessibilityHidden(true)
-            Text(title)
-                .font(.circaRow)
-                .foregroundStyle(Color.circaInk)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk)
+                if let detail {
+                    Text(detail)
+                        .font(.circaCaption)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
     }
 

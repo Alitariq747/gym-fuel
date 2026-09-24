@@ -19,7 +19,6 @@ struct MealOverrideTests {
     private var analysed: LogEntryFeedback {
         LogEntryFeedback(
             explanation: "Estimated from typical shop-bought portions.",
-            assumptions: ["Full-fat mayonnaise, not light"],
             confidence: 0.64,
             macros: Macros(calories: 607, protein: 32.7, carbs: 42.4, fat: 33.7),
             breakdown: MealFixtures.sampleBreakdown,
@@ -43,9 +42,9 @@ struct MealOverrideTests {
         #expect(superseded().explanation.isEmpty)
     }
 
-    @Test("The assumptions go, because they belonged to the discarded breakdown")
+    @Test("The assumptions go with the breakdown they belonged to")
     func assumptionsAreCleared() {
-        #expect(superseded().assumptions.isEmpty)
+        #expect(MealBreakdownCalculator().assumptions(of: superseded()).isEmpty)
     }
 
     @Test("Confidence goes, because it was confidence in a number no longer shown")
@@ -93,7 +92,6 @@ struct MealOverrideTests {
 
         #expect(result == LogEntryFeedback(
             explanation: "",
-            assumptions: [],
             confidence: nil,
             macros: typed,
             breakdown: nil,
@@ -112,7 +110,6 @@ struct MealOverrideTests {
         feedback.macros = MealBreakdownCalculator().total(of: corrected)
 
         #expect(feedback.explanation == analysed.explanation)
-        #expect(feedback.assumptions == analysed.assumptions)
         #expect(feedback.confidence == analysed.confidence)
         #expect(feedback.breakdown != nil)
     }

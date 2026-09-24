@@ -18,6 +18,7 @@ private enum OnboardingStep: Hashable {
     case goal
     case goalWeight
     case loggingTips
+    case appleHealth
     case notifications
     case summary
 
@@ -43,6 +44,8 @@ private enum OnboardingStep: Hashable {
             return "goal_weight"
         case .loggingTips:
             return "logging_tips"
+        case .appleHealth:
+            return "apple_health"
         case .notifications:
             return "notifications"
         case .summary:
@@ -56,17 +59,26 @@ struct OnboardingFlowView: View {
     /// Called when the last step finishes successfully.
     let onFinished: (OnboardingAnswers) -> Void
 
+    @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
+
     @State private var data = OnboardingAnswers()
     @State private var step: OnboardingStep = .liftEatsIntro
 
     // MARK: - Step order + progress
+
+    /// Gates both the step's place in the order and what points at it. Read
+    /// twice, so it lives in one place.
+    private var healthStepAvailable: Bool { healthWeightSync.isAvailable }
 
     private var orderedSteps: [OnboardingStep] {
         var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference]
         steps += [.gender, .age, .height, .weight, .activityLevel, .goal]
         // Maintain has no goal weight, so it skips that step.
         if data.goalType != .maintain { steps.append(.goalWeight) }
-        steps += [.loggingTips, .notifications, .summary]
+        steps.append(.loggingTips)
+        // No Health database on this hardware means no step to show.
+        if healthStepAvailable { steps.append(.appleHealth) }
+        steps += [.notifications, .summary]
         return steps
     }
 
@@ -197,7 +209,17 @@ struct OnboardingFlowView: View {
 
         case .loggingTips:
             OnboardingLoggingTipsStepView(
-                onNext: { go(to: .notifications, direction: .forward) }
+                // Destinations here are literal, not derived from
+                // `orderedSteps`, so a skipped Health step has to be skipped
+                // twice — once in the order, once in what points at it.
+                onNext: { go(to: healthStepAvailable ? .appleHealth : .notifications, direction: .forward) }
+            )
+
+        case .appleHealth:
+            OnboardingAppleHealthStepView(
+                stepPosition: currentIndex + 1,
+                stepCount: orderedSteps.count,
+                onFinished: { go(to: .notifications, direction: .forward) }
             )
 
         case .notifications:
@@ -283,4 +305,5 @@ struct OnboardingFlowView: View {
         print("Finished onboarding with:", answers)
     }
     .environmentObject(SubscriptionViewModel())
+    .environmentObject(HealthWeightSyncService())
 }

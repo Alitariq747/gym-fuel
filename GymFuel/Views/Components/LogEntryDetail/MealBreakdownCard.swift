@@ -31,7 +31,8 @@ struct MealBreakdownCard: View {
                         calories: MealCopy.calories(calculator.contribution(of: item)),
                         source: item.resolvedSource,
                         isAdjusted: item.amount?.isAdjusted ?? false,
-                        sourceNote: item.sourceNote
+                        sourceNote: item.sourceNote,
+                        assumption: item.assumption
                     )
 
                     ForEach(item.components) { component in
@@ -42,6 +43,7 @@ struct MealBreakdownCard: View {
                             source: component.resolvedSource,
                             isAdjusted: component.amount?.isAdjusted ?? false,
                             sourceNote: component.sourceNote,
+                            assumption: component.assumption,
                             isComponent: true
                         )
                     }
@@ -55,7 +57,8 @@ struct MealBreakdownCard: View {
                     calories: MealCopy.calories(calculator.total(of: breakdown)),
                     source: calculator.provenance(of: breakdown),
                     isAdjusted: false,
-                    sourceNote: nil
+                    sourceNote: nil,
+                    assumption: nil
                 )
             }
         }
@@ -73,6 +76,9 @@ private struct MealBreakdownRow: View {
     let source: MealProvenance
     let isAdjusted: Bool
     let sourceNote: String?
+    /// What was assumed about *this* part. It sits here rather than in a list of
+    /// its own so the sentence and the amount it is about are the same tap.
+    let assumption: String?
     var isComponent = false
 
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -90,6 +96,8 @@ private struct MealBreakdownRow: View {
     private var provenance: String? {
         MealCopy.provenance(source: source, isAdjusted: isAdjusted, sourceNote: sourceNote)
     }
+
+    private var assumptionLine: String? { MealCopy.assumption(assumption) }
 
     var body: some View {
         Group {
@@ -130,6 +138,13 @@ private struct MealBreakdownRow: View {
 
             if let provenance {
                 Text(provenance)
+                    .font(.circaMono)
+                    .foregroundStyle(Color.circaAccent)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let assumptionLine {
+                Text(assumptionLine)
                     .font(.circaMono)
                     .foregroundStyle(Color.circaAccent)
                     .fixedSize(horizontal: false, vertical: true)

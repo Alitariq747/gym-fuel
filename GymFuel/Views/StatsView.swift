@@ -11,7 +11,6 @@ struct StatsView: View {
     let profile: UserProfile
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: StatsViewModel
-    @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
     @State private var isWeightPresented = false
@@ -83,7 +82,6 @@ struct StatsView: View {
                             windowStart: window.start,
                             windowEnd: window.end,
                             onWeighIn: { isWeighInPresented = true },
-                            onConnectHealth: showsHealthPrompt ? { Task { await connectHealth() } } : nil,
                             onOpen: { isWeightPresented = true }
                         )
                     }
@@ -167,21 +165,6 @@ struct StatsView: View {
         selectedDate = Calendar.current.startOfDay(for: date)
         viewModel.selectWeek(containing: selectedDate)
         onSelectedDateChange(selectedDate)
-    }
-
-    /// Offered only while Health can supply weigh-ins and has not been asked to.
-    private var showsHealthPrompt: Bool {
-        healthWeightSync.isAvailable && !healthWeightSync.isConnected
-    }
-
-    /// Same two follow-ups the manual weigh-in already runs — reflect the weight
-    /// in the caller's profile, then redraw the chart — so an import lands
-    /// without closing the sheet.
-    private func connectHealth() async {
-        if let kg = await healthWeightSync.connect(userId: profile.id) {
-            onWeighIn(kg)
-        }
-        await viewModel.loadWeightTrend(userId: profile.id)
     }
 
     /// Daily average against target, from the `Week` artboard.

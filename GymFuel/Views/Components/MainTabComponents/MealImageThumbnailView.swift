@@ -9,11 +9,17 @@ import SwiftUI
 import UIKit
 
 struct MealImageThumbnailView: View {
+    enum DisplayMode {
+        case thumbnail
+        case fullPhoto
+    }
+
     let entryId: String?
     let storagePath: String?
     var size: CGFloat = 72
     var width: CGFloat? = nil
     var height: CGFloat? = nil
+    var displayMode: DisplayMode = .thumbnail
     var maxSizeBytes: Int64 = 2 * 1024 * 1024
 
     @State private var image: UIImage?
@@ -28,6 +34,7 @@ struct MealImageThumbnailView: View {
         size: CGFloat = 72,
         width: CGFloat? = nil,
         height: CGFloat? = nil,
+        displayMode: DisplayMode = .thumbnail,
         maxSizeBytes: Int64 = 2 * 1024 * 1024,
         mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService()
     ) {
@@ -36,6 +43,7 @@ struct MealImageThumbnailView: View {
         self.size = size
         self.width = width
         self.height = height
+        self.displayMode = displayMode
         self.maxSizeBytes = maxSizeBytes
         self.mealImageUploadService = mealImageUploadService
     }
@@ -46,11 +54,30 @@ struct MealImageThumbnailView: View {
                 ZStack {
                     Color.circaMediaWell
 
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: width ?? size, height: height ?? size)
-                        .clipped()
+                    switch displayMode {
+                    case .thumbnail:
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: width ?? size, height: height ?? size)
+                            .clipped()
+                    case .fullPhoto:
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: width ?? size, height: height ?? size)
+                            .blur(radius: 18)
+                            .opacity(0.55)
+                            .clipped()
+                            .accessibilityHidden(true)
+
+                        Color.circaMediaWell.opacity(0.25)
+
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: width ?? size, height: height ?? size)
+                    }
                 }
             } else {
                 ZStack {

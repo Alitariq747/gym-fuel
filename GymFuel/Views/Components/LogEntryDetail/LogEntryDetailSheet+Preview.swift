@@ -20,11 +20,6 @@ private struct EntryDetailPreview: View {
                     rawInput: "Chicken bowl with some salad and fruits with one cup of boiled rice",
                     feedback: LogEntryFeedback(
                         explanation: "High protein and moderate calories fit well into the day.",
-                        assumptions: [
-                            "Rice was treated as roughly 1 cooked cup.",
-                            "Salad dressing was assumed to be light and not separately logged.",
-                            "The chicken was taken as grilled, with 1 tbsp of oil.",
-                        ],
                         confidence: 0.72,
                         macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20)
                     )

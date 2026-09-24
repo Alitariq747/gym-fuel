@@ -8,7 +8,6 @@ import SwiftUI
             rawInput: "Chicken burrito bowl",
             feedback: LogEntryFeedback(
                 explanation: "Estimated as one bowl of chicken, rice and vegetables.",
-                assumptions: [],
                 confidence: 0.84,
                 macros: Macros(calories: 620, protein: 44, carbs: 52, fat: 20)
             )
@@ -27,7 +26,6 @@ import SwiftUI
             rawInput: "Meal image",
             feedback: LogEntryFeedback(
                 explanation: "Estimated as one bowl of salmon and cooked rice.",
-                assumptions: [],
                 confidence: 0.82,
                 macros: Macros(calories: 710, protein: 42, carbs: 68, fat: 28)
             )
@@ -57,7 +55,6 @@ private func failedEntry(source: LogEntrySource) -> LogEntry {
         rawInput: source == .image ? "Meal image" : "two roti, chicken karahi, half a katori rice",
         feedback: LogEntryFeedback(
             explanation: "You're offline. Reconnect and try again.",
-            assumptions: [],
             confidence: nil,
             macros: nil
         )

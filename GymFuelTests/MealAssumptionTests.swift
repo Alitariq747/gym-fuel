@@ -25,13 +25,9 @@ struct MealAssumptionTests {
         )
     }
 
-    private func feedback(
-        _ breakdown: MealBreakdown?,
-        mealAssumptions: [String] = []
-    ) -> LogEntryFeedback {
+    private func feedback(_ breakdown: MealBreakdown?) -> LogEntryFeedback {
         LogEntryFeedback(
             explanation: "x",
-            assumptions: mealAssumptions,
             macros: Macros(calories: 100, protein: 0, carbs: 0, fat: 0),
             breakdown: breakdown
         )
@@ -94,32 +90,56 @@ struct MealAssumptionTests {
         #expect(calculator.assumptions(of: feedback(breakdown)) == ["Thigh, not breast", "A little dressing"])
     }
 
-    // MARK: - Both sources
+    // MARK: - The breakdown is the only source
 
-    @Test("Meal-wide assumptions follow the breakdown's own")
-    func mealAssumptionsComeAfter() {
+    /// The regression behind "9 assumptions" on a meal that has four: a meal-wide
+    /// list restating what the nodes already said, counted alongside them.
+    @Test("A meal's count is the number of parts that assumed something")
+    func countMatchesTheNodes() {
         let breakdown = MealBreakdown(items: [
-            MealItem(id: "i", name: "Meal", components: [component("a", 300, "Full-fat mayonnaise")])
+            MealItem(id: "roti", name: "Roti", amount: MealAmount(quantity: 2, unit: "roti"),
+                     nutrition: Macros(calories: 220, protein: 7, carbs: 36, fat: 6),
+                     assumption: "Medium, plain, little added fat"),
+            MealItem(id: "karahi", name: "Chicken karahi", components: [
+                component("chicken", 280, "150 g is cooked weight"),
+                component("oil", 180, "1.5 tbsp, the share of the pot eaten"),
+                component("base", 60, "Tomato and onion, spices left out")
+            ])
         ])
 
-        #expect(calculator.assumptions(of: feedback(breakdown, mealAssumptions: ["A 25 g packet"]))
-            == ["Full-fat mayonnaise", "A 25 g packet"])
+        let all = calculator.assumptions(of: feedback(breakdown))
+
+        #expect(all.count == 4)
+        #expect(MealCopy.assumptionLine(count: all.count, lead: all.first)
+            == "4 assumptions · 150 g is cooked weight")
     }
 
-    @Test("With no breakdown, the meal's own assumptions are all there is")
-    func fallsBackToMealAssumptions() {
-        #expect(calculator.assumptions(of: feedback(nil, mealAssumptions: ["Two slices", "No butter"]))
-            == ["Two slices", "No butter"])
+    @Test("A breakdown whose parts assumed nothing says nothing")
+    func silentBreakdownSaysNothing() {
+        let breakdown = MealBreakdown(items: [
+            MealItem(id: "i", name: "Meal", components: [component("a", 300, nil)])
+        ])
+
+        #expect(calculator.assumptions(of: feedback(breakdown)).isEmpty)
     }
 
-    @Test("The same assumption said twice is counted once")
+    /// A totals-only meal has no node for an assumption to sit on, and a sentence
+    /// that fits every such meal equally is not one the reader can correct.
+    @Test("A meal with no breakdown has no assumption line")
+    func noBreakdownNoAssumptions() {
+        #expect(calculator.assumptions(of: feedback(nil)).isEmpty)
+    }
+
+    @Test("Two parts that assume the same thing are counted once")
     func duplicatesAreCollapsed() {
         let breakdown = MealBreakdown(items: [
-            MealItem(id: "i", name: "Meal", components: [component("a", 300, "Full-fat mayonnaise")])
+            MealItem(id: "i", name: "Meal", components: [
+                component("a", 300, "Cooked weight, not raw"),
+                component("b", 200, "Cooked weight, not raw")
+            ])
         ])
 
-        #expect(calculator.assumptions(of: feedback(breakdown, mealAssumptions: ["Full-fat mayonnaise"]))
-            == ["Full-fat mayonnaise"])
+        #expect(calculator.assumptions(of: feedback(breakdown)) == ["Cooked weight, not raw"])
     }
 
     @Test("Blank assumptions are not assumptions")
@@ -128,7 +148,7 @@ struct MealAssumptionTests {
             MealItem(id: "i", name: "Meal", components: [component("a", 300, "   ")])
         ])
 
-        #expect(calculator.assumptions(of: feedback(breakdown, mealAssumptions: [""])).isEmpty)
+        #expect(calculator.assumptions(of: feedback(breakdown)).isEmpty)
     }
 
     @Test("A breakdown from a later contract contributes nothing")
@@ -137,8 +157,7 @@ struct MealAssumptionTests {
             MealItem(id: "i", name: "Meal", components: [component("a", 300, "Full-fat mayonnaise")])
         ])
 
-        #expect(calculator.assumptions(of: feedback(breakdown, mealAssumptions: ["A 25 g packet"]))
-            == ["A 25 g packet"])
+        #expect(calculator.assumptions(of: feedback(breakdown)).isEmpty)
     }
 
     @Test("A meal with no feedback has no assumptions")
@@ -147,10 +166,10 @@ struct MealAssumptionTests {
     }
 
     /// Falls out of §6 rather than being special-cased: an override clears the
-    /// breakdown and the meal's own list, so both sources are gone.
+    /// breakdown, which is where the assumptions were.
     @Test("A meal whose total the user typed has no assumption line")
     func supersededMealHasNone() {
-        let analysed = feedback(MealFixtures.sampleBreakdown, mealAssumptions: ["A 25 g packet"])
+        let analysed = feedback(MealFixtures.sampleBreakdown)
         #expect(!calculator.assumptions(of: analysed).isEmpty)
 
         let superseded = MealBreakdownCalculator.superseding(
@@ -175,21 +194,28 @@ struct MealAssumptionTests {
             == "3 assumptions · Full-fat, not light")
     }
 
+    @Test("A blank node assumption is not shown at all")
+    func blankNodeAssumptionIsNotShown() {
+        #expect(MealCopy.assumption(nil) == nil)
+        #expect(MealCopy.assumption("") == nil)
+        #expect(MealCopy.assumption("   \n ") == nil)
+        #expect(MealCopy.assumption("  Ghee, not oil ") == "Ghee, not oil")
+    }
+
     @Test("A count with nothing to name is not a line")
     func countWithoutLeadIsNothing() {
         #expect(MealCopy.assumptionLine(count: 4, lead: nil) == nil)
         #expect(MealCopy.assumptionLine(count: 4, lead: "") == nil)
     }
 
-    @Test("The fixture meal names the mayonnaise, which is its largest assumption")
+    @Test("The fixture meal names the mayonnaise, its only assumption")
     func fixtureNamesTheMayonnaise() throws {
         let all = calculator.assumptions(of: LogEntryFeedback(
             explanation: "x",
-            assumptions: ["A 25 g packet of crisps"],
             breakdown: MealFixtures.sampleBreakdown
         ))
         let line = try #require(MealCopy.assumptionLine(count: all.count, lead: all.first))
 
-        #expect(line == "2 assumptions · Full-fat, not light")
+        #expect(line == "Full-fat, not light")
     }
 }

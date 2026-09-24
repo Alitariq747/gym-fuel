@@ -16,6 +16,22 @@ import HealthKit
 /// A protocol, despite there being one query behind it, so
 /// `HealthWeightSyncService` can be exercised without a device, an entitlement
 /// or an authorization prompt.
+/// iOS's answer to "would the sheet appear for body mass?", with its
+/// uncertainty kept intact.
+///
+/// Three cases rather than a `Bool` because the caller clears the user's opt-in
+/// on `neverAsked`: collapsing `unknown` into it would disconnect somebody
+/// because one query happened to fail. `HealthKitWeightSample` keeps HealthKit
+/// out of the sample type for the same reason this keeps it out of the status.
+enum HealthAuthorizationRequestState {
+    /// iOS states it has never had an answer for `bodyMass`.
+    case neverAsked
+    /// The sheet has been answered. **Which way is not disclosed.**
+    case alreadyAsked
+    /// No Health database, or the query failed. Evidence of neither case above.
+    case unknown
+}
+
 protocol HealthKitWeightReading: Sendable {
     /// `false` on hardware with no Health database. Everything else no-ops.
     var isAvailable: Bool { get }
@@ -24,7 +40,7 @@ protocol HealthKitWeightReading: Sendable {
     ///
     /// This is **not** an allowed/denied signal — see the note on
     /// `HealthKitWeightService`.
-    func shouldRequestAuthorization() async -> Bool
+    func authorizationRequestState() async -> HealthAuthorizationRequestState
 
     func requestAuthorization() async throws
 
@@ -38,7 +54,7 @@ protocol HealthKitWeightReading: Sendable {
 ///   this app may say "you denied this": an empty import is the normal case,
 ///   and the most that can honestly be offered is a pointer to the Health app.
 ///   `getRequestStatusForAuthorization` narrows this only to "would the prompt
-///   appear", which is what `shouldRequestAuthorization` returns.
+///   appear", which is what `authorizationRequestState` returns.
 final class HealthKitWeightService: @unchecked Sendable {
     /// How far back an import reaches.
     ///
@@ -60,8 +76,8 @@ extension HealthKitWeightService: HealthKitWeightReading {
         HKHealthStore.isHealthDataAvailable()
     }
 
-    func shouldRequestAuthorization() async -> Bool {
-        guard isAvailable else { return false }
+    func authorizationRequestState() async -> HealthAuthorizationRequestState {
+        guard isAvailable else { return .unknown }
 
         let status: HKAuthorizationRequestStatus? = try? await withCheckedThrowingContinuation { continuation in
             store.getRequestStatusForAuthorization(toShare: [], read: [bodyMassType]) { status, error in
@@ -73,10 +89,11 @@ extension HealthKitWeightService: HealthKitWeightReading {
             }
         }
 
-        // `.unknown` and a thrown error both mean "we can't tell". Asking again
-        // is harmless — iOS shows the sheet at most once per type — so default
-        // to offering it.
-        return status != .unnecessary
+        switch status {
+        case .shouldRequest: return .neverAsked
+        case .unnecessary: return .alreadyAsked
+        default: return .unknown
+        }
     }
 
     func requestAuthorization() async throws {
