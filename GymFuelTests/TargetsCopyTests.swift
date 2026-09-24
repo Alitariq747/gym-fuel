@@ -76,4 +76,85 @@ struct TargetsCopyTests {
         #expect(!copy.contains("burn"))
         #expect(copy.contains("estimate"))
     }
+
+    // MARK: - Editing the four numbers
+
+    @Test("One changed field is named on its own")
+    func headlineForOneField() {
+        #expect(TargetsCopy.changedHeadline([.carbs]) == "You changed your carbs")
+    }
+
+    @Test("Two changed fields are joined with and")
+    func headlineForTwoFields() {
+        #expect(TargetsCopy.changedHeadline([.protein, .fat]) == "You changed your protein and fat")
+    }
+
+    /// Built from the field order, not from the set: a `Set` has no order, so
+    /// interpolating one at the call site would word the same edit differently
+    /// from one run to the next.
+    @Test("Three changed fields read in field order, whatever order the set is in")
+    func headlineForThreeFields() {
+        let expected = "You changed your protein, carbs and fat"
+
+        #expect(TargetsCopy.changedHeadline([.protein, .carbs, .fat]) == expected)
+        #expect(TargetsCopy.changedHeadline([.fat, .carbs, .protein]) == expected)
+    }
+
+    @Test("A change line names the field, both numbers and the unit")
+    func changeLineReadsBeforeAndAfter() {
+        let line = TargetsCopy.changeLine(TargetChange(field: .protein, before: 170, after: 157))
+
+        #expect(line.hasPrefix("Protein"))
+        #expect(line.contains("170"))
+        #expect(line.contains("157"))
+        #expect(line.contains("→"))
+        #expect(line.contains("g"))
+        #expect(!line.contains("kcal"))
+    }
+
+    @Test("The calorie line is in kcal, not grams")
+    func changeLineForCalories() {
+        let line = TargetsCopy.changeLine(TargetChange(field: .calories, before: 2_000, after: 2_400))
+
+        #expect(line.hasPrefix("Calories"))
+        #expect(line.contains("kcal"))
+    }
+
+    /// VoiceOver reads "→" as nothing useful, and an arrow does not mirror in a
+    /// right-to-left layout.
+    @Test("The spoken change line says to instead of drawing an arrow")
+    func spokenChangeLineHasNoArrow() {
+        let spoken = TargetsCopy.changeLineSpoken(TargetChange(field: .protein, before: 170, after: 157))
+
+        #expect(!spoken.contains("→"))
+        #expect(spoken.contains(" to "))
+        #expect(spoken.contains("170"))
+        #expect(spoken.contains("157"))
+    }
+
+    @Test("The floor note says which floor held")
+    func floorNoteNamesTheFloor() throws {
+        let atGenderFloor = try #require(TargetsCopy.floorNote(
+            resolved: Macros(calories: 1_200, protein: 100, carbs: 110, fat: 40),
+            requestedCalories: 900,
+            gender: .female
+        ))
+        #expect(atGenderFloor.contains("the lowest this app will set"))
+
+        let aboveIt = try #require(TargetsCopy.floorNote(
+            resolved: Macros(calories: 1_240, protein: 162, carbs: 2, fat: 65),
+            requestedCalories: 900,
+            gender: .female
+        ))
+        #expect(aboveIt.contains("protein and fat"))
+    }
+
+    @Test("No floor note when nothing was lifted")
+    func floorNoteAbsentWhenNothingLifted() {
+        #expect(TargetsCopy.floorNote(
+            resolved: Macros(calories: 2_000, protein: 162, carbs: 192, fat: 65),
+            requestedCalories: 2_000,
+            gender: .male
+        ) == nil)
+    }
 }

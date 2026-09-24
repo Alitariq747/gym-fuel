@@ -82,11 +82,18 @@ struct OnboardingSummaryStepView: View {
             .padding(.bottom, 16)
         }
         .circaPaper()
-        // The targets screen's editor, unchanged: it knows nothing about profiles,
-        // so it works before anything is saved.
+        // The targets screen's editor: it knows nothing about profiles, so it works
+        // here before anything is saved.
         .sheet(isPresented: $isEditing) {
-            if let targets = planned?.savedTargets {
-                TargetsEditorSheet(targets: targets, gender: answers.gender) { editedTargets = $0 }
+            if let profile = planned,
+               let targets = profile.savedTargets,
+               let basis = calculator.basis(for: profile) {
+                TargetsEditorSheet(
+                    targets: targets,
+                    gender: answers.gender,
+                    basisKg: basis.kg,
+                    goal: profile.goalType ?? .defaultValue
+                ) { editedTargets = $0 }
             }
         }
         .sheet(isPresented: $isShowingSources) {

@@ -384,13 +384,23 @@ everyday lifestyles start at 1.40.
 
 **Macros.**
 
-- **Protein 1.6 g/kg** for every goal. Muscle gain stops improving above about 1.6
-  even for lifters (Morton 2018), and 1.2–1.6 is the range for weight loss (Leidy
+- **Protein 2.0 g/kg losing, 1.6 g/kg maintaining or gaining** (revised
+  24 September; it was a flat 1.6). At or above maintenance 1.6 is the ceiling —
+  muscle gain stops improving there even for lifters (Morton 2018). In a deficit
+  the job changes from building muscle to keeping the muscle already there, and
+  the studied range rises to 1.8–2.5 g/kg (Helms 2014, Longland 2016), with
+  Morton's own interval reaching 2.2. Protein also keeps a dieter full (Leidy
   2015). Users who want more can type it.
+- **The deficit raises protein, not the training.** Activity already feeds the
+  calorie target, so a second question about training would count it twice — and
+  a sedentary dieter needs the higher protein just as much. Do not key this off
+  activity level, and do not add a training question to get at it.
 - **Fat 0.8 g/kg**, 0.9 when gaining.
 - **Both use the lower** of the goal weight and the top healthy weight for the
   person's height (BMI 25), so a bigger body does not get 300 g of protein and no
-  carbs. *Maintain* uses the current weight in place of a goal weight.
+  carbs. *Maintain* uses the current weight in place of a goal weight. That cap is
+  also what keeps the basis near lean mass, which is the weight 2.0 g/kg is
+  measured against.
 - **Carbs take what is left.** Calories round to the nearest 10.
 
 **Safety.**
@@ -408,9 +418,19 @@ everyday lifestyles start at 1.40.
   numbers from the latest weigh-in), or changing goal, goal weight or activity.
 - Weigh-ins never change them, typed or from Apple Health. `weightKg` still updates,
   for display.
-- Users edit calories, protein and fat; carbs fill the rest. Editing targets does not
-  redraw the plan line; **Recalculate** does, because it re-anchors to the latest
-  weigh-in and today (decided 19 September).
+- **Users edit any of the four, and the app asks rather than guessing** (revised
+  24 September; it was calories, protein and fat with carbs filling the rest). A
+  typed number stands and the other three stay put until the user picks how to
+  reconcile them — nothing is saved until they do. After a **calorie** edit the
+  answer is fresh macros from the rules above. After a **protein, carb or fat**
+  edit there are two: raise the calories to cover what was typed, or hold the
+  calories and let the untouched macros absorb it in proportion. When every macro
+  has been typed there is nothing free to absorb, so only the first is offered.
+  The calorie floors hold on every path.
+- Carbs are therefore no longer guaranteed to be the remainder of a saved target.
+  Nothing recomputes them on read, so a typed value survives exactly as typed.
+- Editing targets does not redraw the plan line; **Recalculate** does, because it
+  re-anchors to the latest weigh-in and today (decided 19 September).
 
 **Goal weight.**
 
@@ -468,8 +488,8 @@ target. Targets still follow weight until 4c saves them.
    picker, with one plain line saying why.
 6. **Sources screen:** methods 01 and 02 rewritten to match. Cite the pace (NHS
    0.5–1 kg and CDC 1–2 lb a week for losing, Iraki 2019 for gaining), the activity
-   table (FAO/WHO/UNU 2004), protein (Morton 2018, Leidy 2015), the calorie floor and
-   the BMI limits.
+   table (FAO/WHO/UNU 2004), protein (Morton 2018, Leidy 2015, Helms 2014,
+   Longland 2016), the calorie floor and the BMI limits.
 
 **Files** `MacroTargetCalculator.swift` · `ActivityLevel.swift` ·
 `OnboardingActivityLevelStepView.swift` · `OnboardingAgeStepView.swift` ·

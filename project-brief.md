@@ -194,7 +194,7 @@ calories    = maintenance + offset, rounded to 10; never below 1,200 (women) or
               1,500 (men, prefer not to say), nor below protein + fat calories
 basis       = the lower of goal weight and the BMI 25 weight
               (Maintain: the lower of current weight and the BMI 25 weight)
-protein     = 1.6 g per kg of basis
+protein     = 2.0 g per kg of basis losing, 1.6 maintaining or gaining
 fat         = 0.8 g per kg of basis (0.9 when gaining)
 carbs       = what is left
 ```
@@ -214,8 +214,8 @@ for anyone already below it.
 
 **Citations owed under 1.4.1**, on the Sources screen in Step 4b: the pace (NHS
 0.5–1 kg and CDC 1–2 lb a week for losing; Iraki 2019 for gaining), the activity
-table (FAO/WHO/UNU 2004), protein (Morton 2018, Leidy 2015), the calorie floor and
-the BMI limits. Self-weighing is already cited from 4a.
+table (FAO/WHO/UNU 2004), protein (Morton 2018, Leidy 2015, Helms 2014, Longland
+2016), the calorie floor and the BMI limits. Self-weighing is already cited from 4a.
 
 `weightKg` stays on `UserProfile` as the current value, for display; `weighIns` is
 the history. `EditWeightSheet` writes both.

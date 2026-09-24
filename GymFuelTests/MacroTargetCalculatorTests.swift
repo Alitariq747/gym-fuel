@@ -53,21 +53,21 @@ struct MacroTargetCalculatorTests {
     @Test("A 45 kg, 150 cm, 60-year-old woman losing fat gets the 1,200 kcal floor")
     func smallOlderWomanGetsFloor() {
         let result = targets(.female, age: 60, heightCm: 150, weightKg: 45, goal: .cut, activity: .mostlySitting)
-        #expect(result == expected(kcal: 1_200, protein: 72, carbs: 147, fat: 36, maintenance: 1_250))
+        #expect(result == expected(kcal: 1_200, protein: 90, carbs: 129, fat: 36, maintenance: 1_250))
     }
 
     /// 82 g of carbs before Step 4b, from 242 g of protein on full body weight.
     @Test("A 110 kg woman losing fat keeps normal carbs")
     func heavierWomanKeepsCarbs() {
         let result = targets(.female, age: 40, heightCm: 165, weightKg: 110, goal: .cut, activity: .mostlySitting)
-        #expect(result == expected(kcal: 1_780, protein: 109, carbs: 215, fat: 54, maintenance: 2_390))
+        #expect(result == expected(kcal: 1_780, protein: 136, carbs: 188, fat: 54, maintenance: 2_390))
     }
 
     /// 0 g of carbs before Step 4b: protein and fat alone were over the target.
     @Test("A 200 kg woman losing fat keeps normal carbs")
     func veryHeavyWomanKeepsCarbs() {
         let result = targets(.female, age: 60, heightCm: 150, weightKg: 200, goal: .cut, activity: .mostlySitting)
-        #expect(result == expected(kcal: 2_240, protein: 90, carbs: 369, fat: 45, maintenance: 3_340))
+        #expect(result == expected(kcal: 2_240, protein: 113, carbs: 346, fat: 45, maintenance: 3_340))
     }
 
     // MARK: - Pace
@@ -76,7 +76,7 @@ struct MacroTargetCalculatorTests {
     func losingPace() throws {
         let result = try #require(targets(.male, age: 30, heightCm: 180, weightKg: 85, goal: .cut, activity: .mostlySitting))
 
-        #expect(result == expected(kcal: 2_000, protein: 130, carbs: 224, fat: 65, maintenance: 2_470))
+        #expect(result == expected(kcal: 2_000, protein: 162, carbs: 192, fat: 65, maintenance: 2_470))
         #expect(result.maintenanceCalories - result.macros.calories == 470)
     }
 
@@ -115,8 +115,8 @@ struct MacroTargetCalculatorTests {
         let male = targets(.male, age: 70, heightCm: 160, weightKg: 50, goal: .cut, activity: .mostlySitting)
         let unsaid = targets(.preferNotToSay, age: 70, heightCm: 160, weightKg: 50, goal: .cut, activity: .mostlySitting)
 
-        #expect(male == expected(kcal: 1_500, protein: 80, carbs: 205, fat: 40, maintenance: 1_560))
-        #expect(unsaid == expected(kcal: 1_500, protein: 80, carbs: 205, fat: 40, maintenance: 1_450))
+        #expect(male == expected(kcal: 1_500, protein: 100, carbs: 185, fat: 40, maintenance: 1_560))
+        #expect(unsaid == expected(kcal: 1_500, protein: 100, carbs: 185, fat: 40, maintenance: 1_450))
     }
 
     @Test("Protein and fat stop growing above the BMI 25 weight")
@@ -142,8 +142,31 @@ struct MacroTargetCalculatorTests {
         // BMI 25 at 185 cm is 85.6 kg, above the 82 kg goal.
         let result = try #require(targets(.male, age: 35, heightCm: 185, weightKg: 90, goal: .cut, activity: .mostlySitting, goalWeightKg: 82))
 
-        #expect(result.macros.protein == 131)
+        #expect(result.macros.protein == 164)
         #expect(result.macros.fat == 66)
+    }
+
+    // MARK: - Protein
+
+    @Test("Protein is 2.0 g/kg losing and 1.6 g/kg maintaining or gaining")
+    func proteinPerKgFollowsTheGoal() {
+        #expect(GoalType.cut.proteinPerKg == 2.0)
+        #expect(GoalType.maintain.proteinPerKg == 1.6)
+        #expect(GoalType.leanBulk.proteinPerKg == 1.6)
+    }
+
+    /// The deficit raises protein, not the training — so the same body losing gets
+    /// more than it would maintaining, and activity changes neither.
+    @Test("Losing gets more protein than maintaining or gaining at the same body")
+    func losingRaisesProtein() throws {
+        func protein(_ goal: GoalType, _ activity: ActivityLevel) throws -> Double {
+            try #require(targets(.female, age: 30, heightCm: 165, weightKg: 60, goal: goal, activity: activity)).macros.protein
+        }
+
+        #expect(try protein(.cut, .lightlyActive) == 120)
+        #expect(try protein(.maintain, .lightlyActive) == 96)
+        #expect(try protein(.leanBulk, .lightlyActive) == 96)
+        #expect(try protein(.cut, .veryActive) == protein(.cut, .mostlySitting))
     }
 
     @Test("Maintaining ignores a goal weight left over from another goal")

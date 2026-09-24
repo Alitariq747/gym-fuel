@@ -28,8 +28,6 @@ struct ProteinFatBasis: Equatable {
 struct MacroTargetCalculator {
     /// kcal in a kilogram of body weight gained or lost.
     static let caloriesPerKg: Double = 7_700
-    /// Protein per kg of the basis weight, for every goal.
-    static let proteinPerKg: Double = 1.6
     /// Calorie targets and the maintenance estimate round to this.
     static let calorieStep: Double = 10
 
@@ -52,7 +50,7 @@ struct MacroTargetCalculator {
             weightKg: weightKg
         ) * activity.multiplier
         let dailyOffset = weightKg * goal.weeklyPace * Self.caloriesPerKg / 7
-        let protein = (basisKg * Self.proteinPerKg).rounded()
+        let protein = (basisKg * goal.proteinPerKg).rounded()
         let fat = (basisKg * goal.fatPerKg).rounded()
 
         let calories = max(
@@ -150,6 +148,12 @@ extension GoalType {
         case .cut: return -0.005
         }
     }
+
+    /// Protein per kg of the basis weight. Higher in a deficit, because the job
+    /// changes from building muscle to keeping it — `build-order.md` Step 4,
+    /// *Macros*, which also says why this is keyed off the goal and never off
+    /// activity.
+    var proteinPerKg: Double { self == .cut ? 2.0 : 1.6 }
 
     /// Fat per kg of the basis weight.
     var fatPerKg: Double { self == .leanBulk ? 0.9 : 0.8 }

@@ -78,8 +78,8 @@ enum PlanCopy {
 
         return Reasons(
             calories: targets.calories == workedOut.calories ? calorieReason : setByYou,
-            protein: targets.protein == workedOut.protein ? perKg(MacroTargetCalculator.proteinPerKg, of: basis) : setByYou,
-            carbs: carbs,
+            protein: targets.protein == workedOut.protein ? perKg(goal.proteinPerKg, of: basis) : setByYou,
+            carbs: targets.carbs == workedOut.carbs ? carbs : setByYou,
             fat: targets.fat == workedOut.fat ? perKg(goal.fatPerKg, of: basis) : setByYou
         )
     }

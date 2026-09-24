@@ -12,7 +12,11 @@ import SwiftUI
 private enum MethodFigures {
     static let caloriesPerKg = MacroTargetCalculator.caloriesPerKg.formatted()
     static let calorieStep = MacroTargetCalculator.calorieStep.formatted()
-    static let proteinPerKg = MacroTargetCalculator.proteinPerKg.formatted()
+    // A decimal place is forced, or 2.0 would render as "2" beside 1.6.
+    static let proteinPerKg = GoalType.maintain.proteinPerKg
+        .formatted(.number.precision(.fractionLength(1)))
+    static let losingProteinPerKg = GoalType.cut.proteinPerKg
+        .formatted(.number.precision(.fractionLength(1)))
     static let fatPerKg = GoalType.maintain.fatPerKg.formatted()
     static let gainingFatPerKg = GoalType.leanBulk.fatPerKg.formatted()
     static let losingPace = abs(GoalType.cut.weeklyPace).formatted(.percent)
@@ -68,16 +72,16 @@ struct NutritionSourcesView: View {
             systemImage: "chart.bar.xaxis",
             title: "Your protein, carb, and fat split",
             tint: .circaAccent,
-            body: "Protein is set at \(MethodFigures.proteinPerKg) g per kg and fat at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both use your goal weight — your current weight if maintaining — capped at the weight corresponding to a BMI of \(MethodFigures.topHealthyBMI), so the targets do not scale indefinitely with body weight. Carbohydrate fills the remaining calories.",
+            body: "Protein is set at \(MethodFigures.losingProteinPerKg) g per kg while losing fat and \(MethodFigures.proteinPerKg) g per kg while maintaining or gaining. Fat is set at \(MethodFigures.fatPerKg) g per kg, raised to \(MethodFigures.gainingFatPerKg) g/kg when gaining. Both use your goal weight — your current weight if maintaining — capped at the weight corresponding to a BMI of \(MethodFigures.topHealthyBMI), so the targets do not scale indefinitely with body weight. Carbohydrate fills the remaining calories.",
             formula: """
             basis kg  = the lower of goal weight kg and the BMI \(MethodFigures.topHealthyBMI) weight
                         (current weight kg when maintaining)
-            protein g = basis kg × \(MethodFigures.proteinPerKg)
+            protein g = basis kg × \(MethodFigures.losingProteinPerKg)   (\(MethodFigures.proteinPerKg) maintaining or gaining)
             fat g     = basis kg × \(MethodFigures.fatPerKg)   (\(MethodFigures.gainingFatPerKg) when gaining)
             carbs g   = (target kcal − protein kcal − fat kcal) ÷ 4
             """,
-            footnote: "Muscle gain stops improving above about 1.6 g of protein per kg a day, and 1.2–1.6 g/kg is the range studied for weight loss. Calories per gram use the Atwater factors: 4 kcal for protein, 4 for carbohydrate, 9 for fat.",
-            sourceIDs: ["morton", "leidy", "cdcBMI", "fao"]
+            footnote: "Muscle gain stops improving above about 1.6 g of protein per kg a day. Eating less than you need changes the aim from building muscle to holding on to it, and the range studied for that is higher — roughly 1.8 to 2.5 g/kg while in a deficit. Protein also helps with fullness while eating less. Calories per gram use the Atwater factors: 4 kcal for protein, 4 for carbohydrate, 9 for fat.",
+            sourceIDs: ["morton", "helms", "longland", "leidy", "cdcBMI", "fao"]
         ),
         NutritionMethod(
             id: "ai",
@@ -157,6 +161,18 @@ struct NutritionSourcesView: View {
             shortLabel: "Leidy HJ, et al. Am J Clin Nutr. 2015;101(6):1320S–1329S",
             citation: "Leidy HJ, Clifton PM, Astrup A, Wycherley TP, Westerterp-Plantenga MS, Luscombe-Marsh ND, Woods SC, Mattes RD. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S–1329S.",
             url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/25926512/")
+        ),
+        NutritionSource(
+            id: "helms",
+            shortLabel: "Helms ER, et al. Int J Sport Nutr Exerc Metab. 2014;24(2):127–138",
+            citation: "Helms ER, Zinn C, Rowlands DS, Brown SR. A systematic review of dietary protein during caloric restriction in resistance trained lean athletes: a case for higher intakes. Int J Sport Nutr Exerc Metab. 2014;24(2):127–138.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/24092765/")
+        ),
+        NutritionSource(
+            id: "longland",
+            shortLabel: "Longland TM, et al. Am J Clin Nutr. 2016;103(3):738–746",
+            citation: "Longland TM, Oikawa SY, Mitchell CJ, Devries MC, Phillips SM. Higher compared with lower dietary protein during an energy deficit combined with intense exercise promotes greater lean mass gain and fat mass loss: a randomized trial. Am J Clin Nutr. 2016;103(3):738–746.",
+            url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/26817506/")
         ),
         NutritionSource(
             id: "fao",

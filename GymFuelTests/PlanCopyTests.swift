@@ -141,7 +141,7 @@ struct PlanCopyTests {
 
     // MARK: - One reason per target
 
-    /// 35, 178 cm, 85 kg, mostly sitting, losing toward 75 kg: 1,950 kcal, 120 g
+    /// 35, 178 cm, 85 kg, mostly sitting, losing toward 75 kg: 1,950 kcal, 150 g
     /// protein and 60 g fat, against an estimate of 2,420 — the example in
     /// `build-order.md` Step 4.
     private let answers = OnboardingAnswers(
@@ -169,7 +169,7 @@ struct PlanCopyTests {
 
         #expect(reasons.calories.contains("470 less"))
         #expect(reasons.calories.contains("lose about \(oneDecimal(0.4)) kg a week"))
-        #expect(reasons.protein == PlanCopy.perKg(MacroTargetCalculator.proteinPerKg, of: .goalWeight))
+        #expect(reasons.protein == PlanCopy.perKg(GoalType.cut.proteinPerKg, of: .goalWeight))
         #expect(reasons.fat == PlanCopy.perKg(GoalType.cut.fatPerKg, of: .goalWeight))
         #expect(reasons.carbs == PlanCopy.carbs)
     }
@@ -177,19 +177,32 @@ struct PlanCopyTests {
     @Test("Typed calories say so, and protein and fat keep their working")
     func reasonsAfterACalorieEdit() throws {
         var edited = answers
-        edited.editedTargets = MacroTargetCalculator.edited(calories: 2_100, proteinG: 120, fatG: 60, gender: .male)
+        edited.editedTargets = MacroTargetCalculator.edited(calories: 2_100, proteinG: 150, fatG: 60, gender: .male)
         let reasons = try planReasons(for: edited)
 
         #expect(reasons.calories == PlanCopy.setByYou)
-        #expect(reasons.protein == PlanCopy.perKg(MacroTargetCalculator.proteinPerKg, of: .goalWeight))
+        #expect(reasons.protein == PlanCopy.perKg(GoalType.cut.proteinPerKg, of: .goalWeight))
         #expect(reasons.fat == PlanCopy.perKg(GoalType.cut.fatPerKg, of: .goalWeight))
         #expect(reasons.carbs == PlanCopy.carbs)
+    }
+
+    /// Carbs are the one target the plan screen used to explain unconditionally,
+    /// which stopped being true the moment they could be typed.
+    @Test("Typed carbs say so instead of explaining the remainder")
+    func reasonsAfterACarbEdit() throws {
+        var edited = answers
+        edited.editedTargets = Macros(calories: 1_950, protein: 150, carbs: 180, fat: 60)
+        let reasons = try planReasons(for: edited)
+
+        #expect(reasons.carbs == PlanCopy.setByYou)
+        #expect(reasons.protein == PlanCopy.perKg(GoalType.cut.proteinPerKg, of: .goalWeight))
+        #expect(reasons.calories.contains("470 less"))
     }
 
     @Test("Typed protein says so, and the calories keep their working")
     func reasonsAfterAProteinEdit() throws {
         var edited = answers
-        edited.editedTargets = MacroTargetCalculator.edited(calories: 1_950, proteinG: 150, fatG: 60, gender: .male)
+        edited.editedTargets = MacroTargetCalculator.edited(calories: 1_950, proteinG: 170, fatG: 60, gender: .male)
         let reasons = try planReasons(for: edited)
 
         #expect(reasons.protein == PlanCopy.setByYou)
@@ -204,7 +217,7 @@ struct PlanCopyTests {
 
         // 85 kg at 178 cm is over the 79.2 kg BMI 25 weight.
         #expect(reasons.calories == "Your target is the same.")
-        #expect(reasons.protein == PlanCopy.perKg(MacroTargetCalculator.proteinPerKg, of: .topHealthyWeight))
+        #expect(reasons.protein == PlanCopy.perKg(GoalType.maintain.proteinPerKg, of: .topHealthyWeight))
     }
 
     /// The App Store 1.4.1 failure mode, as in `TargetsCopyTests`.

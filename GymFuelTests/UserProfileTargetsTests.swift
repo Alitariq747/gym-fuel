@@ -190,8 +190,8 @@ struct UserProfileTargetsTests {
         #expect(profile.targetsSetOn == "2026-09-19")
         #expect(profile.targetsSetAtWeightKg == 83)
         // Protein and fat follow the new goal weight: 78 kg is under the BMI 25 cap
-        // of 81 kg for 180 cm, so 78 × 1.6 and 78 × 0.8.
-        #expect(profile.targetProteinG == 125)
+        // of 81 kg for 180 cm, so 78 × 2.0 (losing) and 78 × 0.8.
+        #expect(profile.targetProteinG == 156)
         #expect(profile.targetFatG == 62)
     }
 

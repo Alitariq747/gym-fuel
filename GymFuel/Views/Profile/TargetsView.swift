@@ -21,6 +21,9 @@ struct TargetsView: View {
     /// Shared with the weigh-in sheet and the goal weight step, so a pounds user
     /// reads "Set at 183 lbs" here too.
     @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
+    /// Stateless, and the view model keeps its own private one — this is for the
+    /// protein and fat basis the editor needs, nothing else.
+    private let calculator = MacroTargetCalculator()
     @State private var isEditingTargets = false
     @State private var isConfirmingRecalculate = false
     @State private var planSheet: PlanSheet?
@@ -78,8 +81,17 @@ struct TargetsView: View {
         }
         .circaPaper()
         .sheet(isPresented: $isEditingTargets) {
-            if let profile = profileVm.profile, let targets = profile.savedTargets {
-                TargetsEditorSheet(targets: targets, gender: profile.gender) { macros in
+            if let profile = profileVm.profile,
+               let targets = profile.savedTargets,
+               let basis = calculator.basis(for: profile) {
+                TargetsEditorSheet(
+                    targets: targets,
+                    gender: profile.gender,
+                    basisKg: basis.kg,
+                    // The same default `basis(for:)` uses, or the basis weight and
+                    // the grams per kg would come from different goals.
+                    goal: profile.goalType ?? .defaultValue
+                ) { macros in
                     Task { await profileVm.saveEditedTargets(macros) }
                 }
             }
