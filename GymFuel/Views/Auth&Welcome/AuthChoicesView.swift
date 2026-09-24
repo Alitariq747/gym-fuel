@@ -12,7 +12,6 @@ struct AuthChoicesView: View {
     let mode: Mode
     let onBack: () -> Void
     let onEmail: () -> Void
-    let onSignIn: (() -> Void)?
     let onAuthenticated: (AuthAccountOutcome) -> Void
 
     @State private var isGoogleLoading = false
@@ -127,11 +126,6 @@ struct AuthChoicesView: View {
                     }
 
                     if mode == .saveProgress {
-                        if let onSignIn {
-                            Button("Already have an account? Sign in", action: onSignIn)
-                                .buttonStyle(.circa(.link))
-                                .disabled(isBusy)
-                        }
                         LegalAgreementText(context: .creatingAccount)
                     }
                 }

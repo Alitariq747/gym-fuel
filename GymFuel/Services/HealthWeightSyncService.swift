@@ -18,25 +18,15 @@ import SwiftUI
 /// Held by `GymFuelApp` and injected the way `SubscriptionViewModel` is.
 @MainActor
 final class HealthWeightSyncService: ObservableObject {
-    /// Whether the user has opted in. Not an authorization state — iOS will not
-    /// tell us that for reads — just a record that they tapped Connect and we
-    /// may therefore sync on foreground.
-    @Published private(set) var isConnected: Bool
-
     @Published private(set) var isSyncing = false
 
-    /// Whether a sync has finished since the user opted in, and the newest day
-    /// Health supplied a usable weight for.
-    ///
-    /// The Health row has no authorization to render — iOS reports none — so it
-    /// renders this instead: what the last read actually returned. `nil` after a
-    /// completed sync is the one statement that stays true whether the read was
-    /// refused or the database is simply empty.
-    @Published private(set) var hasSynced: Bool
+    /// The newest day the last sync found a usable weight for.
     @Published private(set) var lastFoundDateKey: String?
 
-    private static let connectedKey = "lifteats.health.weightSyncEnabled"
-    private static let hasSyncedKey = "lifteats.health.hasSynced"
+    /// On only once a read has returned a weight — iOS never reports a refused
+    /// read, which looks exactly like an empty Health database.
+    var isConnected: Bool { lastFoundDateKey != nil }
+
     private static let lastFoundKey = "lifteats.health.lastFoundDateKey"
 
     private let healthService: HealthKitWeightReading
@@ -60,8 +50,6 @@ final class HealthWeightSyncService: ObservableObject {
         self.networkMonitor = networkMonitor
         self.planner = planner
         self.defaults = defaults
-        self.isConnected = defaults.bool(forKey: Self.connectedKey)
-        self.hasSynced = defaults.bool(forKey: Self.hasSyncedKey)
         self.lastFoundDateKey = defaults.string(forKey: Self.lastFoundKey)
     }
 
@@ -79,9 +67,8 @@ final class HealthWeightSyncService: ObservableObject {
         await healthService.authorizationRequestState() == .neverAsked
     }
 
-    /// Raises the system sheet and records the opt-in. Safe to call when already
-    /// connected — iOS shows its sheet at most once per type, so it then returns
-    /// without showing anything.
+    /// Raises the system sheet. iOS shows it at most once per type, so a later
+    /// call returns without showing anything.
     ///
     /// Separate from `connect` because the onboarding step runs before an
     /// account exists: there is no uid to import against yet, and the sheet
@@ -97,9 +84,6 @@ final class HealthWeightSyncService: ObservableObject {
             return
         }
 
-        // Connected means "opted in", not "granted" — a denied read is
-        // invisible to us, so there is nothing else this flag could mean.
-        setConnected(true)
         FirebaseTelemetryService.logWeighInEvent("health_connected", source: WeighInSource.healthKit.rawValue)
     }
 
@@ -109,35 +93,34 @@ final class HealthWeightSyncService: ObservableObject {
     @discardableResult
     func connect(userId: String) async -> Double? {
         await requestAccess()
-        guard isConnected else { return nil }
-
-        return await sync(userId: userId)
+        return await syncIfAsked(userId: userId)
     }
 
-    /// The foreground path. No-ops unless the user has opted in.
-    ///
-    /// Drops a stale opt-in before syncing. `requestAuthorization` cannot report
-    /// a refusal, so `connect` records one for a user who declined, and the flag
-    /// then outlives reinstalls over the top. `.neverAsked` settles that case.
-    /// It does **not** settle a read revoked in the Health app — nothing does —
-    /// which is why the row describes what the last sync found rather than a
-    /// connection state.
+    /// The foreground path. Syncs whenever iOS has asked, whichever way the user
+    /// answered, so a read switched on later in Settings arrives on its own.
     @discardableResult
-    func syncIfConnected(userId: String) async -> Double? {
-        guard isConnected else { return nil }
-
+    func syncIfAsked(userId: String) async -> Double? {
         // Status only. Re-prompting without a tap is what App Review 5.1.1(iv)
         // forbids, and iOS refuses to show the sheet twice regardless.
-        if await healthService.authorizationRequestState() == .neverAsked {
-            setConnected(false)
+        switch await healthService.authorizationRequestState() {
+        case .alreadyAsked:
+            return await sync(userId: userId)
+        case .neverAsked:
+            recordSyncOutcome(lastFound: nil)
+            return nil
+        case .unknown:
             return nil
         }
-
-        return await sync(userId: userId)
     }
 
-    func disconnect() {
-        setConnected(false)
+    /// Whether Health returns a usable weight right now. Needs no account, so
+    /// onboarding can check before sign-up.
+    func canReadWeights() async -> Bool {
+        guard let window = importWindow(),
+              let samples = try? await healthService.bodyMassSamples(from: window.start, through: window.end)
+        else { return false }
+
+        return !planner.dailySamples(from: samples).isEmpty
     }
 
     // MARK: - The import
@@ -172,7 +155,7 @@ final class HealthWeightSyncService: ObservableObject {
 
         // Recorded from what Health returned, not from `planned`: a sync that
         // finds only weights already held is a *working* connection, and the row
-        // must not then say nothing was found. Via `dailySamples` so the
+        // must not then read Off. Via `dailySamples` so the
         // planner's plausibility rule stays the single one — a lone 4 kg reading
         // is not a weight found.
         recordSyncOutcome(lastFound: planner.dailySamples(from: samples).keys.max())
@@ -258,25 +241,12 @@ final class HealthWeightSyncService: ObservableObject {
         )
     }
 
-    private func setConnected(_ connected: Bool) {
-        defaults.set(connected, forKey: Self.connectedKey)
-        isConnected = connected
-
-        // Disconnecting discards the last outcome so a later reconnect reports
-        // its own read rather than one from before the gap.
-        if !connected {
-            recordSyncOutcome(lastFound: nil, synced: false)
-        }
-    }
-
-    private func recordSyncOutcome(lastFound dateKey: String?, synced: Bool = true) {
-        defaults.set(synced, forKey: Self.hasSyncedKey)
+    private func recordSyncOutcome(lastFound dateKey: String?) {
         if let dateKey {
             defaults.set(dateKey, forKey: Self.lastFoundKey)
         } else {
             defaults.removeObject(forKey: Self.lastFoundKey)
         }
-        hasSynced = synced
         lastFoundDateKey = dateKey
     }
 }

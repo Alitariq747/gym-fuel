@@ -154,7 +154,6 @@ struct ProfileView: View {
                                 ProfileReminderSection(preferredColorScheme: preferredColorScheme)
                                 ProfileHealthSection(
                                     userId: profileVm.profile?.id ?? "",
-                                    preferredColorScheme: preferredColorScheme,
                                     onWeightImported: { kg in
                                         profileVm.applyWeighIn(kg: kg)
                                         // The draft is seeded once per uid, so

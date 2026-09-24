@@ -13,8 +13,9 @@
 //     and nothing else, in one direction.
 //  3. **There is no denied branch, and there cannot be one.**
 //     `requestAuthorization` does not report a refusal: a user who taps Don't
-//     Allow returns here exactly as one who allowed. So both buttons lead to the
-//     same place and nothing on screen characterises the answer. Treating a
+//     Allow returns here exactly as one who allowed. So the answer always
+//     continues, and a second tap — once iOS won't ask again — only says where
+//     the switch lives, unless Health already returns a weight. Treating a
 //     throw as a denial — as the notifications step legitimately does — would
 //     reintroduce the bug that made Settings claim "Connected".
 //
@@ -33,6 +34,7 @@ struct OnboardingAppleHealthStepView: View {
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
 
     @State private var isRequesting = false
+    @State private var showSettingsHint = false
     @Environment(\.dynamicTypeSize) private var typeSize
 
     /// design.md rule 8. At accessibility sizes the rows drop their wells and
@@ -41,9 +43,9 @@ struct OnboardingAppleHealthStepView: View {
     private var isStacked: Bool { typeSize.isAccessibilitySize }
 
     private static let analyticsStep = "apple_health"
+    private let settingsHint = HealthSyncCopy.settingsHint(isConnected: false)
 
-    /// The same three promises the Settings detail sheet makes. Said here first,
-    /// because here is where they are load-bearing.
+    /// Said before the sheet is spent, because here is where they are load-bearing.
     private let reasons: [HealthReason] = [
         HealthReason(
             symbol: "scalemass",
@@ -80,6 +82,11 @@ struct OnboardingAppleHealthStepView: View {
             footer
         }
         .circaPaper()
+        .alert(settingsHint.title, isPresented: $showSettingsHint) {
+            Button("OK", role: .cancel) { onFinished() }
+        } message: {
+            Text(settingsHint.message)
+        }
     }
 
     // MARK: - Parts
@@ -186,17 +193,22 @@ struct OnboardingAppleHealthStepView: View {
 
     /// The only path that spends the install's single Health sheet.
     ///
-    /// No success or failure branch, by rule 3 in the file note: allowed and
-    /// refused are indistinguishable here. The import itself waits for a uid —
-    /// sign-up comes after onboarding — and `RootView.importHealthWeight` runs
-    /// it as soon as one exists.
+    /// No success or failure branch, by rule 3 in the file note. The import
+    /// itself waits for a uid — sign-up comes after onboarding — and
+    /// `RootView.importHealthWeight` runs it as soon as one exists.
     @MainActor
     private func connect() async {
         guard !isRequesting else { return }
         isRequesting = true
 
-        await healthWeightSync.requestAccess()
-        FirebaseTelemetryService.logOnboardingEvent("health_connected", step: Self.analyticsStep)
+        if await healthWeightSync.willAskForAccess() {
+            await healthWeightSync.requestAccess()
+            FirebaseTelemetryService.logOnboardingEvent("health_connected", step: Self.analyticsStep)
+        } else if await !healthWeightSync.canReadWeights() {
+            isRequesting = false
+            showSettingsHint = true
+            return
+        }
 
         isRequesting = false
         onFinished()

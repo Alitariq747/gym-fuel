@@ -19,7 +19,7 @@ import HealthKit
 /// iOS's answer to "would the sheet appear for body mass?", with its
 /// uncertainty kept intact.
 ///
-/// Three cases rather than a `Bool` because the caller clears the user's opt-in
+/// Three cases rather than a `Bool` because the caller turns the row Off
 /// on `neverAsked`: collapsing `unknown` into it would disconnect somebody
 /// because one query happened to fail. `HealthKitWeightSample` keeps HealthKit
 /// out of the sample type for the same reason this keeps it out of the status.

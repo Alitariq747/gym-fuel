@@ -40,10 +40,10 @@ struct RootView: View {
 
     /// Pulls anything new out of Apple Health and reflects the newest weight in
     /// memory, so the weight shown is current without waiting for a profile
-    /// refetch. No-ops entirely unless the user has connected Health.
+    /// refetch. No-ops until iOS has asked for Health access.
     @MainActor
     private func importHealthWeight(for uid: String) async {
-        if let kg = await healthWeightSync.syncIfConnected(userId: uid) {
+        if let kg = await healthWeightSync.syncIfAsked(userId: uid) {
             profileViewModel.applyWeighIn(kg: kg)
         }
     }
@@ -167,7 +167,6 @@ struct RootView: View {
                     .fullScreenCover(isPresented: $showSaveProgress, onDismiss: finishGuestPresentation) {
                         PostOnboardingAuthView(
                             isFinishing: isFinishingOnboarding,
-                            accountIsNew: guestAuthOutcome?.isNewUser,
                             errorMessage: profileViewModel.errorMessage,
                             onBack: { showSaveProgress = false },
                             onRetry: finishGuestOnboarding,

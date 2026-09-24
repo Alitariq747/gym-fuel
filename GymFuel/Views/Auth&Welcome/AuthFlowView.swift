@@ -30,7 +30,6 @@ struct AuthFlowView: View {
                         mode: .signIn,
                         onBack: { _ = path.popLast() },
                         onEmail: { path.append(.signInEmail) },
-                        onSignIn: nil,
                         onAuthenticated: { _ in }
                     )
                 case .signInEmail:
