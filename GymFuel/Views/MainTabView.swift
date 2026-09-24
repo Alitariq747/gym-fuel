@@ -6,7 +6,6 @@
 //
 
 import AVFoundation
-import PhotosUI
 import SwiftUI
 import UIKit
 
@@ -39,12 +38,9 @@ struct MainTabView: View {
     /// Set when the entry was opened from its assumption line, so detail knows to
     /// present the amount editor rather than just showing the breakdown.
     @State private var opensEditorForEntryID: String?
-    @State var mealImageDraft = MealImageDraft()
-    @State var pendingMealImageSource: MealImageSource?
-    @State var showCameraCapture = false
+    @State var mealPhotoPresentation = MealPhotoPresentation()
+    @State var isSubmittingMealPhoto = false
     @State private var showCameraPermissionAlert = false
-    @State var showPhotoLibraryPicker = false
-    @State var selectedPhotoPickerItem: PhotosPickerItem?
     @State private var dayNavigationDirection: DayNavigationDirection = .previous
     @Environment(\.layoutDirection) private var layoutDirection
     @AppStorage("appColorSchemePreference") private var colorSchemePreference = "system"
@@ -233,6 +229,9 @@ struct MainTabView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .allowsHitTesting(!mealPhotoPresentation.isActive)
+        .accessibilityHidden(mealPhotoPresentation.isActive)
+        .overlay { mealPhotoOverlay.preferredColorScheme(preferredColorScheme) }
         .sheet(isPresented: $showStats, onDismiss: {
             selectDay(weekAnchorDate)
         }) {
@@ -305,36 +304,6 @@ struct MainTabView: View {
             }
             .preferredColorScheme(preferredColorScheme)
         }
-        .onChange(of: pendingMealImageSource) { _, newValue in
-            if newValue != nil {
-                dismissComposerKeyboard()
-            }
-            showCameraCapture = newValue == .camera
-            showPhotoLibraryPicker = newValue == .photoLibrary
-        }
-        .onChange(of: selectedPhotoPickerItem) { _, newValue in
-            guard newValue != nil else { return }
-            dismissComposerKeyboard()
-            mealImageDraft.source = .photoLibrary
-            mealImageDraft.state = .preparing
-            pendingMealImageSource = nil
-            Task {
-                await loadSelectedPhotoData()
-            }
-        }
-        .onChange(of: mealImageDraft.state) { _, newValue in
-            guard newValue == .readyToAnalyze else { return }
-            dismissComposerKeyboard()
-            Task {
-                await analyzePreparedMealImage()
-            }
-        }
-        .photosPicker(
-            isPresented: $showPhotoLibraryPicker,
-            selection: $selectedPhotoPickerItem,
-            matching: .images,
-            preferredItemEncoding: .current
-        )
         .alert("Camera Access Required", isPresented: $showCameraPermissionAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Open Settings") {
@@ -342,18 +311,6 @@ struct MainTabView: View {
             }
         } message: {
             Text("Allow camera access in Settings to capture meal photos for logging.")
-        }
-        .fullScreenCover(isPresented: $showCameraCapture) {
-            MealCameraCaptureView(
-                onImagePicked: { image in
-                    handleCapturedMealImage(image)
-                },
-                onCancel: {
-                    showCameraCapture = false
-                    pendingMealImageSource = nil
-                }
-            )
-            .ignoresSafeArea()
         }
         .task(id: profile.id) {
             await timelineViewModel.loadTimeline(
@@ -483,26 +440,23 @@ struct MainTabView: View {
 
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .denied, .restricted:
-            pendingMealImageSource = nil
-            showCameraCapture = false
+            mealPhotoPresentation.cancel()
             showCameraPermissionAlert = true
         case .authorized:
-            pendingMealImageSource = .camera
+            presentMealPhotoSheet(source: .camera)
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 Task { @MainActor in
                     if granted {
-                        pendingMealImageSource = .camera
+                        presentMealPhotoSheet(source: .camera)
                     } else {
-                        pendingMealImageSource = nil
-                        showCameraCapture = false
+                        mealPhotoPresentation.cancel()
                         showCameraPermissionAlert = true
                     }
                 }
             }
         @unknown default:
-            pendingMealImageSource = nil
-            showCameraCapture = false
+            mealPhotoPresentation.cancel()
             showCameraPermissionAlert = true
         }
     }
@@ -515,9 +469,7 @@ struct MainTabView: View {
     private func presentSubscriptionPaywall() {
         dismissComposerKeyboard()
         showTextLogSheet = false
-        showCameraCapture = false
-        showPhotoLibraryPicker = false
-        pendingMealImageSource = nil
+        mealPhotoPresentation.cancel()
         showSubscriptionPaywall = true
     }
 
@@ -543,13 +495,13 @@ struct MainTabView: View {
     private var bottomDock: some View {
         if canLogForSelectedDate {
             LogActionDock(
-                isSubmitting: composerViewModel.isSubmitting,
+                isSubmitting: composerViewModel.isSubmitting || isSubmittingMealPhoto,
                 onCameraTap: {
                     handleCameraTap()
                 },
                 onPhotoTap: {
                     guard canUseAIFeatures() else { return }
-                    pendingMealImageSource = .photoLibrary
+                    presentMealPhotoSheet(source: .photoLibrary)
                 },
                 onTextTap: {
                     guard canUseAIFeatures() else { return }

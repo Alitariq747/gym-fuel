@@ -1,8 +1,10 @@
 import Foundation
 
-enum MealImageSource: String, Sendable {
+enum MealImageSource: String, Identifiable, Sendable {
     case camera
     case photoLibrary
+
+    var id: String { rawValue }
 }
 
 enum MealImageAnalysisState: Equatable, Sendable {
