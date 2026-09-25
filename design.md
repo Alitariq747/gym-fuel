@@ -12,6 +12,9 @@ Revised 19 and 22 September: one meal contains editable items, corrections prese
 unaffected values, and saved meals retain their estimated provenance. The meal score
 has been removed. These rules supersede older artboards.
 
+Revised 26 September: the plate mascot and the plate app icon — see *The plate
+mascot*. The canvas predates both.
+
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
 > progress. Older product audits and artboards may describe superseded behavior.
@@ -265,6 +268,108 @@ eight emoji and the summary step four; all twelve go.
 Explain the portions, ingredients and preparation used in the estimate. Give the
 user a direct way to correct them. Daily totals and saved targets provide the
 personal context; the meal itself does not receive a numeric judgment.
+
+---
+
+## The plate mascot
+
+Added 26 September 2026. A plate with a face, arms and legs: the app icon, and a
+moving figure on the welcome, onboarding and save-progress screens. The canvas
+does not show it; the build and `design-canvas/mascot/preview.py` are the picture.
+
+The plate is cream with a grey inner ring broken at the upper right, and three
+ochre dots sit in the gap — the estimate mark. **The dots stay in the same place
+in every pose.** Ink lines and one ochre, like everything else.
+
+### Its rules
+
+1. **No number anywhere in the art.** The scale and the phone show dots only —
+   rule 1's "not yet known". Weight comes from weigh-ins, never from a picture.
+2. **No exercise.** No dumbbells, running or gym. Activity is walking in place.
+3. **No gendered props or colours.** The gender step's move is *wonder*.
+4. **No words in the art.** Arabic is coming and the name may change again. The
+   dotted question mark is a symbol, not a word.
+5. **The busiest steps get only the small face.** Logging tips and the plan
+   summary show the 64 pt `PlateFace`, left-aligned like the paywall.
+   `OnboardingIllustrationTests` holds this.
+6. **Decoration only.** Hidden from VoiceOver; still, in its rest pose, under
+   Reduce Motion; on onboarding steps, 90 pt instead of 130 at accessibility
+   text sizes.
+7. **Drawings carry their own colours; never tint them in code.** An arm across
+   the plate must stay dark in dark mode, because the plate stays light. Every
+   piece that sits on the paper has a dark twin in the asset catalogue, except
+   the faint ground shadow, which simply fades out in dark.
+8. **Not where a number must lead.** Not on the Day screen, and never the
+   analysing indicator — rule 1 allows no spinner.
+
+### Where it lives
+
+| What | Where |
+|---|---|
+| The drawings | `GymFuel/Assets.xcassets/Mascot/` — one SVG per piece, plus `-dark` twins |
+| Stacking, joints, blink and breathe | `GymFuel/Design/PlateMascot.swift` |
+| Each move's drawings, rest pose and keyframes | `GymFuel/Design/PlateMascotMoves.swift` |
+| Which onboarding step shows what | `OnboardingStep.illustration` in `OnboardingFlowView.swift` |
+| Welcome (wave, 180 pt) and save progress (hug, 168 pt) | `WelcomeView.swift`, `AuthChoicesView.swift` |
+| The small face | `PlateFace` image — paywall, logging tips, plan summary |
+| App icon sources | `design-canvas/app-icon/` — export rules in `design-canvas/INDEX.md` |
+| Preview of every move, light and dark | `python3 design-canvas/mascot/preview.py` |
+
+### How the drawings fit together
+
+- **One canvas.** Every piece is drawn on the same 300 × 300 square, already in
+  place, so stacking lines them up with no offsets in code.
+- **Joints, in canvas points:** shoulders (67, 155) and (233, 155); hips (133, 200)
+  and (167, 200); eye line y 117; feet (150, 270); bell hook (262, 22). The plate is
+  centred at (150, 125), radius 88. A new arm starts at a shoulder; an arm that
+  crosses the plate stays inside its edge.
+- **Basic SVG only:** `path`, `circle`, `ellipse`, `rect`, fill and stroke. No
+  `<use>`, CSS, transforms or dashes — draw dots as circles. Xcode reads a subset.
+- **Colours:** on the plate, ink `#1A1917` in both modes. On the paper, `#1A1917`
+  light and `#F2F0E8` dark. The plate and props dim in dark (plate `#CFC9BC`);
+  ochre is `#A8762A` light and `#D9A94E` dark.
+- **Image sets** keep vector data (`preserves-vector-representation`), with the
+  dark twin under the dark luminosity appearance.
+
+### How a move works
+
+A move is three things in `PlateMascotMoves.swift`:
+
+- **A costume** — which arms, eyes, held object and props it uses.
+- **A rest pose** — where every loop starts and ends, and all Reduce Motion shows.
+- **Keyframes** — every track in one move runs the same total length, so the loop
+  is seamless.
+
+In `MascotPose`, angles are degrees and distances are canvas points. `reach` is
+tiptoe: the body rises and the legs stretch, feet down. `lift` moves the whole
+figure, so it can leave the ground. Blink and breathe run under every move.
+
+### Making a change
+
+Mascot work is not a `build-order.md` step: the user asks for it directly, as
+"Mascot change: …". The usual rules still hold — plan first, about 200 lines per
+part, report in the usual order.
+
+1. **Preview before code.** Put new or changed drawings in
+   `design-canvas/mascot/drafts/` under their final names, update `MOVES` in
+   `preview.py` to match the proposal, run it and show the page. No app code
+   until the user has seen it move and said yes.
+2. **Then the Swift.** A new move touches its drawings, `PlateMascot.Move`,
+   `rest`, `costume`, one keyframes function and the switch in `PlateMascot.swift`.
+   Keep `preview.py` matching, or it stops telling the truth.
+3. **Check without building:** compile in Swift 6 mode; run `actool` on a *copy*
+   of the asset catalogue and expect no warnings; confirm every drawing name in
+   the code exists and every drawing is used; run `OnboardingIllustrationTests`
+   when the step list changes.
+
+```
+xcrun actool <copy>/Assets.xcassets --compile <out> --platform iphoneos \
+  --minimum-deployment-target 17.6 --target-device iphone --app-icon AppIcon \
+  --output-partial-info-plist <out>/partial.plist --warnings --errors
+```
+
+**Replacing the art with an illustrator's** keeps the canvas, the names and the
+joint positions; the code does not change.
 
 ---
 

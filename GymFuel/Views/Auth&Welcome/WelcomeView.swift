@@ -24,6 +24,11 @@ struct WelcomeView: View {
 
                 Spacer(minLength: 48)
 
+                PlateMascot(move: .wave)
+                    .frame(width: 180, height: 180)
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 32)
+
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Your food, in your words.")
                         .font(.system(.largeTitle).weight(.semibold))

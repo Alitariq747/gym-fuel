@@ -196,3 +196,20 @@ NOTE the third movement glyph. The obvious pick is figure.strengthtraining.tradi
 Settings: target, scalemass, bookmark, bell, circle.lefthalf.filled, sparkles, chart.bar.xaxis, books.vertical, hand.raised, doc.text, envelope, rectangle.portrait.and.arrow.right, trash
 
 Glyphs sit in 30pt wells, monochrome on paper, NOT iOS Settings' coloured squares — a row of tinted icons would break rule 5 and the palette in one go. Delete account is the single exception: its well and glyph carry danger.
+
+## Not from the canvas — `app-icon/`
+
+The plate app icon's sources, added 26 September 2026. They are not artboards and
+do not sync with the canvas.
+
+| File | Becomes |
+|---|---|
+| `icon-default.svg` | `AppIcon.appiconset/liftEatsLogo.png` |
+| `icon-dark.svg` | `AppIcon.appiconset/liftEatsLogo 1.png` |
+| `icon-tinted.svg` | `AppIcon.appiconset/liftEatsLogo 2.png` |
+
+To re-export: render each at 1024 × 1024, then save as PNG with **no alpha
+channel** (App Store Connect rejects one) — sRGB for default and dark, Gray Gamma
+2.2 for tinted. Keep the plate centred and the corners square; iOS masks them. The
+dark plate is dimmed on purpose: Apple asks dark icons to avoid excessively
+bright images.

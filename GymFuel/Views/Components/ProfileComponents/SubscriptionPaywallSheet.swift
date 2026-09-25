@@ -64,7 +64,7 @@ struct SubscriptionPaywallSheet: View {
 
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Image("LiftEatsWelcomeIcon")
+            Image("PlateFace")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 64, height: 64)

@@ -37,17 +37,10 @@ struct AuthChoicesView: View {
                 Spacer(minLength: 36)
 
                 if mode == .saveProgress {
-                    ZStack {
-                        Circle()
-                            .fill(Color.circaWell)
-                            .frame(width: 168, height: 168)
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 76, weight: .light))
-                            .foregroundStyle(Color.circaAccent)
-                            .accessibilityHidden(true)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 42)
+                    PlateMascot(move: .hug)
+                        .frame(width: 168, height: 168)
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, 42)
                 }
 
                 VStack(alignment: .leading, spacing: 12) {

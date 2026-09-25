@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-private enum OnboardingStep: Hashable {
+enum OnboardingStep: Hashable, CaseIterable {
     case liftEatsIntro
     case liftEatsDifference
     case gender
@@ -52,6 +52,26 @@ private enum OnboardingStep: Hashable {
             return "summary"
         }
     }
+
+    /// The two busiest steps get only the small face, so their content stays high.
+    var illustration: OnboardingIllustration {
+        switch self {
+        case .liftEatsIntro, .gender: .plate(.wonder)
+        case .liftEatsDifference, .age: .plate(.write)
+        case .height: .plate(.stretch)
+        case .weight: .plate(.weigh)
+        case .activityLevel: .plate(.walk)
+        case .goal, .goalWeight: .plate(.lookAhead)
+        case .appleHealth: .plate(.phone)
+        case .notifications: .plate(.bell)
+        case .loggingTips, .summary: .face
+        }
+    }
+}
+
+enum OnboardingIllustration: Equatable {
+    case plate(PlateMascot.Move)
+    case face
 }
 
 struct OnboardingFlowView: View {
@@ -60,6 +80,7 @@ struct OnboardingFlowView: View {
     let onFinished: (OnboardingAnswers) -> Void
 
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var data = OnboardingAnswers()
     @State private var path: [OnboardingStep] = []
@@ -128,8 +149,30 @@ struct OnboardingFlowView: View {
 
     /// The header above the stack stands in for the navigation bar.
     private func page(_ step: OnboardingStep) -> some View {
-        stepView(for: step)
-            .toolbar(.hidden, for: .navigationBar)
+        VStack(spacing: 0) {
+            illustration(for: step)
+            stepView(for: step)
+        }
+        .circaPaper()
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    @ViewBuilder
+    private func illustration(for step: OnboardingStep) -> some View {
+        switch step.illustration {
+        case .plate(let move):
+            PlateMascot(move: move)
+                .frame(height: dynamicTypeSize.isAccessibilitySize ? 90 : 130)
+                .frame(maxWidth: .infinity)
+        case .face:
+            Image("PlateFace")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 64, height: 64)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Circa.Space.screenMargin)
+                .accessibilityHidden(true)
+        }
     }
 
     @ViewBuilder

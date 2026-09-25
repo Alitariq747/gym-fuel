@@ -16,6 +16,7 @@ An iOS calorie tracker, mid-repositioning. Two things a fresh session gets wrong
 | `meal-contract.md` | The meal payload, persistence and editing rules Steps 5 and 6 share. **Both repos.** Change it in neither step alone |
 | `store-copy.md` | Exact App Store strings, with character counts |
 | `design.md` | The visual system and its rules. A **spec** — the build does not look like this yet, and where an artboard's copy disagrees with its *Canvas drift* table, the table wins |
+| `design.md` → *The plate mascot* | The mascot and app icon: rules, files, and how to change them. **Read it before any "Mascot change"** — those are asked for directly, not as `build-order.md` steps |
 | `repositioning-strategy.md` | Why we're doing this. Rarely needed mid-build |
 | `product-as-built.md` | What the code does today |
 
