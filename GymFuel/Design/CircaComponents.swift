@@ -540,7 +540,7 @@ struct CircaEntryRow: View {
     var certainty: CircaCertainty = .estimated
     /// Mono metadata — `"08:20 · 9P 48C 21F"`.
     let meta: String
-    /// The ochre line — `"3 assumptions · 2 tbsp ghee…"`. Optional.
+    /// The ochre line — `"3 assumptions · 2 tbsp oil…"`. Optional.
     var assumption: String? = nil
     var leading: CircaEntryLeading = .none
     /// The pending state — design.md rule 1's third row. The number has not
@@ -862,7 +862,7 @@ private struct CircaGallery: View {
 
                     CircaCard(.danger, radius: Circa.Radius.cardSmall) {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("two roti, chicken karahi, half a katori rice")
+                            Text("chicken stew, a bowl of rice, a side salad")
                                 .font(.circaEntryTitle)
                             Text("Couldn't reach Circa. Your words are saved — nothing to retype.")
                                 .font(.circaBody)
@@ -892,15 +892,15 @@ private struct CircaGallery: View {
                     CircaSectionLabel("Entries")
                         .padding(.horizontal, Circa.Space.screenMargin)
                     CircaEntryRow(
-                        title: "paratha and chai",
+                        title: "bread and tea",
                         calories: "420",
                         certainty: .estimated,
                         meta: "08:20 · 9P 48C 21F",
-                        assumption: "1 assumption · 1 tbsp ghee",
+                        assumption: "1 assumption · 1 tbsp butter",
                         leading: .glyph("text.alignleft")
                     )
                     CircaEntryRow(
-                        title: "two roti, chicken karahi, half a katori rice",
+                        title: "chicken stew, a bowl of rice, a side salad",
                         calories: nil,
                         certainty: .pending,
                         meta: "estimating",

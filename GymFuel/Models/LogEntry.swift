@@ -54,6 +54,7 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
     var feedback: LogEntryFeedback?
     var image: LogEntryImage?
     var imageUploadStatus: LogEntryImageUploadStatus?
+    var isRawInputReworded: Bool?
 
     init(
         id: String = UUID().uuidString,
@@ -66,7 +67,8 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
         detail: String? = nil,
         feedback: LogEntryFeedback? = nil,
         image: LogEntryImage? = nil,
-        imageUploadStatus: LogEntryImageUploadStatus? = nil
+        imageUploadStatus: LogEntryImageUploadStatus? = nil,
+        isRawInputReworded: Bool? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -79,5 +81,16 @@ struct LogEntry: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.feedback = feedback
         self.image = image
         self.imageUploadStatus = imageUploadStatus
+        self.isRawInputReworded = isRawInputReworded
+    }
+}
+
+extension LogEntry {
+    /// Saved entries already carry this value, so it never changes.
+    static let photoRawInputPlaceholder = "Meal image"
+
+    /// `design.md` rule 3: a photo's `rawInput` is Circa's description until the person rewords it.
+    var isRawInputGenerated: Bool {
+        source == .image && isRawInputReworded != true
     }
 }

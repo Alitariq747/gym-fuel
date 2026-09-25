@@ -369,7 +369,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         let response = try await sendImageInterpretationRequest(imageData: imageData, goal: goal)
         return makeLogEntry(
             from: response,
-            rawText: response.rawInput ?? "Meal image",
+            rawText: response.rawInput ?? LogEntry.photoRawInputPlaceholder,
             userId: userId,
             loggedAt: loggedAt
         )

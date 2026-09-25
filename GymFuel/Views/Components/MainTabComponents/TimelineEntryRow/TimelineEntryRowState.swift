@@ -57,6 +57,6 @@ struct TimelineEntryRowState {
         return imageStoragePath != nil ||
             localPreviewData != nil ||
             entry.imageUploadStatus != nil ||
-            rawInput == "Meal image"
+            rawInput == LogEntry.photoRawInputPlaceholder
     }
 }

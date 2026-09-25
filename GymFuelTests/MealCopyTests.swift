@@ -225,5 +225,39 @@ struct MealCopyTests {
         #expect(line.hasSuffix("Your photo is saved — nothing to re-shoot."))
         #expect(!line.contains("retype"))
     }
+
+    // MARK: - Photo description (design.md rule 3)
+
+    private func entry(_ source: LogEntrySource, _ rawInput: String, reworded: Bool? = nil) -> LogEntry {
+        LogEntry(userId: "u", source: source, title: "Chicken noodles", rawInput: rawInput, isRawInputReworded: reworded)
+    }
+
+    @Test("A photo shows Circa's description, trimmed")
+    func photoDescriptionShown() {
+        let photo = entry(.image, "  Noodles with chicken (could be pork)\n", reworded: false)
+        #expect(photo.isRawInputGenerated)
+        #expect(MealCopy.photoDescription(of: photo) == "Noodles with chicken (could be pork)")
+    }
+
+    @Test("Typed words and saved meals have no description line")
+    func noDescriptionForTheirWords() {
+        #expect(!entry(.text, "two roti").isRawInputGenerated)
+        #expect(MealCopy.photoDescription(of: entry(.text, "two roti")) == nil)
+        #expect(MealCopy.photoDescription(of: entry(.savedMeal, "Lunch bowl")) == nil)
+    }
+
+    @Test("A reworded photo holds the person's words, not Circa's")
+    func rewordedPhotoIsTheirs() {
+        let reworded = entry(.image, "noodles, no egg", reworded: true)
+        #expect(!reworded.isRawInputGenerated)
+        #expect(MealCopy.photoDescription(of: reworded) == nil)
+    }
+
+    @Test("The placeholder and blank text are not a description")
+    func placeholderIsNotADescription() {
+        #expect(MealCopy.photoDescription(of: entry(.image, LogEntry.photoRawInputPlaceholder)) == nil)
+        #expect(MealCopy.photoDescription(of: entry(.image, " \(LogEntry.photoRawInputPlaceholder) ")) == nil)
+        #expect(MealCopy.photoDescription(of: entry(.image, "   ")) == nil)
+    }
 }
 

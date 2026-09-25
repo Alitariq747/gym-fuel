@@ -94,12 +94,12 @@ struct LogEntryDetailSheet: View {
     private var sourceLabel: String {
         switch entry.source {
         case .text: return "Your words"
-        case .image: return "Circa’s interpretation"
+        case .image: return entry.isRawInputGenerated ? "Circa’s interpretation" : "Your words"
         case .savedMeal: return "Saved meal"
         }
     }
     private var displayTitle: String {
-        if !isImageMealEntry, !entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !entry.isRawInputGenerated, !entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return entry.rawInput
         }
         let title = entry.title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -396,6 +396,13 @@ struct LogEntryDetailSheet: View {
                     .foregroundStyle(Color.circaInk)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
+
+                if let description = MealCopy.photoDescription(of: entry) {
+                    Text(verbatim: description)
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 if canModify, editableBreakdown != nil || !isSavedMealEntry {
                     Button {

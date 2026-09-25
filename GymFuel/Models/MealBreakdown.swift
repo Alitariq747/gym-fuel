@@ -85,7 +85,7 @@ enum MealProvenance: String, Codable, Equatable, Hashable, Sendable {
 struct MealAmount: Codable, Equatable, Hashable, Sendable {
     /// As first estimated. Never overwritten, by the client or the server.
     var quantity: Double
-    /// Free text — "tbsp", "roti", "katori", "g". Never converted to anything.
+    /// Free text — "tbsp", "slice", "bowl", "g". Never converted to anything.
     var unit: String
     /// The user's correction. `nil` until they make one; `0` means removed.
     var adjustedQuantity: Double? = nil
@@ -101,7 +101,7 @@ struct MealAmount: Codable, Equatable, Hashable, Sendable {
 
 // MARK: - Nodes (§3)
 
-/// A material part of an item — the ghee in a karahi, the mayonnaise in a sandwich.
+/// A material part of an item — the oil in a stew, the mayonnaise in a sandwich.
 ///
 /// `nutrition` is always the nutrition for `amount.quantity`, the original estimate.
 /// A contribution is `nutrition × amount.scale`, worked out at read time, so saving
@@ -117,7 +117,7 @@ struct MealComponent: Codable, Equatable, Hashable, Sendable, Identifiable {
     var source: MealProvenance? = nil
     /// "USDA 05062, chicken breast, roasted".
     var sourceNote: String? = nil
-    /// "Ghee, not oil".
+    /// "Butter, not oil".
     var assumption: String? = nil
 
     var resolvedSource: MealProvenance { source ?? .estimated }
@@ -129,7 +129,7 @@ struct MealComponent: Codable, Equatable, Hashable, Sendable, Identifiable {
     var isAmountEditable: Bool { nutrition != nil && amount != nil }
 }
 
-/// One thing the user ate. Two roti is one item, not two.
+/// One thing the user ate. Two eggs is one item, not two.
 ///
 /// `nutrition != nil` asserts *my components are prose*; `nutrition == nil` asserts
 /// *my components are the arithmetic*. Mutually exclusive by construction, which is

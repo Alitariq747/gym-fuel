@@ -83,7 +83,7 @@ struct TextEntrySheet: View {
             CircaHairline()
                 .padding(.bottom, 7)
             CircaSectionLabel("Say it how you'd say it to a person")
-            Text("Quantities in whatever measure you actually use — rotis, katoris, a plate, half a bowl. How it was cooked helps most: ghee or oil, fried or dry.")
+            Text("Quantities in whatever measure you actually use — two slices, a plate, half a bowl, a cup. How it was cooked helps most: butter or oil, fried or dry.")
             Text("The more you say, the fewer assumptions Circa has to make.")
         }
         .font(.circaBody)
@@ -120,7 +120,7 @@ private struct TextEntrySheetPreview: View {
 }
 
 #Preview("Filled · dark") {
-    TextEntrySheetPreview(text: "two roti, chicken karahi, half a katori rice")
+    TextEntrySheetPreview(text: "chicken stew, a bowl of rice, a side salad")
         .preferredColorScheme(.dark)
 }
 

@@ -79,7 +79,8 @@ final class LogEntryDetailViewModel: ObservableObject {
                 detail: reinterpretedEntry.detail,
                 feedback: reinterpretedEntry.feedback,
                 image: entry.image,
-                imageUploadStatus: entry.imageUploadStatus
+                imageUploadStatus: entry.imageUploadStatus,
+                isRawInputReworded: true
             )
 
             try await service.updateEntry(updatedEntry)

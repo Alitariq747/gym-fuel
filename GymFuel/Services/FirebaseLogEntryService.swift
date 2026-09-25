@@ -30,6 +30,7 @@ final class FirebaseLogEntryService: @unchecked Sendable {
         var feedback: LogEntryFeedback?
         var image: LogEntryImage?
         var imageUploadStatus: LogEntryImageUploadStatus?
+        var isRawInputReworded: Bool?
     }
 
     private func entriesCollection(for userId: String) -> CollectionReference {
@@ -49,7 +50,8 @@ final class FirebaseLogEntryService: @unchecked Sendable {
             detail: document.detail,
             feedback: document.feedback,
             image: document.image,
-            imageUploadStatus: document.imageUploadStatus
+            imageUploadStatus: document.imageUploadStatus,
+            isRawInputReworded: document.isRawInputReworded
         )
     }
 
@@ -77,7 +79,8 @@ final class FirebaseLogEntryService: @unchecked Sendable {
             detail: entry.detail,
             feedback: entry.feedback,
             image: entry.image,
-            imageUploadStatus: entry.imageUploadStatus
+            imageUploadStatus: entry.imageUploadStatus,
+            isRawInputReworded: entry.isRawInputReworded
         )
         return try Firestore.Encoder().encode(document)
     }

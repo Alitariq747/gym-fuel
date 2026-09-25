@@ -37,7 +37,7 @@ struct MainTabTimelineContentView: View {
             Text("Nothing written yet")
                 .font(.circaEntryTitle)
                 .foregroundStyle(Color.circaInk2)
-            Text("A sentence is enough. \u{201C}Two roti and daal\u{201D} gets you a number and a list of what Circa assumed.")
+            Text("A sentence is enough. \u{201C}Two eggs and a slice of bread\u{201D} gets you a number and a list of what Circa assumed.")
                 .font(.circaBody)
                 .foregroundStyle(Color.circaInk3)
                 .multilineTextAlignment(.center)

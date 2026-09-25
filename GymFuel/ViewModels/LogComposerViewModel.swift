@@ -297,7 +297,7 @@ final class LogComposerViewModel: ObservableObject {
             status: .analyzing,
             loggedAt: loggedAt,
             title: "Analyzing meal image",
-            rawInput: "Meal image",
+            rawInput: LogEntry.photoRawInputPlaceholder,
             imageUploadStatus: .localOnly
         )
         let trace = FirebaseTelemetryService.startPerformanceTrace("image_meal_log_total")

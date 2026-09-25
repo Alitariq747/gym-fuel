@@ -29,7 +29,7 @@ struct MealBreakdownCalculator {
     ///
     /// **A component-priced item's own amount does not scale its components.**
     /// Whichever level carries the nutrition is the level that carries the handle:
-    /// one katori of karahi is described by its ghee and chicken, so scaling both
+    /// one bowl of stew is described by its oil and chicken, so scaling both
     /// the item and its parts would apply the same correction twice.
     func contribution(of item: MealItem) -> Macros? {
         if let nutrition = item.nutrition {

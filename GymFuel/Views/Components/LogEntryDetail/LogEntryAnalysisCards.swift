@@ -7,7 +7,7 @@ import SwiftUI
 /// ingredient names something the reader cannot then go and correct.
 ///
 /// No confidence figure, by rule: `design.md` rule 1 asks for specific
-/// uncertainty copy — "2 tbsp of ghee in the karahi" — in place of a percentage
+/// uncertainty copy — "2 tbsp of oil in the stew" — in place of a percentage
 /// nothing has calibrated and a reader would take for an accuracy rate.
 struct MealAnalysisCard: View {
     let explanation: String

@@ -9,7 +9,7 @@ import Foundation
 /// say them, so they are written once. Pure: no UI, no Firebase.
 enum MealCopy {
 
-    /// "2 tbsp", "0.5 katori" — the amount as it stands now, so a corrected row
+    /// "2 tbsp", "0.5 bowl" — the amount as it stands now, so a corrected row
     /// reads as what the user said rather than what was first guessed. Trailing
     /// zeros go and fractions stop at two places: a household measure is not
     /// precise enough to justify a third.
@@ -67,6 +67,13 @@ enum MealCopy {
         guard let lead, !lead.isEmpty else { return nil }
 
         return count > 1 ? "\(count) assumptions · \(lead)" : lead
+    }
+
+    /// Circa's description of a photo, or `nil` once the words are the person's.
+    static func photoDescription(of entry: LogEntry) -> String? {
+        let text = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard entry.isRawInputGenerated, !text.isEmpty, text != LogEntry.photoRawInputPlaceholder else { return nil }
+        return text
     }
 
     /// What a failed entry kept. design.md rule 6 — the card leads with what

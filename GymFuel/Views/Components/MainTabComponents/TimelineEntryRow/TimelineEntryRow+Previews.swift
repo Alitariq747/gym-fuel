@@ -23,7 +23,7 @@ import SwiftUI
             userId: "preview",
             source: .image,
             title: "Salmon Rice Bowl",
-            rawInput: "Meal image",
+            rawInput: LogEntry.photoRawInputPlaceholder,
             feedback: LogEntryFeedback(
                 explanation: "Estimated as one bowl of salmon and cooked rice.",
                 confidence: 0.82,
@@ -42,7 +42,7 @@ private func analysingEntry(source: LogEntrySource) -> LogEntry {
         source: source,
         status: .analyzing,
         title: source == .image ? "Analyzing meal image" : "Analyzing entry",
-        rawInput: source == .image ? "Meal image" : "two roti, chicken karahi, half a katori rice"
+        rawInput: source == .image ? LogEntry.photoRawInputPlaceholder : "chicken stew, a bowl of rice, a side salad"
     )
 }
 
@@ -51,8 +51,8 @@ private func failedEntry(source: LogEntrySource) -> LogEntry {
         userId: "preview",
         source: source,
         status: .failed,
-        title: source == .image ? "" : "two roti, chicken karahi, half a katori rice",
-        rawInput: source == .image ? "Meal image" : "two roti, chicken karahi, half a katori rice",
+        title: source == .image ? "" : "chicken stew, a bowl of rice, a side salad",
+        rawInput: source == .image ? LogEntry.photoRawInputPlaceholder : "chicken stew, a bowl of rice, a side salad",
         feedback: LogEntryFeedback(
             explanation: "You're offline. Reconnect and try again.",
             confidence: nil,

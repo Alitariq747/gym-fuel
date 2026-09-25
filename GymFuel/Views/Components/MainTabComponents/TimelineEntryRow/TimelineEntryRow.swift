@@ -76,17 +76,15 @@ struct TimelineEntryRow: View {
         )
     }
 
-    /// design.md rule 3 — `rawInput` verbatim, never the model's laundered
-    /// `title`. A photo entry's `rawInput` is the server's description of the
-    /// plate, which `metaLine` marks as the app's reading; when there is none
-    /// the server sends the literal "Meal image" and `title` is all there is.
+    /// design.md rule 3 — typed words verbatim, never the model's laundered
+    /// `title`. A photo's `rawInput` is the server's description of the plate,
+    /// not typed words, so a photo takes `title`.
     private var displayTitle: String {
         let raw = entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        return raw.isEmpty || raw == "Meal image" ? entry.title : raw
+        return entry.source == .image || raw.isEmpty ? entry.title : raw
     }
 
-    /// `"13:45 · 42P 78C 32F"`, then where the meal came from when that is not
-    /// the user typing.
+    /// `"13:45 · 42P 78C 32F"`, then `saved` for a saved meal.
     private var metaLine: String {
         var parts = [entry.loggedAt.formatted(date: .omitted, time: .shortened)]
 
@@ -98,8 +96,7 @@ struct TimelineEntryRow: View {
 
         switch entry.source {
         case .savedMeal: parts.append("saved")
-        case .image: parts.append("from your photo")
-        case .text: break
+        case .text, .image: break
         }
 
         return parts.joined(separator: " · ")

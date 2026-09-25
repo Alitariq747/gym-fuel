@@ -18,6 +18,8 @@ struct DetailHeroImage: View {
             }
         }
         .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: 256)
+        .frame(maxWidth: .infinity)
         .accessibilityLabel("Meal photo")
     }
 }
