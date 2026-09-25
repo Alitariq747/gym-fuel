@@ -62,7 +62,9 @@ struct OnboardingFlowView: View {
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
 
     @State private var data = OnboardingAnswers()
-    @State private var step: OnboardingStep = .liftEatsIntro
+    @State private var path: [OnboardingStep] = []
+
+    private var step: OnboardingStep { path.last ?? .liftEatsIntro }
 
     // MARK: - Step order + progress
 
@@ -82,7 +84,11 @@ struct OnboardingFlowView: View {
         return steps
     }
 
-    private var currentIndex: Int {
+    private var currentIndex: Int { index(of: step) }
+
+    /// Pages still in the stack redraw when the top one changes, so each page
+    /// reads its own position rather than `currentIndex`.
+    private func index(of step: OnboardingStep) -> Int {
         orderedSteps.firstIndex(of: step) ?? 0
     }
 
@@ -105,82 +111,68 @@ struct OnboardingFlowView: View {
         .frame(height: 4)
     }
 
-    // MARK: - Directional transitions
+    // MARK: - Navigation
 
-    private enum NavDirection { case forward, backward }
-    @State private var navDirection: NavDirection = .forward
-
-    private var stepTransition: AnyTransition {
-        switch navDirection {
-        case .forward:
-            return .asymmetric(
-                insertion: .move(edge: .trailing).combined(with: .opacity),
-                removal: .move(edge: .leading).combined(with: .opacity)
-            )
-        case .backward:
-            return .asymmetric(
-                insertion: .move(edge: .leading).combined(with: .opacity),
-                removal: .move(edge: .trailing).combined(with: .opacity)
-            )
-        }
-    }
-
-    private func go(to newStep: OnboardingStep, direction: NavDirection) {
-        navDirection = direction
-        withAnimation(.easeInOut(duration: 0.25)) {
-            step = newStep
-        }
+    private func go(to newStep: OnboardingStep) {
+        // A second tap while the push is still running would stack the step twice.
+        guard path.last != newStep else { return }
+        path.append(newStep)
     }
 
     private func goBack() {
-        let idx = currentIndex
-        guard idx > 0 else { return }
-        go(to: orderedSteps[idx - 1], direction: .backward)
+        guard !path.isEmpty else { return }
+        path.removeLast()
     }
 
     // MARK: - Step content
 
+    /// The header above the stack stands in for the navigation bar.
+    private func page(_ step: OnboardingStep) -> some View {
+        stepView(for: step)
+            .toolbar(.hidden, for: .navigationBar)
+    }
+
     @ViewBuilder
-    private var stepView: some View {
+    private func stepView(for step: OnboardingStep) -> some View {
         switch step {
         case .liftEatsIntro:
             liftEatsIntro(
-                onNext: { go(to: .liftEatsDifference, direction: .forward) }
+                onNext: { go(to: .liftEatsDifference) }
             )
 
         case .liftEatsDifference:
             OnboardingLiftEats(
-                onNext: { go(to: .gender, direction: .forward) }
+                onNext: { go(to: .gender) }
             )
 
         case .gender:
             OnboardingGenderStepView(
                 gender: $data.gender,
-                onNext: { go(to: .age, direction: .forward) }
+                onNext: { go(to: .age) }
             )
 
         case .age:
             OnboardingAgeStepView(
                 age: $data.age,
-                onNext: { go(to: .height, direction: .forward) }
+                onNext: { go(to: .height) }
             )
 
         case .height:
             OnboardingHeightStepView(
                 heightCm: $data.heightCm,
-                onNext: { go(to: .weight, direction: .forward) }
+                onNext: { go(to: .weight) }
             )
 
         case .weight:
             OnboardingWeightStepView(
                 weightKg: $data.weightKg,
-                onNext: { go(to: .activityLevel, direction: .forward) }
+                onNext: { go(to: .activityLevel) }
             )
 
         case .activityLevel:
             OnboardingActivityLevelStepView(
                 selectedLevel: $data.activityLevel,
-                onNext: { go(to: .goal, direction: .forward) }
+                onNext: { go(to: .goal) }
             )
 
         case .goal:
@@ -190,7 +182,7 @@ struct OnboardingFlowView: View {
                 weightKg: data.weightKg,
                 onFinish: {
                     if data.goalType == .maintain { data.goalWeightKg = nil }
-                    go(to: data.goalType == .maintain ? .loggingTips : .goalWeight, direction: .forward)
+                    go(to: data.goalType == .maintain ? .loggingTips : .goalWeight)
                 }
             )
 
@@ -201,9 +193,9 @@ struct OnboardingFlowView: View {
                     currentWeightKg: weight,
                     heightCm: height,
                     goalWeightKg: $data.goalWeightKg,
-                    stepPosition: currentIndex + 1,
+                    stepPosition: index(of: step) + 1,
                     stepCount: orderedSteps.count,
-                    onNext: { go(to: .loggingTips, direction: .forward) }
+                    onNext: { go(to: .loggingTips) }
                 )
             }
 
@@ -212,21 +204,21 @@ struct OnboardingFlowView: View {
                 // Destinations here are literal, not derived from
                 // `orderedSteps`, so a skipped Health step has to be skipped
                 // twice — once in the order, once in what points at it.
-                onNext: { go(to: healthStepAvailable ? .appleHealth : .notifications, direction: .forward) }
+                onNext: { go(to: healthStepAvailable ? .appleHealth : .notifications) }
             )
 
         case .appleHealth:
             OnboardingAppleHealthStepView(
-                stepPosition: currentIndex + 1,
+                stepPosition: index(of: step) + 1,
                 stepCount: orderedSteps.count,
-                onFinished: { go(to: .notifications, direction: .forward) }
+                onFinished: { go(to: .notifications) }
             )
 
         case .notifications:
             OnboardingNotificationsStepView(
-                stepPosition: currentIndex + 1,
+                stepPosition: index(of: step) + 1,
                 stepCount: orderedSteps.count,
-                onFinished: { go(to: .summary, direction: .forward) }
+                onFinished: { go(to: .summary) }
             )
 
         case .summary:
@@ -255,47 +247,45 @@ struct OnboardingFlowView: View {
 
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 12) {
+        VStack(spacing: 12) {
 
-                HStack(spacing: 12) {
-                    if currentIndex > 0 || onExit != nil {
-                        Button {
-                            if currentIndex == 0 { onExit?() } else { goBack() }
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.headline)
-                                .foregroundStyle(Color.circaInk)
-                                .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                                .background(Color.circaCard, in: Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(currentIndex == 0 ? "Back to welcome" : "Previous step")
-                    } else {
-                        Color.clear
+            HStack(spacing: 12) {
+                if currentIndex > 0 || onExit != nil {
+                    Button {
+                        if currentIndex == 0 { onExit?() } else { goBack() }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.headline)
+                            .foregroundStyle(Color.circaInk)
                             .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+                            .background(Color.circaCard, in: Circle())
                     }
-
-                    progressBar
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(currentIndex == 0 ? "Back to welcome" : "Previous step")
+                } else {
+                    Color.clear
+                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
 
-                ZStack {
-                    stepView
-                        .transition(stepTransition)
-                }
-                .id(step)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                progressBar
             }
-            .circaPaper()
-            .navigationBarBackButtonHidden(true)
-            .onAppear {
-                FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: step.analyticsName)
+            .padding(.horizontal)
+            .padding(.top, 8)
+
+            NavigationStack(path: $path) {
+                page(.liftEatsIntro)
+                    .navigationDestination(for: OnboardingStep.self) { page($0) }
             }
-            .onChange(of: step) { _, newStep in
-                FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: newStep.analyticsName)
-            }
+        }
+        .circaPaper()
+        .sensoryFeedback(trigger: path) { old, new in
+            new.count > old.count ? .impact(weight: .light) : .impact(flexibility: .soft)
+        }
+        .onAppear {
+            FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: step.analyticsName)
+        }
+        .onChange(of: step) { _, newStep in
+            FirebaseTelemetryService.logOnboardingEvent("step_viewed", step: newStep.analyticsName)
         }
     }
 }
