@@ -13,8 +13,8 @@ struct OnboardingGenderStepView: View {
 
     var body: some View {
         OnboardingMetricPage(
-            title: "Which starting equation should we use?",
-            detail: "This sets your starting calorie estimate. Your weigh-ins will show whether it fits.",
+            title: "What's your gender?",
+            detail: "This helps us calculate better calorie and macro goals.",
             onContinue: onNext
         ) {
             VStack(spacing: 12) {
@@ -32,15 +32,15 @@ struct OnboardingGenderStepView: View {
             gender = option
         } label: {
             HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(option.displayName)
-                        .font(.circaEntryTitle)
-                        .foregroundStyle(Color.circaInk)
-                    Text(subtitle(for: option))
-                        .font(.circaCaption)
-                        .foregroundStyle(Color.circaInk2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                Image(systemName: option.iconName)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(Color.circaInk2)
+                    .frame(width: 26)
+                    .accessibilityHidden(true)
+
+                Text(option.displayName)
+                    .font(.circaEntryTitle)
+                    .foregroundStyle(Color.circaInk)
 
                 Spacer(minLength: 0)
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
@@ -48,7 +48,7 @@ struct OnboardingGenderStepView: View {
                     .accessibilityHidden(true)
             }
             .padding(16)
-            .frame(maxWidth: .infinity, minHeight: 68)
+            .frame(maxWidth: .infinity, minHeight: Circa.minHitTarget)
             .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
             .overlay {
                 RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
@@ -57,14 +57,6 @@ struct OnboardingGenderStepView: View {
         }
         .buttonStyle(.plain)
         .accessibilityValue(isSelected ? "Selected" : "Not selected")
-    }
-
-    private func subtitle(for option: Gender) -> String {
-        switch option {
-        case .male: return "Male-based estimate"
-        case .female: return "Female-based estimate"
-        case .preferNotToSay: return "Uses a midpoint starting estimate"
-        }
     }
 }
 

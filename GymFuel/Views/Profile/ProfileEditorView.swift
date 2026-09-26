@@ -202,10 +202,10 @@ struct ProfileEditorView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
                         CircaSectionLabel("About you")
-                        Text("Starting equation")
+                        Text("What's your gender?")
                             .font(.circaTitle)
                             .foregroundStyle(Color.circaInk)
-                        Text("This sets your starting calorie estimate. Your weigh-ins will show whether it fits.")
+                        Text("This helps us calculate better calorie and macro goals.")
                             .font(.circaBody)
                             .foregroundStyle(Color.circaInk2)
                             .fixedSize(horizontal: false, vertical: true)
@@ -223,9 +223,9 @@ struct ProfileEditorView: View {
                     .buttonStyle(.plain)
                 }
                 VStack(spacing: 12) {
-                    genderOption(.male, subtitle: "Male-based estimate")
-                    genderOption(.female, subtitle: "Female-based estimate")
-                    genderOption(.preferNotToSay, subtitle: "Uses a midpoint starting estimate")
+                    genderOption(.male)
+                    genderOption(.female)
+                    genderOption(.preferNotToSay)
                 }
             }
             .padding(Circa.Space.screenMargin)
@@ -233,29 +233,29 @@ struct ProfileEditorView: View {
         .circaPaper()
     }
 
-    private func genderOption(_ option: Gender, subtitle: String) -> some View {
+    private func genderOption(_ option: Gender) -> some View {
         let isSelected = draft.gender == option
         return Button {
             draft.gender = option
             showGenderSheet = false
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(option.displayName)
-                        .font(.circaEntryTitle)
-                        .foregroundStyle(Color.circaInk)
-                    Text(subtitle)
-                        .font(.circaCaption)
-                        .foregroundStyle(Color.circaInk2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                Image(systemName: option.iconName)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(Color.circaInk2)
+                    .frame(width: 26)
+                    .accessibilityHidden(true)
+
+                Text(option.displayName)
+                    .font(.circaEntryTitle)
+                    .foregroundStyle(Color.circaInk)
                 Spacer(minLength: 0)
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(isSelected ? Color.circaAccent : Color.circaInk3)
                     .accessibilityHidden(true)
             }
             .padding(16)
-            .frame(maxWidth: .infinity, minHeight: 68)
+            .frame(maxWidth: .infinity, minHeight: Circa.minHitTarget)
             .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
             .overlay {
                 RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)

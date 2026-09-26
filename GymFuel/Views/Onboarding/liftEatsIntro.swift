@@ -3,45 +3,46 @@ import SwiftUI
 struct liftEatsIntro: View {
     let onNext: () -> Void
 
+    /// One dish as a food database holds it. These are not Circa estimates, so
+    /// they carry no certainty rule — Circa vouches for none of these numbers.
+    private let searchResults: [(name: String, kcal: String)] = [
+        ("Chicken stew", "120"),
+        ("Chicken stew, homemade", "185"),
+        ("CHICKEN STEW (1 serving)", "240"),
+        ("chicken stew (mum's)", "320")
+    ]
+
     var body: some View {
         VStack(spacing: 0) {
             AdaptiveScrollContainer {
-                VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        CircaSectionLabel("A food journal")
-                        Text("Calories don't tell the full story.")
-                            .font(.circaTitle)
-                            .foregroundStyle(Color.circaInk)
-                        Text("Describe what you ate. See the portions and ingredients we assumed, then correct what differs from your meal.")
-                            .font(.circaBody)
-                            .foregroundStyle(Color.circaInk2)
-                    }
+                VStack(alignment: .leading, spacing: 26) {
+                    CircaSectionLabel("Search results · chicken stew")
 
-                    CircaCard {
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack(alignment: .top, spacing: 14) {
-                                Image("chicken_bowl")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 72, height: 72)
-                                    .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.thumb))
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Chicken rice bowl")
-                                        .font(.circaEntryTitle)
-                                    CircaEstimate("620 kcal", certainty: .estimated)
-                                    Text("Example estimate")
-                                        .font(.circaMono)
-                                        .foregroundStyle(Color.circaInk3)
-                                }
-                            }
-                            CircaHairline(weight: .inCard)
-                            VStack(alignment: .leading, spacing: 6) {
-                                CircaSectionLabel("What we assumed")
-                                Text("One bowl of rice, chicken, vegetables and cooking oil. Adjust the amounts to match your bowl.")
-                                    .font(.circaBody)
-                                    .foregroundStyle(Color.circaInk2)
+                    CircaCard(
+                        inset: EdgeInsets(
+                            top: 6,
+                            leading: Circa.Space.cardInset,
+                            bottom: 6,
+                            trailing: Circa.Space.cardInset
+                        )
+                    ) {
+                        VStack(spacing: 0) {
+                            ForEach(Array(searchResults.enumerated()), id: \.offset) { index, result in
+                                if index > 0 { CircaHairline(weight: .inCard) }
+                                SearchResultRow(name: result.name, kcal: result.kcal)
                             }
                         }
+                    }
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Four numbers for one dish. None of them yours.")
+                            .font(.circaTitle)
+                            .foregroundStyle(Color.circaInk)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("Circa has no database to search. Say what you ate in your own words — it works out the rest, then shows you every assumption it made.")
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .padding(.horizontal, Circa.Space.screenMargin)
@@ -57,6 +58,28 @@ struct liftEatsIntro: View {
             .padding(.bottom, 16)
         }
         .circaPaper()
+    }
+}
+
+private struct SearchResultRow: View {
+    let name: String
+    let kcal: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(name)
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Text(kcal)
+                .font(.circaMono)
+                .monospacedDigit()
+                .foregroundStyle(Color.circaInk2)
+        }
+        .frame(minHeight: 46)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(name), \(kcal) calories")
     }
 }
 

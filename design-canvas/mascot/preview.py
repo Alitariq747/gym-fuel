@@ -47,8 +47,8 @@ MOVES = {
     "wave": dict(costume=dict(rightArm="MascotArmRightRaised"), rest={}, tracks=dict(
         rightArm=[(-16, 0.3, C), (10, 0.35, C), (-16, 0.35, C), (10, 0.35, C), (0, 0.35, C), (0, 3.1, L)])),
     "wonder": dict(costume=dict(air="MascotQuestion"), rest=dict(lookX=3, lookY=-3), tracks=dict(
-        tilt=[(-5, 0.8, C), (-5, 0.6, L), (3, 0.9, C), (0, 0.7, C)],
-        propLift=[(-6, 0.75, C), (0, 0.75, C), (-6, 0.75, C), (0, 0.75, C)])),
+        tilt=[(-5, 0.64, C), (-5, 0.48, L), (3, 0.72, C), (0, 0.56, C)],
+        propLift=[(-6, 0.6, C), (0, 0.6, C), (-6, 0.6, C), (0, 0.6, C)])),
     "stretch": dict(costume=dict(rightArm="MascotArmRightRaised", ground="MascotRuler"),
                     rest=dict(rightArm=-8, reach=14), tracks=dict(
         reach=[(14, 0.9, L), (2, 0.4, C), (2, 1, L), (14, 0.7, C)],

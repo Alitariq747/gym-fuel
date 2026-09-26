@@ -7,14 +7,16 @@ struct OnboardingLiftEats: View {
         VStack(spacing: 0) {
             AdaptiveScrollContainer {
                 VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 14) {
                         CircaSectionLabel("See the reasoning")
                         Text("Make it your meal.")
                             .font(.circaTitle)
                             .foregroundStyle(Color.circaInk)
-                        Text("Circa shows what it estimated and the portions and ingredients behind the numbers.")
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text("Every portion and ingredient is listed, and every one can be changed. Correct what's different and the total follows.")
                             .font(.circaBody)
                             .foregroundStyle(Color.circaInk2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     CircaCard {
@@ -28,10 +30,12 @@ struct OnboardingLiftEats: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text("One egg, toast and coffee")
                                         .font(.circaEntryTitle)
-                                    CircaEstimate("200 kcal", certainty: .estimated)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    CircaEstimate("240 kcal", certainty: .estimated)
                                     Text("Example estimate")
                                         .font(.circaMono)
                                         .foregroundStyle(Color.circaInk3)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
                             CircaHairline(weight: .inCard)
@@ -39,6 +43,7 @@ struct OnboardingLiftEats: View {
                             Text("One egg, two slices of toast and a cup of coffee. Check the amounts and change anything that differs from your breakfast.")
                                 .font(.circaBody)
                                 .foregroundStyle(Color.circaInk2)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
 
@@ -50,6 +55,7 @@ struct OnboardingLiftEats: View {
                             Text("Change two slices of toast to one, and the meal total updates with it.")
                                 .font(.circaBody)
                                 .foregroundStyle(Color.circaInk2)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }

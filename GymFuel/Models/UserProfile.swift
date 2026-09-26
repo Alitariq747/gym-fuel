@@ -29,14 +29,16 @@ enum Gender: String, CaseIterable, Codable, Equatable {
         }
     }
 
-    var symbol: String {
+    var iconName: String {
         switch self {
         case .male:
-            return "♂"
+            return "figure.stand"
         case .female:
-            return "♀"
+            // figure.stand.dress is iOS 18; below it a missing symbol draws nothing.
+            if #available(iOS 18.0, *) { return "figure.stand.dress" }
+            return "figure.dress.line.vertical.figure"
         case .preferNotToSay:
-            return "–"
+            return "questionmark.circle"
         }
     }
 }

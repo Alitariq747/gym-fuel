@@ -85,16 +85,16 @@ enum MascotKeyframes {
     @KeyframesBuilder<MascotPose>
     static func wonder() -> some Keyframes<MascotPose> {
         KeyframeTrack(\.tilt) {
-            CubicKeyframe(-5, duration: 0.8)
-            LinearKeyframe(-5, duration: 0.6)
-            CubicKeyframe(3, duration: 0.9)
-            CubicKeyframe(0, duration: 0.7)
+            CubicKeyframe(-5, duration: 0.64)
+            LinearKeyframe(-5, duration: 0.48)
+            CubicKeyframe(3, duration: 0.72)
+            CubicKeyframe(0, duration: 0.56)
         }
         KeyframeTrack(\.propLift) {
-            CubicKeyframe(-6, duration: 0.75)
-            CubicKeyframe(0, duration: 0.75)
-            CubicKeyframe(-6, duration: 0.75)
-            CubicKeyframe(0, duration: 0.75)
+            CubicKeyframe(-6, duration: 0.6)
+            CubicKeyframe(0, duration: 0.6)
+            CubicKeyframe(-6, duration: 0.6)
+            CubicKeyframe(0, duration: 0.6)
         }
     }
 

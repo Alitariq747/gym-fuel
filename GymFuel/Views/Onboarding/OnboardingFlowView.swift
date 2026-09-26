@@ -53,11 +53,13 @@ enum OnboardingStep: Hashable, CaseIterable {
         }
     }
 
-    /// The two busiest steps get only the small face, so their content stays high.
+    /// The two teaching screens give their whole height to content; the two
+    /// busiest ones keep the small face. design.md, "The plate mascot", rule 5.
     var illustration: OnboardingIllustration {
         switch self {
-        case .liftEatsIntro, .gender: .plate(.wonder)
-        case .liftEatsDifference, .age: .plate(.write)
+        case .liftEatsIntro, .liftEatsDifference: .hidden
+        case .gender: .plate(.wonder)
+        case .age: .plate(.write)
         case .height: .plate(.stretch)
         case .weight: .plate(.weigh)
         case .activityLevel: .plate(.walk)
@@ -72,6 +74,8 @@ enum OnboardingStep: Hashable, CaseIterable {
 enum OnboardingIllustration: Equatable {
     case plate(PlateMascot.Move)
     case face
+    /// Nothing above the content, for the steps that need the whole height.
+    case hidden
 }
 
 struct OnboardingFlowView: View {
@@ -172,6 +176,8 @@ struct OnboardingFlowView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, Circa.Space.screenMargin)
                 .accessibilityHidden(true)
+        case .hidden:
+            EmptyView()
         }
     }
 
