@@ -106,3 +106,76 @@ enum BodyWeight {
         return "\(formatted) \(unit.shortLabel)"
     }
 }
+
+/// What a two-wheel weight picker offers in one unit, and how its two rows turn
+/// back into kilograms.
+///
+/// A value type, so the ranges and the clamping are identical wherever a weight
+/// is picked and can be tested without a view. `EditWeightSheet` still carries
+/// its own copy of this arithmetic; it predates this type.
+struct WeightWheel {
+    let unit: BodyWeightUnit
+
+    init(_ unit: BodyWeightUnit) {
+        self.unit = unit
+    }
+
+    /// Pounds step in 0.2: a finer step would imply precision no bathroom scale
+    /// offers, and 0.2 lb survives the kilogram round trip exactly.
+    var tenthRange: [Int] {
+        unit == .kilograms ? Array(0...9) : [0, 2, 4, 6, 8]
+    }
+
+    /// The whole-unit rows. **Both bounds derive from the kilogram range**, so a
+    /// value near either end does not shift when the unit is switched — a
+    /// hand-written `66...440` lb beside `30...200` kg is not a mirror of it.
+    ///
+    /// The top row leaves room for its own largest tenth. Without that headroom
+    /// 200.1–200.9 kg all clamp to 200.0, so the tenths wheel snaps back every
+    /// time the user touches it on the last whole row.
+    var wholeRange: ClosedRange<Int> {
+        let headroom = Double(tenthRange.max() ?? 0) / 10
+        let lower = Int(displayed(BodyWeight.minimumKilograms).rounded(.up))
+        let upper = Int((displayed(BodyWeight.maximumKilograms) - headroom).rounded(.down))
+        return lower...max(lower, upper)
+    }
+
+    /// A stored weight in this unit.
+    func displayed(_ kilograms: Double) -> Double {
+        unit == .kilograms ? kilograms : BodyWeight.pounds(fromKilograms: kilograms)
+    }
+
+    /// The displayed values this wheel has rows for.
+    private var representable: ClosedRange<Double> {
+        Double(wholeRange.lowerBound)...(Double(wholeRange.upperBound) + Double(tenthRange.max() ?? 0) / 10)
+    }
+
+    /// The two rows a stored weight sits on. Never a row the wheel does not
+    /// offer, because a `Picker` given a selection outside its options shows
+    /// none of them.
+    ///
+    /// Two ways a weight arrives between rows: 83.4 kg is 183.87 lb, whose tenth
+    /// is 9 and the pounds wheel steps in 2; and 30 kg is 66.1 lb, below the
+    /// lowest pounds row.
+    func digits(_ kilograms: Double) -> (whole: Int, tenth: Int) {
+        let step = unit == .kilograms ? 0.1 : 0.2
+        let bounds = representable
+        let value = min(max(displayed(kilograms), bounds.lowerBound), bounds.upperBound)
+        return BodyWeight.decompose((value / step).rounded() * step)
+    }
+
+    /// The nearest weight this wheel can show. A stored weight may come from
+    /// Apple Health or an older profile and sit between rows.
+    func snapped(_ kilograms: Double) -> Double {
+        let digits = digits(kilograms)
+        return self.kilograms(whole: digits.whole, tenth: digits.tenth)
+    }
+
+    /// The single write path back: both rows funnel through here, so there is no
+    /// pair of values to drift.
+    func kilograms(whole: Int, tenth: Int) -> Double {
+        let value = BodyWeight.recompose(whole: whole, tenth: tenth)
+        let kg = unit == .kilograms ? value : BodyWeight.kilograms(fromPounds: value)
+        return BodyWeight.clampedToRange(BodyWeight.roundedForStorage(kg))
+    }
+}

@@ -25,7 +25,8 @@ struct OnboardingGoalWeightStepView: View {
     /// The one stored value, which the wheel reads and writes in whole units, as in
     /// `EditWeightSheet`, so switching units never drifts. Nil until the wheel moves.
     @State private var selectedKg: Double?
-    @ScaledMetric(relativeTo: .largeTitle) private var readingSize: CGFloat = 58
+    @State private var isPickerPresented = false
+    @ScaledMetric(relativeTo: .body) private var pickerHeight: CGFloat = 170
 
     private var unit: BodyWeightUnit {
         BodyWeightUnit(rawValue: unitRawValue) ?? .kilograms
@@ -54,9 +55,10 @@ struct OnboardingGoalWeightStepView: View {
             AdaptiveScrollContainer {
                 VStack(alignment: .leading, spacing: 22) {
                     header
-                    unitSwitch
-                    reading
-                    wheel
+                    OnboardingValueCard(value: readingText, label: "Goal weight") {
+                        isPickerPresented = true
+                    }
+                    .disabled(options.isEmpty)
                     if goal == .cut { floorNote }
                 }
                 .padding(.horizontal, Circa.Space.screenMargin)
@@ -73,6 +75,7 @@ struct OnboardingGoalWeightStepView: View {
             .padding(.bottom, 16)
         }
         .circaPaper()
+        .sheet(isPresented: $isPickerPresented) { picker }
         .onAppear {
             // Keep an earlier answer only while it is still allowed: the goal,
             // weight or height may have changed since.
@@ -102,51 +105,20 @@ struct OnboardingGoalWeightStepView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var unitSwitch: some View {
-        HStack(spacing: 3) {
-            ForEach(BodyWeightUnit.allCases) { option in
-                let isSelected = option == unit
-                let shape = RoundedRectangle(cornerRadius: 11, style: .continuous)
-
-                Button {
-                    unitRawValue = option.rawValue
-                } label: {
-                    Text(option == .kilograms ? "Kilograms" : "Pounds")
-                        .font(.circaRow.weight(isSelected ? .semibold : .medium))
-                        .foregroundStyle(isSelected ? Color.circaInk : Color.circaInk2)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                        .frame(maxWidth: .infinity, minHeight: Circa.minHitTarget)
-                        .background(isSelected ? Color.circaCard : Color.clear, in: shape)
-                        .overlay { if isSelected { shape.strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline) } }
-                        .contentShape(shape)
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-            }
-        }
-        .padding(3)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: Circa.Radius.button, style: .continuous))
+    /// The row the wheel is on. Empty only when no weight is allowed at all,
+    /// which also disables Continue.
+    private var readingText: String {
+        options.isEmpty ? "—" : "\(selection.wrappedValue) \(unit.shortLabel)"
     }
 
-    /// The row the wheel is on, large. Hidden from VoiceOver: the wheel reads it.
-    private var reading: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text("\(selection.wrappedValue)")
-                .font(.system(size: readingSize, weight: .semibold, design: .monospaced))
-                .foregroundStyle(Color.circaInk)
-            Text(unit.shortLabel)
-                .font(.system(.title3, design: .monospaced))
-                .foregroundStyle(Color.circaInk3)
-        }
-        .lineLimit(1)
-        .minimumScaleFactor(0.5)
-        .frame(maxWidth: .infinity)
-        .accessibilityHidden(true)
-    }
-
-    private var wheel: some View {
-        CircaCard(inset: EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0)) {
+    private var picker: some View {
+        OnboardingWheelSheet(title: "Goal weight") {
+            UnitToggle(
+                options: BodyWeightUnit.allCases,
+                label: { $0.shortLabel },
+                selection: $unitRawValue.asBodyWeightUnit
+            )
+        } wheel: {
             Picker("Goal weight", selection: selection) {
                 ForEach(options, id: \.self) { value in
                     Text("\(value)").font(.circaMonoValue).tag(value)
@@ -154,8 +126,9 @@ struct OnboardingGoalWeightStepView: View {
             }
             .pickerStyle(.wheel)
             .labelsHidden()
-            .frame(maxWidth: .infinity)
-            .accessibilityValue("\(selection.wrappedValue) \(unit.shortLabel)")
+            .frame(height: pickerHeight)
+            .clipped()
+            .accessibilityValue(readingText)
         }
     }
 

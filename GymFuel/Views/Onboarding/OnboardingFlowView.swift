@@ -53,11 +53,11 @@ enum OnboardingStep: Hashable, CaseIterable {
         }
     }
 
-    /// The two teaching screens give their whole height to content; the two
-    /// busiest ones keep the small face. design.md, "The plate mascot", rule 5.
+    /// The two teaching screens and the two busiest ones give their whole
+    /// height to content. design.md, "The plate mascot", rule 5.
     var illustration: OnboardingIllustration {
         switch self {
-        case .liftEatsIntro, .liftEatsDifference: .hidden
+        case .liftEatsIntro, .liftEatsDifference, .loggingTips, .summary: .hidden
         case .gender: .plate(.wonder)
         case .age: .plate(.write)
         case .height: .plate(.stretch)
@@ -66,14 +66,12 @@ enum OnboardingStep: Hashable, CaseIterable {
         case .goal, .goalWeight: .plate(.lookAhead)
         case .appleHealth: .plate(.phone)
         case .notifications: .plate(.bell)
-        case .loggingTips, .summary: .face
         }
     }
 }
 
 enum OnboardingIllustration: Equatable {
     case plate(PlateMascot.Move)
-    case face
     /// Nothing above the content, for the steps that need the whole height.
     case hidden
 }
@@ -168,14 +166,6 @@ struct OnboardingFlowView: View {
             PlateMascot(move: move)
                 .frame(height: dynamicTypeSize.isAccessibilitySize ? 90 : 130)
                 .frame(maxWidth: .infinity)
-        case .face:
-            Image("PlateFace")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 64, height: 64)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, Circa.Space.screenMargin)
-                .accessibilityHidden(true)
         case .hidden:
             EmptyView()
         }

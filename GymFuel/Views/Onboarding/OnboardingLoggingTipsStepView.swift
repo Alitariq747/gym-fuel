@@ -40,7 +40,7 @@ struct OnboardingLoggingTipsStepView: View {
                         .loggingTipEntrance(isVisible: hasAppeared, delay: 0.14, reduceMotion: reduceMotion)
                 }
                 .padding(.horizontal, Circa.Space.screenMargin)
-                .padding(.top, 4)
+                .padding(.top, 18)
                 .padding(.bottom, 8)
             }
 

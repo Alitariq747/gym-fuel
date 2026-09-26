@@ -93,3 +93,104 @@ struct BodyWeightTests {
         #expect(BodyWeightUnit.pounds.shortLabel == "lbs")
     }
 }
+
+@Suite("WeightWheel")
+struct WeightWheelTests {
+    /// The reason both bounds derive from the kilogram range. A hand-written
+    /// `66...440` lb beside `30...200` kg is not a mirror of it — 30 kg is
+    /// 66.14 lb — and the ends drift on a unit switch.
+    @Test("Both ends of the range stay inside the stored kilogram range")
+    func rangeMirrorsKilograms() {
+        for unit in BodyWeightUnit.allCases {
+            let wheel = WeightWheel(unit)
+
+            let lowest = wheel.kilograms(whole: wheel.wholeRange.lowerBound, tenth: 0)
+            let highest = wheel.kilograms(whole: wheel.wholeRange.upperBound, tenth: wheel.tenthRange.max() ?? 0)
+
+            #expect(lowest >= BodyWeight.minimumKilograms, "\(unit) floor: \(lowest)")
+            #expect(highest <= BodyWeight.maximumKilograms, "\(unit) ceiling: \(highest)")
+        }
+    }
+
+    /// Every row the wheel offers has to come back to itself, or the wheel
+    /// fights the user: they scroll to a row and it snaps somewhere else.
+    @Test("Every offered row round-trips to the same row")
+    func everyRowRoundTrips() {
+        for unit in BodyWeightUnit.allCases {
+            let wheel = WeightWheel(unit)
+
+            for value in wheel.wholeRange {
+                for tenth in wheel.tenthRange {
+                    let kg = wheel.kilograms(whole: value, tenth: tenth)
+                    let digits = wheel.digits(kg)
+
+                    #expect(digits.whole == value, "\(unit) \(value).\(tenth) -> \(digits)")
+                    #expect(digits.tenth == tenth, "\(unit) \(value).\(tenth) -> \(digits)")
+                }
+            }
+        }
+    }
+
+    /// The point of a shared unit: a weight picked in one unit and read in the
+    /// other is the same weight, not a value that shifts each time you switch.
+    @Test("Switching units does not move the weight")
+    func switchingUnitsKeepsTheWeight() {
+        let kilograms = WeightWheel(.kilograms)
+        let pounds = WeightWheel(.pounds)
+
+        let kg = kilograms.kilograms(whole: 83, tenth: 4)
+        let asPounds = pounds.digits(kg)
+        let back = pounds.kilograms(whole: asPounds.whole, tenth: asPounds.tenth)
+
+        #expect(abs(back - kg) < 0.06, "\(kg) kg -> \(asPounds) lb -> \(back) kg")
+    }
+
+    @Test("Pounds move in 0.2 steps, kilograms in 0.1")
+    func tenthSteps() {
+        #expect(WeightWheel(.kilograms).tenthRange == Array(0...9))
+        #expect(WeightWheel(.pounds).tenthRange == [0, 2, 4, 6, 8])
+    }
+
+    @Test("Out-of-range rows clamp to the stored range")
+    func clamping() {
+        let wheel = WeightWheel(.kilograms)
+        #expect(wheel.kilograms(whole: 500, tenth: 0) == BodyWeight.maximumKilograms)
+        #expect(wheel.kilograms(whole: 1, tenth: 0) == BodyWeight.minimumKilograms)
+    }
+
+    /// A `Picker` handed a selection outside its options shows none of them.
+    /// These seeds are the ways a weight reaches the wheel without being picked
+    /// on it: Apple Health, an older saved profile, and both range ends.
+    @Test("Any stored weight snaps onto a row the wheel offers", arguments: [
+        30.0, 30.4, 66.1, 75.0, 83.4, 199.9, 200.0, 250.0, 12.0
+    ])
+    func everyStoredWeightLandsOnARow(seed: Double) {
+        for unit in BodyWeightUnit.allCases {
+            let wheel = WeightWheel(unit)
+            let snapped = wheel.snapped(seed)
+            let digits = wheel.digits(snapped)
+
+            #expect(wheel.wholeRange.contains(digits.whole), "\(seed) \(unit): \(digits.whole)")
+            #expect(wheel.tenthRange.contains(digits.tenth), "\(seed) \(unit): .\(digits.tenth)")
+            #expect(snapped >= BodyWeight.minimumKilograms)
+            #expect(snapped <= BodyWeight.maximumKilograms)
+        }
+    }
+
+    /// The step differs between the wheels, so each switch re-snaps. It has to
+    /// settle on the first switch — a weight that loses a tenth every time the
+    /// user taps the toggle would walk away from what they weigh.
+    @Test("Toggling units repeatedly settles instead of drifting", arguments: [
+        30.0, 62.3, 83.4, 100.0, 199.9
+    ])
+    func togglingUnitsSettles(seed: Double) {
+        let settled = WeightWheel(.pounds).snapped(WeightWheel(.kilograms).snapped(seed))
+
+        var value = settled
+        for step in 0..<10 {
+            value = WeightWheel(step.isMultiple(of: 2) ? .kilograms : .pounds).snapped(value)
+        }
+
+        #expect(abs(value - settled) < 0.001, "\(seed) drifted to \(value) from \(settled)")
+    }
+}

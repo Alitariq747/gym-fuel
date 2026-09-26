@@ -7,230 +7,118 @@
 
 import SwiftUI
 
-private enum WeightUnit: String, CaseIterable {
-    case kilograms
-    case pounds
-}
-
 /// Step: Ask for the user's weight (stored in kilograms).
+///
+/// Records tenths, not whole units. This answer is seeded as day zero of the
+/// trend (`UserProfileViewModel.seedFirstWeighIn`), and a whole-kilogram seed
+/// cannot sit on the same scale as the 0.1 weigh-ins that follow it.
 struct OnboardingWeightStepView: View {
     @Binding var weightKg: Double?
     let onNext: () -> Void
 
-    @ScaledMetric(relativeTo: .body) private var pickerHeight: CGFloat = 160
+    @ScaledMetric(relativeTo: .body) private var pickerHeight: CGFloat = 170
 
-    @State private var selectedUnit: WeightUnit = .kilograms
+    /// Shared with the weigh-in sheet and the goal weight step, so choosing
+    /// pounds here carries through instead of being asked again next step.
+    @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
 
-   
-    @State private var selectedKg: Int = 75
-    @State private var selectedLbs: Int = 165
-
-    @State private var errorMessage: String?
+    /// The one stored value; both wheels read and write it through `WeightWheel`.
+    @State private var enteredKg: Double = 75
+    @State private var isPickerPresented = false
     @State private var didInitialize = false
 
-   
-    private let kgRange = Array(30...200)
-    private let lbsRange = Array(66...440)
+    private var unit: BodyWeightUnit {
+        BodyWeightUnit(rawValue: unitRawValue) ?? .kilograms
+    }
+
+    private var wheel: WeightWheel { WeightWheel(unit) }
 
     var body: some View {
         OnboardingMetricPage(
             title: "What do you weigh?",
-            detail: "Your starting weight sets the plan. Future weights come from weigh-ins, so the trend stays meaningful.",
+            detail: "Weights after this one come from weigh-ins, so the trend stays a measurement.",
             onContinue: handleNext
         ) {
-            VStack(alignment: .leading, spacing: 18) {
-                UnitSegmentedControl(selectedUnit: $selectedUnit)
-                summaryCard
-                inputCard
-
-                if let errorMessage {
-                    Text(errorMessage)
-                        .font(.circaCaption)
-                        .foregroundStyle(Color.circaDanger)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+            OnboardingValueCard(value: weightText, label: "Weight") {
+                isPickerPresented = true
             }
         }
+        .sheet(isPresented: $isPickerPresented) { picker }
         .onAppear { initializeFromBindingIfNeeded() }
-        .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
-        .onChange(of: selectedKg) { _, newValue in
-            guard selectedUnit == .kilograms else { return }
-            syncLbsFromKg(Double(newValue))
-        }
-        .onChange(of: selectedLbs) { _, _ in
-            guard selectedUnit == .pounds else { return }
-            syncKgFromLbs()
-        }
+        // The two wheels step differently, so the same weight is not on a row in
+        // both units. Snap, or the card and the wheel disagree.
+        .onChange(of: unitRawValue) { _, _ in enteredKg = wheel.snapped(enteredKg) }
     }
 
-    // MARK: - UI
+    // MARK: - The sheet
 
-    private var summaryCard: some View {
-        VStack(spacing: 6) {
-            Text(primaryWeightText)
-                .font(.system(.largeTitle, design: .monospaced).weight(.semibold))
-                .foregroundStyle(Color.circaInk)
-                .monospacedDigit()
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text(secondaryWeightText)
-                .font(.circaMono)
-                .foregroundStyle(Color.circaInk2)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(18)
-        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
-        .overlay {
-            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
-                .strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
-        }
-    }
-
-    private var inputCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(selectedUnit == .kilograms ? "Weight (kg)" : "Weight (lbs)")
-                .font(.circaRow)
-                .foregroundStyle(Color.circaInk2)
-
-            if selectedUnit == .kilograms {
-                Picker("Kilograms", selection: $selectedKg) {
-                    ForEach(kgRange, id: \.self) { kg in
-                        Text("\(kg) kg").tag(kg)
+    private var picker: some View {
+        OnboardingWheelSheet(title: "Your weight") {
+            UnitToggle(
+                options: BodyWeightUnit.allCases,
+                label: { $0.shortLabel },
+                selection: $unitRawValue.asBodyWeightUnit
+            )
+        } wheel: {
+            HStack(spacing: 0) {
+                Picker("", selection: whole) {
+                    ForEach(wheel.wholeRange, id: \.self) { value in
+                        Text("\(value)").font(.circaMonoValue).tag(value)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: pickerHeight)
-                .clipped()
-                .labelsHidden()
-            } else {
-                Picker("Pounds", selection: $selectedLbs) {
-                    ForEach(lbsRange, id: \.self) { lbs in
-                        Text("\(lbs) lbs").tag(lbs)
+                .frame(maxWidth: .infinity)
+                .accessibilityLabel(unit == .kilograms ? "Kilograms" : "Pounds")
+
+                Picker("", selection: tenth) {
+                    ForEach(wheel.tenthRange, id: \.self) { value in
+                        Text(".\(value)").font(.circaMonoValue).tag(value)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: pickerHeight)
-                .clipped()
-                .labelsHidden()
+                .frame(maxWidth: .infinity)
+                .accessibilityLabel("Decimal")
             }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: Circa.Radius.cardSmall))
-        .overlay {
-            RoundedRectangle(cornerRadius: Circa.Radius.cardSmall)
-                .strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+            .frame(height: pickerHeight)
+            .labelsHidden()
+            .clipped()
         }
     }
 
-    // MARK: - Derived values
+    // MARK: - Wheels
 
-    private var computedWeightKg: Double {
-        switch selectedUnit {
-        case .kilograms:
-            return Double(selectedKg)
-        case .pounds:
-            return Double(selectedLbs) * 0.45359237
-        }
+    private var whole: Binding<Int> {
+        Binding(
+            get: { wheel.digits(enteredKg).whole },
+            set: { enteredKg = wheel.kilograms(whole: $0, tenth: wheel.digits(enteredKg).tenth) }
+        )
     }
 
-    private var primaryWeightText: String {
-        switch selectedUnit {
-        case .kilograms:
-            return "\(selectedKg) kg"
-        case .pounds:
-            return "\(selectedLbs) lbs"
-        }
+    private var tenth: Binding<Int> {
+        Binding(
+            get: { wheel.digits(enteredKg).tenth },
+            set: { enteredKg = wheel.kilograms(whole: wheel.digits(enteredKg).whole, tenth: $0) }
+        )
     }
 
-    private var secondaryWeightText: String {
-        let kg = computedWeightKg
-        let lbs = kg / 0.45359237
-
-        if selectedUnit == .kilograms {
-            return "≈ \(Int(lbs.rounded())) lbs"
-        } else {
-            return "≈ \(Int(kg.rounded())) kg"
-        }
+    private var weightText: String {
+        BodyWeight.displayString(kilograms: enteredKg, unit: unit)
     }
 
-    // MARK: - Init / Sync
+    // MARK: - Init and next
 
     private func initializeFromBindingIfNeeded() {
         guard !didInitialize else { return }
         didInitialize = true
 
         if let existing = weightKg, existing > 0 {
-            let kg = Int(existing.rounded())
-            selectedKg = min(max(kg, kgRange.first ?? kg), kgRange.last ?? kg)
-            syncLbsFromKg(existing)
-        } else {
-            syncLbsFromKg(Double(selectedKg))
+            enteredKg = wheel.snapped(existing)
         }
     }
-
-    private func syncPickersForUnitSwitch() {
-        if selectedUnit == .kilograms {
-            syncKgFromLbs()
-        } else {
-            syncLbsFromKg(Double(selectedKg))
-        }
-    }
-
-    private func syncLbsFromKg(_ kg: Double) {
-        let lbs = Int((kg / 0.45359237).rounded())
-        selectedLbs = min(max(lbs, lbsRange.first ?? lbs), lbsRange.last ?? lbs)
-    }
-
-    private func syncKgFromLbs() {
-        let kg = Int((Double(selectedLbs) * 0.45359237).rounded())
-        selectedKg = min(max(kg, kgRange.first ?? kg), kgRange.last ?? kg)
-    }
-
-    // MARK: - Next
 
     private func handleNext() {
-        let kg = computedWeightKg
-        guard kg > 0 else {
-            errorMessage = "Please select a valid weight."
-            return
-        }
-        errorMessage = nil
-        weightKg = kg
+        weightKg = BodyWeight.roundedForStorage(enteredKg)
         onNext()
-    }
-}
-
-private struct UnitSegmentedControl: View {
-    @Binding var selectedUnit: WeightUnit
-
-    var body: some View {
-        HStack(spacing: 0) {
-            segment(title: "kg", unit: .kilograms)
-            segment(title: "lbs", unit: .pounds)
-        }
-        .padding(4)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: Circa.Radius.button))
-        
-    }
-
-    private func segment(title: String, unit: WeightUnit) -> some View {
-        let isSelected = (selectedUnit == unit)
-
-        return Button {
-            selectedUnit = unit
-        } label: {
-            Text(title)
-                .font(.circaRow.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: Circa.minHitTarget)
-                .background(
-                    RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(isSelected ? Color.circaCard : Color.clear)
-                )
-                .foregroundStyle(isSelected ? Color.circaInk : Color.circaInk2)
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -238,4 +126,11 @@ private struct UnitSegmentedControl: View {
     NavigationStack {
         OnboardingWeightStepView(weightKg: .constant(78.5), onNext: {})
     }
+}
+
+#Preview("Dark") {
+    NavigationStack {
+        OnboardingWeightStepView(weightKg: .constant(83), onNext: {})
+    }
+    .preferredColorScheme(.dark)
 }

@@ -2,11 +2,12 @@ import SwiftUI
 
 struct OnboardingMetricPage<Content: View>: View {
     let title: String
-    let detail: String
+    /// Optional: a step whose question answers itself carries no subtitle.
+    let detail: String?
     let onContinue: () -> Void
     let content: Content
 
-    init(title: String, detail: String, onContinue: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+    init(title: String, detail: String? = nil, onContinue: @escaping () -> Void, @ViewBuilder content: () -> Content) {
         self.title = title
         self.detail = detail
         self.onContinue = onContinue
@@ -25,10 +26,12 @@ struct OnboardingMetricPage<Content: View>: View {
                             .foregroundStyle(Color.circaInk)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text(detail)
-                            .font(.circaBody)
-                            .foregroundStyle(Color.circaInk2)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if let detail {
+                            Text(detail)
+                                .font(.circaBody)
+                                .foregroundStyle(Color.circaInk2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
 
                     content

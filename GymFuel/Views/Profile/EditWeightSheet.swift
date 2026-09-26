@@ -47,7 +47,12 @@ struct EditWeightSheet: View {
         self.onWeighIn = onWeighIn
 
         let seed = (initialWeightKg ?? 75) > 0 ? (initialWeightKg ?? 75) : 75
-        _enteredKg = State(initialValue: BodyWeight.clampedToRange(seed))
+        // Snapped to a row the wheel actually offers. The last weigh-in may have
+        // been in the other unit, or come from Apple Health at full precision.
+        // `@AppStorage` is not readable yet here, so the preference is read direct.
+        let stored = UserDefaults.standard.string(forKey: BodyWeightUnit.preferenceKey)
+        let unit = BodyWeightUnit(rawValue: stored ?? "") ?? .kilograms
+        _enteredKg = State(initialValue: WeightWheel(unit).snapped(seed))
     }
 
     var body: some View {
@@ -55,7 +60,11 @@ struct EditWeightSheet: View {
             VStack(spacing: 20) {
                 header
 
-                WeightUnitSegmentedControl(unitRawValue: $unitRawValue)
+                UnitToggle(
+                    options: BodyWeightUnit.allCases,
+                    label: { $0.shortLabel },
+                    selection: $unitRawValue.asBodyWeightUnit
+                )
 
                 summaryCard
                 inputCard
@@ -87,6 +96,9 @@ struct EditWeightSheet: View {
             }
         }
         .interactiveDismissDisabled(viewModel.isSaving)
+        // The two wheels step differently, so the same weight is not on a row in
+        // both units. Snap, or the summary and the wheel disagree.
+        .onChange(of: unitRawValue) { _, _ in enteredKg = WeightWheel(unit).snapped(enteredKg) }
     }
 
     // MARK: - UI
@@ -149,7 +161,7 @@ struct EditWeightSheet: View {
 
             HStack(spacing: 0) {
                 Picker("", selection: wholeBinding) {
-                    ForEach(wholeRange, id: \.self) { value in
+                    ForEach(wheel.wholeRange, id: \.self) { value in
                         Text("\(value)").tag(value)
                     }
                 }
@@ -159,7 +171,7 @@ struct EditWeightSheet: View {
                 .accessibilityLabel(unit == .kilograms ? "Kilograms" : "Pounds")
 
                 Picker("", selection: tenthBinding) {
-                    ForEach(tenthRange, id: \.self) { value in
+                    ForEach(wheel.tenthRange, id: \.self) { value in
                         Text(".\(value)").tag(value)
                     }
                 }
@@ -185,53 +197,20 @@ struct EditWeightSheet: View {
 
     // MARK: - Derived values
 
-    /// The value shown on the wheels, in the selected unit.
-    private var displayedValue: Double {
-        unit == .kilograms ? enteredKg : BodyWeight.pounds(fromKilograms: enteredKg)
-    }
-
-    /// Both bounds derive from the kilogram range, so a value near either end no
-    /// longer shifts when the unit is switched. The old `30...200` kg and
-    /// `66...440` lb ranges were not mirrors of each other.
-    private var wholeRange: [Int] {
-        let lower: Double
-        let upper: Double
-        if unit == .kilograms {
-            lower = BodyWeight.minimumKilograms
-            upper = BodyWeight.maximumKilograms
-        } else {
-            lower = BodyWeight.pounds(fromKilograms: BodyWeight.minimumKilograms)
-            upper = BodyWeight.pounds(fromKilograms: BodyWeight.maximumKilograms)
-        }
-        return Array(Int(lower.rounded(.up))...Int(upper.rounded(.down)))
-    }
-
-    /// Pounds step in 0.2 — a finer step would imply precision no bathroom scale
-    /// offers, and 0.2 lb survives the kilogram round trip exactly.
-    private var tenthRange: [Int] {
-        unit == .kilograms ? Array(0...9) : [0, 2, 4, 6, 8]
-    }
+    private var wheel: WeightWheel { WeightWheel(unit) }
 
     private var wholeBinding: Binding<Int> {
         Binding(
-            get: { BodyWeight.decompose(displayedValue).whole },
-            set: { setDisplayed(whole: $0, tenth: BodyWeight.decompose(displayedValue).tenth) }
+            get: { wheel.digits(enteredKg).whole },
+            set: { enteredKg = wheel.kilograms(whole: $0, tenth: wheel.digits(enteredKg).tenth) }
         )
     }
 
     private var tenthBinding: Binding<Int> {
         Binding(
-            get: { BodyWeight.decompose(displayedValue).tenth },
-            set: { setDisplayed(whole: BodyWeight.decompose(displayedValue).whole, tenth: $0) }
+            get: { wheel.digits(enteredKg).tenth },
+            set: { enteredKg = wheel.kilograms(whole: wheel.digits(enteredKg).whole, tenth: $0) }
         )
-    }
-
-    /// The single write path into `enteredKg`. Both wheels funnel through here,
-    /// so there is no feedback loop to drift.
-    private func setDisplayed(whole: Int, tenth: Int) {
-        let value = BodyWeight.recompose(whole: whole, tenth: tenth)
-        let kg = unit == .kilograms ? value : BodyWeight.kilograms(fromPounds: value)
-        enteredKg = BodyWeight.clampedToRange(BodyWeight.roundedForStorage(kg))
     }
 
     private var primaryWeightText: String {
@@ -262,39 +241,6 @@ struct EditWeightSheet: View {
             onWeighIn(kg)
             dismiss()
         }
-    }
-}
-
-private struct WeightUnitSegmentedControl: View {
-    @Binding var unitRawValue: String
-
-    var body: some View {
-        HStack(spacing: 0) {
-            segment(unit: .kilograms)
-            segment(unit: .pounds)
-        }
-        .padding(4)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    private func segment(unit: BodyWeightUnit) -> some View {
-        let isSelected = unitRawValue == unit.rawValue
-
-        return Button {
-            unitRawValue = unit.rawValue
-        } label: {
-            Text(unit.shortLabel)
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(isSelected ? Color.circaCard : Color.clear)
-                )
-                .foregroundStyle(isSelected ? .primary : .secondary)
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 

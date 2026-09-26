@@ -7,45 +7,32 @@
 
 import SwiftUI
 
-
-private enum HeightUnit: String, CaseIterable {
-    case centimeters
-    case feetInches
-}
-
 struct EditHeightSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var heightCm: Double?
     @ScaledMetric(relativeTo: .body) private var pickerHeight: CGFloat = 160
 
-    @State private var selectedUnit: HeightUnit = .centimeters
-
-    // Picker-backed state (same idea as onboarding)
+    @State private var selectedUnit: BodyHeightUnit = .centimeters
+    /// Centimetres are the one stored value; feet and inches are a view on it
+    /// through `HeightWheel`.
     @State private var selectedCm: Int = 175
-    @State private var selectedFeet: Int = 5
-    @State private var selectedInches: Int = 9
-
-    @State private var errorMessage: String?
     @State private var didInitialize = false
 
-    private let cmRange = Array(120...220)
-    private let feetRange = Array(3...8)
-    private let inchRange = Array(0...11)
+    private var wheel: HeightWheel { HeightWheel(selectedUnit) }
 
     var body: some View {
         AdaptiveScrollContainer {
             VStack(alignment: .leading, spacing: 20) {
                 header
-                HeightUnitSegmentedControl(selectedUnit: $selectedUnit)
+
+                UnitToggle(
+                    options: BodyHeightUnit.allCases,
+                    label: { $0.shortLabel },
+                    selection: $selectedUnit
+                )
+
                 summaryCard
                 inputCard
-
-                if let errorMessage {
-                    Text(errorMessage)
-                        .font(.circaCaption)
-                        .foregroundStyle(Color.circaDanger)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
             }
             .padding(Circa.Space.screenMargin)
         }
@@ -64,19 +51,6 @@ struct EditHeightSheet: View {
             }
         }
         .onAppear { initializeFromBindingIfNeeded() }
-        .onChange(of: selectedUnit) { _, _ in syncPickersForUnitSwitch() }
-        .onChange(of: selectedCm) { _, newValue in
-            guard selectedUnit == .centimeters else { return }
-            syncFeetInchesFromCm(Double(newValue))
-        }
-        .onChange(of: selectedFeet) { _, _ in
-            guard selectedUnit == .feetInches else { return }
-            syncCmFromFeetInches()
-        }
-        .onChange(of: selectedInches) { _, _ in
-            guard selectedUnit == .feetInches else { return }
-            syncCmFromFeetInches()
-        }
     }
 
     private var header: some View {
@@ -95,11 +69,11 @@ struct EditHeightSheet: View {
     private var summaryCard: some View {
         VStack(spacing: 6) {
             CircaSectionLabel("Selected height")
-            Text(primaryHeightText)
+            Text(wheel.displayString(selectedCm))
                 .font(.circaMonoLarge)
                 .foregroundStyle(Color.circaInk)
 
-            Text(secondaryHeightText)
+            Text(otherUnitText)
                 .font(.circaCaption)
                 .foregroundStyle(Color.circaInk2)
         }
@@ -116,41 +90,39 @@ struct EditHeightSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             CircaSectionLabel(selectedUnit == .centimeters ? "Height (cm)" : "Height (ft / in)")
 
-            if selectedUnit == .centimeters {
-                Picker("Centimeters", selection: $selectedCm) {
-                    ForEach(cmRange, id: \.self) { cm in
-                        Text("\(cm) cm").tag(cm)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: pickerHeight)
-                .clipped()
-                .labelsHidden()
-            } else {
-                HStack(spacing: 12) {
-                    Picker("Feet", selection: $selectedFeet) {
-                        ForEach(feetRange, id: \.self) { ft in
-                            Text("\(ft) ft").tag(ft)
+            Group {
+                if selectedUnit == .centimeters {
+                    Picker("Centimetres", selection: $selectedCm) {
+                        ForEach(wheel.centimeterRange, id: \.self) { cm in
+                            Text("\(cm) cm").tag(cm)
                         }
                     }
                     .pickerStyle(.wheel)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: pickerHeight)
-                    .clipped()
                     .labelsHidden()
+                } else {
+                    HStack(spacing: 12) {
+                        Picker("Feet", selection: feet) {
+                            ForEach(wheel.feetRange, id: \.self) { value in
+                                Text("\(value) ft").tag(value)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
 
-                    Picker("Inches", selection: $selectedInches) {
-                        ForEach(inchRange, id: \.self) { inch in
-                            Text("\(inch) in").tag(inch)
+                        Picker("Inches", selection: inches) {
+                            ForEach(wheel.inchRange(atFeet: feet.wrappedValue), id: \.self) { value in
+                                Text("\(value) in").tag(value)
+                            }
                         }
+                        .pickerStyle(.wheel)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
                     }
-                    .pickerStyle(.wheel)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: pickerHeight)
-                    .clipped()
-                    .labelsHidden()
                 }
             }
+            .frame(height: pickerHeight)
+            .clipped()
         }
         .padding(18)
         .frame(maxWidth: .infinity)
@@ -161,122 +133,46 @@ struct EditHeightSheet: View {
         }
     }
 
-    // MARK: - Derived Text (same logic as onboarding)
-    private var computedHeightCm: Double {
-        switch selectedUnit {
-        case .centimeters:
-            return Double(selectedCm)
-        case .feetInches:
-            let totalInches = Double(selectedFeet * 12 + selectedInches)
-            return totalInches * 2.54
-        }
+    // MARK: - Wheels
+
+    private var feet: Binding<Int> {
+        Binding(
+            get: { wheel.feetInches(selectedCm).feet },
+            set: { selectedCm = wheel.centimeters(feet: $0, inches: wheel.feetInches(selectedCm).inches) }
+        )
     }
 
-    private var primaryHeightText: String {
-        switch selectedUnit {
-        case .centimeters:
-            return "\(selectedCm) cm"
-        case .feetInches:
-            return "\(selectedFeet)′ \(selectedInches)″"
-        }
+    private var inches: Binding<Int> {
+        Binding(
+            get: { wheel.feetInches(selectedCm).inches },
+            set: { selectedCm = wheel.centimeters(feet: wheel.feetInches(selectedCm).feet, inches: $0) }
+        )
     }
 
-    private var secondaryHeightText: String {
-        let cm = computedHeightCm
-        let totalInches = cm / 2.54
-        let ft = Int(totalInches / 12.0)
-        let inch = Int((totalInches.truncatingRemainder(dividingBy: 12.0)).rounded())
-
-        if selectedUnit == .centimeters {
-            return "≈ \(ft)′ \(inch)″"
-        } else {
-            return "≈ \(Int(cm.rounded())) cm"
-        }
+    private var otherUnitText: String {
+        let other: BodyHeightUnit = selectedUnit == .centimeters ? .feetInches : .centimeters
+        return "≈ " + HeightWheel(other).displayString(selectedCm)
     }
 
-    // MARK: - Init / Sync (same idea as onboarding)
+    // MARK: - Init and done
+
     private func initializeFromBindingIfNeeded() {
         guard !didInitialize else { return }
         didInitialize = true
 
         if let existing = heightCm, existing > 0 {
-            let cm = Int(existing.rounded())
-            selectedCm = min(max(cm, cmRange.first ?? cm), cmRange.last ?? cm)
-            syncFeetInchesFromCm(existing)
-        } else {
-            syncFeetInchesFromCm(Double(selectedCm))
+            selectedCm = wheel.clamped(Int(existing.rounded()))
         }
     }
 
-    private func syncPickersForUnitSwitch() {
-        if selectedUnit == .centimeters {
-            syncCmFromFeetInches()
-        } else {
-            syncFeetInchesFromCm(Double(selectedCm))
-        }
-    }
-
-    private func syncFeetInchesFromCm(_ cm: Double) {
-        let totalInches = cm / 2.54
-        let ft = Int(totalInches / 12.0)
-        let inch = Int((totalInches.truncatingRemainder(dividingBy: 12.0)).rounded())
-
-        selectedFeet = min(max(ft, feetRange.first ?? ft), feetRange.last ?? ft)
-        selectedInches = min(max(inch, inchRange.first ?? inch), inchRange.last ?? inch)
-    }
-
-    private func syncCmFromFeetInches() {
-        let totalInches = Double(selectedFeet * 12 + selectedInches)
-        let cm = Int((totalInches * 2.54).rounded())
-        selectedCm = min(max(cm, cmRange.first ?? cm), cmRange.last ?? cm)
-    }
-
-    // MARK: - Done
     private func handleDone() {
-        let cm = computedHeightCm
-        guard cm > 0 else {
-            errorMessage = "Please select a valid height."
-            return
-        }
-        errorMessage = nil
-        heightCm = cm
+        heightCm = Double(selectedCm)
         dismiss()
     }
 }
 
-private struct HeightUnitSegmentedControl: View {
-    @Binding var selectedUnit: HeightUnit
-
-    var body: some View {
-        HStack(spacing: 0) {
-            segment(title: "cm", unit: .centimeters)
-            segment(title: "ft / in", unit: .feetInches)
-        }
-        .padding(4)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: Circa.Radius.button))
-    }
-
-    private func segment(title: String, unit: HeightUnit) -> some View {
-        let isSelected = (selectedUnit == unit)
-
-        return Button {
-            selectedUnit = unit
-        } label: {
-            Text(title)
-                .font(.circaRow)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: Circa.minHitTarget)
-                .background(
-                    RoundedRectangle(cornerRadius: Circa.Radius.thumb, style: .continuous)
-                        .fill(isSelected ? Color.circaCard : Color.clear)
-                )
-                .foregroundStyle(isSelected ? Color.circaInk : Color.circaInk2)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-
 #Preview {
-    EditHeightSheet(heightCm: .constant(175))
+    NavigationStack {
+        EditHeightSheet(heightCm: .constant(175))
+    }
 }

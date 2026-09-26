@@ -289,9 +289,8 @@ in every pose.** Ink lines and one ochre, like everything else.
 3. **No gendered props or colours.** The gender step's move is *wonder*.
 4. **No words in the art.** Arabic is coming and the name may change again. The
    dotted question mark is a symbol, not a word.
-5. **The busiest steps get only the small face.** Logging tips and the plan
-   summary show the 64 pt `PlateFace`, left-aligned like the paywall.
-   `OnboardingIllustrationTests` holds this.
+5. **Not on the busiest screens.** Logging tips, the plan summary and the
+   paywall show no mascot. `OnboardingIllustrationTests` holds the onboarding half.
 6. **Decoration only.** Hidden from VoiceOver; still, in its rest pose, under
    Reduce Motion; on onboarding steps, 90 pt instead of 130 at accessibility
    text sizes.
@@ -311,7 +310,6 @@ in every pose.** Ink lines and one ochre, like everything else.
 | Each move's drawings, rest pose and keyframes | `GymFuel/Design/PlateMascotMoves.swift` |
 | Which onboarding step shows what | `OnboardingStep.illustration` in `OnboardingFlowView.swift` |
 | Welcome (wave, 180 pt) and save progress (hug, 168 pt) | `WelcomeView.swift`, `AuthChoicesView.swift` |
-| The small face | `PlateFace` image — paywall, logging tips, plan summary |
 | App icon sources | `design-canvas/app-icon/` — export rules in `design-canvas/INDEX.md` |
 | Preview of every move, light and dark | `python3 design-canvas/mascot/preview.py` |
 

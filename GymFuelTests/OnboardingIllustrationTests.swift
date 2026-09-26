@@ -9,16 +9,12 @@ import Testing
 
 @Suite("Onboarding illustration")
 struct OnboardingIllustrationTests {
-    @Test("The two teaching screens show no illustration")
-    func teachingStepsShowNothing() {
+    @Test("The two teaching screens and the two busiest steps show no illustration")
+    func teachingAndBusyStepsShowNothing() {
         #expect(OnboardingStep.liftEatsIntro.illustration == .hidden)
         #expect(OnboardingStep.liftEatsDifference.illustration == .hidden)
-    }
-
-    @Test("The two busiest steps show only the small plate face")
-    func busyStepsShowTheFace() {
-        #expect(OnboardingStep.loggingTips.illustration == .face)
-        #expect(OnboardingStep.summary.illustration == .face)
+        #expect(OnboardingStep.loggingTips.illustration == .hidden)
+        #expect(OnboardingStep.summary.illustration == .hidden)
     }
 
     @Test("The gender step's move is wonder")
