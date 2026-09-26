@@ -14,17 +14,28 @@ import Foundation
 /// Step 4, *The rules*.
 enum PlanCopy {
 
-    /// One line under each target.
+    /// One reason for each target. Calories have none when the target is the estimate.
     struct Reasons: Equatable {
-        let calories: String
+        let calories: CalorieStep?
         let protein: String
         let carbs: String
         let fat: String
     }
 
+    /// The middle line of the sum the plan screen shows: the maintenance estimate,
+    /// this step, then the target.
+    struct CalorieStep: Equatable {
+        /// "To lose about 0.4 kg a week"
+        let reason: String
+        /// "− 470"
+        let amount: String
+    }
+
     /// What a number the user typed says in place of its working, which no longer
     /// describes it.
     static let setByYou = "You set this target yourself."
+    /// The same, as the step in the calorie sum.
+    static let yourChange = "Your change"
 
     /// True whatever was typed: carbs are always what the other three leave.
     static let carbs = "What the calories leave after protein and fat."
@@ -69,7 +80,7 @@ enum PlanCopy {
             maintenanceCalories: maintenanceCalories,
             gender: profile.gender
         )
-        let calorieReason = calories(
+        let step = calorieStep(
             targetKcal: targets.calories,
             maintenanceKcal: maintenanceCalories,
             weeklyChangeKg: weeklyChangeKg,
@@ -77,35 +88,38 @@ enum PlanCopy {
         )
 
         return Reasons(
-            calories: targets.calories == workedOut.calories ? calorieReason : setByYou,
+            calories: targets.calories == workedOut.calories
+                ? step
+                : step.map { CalorieStep(reason: yourChange, amount: $0.amount) },
             protein: targets.protein == workedOut.protein ? perKg(goal.proteinPerKg, of: basis) : setByYou,
             carbs: targets.carbs == workedOut.carbs ? carbs : setByYou,
             fat: targets.fat == workedOut.fat ? perKg(goal.fatPerKg, of: basis) : setByYou
         )
     }
 
-    /// Where the calorie target sits against the maintenance estimate, which the
-    /// screen shows just above it: "Your target is 470 less, to lose about 0.4 kg
-    /// a week."
-    static func calories(
+    /// The step from the maintenance estimate to the calorie target. Nil when the
+    /// target is the estimate.
+    static func calorieStep(
         targetKcal: Double,
         maintenanceKcal: Double,
         weeklyChangeKg: Double,
         unit: BodyWeightUnit
-    ) -> String {
+    ) -> CalorieStep? {
         let difference = (targetKcal - maintenanceKcal).rounded()
-        guard difference != 0 else { return "Your target is the same." }
+        guard difference != 0 else { return nil }
 
-        let amount = abs(difference).formatted(.number.precision(.fractionLength(0)))
+        let reason: String
         if difference < 0, weeklyChangeKg < 0 {
-            return "Your target is \(amount) less, to lose \(pace(weeklyChangeKg, unit)) a week."
+            reason = "To lose \(pace(weeklyChangeKg, unit)) a week"
+        } else if difference > 0, weeklyChangeKg > 0 {
+            reason = "To gain \(pace(weeklyChangeKg, unit)) a week"
+        } else {
+            // Only the calorie floor lands here: it held the target at or above the
+            // estimate, so the plan line has no room to slope.
+            reason = "Raised to the lowest this app sets"
         }
-        if difference > 0, weeklyChangeKg > 0 {
-            return "Your target is \(amount) more, to gain \(pace(weeklyChangeKg, unit)) a week."
-        }
-        // Only the calorie floor lands here: it held the target at or above the
-        // estimate, so the plan line has no room to slope.
-        return "Your target is \(amount) \(difference < 0 ? "less" : "more") — the lowest this app will set."
+        let amount = abs(difference).formatted(.number.precision(.fractionLength(0)))
+        return CalorieStep(reason: reason, amount: "\(difference < 0 ? "−" : "+") \(amount)")
     }
 
     /// "1.6 g for each kg of your goal weight." Names the weight the calculator

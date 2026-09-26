@@ -192,11 +192,6 @@ struct TargetsView: View {
                         .font(.circaBody)
                         .foregroundStyle(Color.circaInk2)
                 }
-
-                Text(TargetsCopy.startingEstimate)
-                    .font(.circaCaption)
-                    .foregroundStyle(Color.circaInk3)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

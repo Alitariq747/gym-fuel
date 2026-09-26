@@ -68,13 +68,12 @@ struct TargetsCopyTests {
             TargetsCopy.maintenanceLabel,
             TargetsCopy.maintenancePrefix,
             TargetsCopy.maintenanceSuffix,
-            TargetsCopy.startingEstimate,
         ]
         .joined(separator: " ")
         .lowercased()
 
         #expect(!copy.contains("burn"))
-        #expect(copy.contains("estimate"))
+        #expect(copy.contains("about"))
     }
 
     // MARK: - Editing the four numbers

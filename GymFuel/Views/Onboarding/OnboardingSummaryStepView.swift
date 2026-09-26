@@ -56,9 +56,7 @@ struct OnboardingSummaryStepView: View {
 
                     if let profile {
                         if let line { chart(line) }
-                        numbersCard(profile)
-                        note
-                        sourcesLink
+                        plan(profile)
                     }
                 }
                 .padding(.horizontal, Circa.Space.screenMargin)
@@ -66,17 +64,12 @@ struct OnboardingSummaryStepView: View {
                 .padding(.bottom, 12)
             }
 
-            VStack(spacing: 12) {
-                Button {
-                    onStartTracking(editedTargets)
-                } label: {
-                    Text("Save my progress").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.circa(.primary, height: 52))
-
-                Button("Edit numbers") { isEditing = true }
-                    .buttonStyle(.circa(.link))
+            Button {
+                onStartTracking(editedTargets)
+            } label: {
+                Text("Save my progress").frame(maxWidth: .infinity)
             }
+            .buttonStyle(.circa(.primary, height: 52))
             .disabled(profile == nil)
             .padding(.horizontal, Circa.Space.screenMargin)
             .padding(.bottom, 16)
@@ -143,60 +136,60 @@ struct OnboardingSummaryStepView: View {
         }
     }
 
-    /// The artboard's card: the calories large, then the estimate they sit
-    /// against, then protein, carbs and fat, each with the line that says why.
-    /// Only the estimate is dotted — a target is set, not guessed (`design.md`
-    /// rule 1), as on the targets screen.
+    /// The targets, Edit, then the working behind them. Only the estimate is
+    /// dotted — a target is set, not guessed (`design.md` rule 1).
     @ViewBuilder
-    private func numbersCard(_ profile: UserProfile) -> some View {
+    private func plan(_ profile: UserProfile) -> some View {
         if let targets = profile.savedTargets,
            let maintenance = profile.maintenanceCalories,
            let workedOut = calculator.targetMacros(for: profile),
            let reasons = PlanCopy.reasons(for: profile, workedOut: workedOut, unit: unit, calculator: calculator) {
             CircaCard {
                 VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
-                    adaptive {
-                        CircaSectionLabel("Every day")
-                        if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
-                        amount(targets.calories, suffix: "kcal", font: .circaMonoLarge)
-                    }
-                    .accessibilityElement(children: .combine)
+                    CircaSectionLabel("Your daily targets")
+                    row("Calories", targets.calories, suffix: "kcal", font: .circaMonoLarge)
+                    CircaHairline(weight: .inCard)
+                    row("Protein", targets.protein, suffix: "g")
+                    CircaHairline(weight: .inCard)
+                    row("Carbs", targets.carbs, suffix: "g")
+                    CircaHairline(weight: .inCard)
+                    row("Fat", targets.fat, suffix: "g")
+                }
+            }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        CircaSectionLabel(TargetsCopy.maintenanceLabel)
-                        adaptive {
-                            Text(TargetsCopy.maintenancePrefix)
-                                .font(.circaBody)
-                                .foregroundStyle(Color.circaInk2)
-                            CircaEstimate(TargetsCopy.maintenanceValue(maintenance), certainty: .estimated)
-                            Text(TargetsCopy.maintenanceSuffix)
-                                .font(.circaBody)
-                                .foregroundStyle(Color.circaInk2)
-                        }
-                        reason(reasons.calories)
-                    }
-                    .accessibilityElement(children: .combine)
+            editLink
 
+            CircaCard {
+                VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
+                    CircaSectionLabel("How we got \(targets.calories.formatted(.number.precision(.fractionLength(0))))")
+                    step(TargetsCopy.maintenanceLabel) {
+                        Text(TargetsCopy.maintenancePrefix)
+                            .font(.circaBody)
+                            .foregroundStyle(Color.circaInk2)
+                        CircaEstimate(TargetsCopy.maintenanceValue(maintenance), certainty: .estimated)
+                    }
+                    if let calories = reasons.calories {
+                        step(calories.reason) { Text(calories.amount) }
+                    }
                     CircaHairline(weight: .inCard)
-                    row("Protein", grams: targets.protein, reason: reasons.protein)
+                    row("Your daily target", targets.calories, suffix: "kcal")
                     CircaHairline(weight: .inCard)
-                    row("Carbs", grams: targets.carbs, reason: reasons.carbs)
+                    macroReasons(reasons)
                     CircaHairline(weight: .inCard)
-                    row("Fat", grams: targets.fat, reason: reasons.fat)
+                    sourcesLink
                 }
             }
         }
     }
 
-    /// The artboard's note, saying what the numbers are worth instead of promising
-    /// they will move — design.md's Canvas drift table.
-    private var note: some View {
-        CircaCard(.sunken, radius: Circa.Radius.cardSmall) {
-            Text(TargetsCopy.startingEstimate)
-                .font(.circaBody)
-                .foregroundStyle(Color.circaInk2)
-                .fixedSize(horizontal: false, vertical: true)
+    private var editLink: some View {
+        Button {
+            isEditing = true
+        } label: {
+            Label("Edit numbers", systemImage: "slider.horizontal.3")
         }
+        .buttonStyle(.circa(.link))
+        .frame(maxWidth: .infinity)
     }
 
     private var sourcesLink: some View {
@@ -210,23 +203,49 @@ struct OnboardingSummaryStepView: View {
             }
         }
         .buttonStyle(.circa(.link))
+        .padding(.leading, -10)
     }
 
     // MARK: - Shapes
 
-    /// A target, its number, and the one line that says why.
-    private func row(_ title: String, grams: Double, reason text: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            adaptive {
-                Text(title)
-                    .font(.circaRow)
-                    .foregroundStyle(Color.circaInk)
-                if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
-                amount(grams, suffix: "g", font: .circaMonoValue)
-            }
-            reason(text)
+    /// A target and its number.
+    private func row(_ title: String, _ value: Double, suffix: String, font: Font = .circaMonoValue) -> some View {
+        adaptive {
+            Text(title)
+                .font(.circaRow)
+                .foregroundStyle(Color.circaInk)
+            if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
+            amount(value, suffix: suffix, font: font)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// A line of the calorie sum: quieter than the target it adds up to.
+    private func step<Value: View>(_ title: String, @ViewBuilder value: () -> Value) -> some View {
+        adaptive {
+            Text(title)
+                .font(.circaBody)
+                .foregroundStyle(Color.circaInk2)
+            if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
+            HStack(alignment: .firstTextBaseline, spacing: 4) { value() }
+                .font(.circaMonoValue)
+                .monospacedDigit()
+                .foregroundStyle(Color.circaInk)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Protein, carbs and fat, each named before the line that says why. One
+    /// wrapping text per line, so nothing needs to go vertical at AX sizes.
+    private func macroReasons(_ reasons: PlanCopy.Reasons) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach([("Protein", reasons.protein), ("Carbs", reasons.carbs), ("Fat", reasons.fat)], id: \.0) { title, text in
+                Text("\(Text(title).fontWeight(.semibold).foregroundStyle(Color.circaInk)) \(text)")
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaInk2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     /// A whole number with its unit beside it, quieter, as on the artboard.
@@ -240,13 +259,6 @@ struct OnboardingSummaryStepView: View {
                 .font(.circaMono)
                 .foregroundStyle(Color.circaInk3)
         }
-    }
-
-    private func reason(_ text: String) -> some View {
-        Text(text)
-            .font(.circaCaption)
-            .foregroundStyle(Color.circaInk2)
-            .fixedSize(horizontal: false, vertical: true)
     }
 
     /// A row that is horizontal normally and vertical at accessibility sizes,

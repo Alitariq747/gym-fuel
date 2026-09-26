@@ -82,51 +82,54 @@ struct PlanCopyTests {
 
     // MARK: - Calories
 
-    @Test("Losing says how much less, and how fast")
-    func caloriesWhenLosing() {
-        let text = PlanCopy.calories(targetKcal: 1_950, maintenanceKcal: 2_420, weeklyChangeKg: -0.425, unit: .kilograms)
+    @Test("Losing takes the difference off, and says how fast")
+    func caloriesWhenLosing() throws {
+        let step = try #require(PlanCopy.calorieStep(targetKcal: 1_950, maintenanceKcal: 2_420, weeklyChangeKg: -0.425, unit: .kilograms))
 
-        #expect(text.contains("470 less"))
-        #expect(text.contains("lose about \(oneDecimal(0.4)) kg a week"))
+        #expect(step.amount.hasPrefix("−"))
+        #expect(step.amount.hasSuffix("470"))
+        #expect(step.reason.contains("lose about \(oneDecimal(0.4)) kg a week"))
     }
 
-    @Test("Gaining says how much more, and how fast")
-    func caloriesWhenGaining() {
-        let text = PlanCopy.calories(targetKcal: 2_410, maintenanceKcal: 2_220, weeklyChangeKg: 0.175, unit: .kilograms)
+    @Test("Gaining adds the difference, and says how fast")
+    func caloriesWhenGaining() throws {
+        let step = try #require(PlanCopy.calorieStep(targetKcal: 2_410, maintenanceKcal: 2_220, weeklyChangeKg: 0.175, unit: .kilograms))
 
-        #expect(text.contains("190 more"))
-        #expect(text.contains("gain about \(oneDecimal(0.2)) kg a week"))
+        #expect(step.amount.hasPrefix("+"))
+        #expect(step.amount.hasSuffix("190"))
+        #expect(step.reason.contains("gain about \(oneDecimal(0.2)) kg a week"))
     }
 
-    @Test("Maintaining says the target is the estimate")
+    @Test("Maintaining has no step: the target is the estimate")
     func caloriesWhenMaintaining() {
-        #expect(PlanCopy.calories(targetKcal: 2_420, maintenanceKcal: 2_420, weeklyChangeKg: 0, unit: .kilograms) == "Your target is the same.")
+        #expect(PlanCopy.calorieStep(targetKcal: 2_420, maintenanceKcal: 2_420, weeklyChangeKg: 0, unit: .kilograms) == nil)
     }
 
     /// A small, older, mostly sitting body can have an estimate under the floor.
     @Test("A target the floor holds above the estimate says so, and claims no pace")
-    func caloriesHeldByTheFloor() {
-        let text = PlanCopy.calories(targetKcal: 1_200, maintenanceKcal: 1_150, weeklyChangeKg: 0, unit: .kilograms)
+    func caloriesHeldByTheFloor() throws {
+        let step = try #require(PlanCopy.calorieStep(targetKcal: 1_200, maintenanceKcal: 1_150, weeklyChangeKg: 0, unit: .kilograms))
 
-        #expect(text.contains("50 more"))
-        #expect(text.contains("lowest"))
-        #expect(!text.contains("week"))
+        #expect(step.amount.hasPrefix("+"))
+        #expect(step.amount.hasSuffix("50"))
+        #expect(step.reason.contains("lowest"))
+        #expect(!step.reason.contains("week"))
     }
 
     @Test("A pace too small for one decimal place is not shown as zero")
-    func caloriesWithATinyPace() {
-        let text = PlanCopy.calories(targetKcal: 1_200, maintenanceKcal: 1_250, weeklyChangeKg: -0.045, unit: .kilograms)
+    func caloriesWithATinyPace() throws {
+        let step = try #require(PlanCopy.calorieStep(targetKcal: 1_200, maintenanceKcal: 1_250, weeklyChangeKg: -0.045, unit: .kilograms))
 
-        #expect(text.contains("less than \(oneDecimal(0.1)) kg a week"))
-        #expect(!text.contains(oneDecimal(0)))
+        #expect(step.reason.contains("less than \(oneDecimal(0.1)) kg a week"))
+        #expect(!step.reason.contains(oneDecimal(0)))
     }
 
     @Test("A pounds user reads the pace in pounds")
-    func caloriesInPounds() {
+    func caloriesInPounds() throws {
         // 0.425 kg is 0.94 lb.
-        let text = PlanCopy.calories(targetKcal: 1_950, maintenanceKcal: 2_420, weeklyChangeKg: -0.425, unit: .pounds)
+        let step = try #require(PlanCopy.calorieStep(targetKcal: 1_950, maintenanceKcal: 2_420, weeklyChangeKg: -0.425, unit: .pounds))
 
-        #expect(text.contains("about \(oneDecimal(0.9)) lbs a week"))
+        #expect(step.reason.contains("about \(oneDecimal(0.9)) lbs a week"))
     }
 
     // MARK: - Protein and fat
@@ -166,9 +169,10 @@ struct PlanCopyTests {
     @Test("Every worked-out number gives its working")
     func reasonsForWorkedOutNumbers() throws {
         let reasons = try planReasons(for: answers)
+        let calories = try #require(reasons.calories)
 
-        #expect(reasons.calories.contains("470 less"))
-        #expect(reasons.calories.contains("lose about \(oneDecimal(0.4)) kg a week"))
+        #expect(calories.amount.hasSuffix("470"))
+        #expect(calories.reason.contains("lose about \(oneDecimal(0.4)) kg a week"))
         #expect(reasons.protein == PlanCopy.perKg(GoalType.cut.proteinPerKg, of: .goalWeight))
         #expect(reasons.fat == PlanCopy.perKg(GoalType.cut.fatPerKg, of: .goalWeight))
         #expect(reasons.carbs == PlanCopy.carbs)
@@ -179,8 +183,11 @@ struct PlanCopyTests {
         var edited = answers
         edited.editedTargets = MacroTargetCalculator.edited(calories: 2_100, proteinG: 150, fatG: 60, gender: .male)
         let reasons = try planReasons(for: edited)
+        let calories = try #require(reasons.calories)
 
-        #expect(reasons.calories == PlanCopy.setByYou)
+        // 2,100 against the 2,420 estimate.
+        #expect(calories.reason == PlanCopy.yourChange)
+        #expect(calories.amount.hasSuffix("320"))
         #expect(reasons.protein == PlanCopy.perKg(GoalType.cut.proteinPerKg, of: .goalWeight))
         #expect(reasons.fat == PlanCopy.perKg(GoalType.cut.fatPerKg, of: .goalWeight))
         #expect(reasons.carbs == PlanCopy.carbs)
@@ -196,7 +203,7 @@ struct PlanCopyTests {
 
         #expect(reasons.carbs == PlanCopy.setByYou)
         #expect(reasons.protein == PlanCopy.perKg(GoalType.cut.proteinPerKg, of: .goalWeight))
-        #expect(reasons.calories.contains("470 less"))
+        #expect(reasons.calories?.amount.hasSuffix("470") == true)
     }
 
     @Test("Typed protein says so, and the calories keep their working")
@@ -206,7 +213,7 @@ struct PlanCopyTests {
         let reasons = try planReasons(for: edited)
 
         #expect(reasons.protein == PlanCopy.setByYou)
-        #expect(reasons.calories.contains("470 less"))
+        #expect(reasons.calories?.amount.hasSuffix("470") == true)
     }
 
     @Test("Maintaining above the BMI 25 weight names the top healthy weight")
@@ -216,7 +223,7 @@ struct PlanCopyTests {
         let reasons = try planReasons(for: maintaining)
 
         // 85 kg at 178 cm is over the 79.2 kg BMI 25 weight.
-        #expect(reasons.calories == "Your target is the same.")
+        #expect(reasons.calories == nil)
         #expect(reasons.protein == PlanCopy.perKg(GoalType.maintain.proteinPerKg, of: .topHealthyWeight))
     }
 
@@ -225,12 +232,13 @@ struct PlanCopyTests {
     func neverSaysBurn() throws {
         let reasons = try planReasons(for: answers)
         let copy = [
-            reasons.calories,
+            reasons.calories?.reason ?? "",
             reasons.protein,
             reasons.carbs,
             reasons.fat,
             PlanCopy.setByYou,
-            PlanCopy.calories(targetKcal: 1_200, maintenanceKcal: 1_150, weeklyChangeKg: 0, unit: .kilograms),
+            PlanCopy.yourChange,
+            PlanCopy.calorieStep(targetKcal: 1_200, maintenanceKcal: 1_150, weeklyChangeKg: 0, unit: .kilograms)?.reason ?? "",
         ]
         .joined(separator: " ")
         .lowercased()

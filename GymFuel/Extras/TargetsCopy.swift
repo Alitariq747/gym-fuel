@@ -33,8 +33,6 @@ enum TargetsCopy {
     static let maintenancePrefix = "about"
     /// The words after it.
     static let maintenanceSuffix = "kcal a day"
-    /// What that estimate is worth, in one line, under the number.
-    static let startingEstimate = "This is a starting estimate. Your weigh-ins will show whether it's right."
 
     /// The estimate itself. `MacroTargetCalculator` has already rounded it to 10;
     /// this only drops the decimals and groups the thousands.

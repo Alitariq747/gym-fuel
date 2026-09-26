@@ -364,8 +364,9 @@ targets cannot deliver (decided 19 September).
 **Maintenance estimate.** Mifflin–St Jeor × the activity multiplier. It may be shown
 as "about 2,420 kcal a day to stay at your weight": rounded, dotted as an estimate,
 never called "burn", saved with the targets, and never updated from food logs or
-weigh-ins. Under it: *"This is a starting estimate. Your weigh-ins will show whether
-it's right."* A number that claims to *measure* what this person burns is still out.
+weigh-ins. No caveat line goes under it: the sentence that did was removed on
+26 September, because "about" and the dotted rule already say it is an estimate. A
+number that claims to *measure* what this person burns is still out.
 
 **Activity.** One question, four options, each describing a normal week *including*
 exercise. The multipliers sit at the careful end of the measured ranges
@@ -585,8 +586,7 @@ headed, roughly when, and why each number is what it is.
    plan screen, in the same place. `saveOnboarding` still fires the paywall.
 2. **Chart** to the goal date, reusing 4e's chart. *Maintain* shows no date.
 3. **One reason per target.** For calories: "About 2,420 kcal a day to stay at your
-   weight. Your target is 470 less, to lose about 0.4 kg a week." Then the
-   starting-estimate line from *The rules*.
+   weight. Your target is 470 less, to lose about 0.4 kg a week."
 4. **Edit** with 4d's editor before continuing.
 
 **Files** `OnboardingSummaryStepView.swift` · `OnboardingFlowView.swift` · 4d's editor ·
