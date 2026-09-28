@@ -47,6 +47,15 @@ enum MealCopy {
         value.rounded().formatted(.number.precision(.fractionLength(0)))
     }
 
+    /// The share card's words. The name is written once, here, for Step 8's rename.
+    enum Share {
+        static let name = "Circa"
+        static let footnote = "AI estimate"
+        static let previewTitle = "Share this meal"
+        static let privacy = "Only this meal is shared. No targets, weight or other meals."
+        static let photoMissing = "The photo couldn't load, so the card leaves it out."
+    }
+
     /// Why rewording needs a second tap, or `nil` when it loses nothing. Names are
     /// quoted because an item name can carry its own comma — "White rice, boiled".
     static func rewordWarning(adjusted names: [String]) -> String? {

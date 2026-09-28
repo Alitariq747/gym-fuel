@@ -172,6 +172,7 @@ enum Circa {
     /// view that uses them, or Dynamic Type stops at these values.
     enum Display {
         static let entryTotal: CGFloat = 44
+        static let shareTotal: CGFloat = 30
     }
 
     enum Rule {

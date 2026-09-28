@@ -76,6 +76,19 @@ enum FirebaseTelemetryService {
         logEvent("onboarding_event", parameters: parameters)
     }
 
+    /// Never the meal itself — only what happened and where it went.
+    static func logMealShareEvent(_ action: String, destination: String? = nil) {
+        var parameters: [String: Any] = [
+            "action": action,
+        ]
+
+        if let destination {
+            parameters["destination"] = destination
+        }
+
+        logEvent("meal_share_event", parameters: parameters)
+    }
+
     static func recordNonFatal(
         _ error: Error,
         reason: String,

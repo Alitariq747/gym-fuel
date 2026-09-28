@@ -20,13 +20,13 @@ struct MealImageThumbnailView: View {
     var width: CGFloat? = nil
     var height: CGFloat? = nil
     var displayMode: DisplayMode = .thumbnail
-    var maxSizeBytes: Int64 = 2 * 1024 * 1024
+    var maxSizeBytes: Int64 = MealImageLoader.defaultMaxSizeBytes
 
     @State private var image: UIImage?
     @State private var isLoading = false
     @State private var didFail = false
 
-    private let mealImageUploadService: MealImageUploadService
+    private let loader: MealImageLoader
 
     init(
         entryId: String? = nil,
@@ -35,7 +35,7 @@ struct MealImageThumbnailView: View {
         width: CGFloat? = nil,
         height: CGFloat? = nil,
         displayMode: DisplayMode = .thumbnail,
-        maxSizeBytes: Int64 = 2 * 1024 * 1024,
+        maxSizeBytes: Int64 = MealImageLoader.defaultMaxSizeBytes,
         mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService()
     ) {
         self.entryId = entryId
@@ -45,7 +45,7 @@ struct MealImageThumbnailView: View {
         self.height = height
         self.displayMode = displayMode
         self.maxSizeBytes = maxSizeBytes
-        self.mealImageUploadService = mealImageUploadService
+        self.loader = MealImageLoader(uploadService: mealImageUploadService)
     }
 
     var body: some View {
@@ -102,57 +102,14 @@ struct MealImageThumbnailView: View {
         }
     }
 
-    private func loadCachedImage() async -> UIImage? {
-        guard let entryId else { return nil }
-        let imageData = await Task.detached(priority: .utility) {
-            MealImageCacheService().imageData(for: entryId)
-        }.value
-        return imageData.flatMap(UIImage.init(data:))
-    }
-
-    private func cacheImageData(_ imageData: Data) async {
-        guard let entryId else { return }
-        try? await Task.detached(priority: .utility) {
-            try MealImageCacheService().saveImageData(imageData, entryId: entryId)
-        }.value
-    }
-
     private func loadImage() async {
         guard image == nil else { return }
 
         isLoading = true
         didFail = false
-
-        do {
-            if let cachedImage = await loadCachedImage() {
-                image = cachedImage
-                isLoading = false
-                return
-            }
-
-            guard let storagePath else {
-                didFail = true
-                isLoading = false
-                return
-            }
-
-            let imageData = try await mealImageUploadService.fetchMealImageData(
-                at: storagePath,
-                maxSizeBytes: maxSizeBytes
-            )
-            guard let loadedImage = UIImage(data: imageData) else {
-                didFail = true
-                isLoading = false
-                return
-            }
-
-            await cacheImageData(imageData)
-            image = loadedImage
-            isLoading = false
-        } catch {
-            didFail = true
-            isLoading = false
-        }
+        image = await loader.image(entryId: entryId, storagePath: storagePath, maxSizeBytes: maxSizeBytes)
+        didFail = image == nil
+        isLoading = false
     }
 }
 

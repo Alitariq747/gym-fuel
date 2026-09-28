@@ -17,7 +17,8 @@ mascot*. The canvas predates both.
 
 Revised 28 September: the Entry screen was redrawn on the canvas — the meal's
 nutrition in one card, macros on every breakdown row, and each correction beside
-what it changes. See rule 2 and the screen inventory.
+what it changes. See rule 2 and the screen inventory. The 7k share card was drawn
+the same day.
 
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
@@ -331,6 +332,11 @@ in every pose.** Ink lines and one ochre, like everything else.
 8. **Not where a number must lead.** Not on the Day screen, and never the
    analysing indicator — rule 1 allows no spinner.
 
+**The plate without its face is the app's mark, not the mascot.** It is the app
+icon's plate, ring and three dots, centred, and it is the share card's watermark
+(7k). Rules 5 and 8 do not reach it. Rule 7 does: it carries its own colours.
+Decided 28 September.
+
 ### Where it lives
 
 | What | Where |
@@ -409,6 +415,7 @@ Everything on the canvas, and what is not there yet.
 |---|---|---|
 | Day | `Day` | Summary at top, `LogActionDock` keeps the bottom |
 | Entry detail | `Entry`, `Entry · menu`, `Entry · re-estimate warning` | **Redrawn 28 September.** One card for the meal's nutrition: calories loudest, then protein, carbs and fat in three equal columns, each with its glyph in a well. Every breakdown row with a number carries its macros on the mono meta line. Pencil on the breakdown, sparkle beside the title, the four-item ⋯ menu, and the warning from rule 2. No rating, no confidence ring. Its top half is what the 7k share card crops |
+| Share card (7k) | `Share card · text meal`, `Share card · photo meal`, `Share · preview` | **Drawn 28 September.** One meal as an image: 360 pt wide at 3×, height from its content, always light and at a fixed text size. The photo (4:3) for photo meals, the label, the title, the Entry nutrition card, the provenance line when there is one, the key assumption (`MealBreakdownCalculator.assumptions(of:).first`), the explanation cut at five lines, and a footer with the plate mark, the name and "AI estimate". **Never** a date, time, target, weight or another meal. A photo that cannot load is left out, and the preview says so. The share icon beside ⋯ opens the preview first; its Share button opens the system share sheet. It shows on any meal that finished estimating, older days included |
 | Composer | `Composer` | Gym vocabulary removed from heading and examples |
 | Analysing | `Analysing · text + photo` | Sweep overlay + the existing 3-stage message rotation |
 | Failed | `Failed · retry` | Both failure shapes |
@@ -515,11 +522,12 @@ weekly page that was going to settle it is gone.
   whole content is one JSON blob, so fetching the page is not enough. Read the
   URL with the `Artifact` tool's `read` action — it saves the full HTML locally
   — then take the `<script type="application/json" id="appifact-doc">` block and
-  read `content.files`: 35 `.dc.html` artboards plus `canvas.json`, which maps
+  read `content.files`: 38 `.dc.html` artboards plus `canvas.json`, which maps
   each file to its artboard title and page. **`page-2` is `Round 1 · not
   chosen`.** So the live Entry artboards are `DetailB.dc.html` (`Entry`),
   `DetailMenu.dc.html` and `DetailReword.dc.html`; `DetailA` and `DetailC` are
-  the two directions that lost.
+  the two directions that lost. The share card is `ShareText.dc.html`,
+  `SharePhoto.dc.html` and `SharePreview.dc.html`.
 - `build-order.md` — where the design work sits in the sequence
 - `store-copy.md` — the copy the onboarding intro and paywall are built from
 - `product-as-built.md` — what the code does today, which is not this

@@ -24,6 +24,7 @@ struct LogEntryDetailSheet: View {
     @State private var showSavedMealToast = false
     @State private var showDeleteConfirmation = false
     @State private var showRewordWarning = false
+    @State private var showSharePreview = false
     @State private var isEditingRawInput = false
     @State private var editedRawInput = ""
     @State private var editedLoggedAt = Date()
@@ -63,6 +64,9 @@ struct LogEntryDetailSheet: View {
             isAdjusted: false
         )
     }
+    private var macrosCertainty: CircaCertainty {
+        macrosProvenance == .estimated ? .estimated : .known
+    }
     private var macrosProvenance: MealProvenance {
         if let breakdown = editableBreakdown {
             return MealBreakdownCalculator().provenance(of: breakdown)
@@ -97,13 +101,27 @@ struct LogEntryDetailSheet: View {
     private var canSaveAsMeal: Bool {
         saveableMealMacros != nil
     }
+    /// The share card draws the same values this screen does, except that a
+    /// photo's card never carries its `rawInput`: that text is Circa's even once
+    /// reworded, since rewording starts from it.
+    private var shareContent: MealShareCard.Content? {
+        guard let macros = saveableMealMacros else { return nil }
+        return MealShareCard.Content(
+            label: isImageMealEntry ? Self.photoLabel : sourceLabel,
+            title: isImageMealEntry ? mealTitle : displayTitle,
+            macros: macros,
+            certainty: macrosCertainty,
+            provenance: macrosProvenanceLine,
+            explanation: analysisExplanation.isEmpty ? nil : analysisExplanation
+        )
+    }
     private var analysisExplanation: String {
         entry.feedback?.explanation.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
     private var sourceLabel: String {
         switch entry.source {
         case .text: return "Your words"
-        case .image: return entry.isRawInputGenerated ? "Circa’s interpretation" : "Your words"
+        case .image: return entry.isRawInputGenerated ? Self.photoLabel : "Your words"
         case .savedMeal: return "Saved meal"
         }
     }
@@ -111,6 +129,10 @@ struct LogEntryDetailSheet: View {
         if !entry.isRawInputGenerated, !entry.rawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return entry.rawInput
         }
+        return mealTitle
+    }
+    private static let photoLabel = "Circa’s interpretation"
+    private var mealTitle: String {
         let title = entry.title.trimmingCharacters(in: .whitespacesAndNewlines)
         return title.isEmpty ? "Meal" : entry.title
     }
@@ -129,10 +151,7 @@ struct LogEntryDetailSheet: View {
 
                 VStack(alignment: .leading, spacing: 18) {
                     if let macros = entry.feedback?.macros {
-                        DetailMacroSummaryCard(
-                            macros: macros,
-                            certainty: macrosProvenance == .estimated ? .estimated : .known
-                        )
+                        DetailMacroSummaryCard(macros: macros, certainty: macrosCertainty)
 
                         if let macrosProvenanceLine {
                             Text(macrosProvenanceLine)
@@ -177,6 +196,20 @@ struct LogEntryDetailSheet: View {
         .toolbar(.visible, for: .navigationBar)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
+            if shareContent != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showSharePreview = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(Color.circaInk)
+                            .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
+                    }
+                    .accessibilityLabel("Share meal")
+                    .disabled(isPerformingAction)
+                }
+            }
             if canModify {
                 ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -218,6 +251,15 @@ struct LogEntryDetailSheet: View {
         .onAppear {
             if canModify, opensEditor, editableBreakdown != nil {
                 showBreakdownEditor = true
+            }
+        }
+        .sheet(isPresented: $showSharePreview) {
+            if let shareContent {
+                MealSharePreviewSheet(
+                    content: shareContent,
+                    photoEntryId: isImageMealEntry ? entry.id : nil,
+                    photoStoragePath: entry.image?.storagePath
+                )
             }
         }
         .sheet(isPresented: $showBreakdownEditor) {

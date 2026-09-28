@@ -73,7 +73,7 @@ fresh session reads this file, not the chat history.
 - [x] **4f** · The plan screen in onboarding
 - [x] **5** · Meal contract and editable meal client
 - [x] **6** · Meal backend, references and saved-meal round trip
-- [ ] **7** · Visual sweep and final share card
+- [x] **7** · Visual sweep and final share card
 - [ ] **8** · Rename
 - [ ] **9** · App Store Connect metadata
 - [ ] **10** · Screenshots and submit
@@ -809,7 +809,7 @@ Keep the parent Step 7 box unticked until every part is done.
   plan copy. Keep all six paywall requirements in `CLAUDE.md`, including live
   StoreKit price/trial text and a visible dismiss control. **Done when** the paywall
   and onboarding summary fit the same visual system without changing purchases.
-- [ ] **7k · Final meal share card.** After the Step 6 backend returns the final
+- [x] **7k · Final meal share card.** After the Step 6 backend returns the final
   meal shape, render the selected meal's image, description, nutrition, key
   assumption and explanation with a watermark; export through the system share
   sheet. Share only that meal, not weight, targets or other meals. **Done when** a
