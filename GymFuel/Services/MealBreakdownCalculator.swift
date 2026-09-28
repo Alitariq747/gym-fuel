@@ -168,4 +168,15 @@ struct MealBreakdownCalculator {
             .filter { $0.nutrition != nil }
             .map(\.resolvedSource)
     }
+
+    // MARK: - Corrections
+
+    /// The items and components whose amount the person changed — what rewording
+    /// the whole meal would throw away (`meal-contract.md` §9).
+    func adjustedParts(of breakdown: MealBreakdown) -> [String] {
+        breakdown.items.flatMap { item in
+            let parts = item.components.filter { $0.amount?.isAdjusted == true }.map(\.name)
+            return item.amount?.isAdjusted == true ? [item.name] + parts : parts
+        }
+    }
 }

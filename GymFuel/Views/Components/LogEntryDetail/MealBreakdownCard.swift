@@ -7,18 +7,34 @@
 
 import SwiftUI
 
-/// What the meal was made of, and what each part contributed. Read-only until
-/// 5e. Rows and total both come from `MealBreakdownCalculator`, never a stored
-/// literal, so what is listed and what is totalled cannot drift — §4.
+/// What the meal was made of, and what each part contributed. Rows and total
+/// both come from `MealBreakdownCalculator`, never a stored literal, so what is
+/// listed and what is totalled cannot drift — §4.
 struct MealBreakdownCard: View {
     let breakdown: MealBreakdown
+    var onEditAmounts: (() -> Void)? = nil
 
     private let calculator = MealBreakdownCalculator()
 
     var body: some View {
         CircaCard {
             VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
-                CircaSectionLabel("Breakdown")
+                HStack {
+                    CircaSectionLabel("Breakdown")
+                    Spacer(minLength: 8)
+                    if let onEditAmounts {
+                        Button(action: onEditAmounts) {
+                            Image(systemName: "pencil")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(Color.circaAccent)
+                                .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.vertical, -12)
+                        .padding(.trailing, -12)
+                        .accessibilityLabel("Edit amounts")
+                    }
+                }
 
                 ForEach(Array(breakdown.items.enumerated()), id: \.element.id) { index, item in
                     if index > 0 {
@@ -29,6 +45,7 @@ struct MealBreakdownCard: View {
                         title: item.name,
                         amount: MealCopy.amount(item.amount),
                         calories: MealCopy.calories(calculator.contribution(of: item)),
+                        macros: calculator.contribution(of: item),
                         source: item.resolvedSource,
                         isAdjusted: item.amount?.isAdjusted ?? false,
                         sourceNote: item.sourceNote,
@@ -40,6 +57,7 @@ struct MealBreakdownCard: View {
                             title: component.name,
                             amount: MealCopy.amount(component.amount),
                             calories: MealCopy.calories(calculator.contribution(of: component)),
+                            macros: calculator.contribution(of: component),
                             source: component.resolvedSource,
                             isAdjusted: component.amount?.isAdjusted ?? false,
                             sourceNote: component.sourceNote,
@@ -73,6 +91,7 @@ private struct MealBreakdownRow: View {
     let amount: String?
     /// `nil` is a descriptive part — shown, with no number and no rule.
     let calories: String?
+    var macros: Macros? = nil
     let source: MealProvenance
     let isAdjusted: Bool
     let sourceNote: String?
@@ -130,10 +149,8 @@ private struct MealBreakdownRow: View {
                 .foregroundStyle(isComponent ? Color.circaInk2 : Color.circaInk)
                 .fixedSize(horizontal: false, vertical: true)
 
-            if let amount {
-                Text(amount)
-                    .font(.circaMono)
-                    .foregroundStyle(Color.circaInk3)
+            if amount != nil || macros != nil {
+                MealMacroLine(amount: amount, macros: macros)
             }
 
             if let provenance {
@@ -150,5 +167,58 @@ private struct MealBreakdownRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+}
+
+/// The amount, then what the part contributes. design.md rule 8: the macros drop
+/// beneath the amount, then stack, rather than truncate.
+private struct MealMacroLine: View {
+    let amount: String?
+    let macros: Macros?
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 6) {
+                if let amount {
+                    Text(amount)
+                    if macros != nil { Text(verbatim: "·") }
+                }
+                grams(stacked: false)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                if let amount { Text(amount) }
+                grams(stacked: false)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                if let amount { Text(amount) }
+                grams(stacked: true)
+            }
+        }
+        .font(.circaMono)
+        .foregroundStyle(Color.circaInk3)
+    }
+
+    @ViewBuilder
+    private func grams(stacked: Bool) -> some View {
+        if let macros {
+            let layout = stacked
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+                : AnyLayout(HStackLayout(spacing: 8))
+            layout {
+                gram(.protein, "Protein", macros.protein)
+                gram(.carbs, "Carbs", macros.carbs)
+                gram(.fat, "Fat", macros.fat)
+            }
+        }
+    }
+
+    private func gram(_ glyph: CircaMacroGlyph.Macro, _ name: String, _ value: Double) -> some View {
+        let number = MealCopy.grams(value)
+        return HStack(spacing: 3) {
+            CircaInlineGlyph(glyph)
+            Text(number).monospacedDigit()
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name), \(number) grams")
     }
 }

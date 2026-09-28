@@ -76,6 +76,38 @@ struct MealCopyTests {
         #expect(MealCopy.calories(nil) == nil)
     }
 
+    @Test("Grams round to whole numbers, once, at the point of display")
+    func gramsRound() {
+        #expect(MealCopy.grams(30.4) == "30")
+        #expect(MealCopy.grams(30.5) == "31")
+        #expect(MealCopy.grams(0.2) == "0")
+        #expect(MealCopy.grams(44.99999999999999) == "45")
+    }
+
+    // MARK: - Rewording (§9)
+
+    @Test("Rewording a meal with no changed amounts asks nothing")
+    func rewordWithoutChangesIsSilent() {
+        #expect(MealCopy.rewordWarning(adjusted: []) == nil)
+    }
+
+    @Test("One changed amount is named, in quotes, in the singular")
+    func rewordNamesOneAmount() throws {
+        let warning = try #require(MealCopy.rewordWarning(adjusted: ["White rice, boiled"]))
+
+        #expect(warning.hasPrefix("You set the amount of “White rice, boiled” yourself."))
+        #expect(warning.hasSuffix("replaces that amount."))
+    }
+
+    @Test("Several changed amounts are all named, in the plural")
+    func rewordNamesEveryAmount() throws {
+        let warning = try #require(MealCopy.rewordWarning(adjusted: ["White rice, boiled", "White bread"]))
+
+        #expect(warning.hasPrefix("You set the amounts of “White rice, boiled”"))
+        #expect(warning.contains("“White bread” yourself."))
+        #expect(warning.hasSuffix("replaces those amounts."))
+    }
+
     // MARK: - The delta (§6)
 
     @Test("The delta line is the difference of the two displayed totals")

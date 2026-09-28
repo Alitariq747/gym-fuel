@@ -42,6 +42,22 @@ enum MealCopy {
         return macros.calories.rounded().formatted(.number.precision(.fractionLength(0)))
     }
 
+    /// "31" — grams of protein, carbs or fat, rounded once at the point of display.
+    static func grams(_ value: Double) -> String {
+        value.rounded().formatted(.number.precision(.fractionLength(0)))
+    }
+
+    /// Why rewording needs a second tap, or `nil` when it loses nothing. Names are
+    /// quoted because an item name can carry its own comma — "White rice, boiled".
+    static func rewordWarning(adjusted names: [String]) -> String? {
+        guard !names.isEmpty else { return nil }
+
+        let list = names.map { "“\($0)”" }.formatted(.list(type: .and))
+        return names.count == 1
+            ? "You set the amount of \(list) yourself. A new estimate reads your words from the start and replaces that amount."
+            : "You set the amounts of \(list) yourself. A new estimate reads your words from the start and replaces those amounts."
+    }
+
     /// "607 → 514 kcal · −93" — what an edit will do, before it is committed.
     ///
     /// Both ends are the *displayed* totals, so the three numbers on the line

@@ -286,4 +286,30 @@ struct MealBreakdownCalculatorTests {
     func emptyBreakdownIsEstimated() {
         #expect(calculator.provenance(of: MealBreakdown(items: [])) == .estimated)
     }
+
+    // MARK: - Corrections (§9)
+
+    @Test("An untouched meal has nothing a reword would lose")
+    func untouchedMealHasNoAdjustedParts() {
+        #expect(calculator.adjustedParts(of: sandwich()).isEmpty)
+    }
+
+    @Test("A changed component is named")
+    func changedComponentIsNamed() {
+        #expect(calculator.adjustedParts(of: sandwich(mayonnaise: 1)) == ["Mayonnaise"])
+    }
+
+    @Test("A changed item is named before its changed components")
+    func changedItemIsNamed() {
+        var meal = sandwich(mayonnaise: 1)
+        meal.items[0].amount?.adjustedQuantity = 2
+        meal.items[1].amount?.adjustedQuantity = 2
+
+        #expect(calculator.adjustedParts(of: meal) == ["Chicken sandwich", "Mayonnaise", "Salted crisps"])
+    }
+
+    @Test("An amount set back to the original is not a change")
+    func restoredAmountIsNotAChange() {
+        #expect(calculator.adjustedParts(of: sandwich(mayonnaise: 2)).isEmpty)
+    }
 }

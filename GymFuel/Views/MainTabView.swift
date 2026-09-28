@@ -22,10 +22,6 @@ struct MainTabView: View {
     @StateObject private var logEntryDetailViewModel = LogEntryDetailViewModel()
     @StateObject var timelineViewModel = TimelineViewModel()
     @State private var showProfile = false
-    @State private var showMenu = false
-    @State private var showWeight = false
-    @State private var showTargets = false
-    @State private var pendingMenuDestination: MainMenuDestination?
     @State private var showSavedMeals = false
     @State private var showStats = false
     @State private var showDatePicker = false
@@ -114,8 +110,9 @@ struct MainTabView: View {
                     onDateTap: {
                         showDatePicker = true
                     },
-                    onMenuTap: {
-                        showMenu = true
+                    onWeekTap: { openWeek() },
+                    onSettingsTap: {
+                        showProfile = true
                     }
                 )
                 ZStack {
@@ -147,11 +144,6 @@ struct MainTabView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showProfile) {
                 ProfileView()
-                    .preferredColorScheme(preferredColorScheme)
-            }
-            .navigationDestination(isPresented: $showWeight) {
-                WeightView()
-                    .toolbar(.visible, for: .navigationBar)
                     .preferredColorScheme(preferredColorScheme)
             }
             .navigationDestination(item: $selectedEntry) { entry in
@@ -249,18 +241,6 @@ struct MainTabView: View {
             }
             .preferredColorScheme(preferredColorScheme)
         }
-        .sheet(isPresented: $showMenu, onDismiss: openPendingMenuDestination) {
-            MainMenuSheet { destination in
-                pendingMenuDestination = destination
-                showMenu = false
-            }
-            .preferredColorScheme(preferredColorScheme)
-            .presentationDetents([.medium, .large])
-        }
-        .sheet(isPresented: $showTargets) {
-            TargetsView()
-                .preferredColorScheme(preferredColorScheme)
-        }
         .sheet(isPresented: $showDatePicker, onDismiss: {
             if let date = pendingWeekDate {
                 pendingWeekDate = nil
@@ -352,17 +332,6 @@ struct MainTabView: View {
     private func openWeek(on date: Date? = nil) {
         weekAnchorDate = date ?? timelineViewModel.selectedDate
         showStats = true
-    }
-
-    private func openPendingMenuDestination() {
-        guard let destination = pendingMenuDestination else { return }
-        pendingMenuDestination = nil
-        switch destination {
-        case .week: openWeek()
-        case .weight: showWeight = true
-        case .targets: showTargets = true
-        case .settings: showProfile = true
-        }
     }
 
     private func selectDay(_ date: Date) {

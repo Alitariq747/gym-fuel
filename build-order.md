@@ -801,6 +801,9 @@ Keep the parent Step 7 box unticked until every part is done.
   with the menu from `design.md`; add Weight and Your targets rows to their already
   built screens. Keep the Week weight card route. **Done when** those destinations
   are reachable from the menu and existing routes still work.
+  *28 September:* the menu was replaced by Week and Settings icons in the Day
+  header. Weight and Your targets were repeats — each is reachable from Settings,
+  and Weight from the Week weight card.
 - [x] **7j · Paywall and remaining onboarding chrome.** Apply the light/dark Circa
   treatment, replace emoji with SF Symbols, and use launch-accurate reminder and
   plan copy. Keep all six paywall requirements in `CLAUDE.md`, including live

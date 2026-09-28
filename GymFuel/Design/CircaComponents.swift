@@ -39,6 +39,7 @@ private enum Kit {
 
     static let entryRowGap: CGFloat = 13
     static let macroWell: CGFloat = 32
+    static let macroWellLarge: CGFloat = 40
     static let inlineGlyph: CGFloat = 12
 
     static let barHeight: CGFloat = 3
@@ -483,12 +484,22 @@ struct CircaMacroGlyph: View {
         case fat = "MacroFat"
     }
 
+    enum Size {
+        case regular
+        /// Beside a meal's calorie total.
+        case large
+    }
+
     let macro: Macro
 
-    @ScaledMetric(relativeTo: .callout) private var size = Kit.macroWell
+    @ScaledMetric private var size: CGFloat
 
-    init(_ macro: Macro) {
+    init(_ macro: Macro, size: Size = .regular) {
         self.macro = macro
+        _size = ScaledMetric(
+            wrappedValue: size == .large ? Kit.macroWellLarge : Kit.macroWell,
+            relativeTo: .callout
+        )
     }
 
     var body: some View {

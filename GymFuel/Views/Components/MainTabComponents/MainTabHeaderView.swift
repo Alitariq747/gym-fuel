@@ -1,16 +1,16 @@
 import SwiftUI
 
 /// The Day screen's header, from the `Day` artboard: a stacked title and mono
-/// date that together open the date picker, and the menu.
+/// date that together open the date picker, then Week and Settings.
 ///
 /// There are no date chevrons. Days change by swiping the journal
-/// (`MainTabView.handleDaySwipe`), so the only thing this header navigates to is
-/// the picker.
+/// (`MainTabView.handleDaySwipe`), so the date block only opens the picker.
 struct MainTabHeaderView: View {
     let selectedDate: Date
     let navigationDirection: DayNavigationDirection
     let onDateTap: () -> Void
-    let onMenuTap: () -> Void
+    let onWeekTap: () -> Void
+    let onSettingsTap: () -> Void
 
     private var title: String {
         let calendar = Calendar.current
@@ -57,16 +57,23 @@ struct MainTabHeaderView: View {
 
             Spacer(minLength: 8)
 
-            Button(action: onMenuTap) {
-                Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 19, weight: .medium))
-                    .foregroundStyle(Color.circaInk)
-                    .frame(width: Circa.minHitTarget, height: Circa.minHitTarget, alignment: .trailing)
-                    .contentShape(Rectangle())
+            HStack(spacing: 0) {
+                headerButton("calendar", label: "Week", action: onWeekTap)
+                headerButton("gearshape", label: "Settings", action: onSettingsTap)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Open menu")
         }
+    }
+
+    private func headerButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 19, weight: .medium))
+                .foregroundStyle(Color.circaInk)
+                .frame(width: Circa.minHitTarget, height: Circa.minHitTarget, alignment: .trailing)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     private var dateBlock: some View {
@@ -94,13 +101,15 @@ struct MainTabHeaderView: View {
             selectedDate: .now,
             navigationDirection: .previous,
             onDateTap: {},
-            onMenuTap: {}
+            onWeekTap: {},
+            onSettingsTap: {}
         )
         MainTabHeaderView(
             selectedDate: Calendar.current.date(byAdding: .day, value: -3, to: .now) ?? .now,
             navigationDirection: .previous,
             onDateTap: {},
-            onMenuTap: {}
+            onWeekTap: {},
+            onSettingsTap: {}
         )
     }
     .padding(Circa.Space.screenMargin)

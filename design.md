@@ -15,6 +15,10 @@ has been removed. These rules supersede older artboards.
 Revised 26 September: the plate mascot and the plate app icon — see *The plate
 mascot*. The canvas predates both.
 
+Revised 28 September: the Entry screen was redrawn on the canvas — the meal's
+nutrition in one card, macros on every breakdown row, and each correction beside
+what it changes. See rule 2 and the screen inventory.
+
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
 > progress. Older product audits and artboards may describe superseded behavior.
@@ -197,6 +201,18 @@ AI. Changing preparation or ingredients can reinterpret the affected part. Allow
 several edits to be applied together and show the resulting calorie difference;
 unaffected ingredients keep their values. Rewording the whole meal remains an
 explicit option. Do not silently replace unrelated values during a small edit.
+
+Each correction sits beside what it changes, and appears once. The pencil on the
+breakdown opens the amounts editor; the sparkle beside the title rewords the
+sentence and re-estimates the meal. The ⋯ menu keeps only what has no place on the
+page: Save meal, Edit time, Edit totals, Delete entry. Share sits beside the ⋯
+as its own icon, and arrives with the share card (7k).
+
+**Rewording asks first when an amount was changed.** It replaces every amount the
+person set (`meal-contract.md` §9), so if any item or component carries a changed
+amount, a confirmation names what will be lost — at the tick, when the words are
+submitted, not at the sparkle. With no changed amounts, nothing asks. Typed totals
+do not trigger it. Decided 28 September.
 
 A manual total override must not leave a contradictory breakdown or old explanation
 looking current. Follow the contract in `build-order.md` Step 5. Saving a corrected
@@ -392,14 +408,14 @@ Everything on the canvas, and what is not there yet.
 | Screen | Artboard | Notes |
 |---|---|---|
 | Day | `Day` | Summary at top, `LogActionDock` keeps the bottom |
-| Entry detail | `Entry` | Editable breakdown, reconciled total and assumptions; no confidence-as-accuracy ring |
+| Entry detail | `Entry`, `Entry · menu`, `Entry · re-estimate warning` | **Redrawn 28 September.** One card for the meal's nutrition: calories loudest, then protein, carbs and fat in three equal columns, each with its glyph in a well. Every breakdown row with a number carries its macros on the mono meta line. Pencil on the breakdown, sparkle beside the title, the four-item ⋯ menu, and the warning from rule 2. No rating, no confidence ring. Its top half is what the 7k share card crops |
 | Composer | `Composer` | Gym vocabulary removed from heading and examples |
 | Analysing | `Analysing · text + photo` | Sweep overlay + the existing 3-stage message rotation |
 | Failed | `Failed · retry` | Both failure shapes |
 | Empty day | `Empty day` | Full target still the headline |
 | Saved meals | `Saved meals` | Reuse a corrected version with its breakdown and provenance, without an AI call |
 | Day picker | `Day picker` | **Day / Week only — no Month** |
-| Menu | `Menu` | Absorbed the flame and the gear. *Last week* becomes **Weight** (Step 7) |
+| Menu | `Menu` | **Dropped 28 September.** The Day header has two icons instead — Week (`calendar`) and Settings (`gearshape`). Weight opens from Week's weight card and Settings; Your targets from Settings and the Weight screen |
 | Week | `Week · after a check-in` | **Out of date** — drawn for the dropped expenditure engine. The Week screen keeps the week's food and the weight card; see *Canvas drift* |
 | Week, early | `Week · day 2` | The state most trialists actually see |
 | Onboarding ×9 | `Onboarding · …` | Intro, name, formula, weight, movement, goal, how to write, reminders, your numbers. *Your numbers* becomes the plan screen (4f) |
@@ -434,8 +450,7 @@ and agreed launch contract. Follow the rules here and the build order.
 
 | Where | What it assumes | Reality |
 |---|---|---|
-| `Entry` — items list | Per-item calories **and** macros | AI output already has item nutrition, but normalization drops it and the client model lacks it. Steps 5–6 retain it and add structured quantities/components for editing. |
-| `Entry` — old rating | Old meal rating and confidence ring | Remove the rating. Show the meal breakdown and assumptions; keep uncertainty separate. |
+| `Entry` — items list | Per-item calories **and** macros | Covered by Steps 5–6: every item and component stores its nutrition, and `MealBreakdownCalculator` returns each one's macros. The build does not show them on the rows yet. |
 | `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | Step 12's suppression ships **after approval**. Soften both lines for launch; onboarding opt-in alone does not deliver this behavior. |
 | `Week`, `Settings · your targets` | A check-in has set a target and a rate | **No longer planned.** Targets are saved and change only when the user acts (Step 4); `Settings · your targets` becomes the targets screen (4d). See *Canvas drift* below. `Week · day 2` is still the honest early state. |
 
@@ -450,11 +465,9 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 
 | Artboard | Still says | Should say, in substance |
 |---|---|---|
-| `Entry` | Reword the whole meal to correct an assumption; saved/corrected means known | Editable quantities and affected-item reinterpretation, a visible delta, preserved uncertainty and a reconciled total (Steps 5–6). |
-| `Entry`, rating area | Generic goal verdict and confidence-adjusted rating | Remove this area; give the breakdown and assumptions room instead. |
 | `Saved meals` | Reused totals without their reasoning | The corrected meal version, retaining items, assumptions and provenance (Step 6). |
 | `Day`, `Dark` | "Trend weight down 0.4 kg. Your targets moved." | The trend only. Targets never move by themselves, so nothing announces that they did. |
-| `Menu` | "Last week · check-in ready" | The row becomes **Weight** (4e), with nothing to flag. *Your targets* opens the targets screen (4d). |
+| `Menu` | The whole artboard | **No menu.** Replaced 28 September by Week and Settings icons in the Day header; its Weight and Your targets rows only repeated routes that already existed. |
 | `Week · after a check-in` | "Check-in · done Sunday" · "your new daily target" · "you are burning about 2,810 a day" | The week's food and the weight card, which opens the Weight screen (4e). No check-in, no new target, **never a burn number**. |
 | `Week · day 2` | "First check-in · Sunday" | No check-in date. With few weigh-ins, the weight card shows its early state. |
 | `Onboarding · formula` | "from your first check-in it measures the real number anyway" | Nothing measures a burn. The number is a starting estimate: the Weight screen shows whether it is right, and the user can recalculate or edit. |
@@ -502,10 +515,11 @@ weekly page that was going to settle it is gone.
   whole content is one JSON blob, so fetching the page is not enough. Read the
   URL with the `Artifact` tool's `read` action — it saves the full HTML locally
   — then take the `<script type="application/json" id="appifact-doc">` block and
-  read `content.files`: 33 `.dc.html` artboards plus `canvas.json`, which maps
+  read `content.files`: 35 `.dc.html` artboards plus `canvas.json`, which maps
   each file to its artboard title and page. **`page-2` is `Round 1 · not
-  chosen`.** So the live Entry artboard is `DetailB.dc.html`; `DetailA` and
-  `DetailC` are the two directions that lost.
+  chosen`.** So the live Entry artboards are `DetailB.dc.html` (`Entry`),
+  `DetailMenu.dc.html` and `DetailReword.dc.html`; `DetailA` and `DetailC` are
+  the two directions that lost.
 - `build-order.md` — where the design work sits in the sequence
 - `store-copy.md` — the copy the onboarding intro and paywall are built from
 - `product-as-built.md` — what the code does today, which is not this

@@ -23,6 +23,7 @@ struct LogEntryDetailSheet: View {
     @State private var showSaveMealSheet = false
     @State private var showSavedMealToast = false
     @State private var showDeleteConfirmation = false
+    @State private var showRewordWarning = false
     @State private var isEditingRawInput = false
     @State private var editedRawInput = ""
     @State private var editedLoggedAt = Date()
@@ -76,6 +77,14 @@ struct LogEntryDetailSheet: View {
     private var isSavedMealEntry: Bool {
         entry.source == .savedMeal
     }
+    private var canReword: Bool {
+        canModify && !isSavedMealEntry
+    }
+    /// design.md rule 2: changed amounts ask first; typed totals do not.
+    private var rewordWarning: String? {
+        guard let editableBreakdown else { return nil }
+        return MealCopy.rewordWarning(adjusted: MealBreakdownCalculator().adjustedParts(of: editableBreakdown))
+    }
     private var saveableMealMacros: Macros? {
         guard entry.status == .succeeded,
               let macros = entry.feedback?.macros
@@ -120,7 +129,6 @@ struct LogEntryDetailSheet: View {
 
                 VStack(alignment: .leading, spacing: 18) {
                     if let macros = entry.feedback?.macros {
-                        CircaHairline()
                         DetailMacroSummaryCard(
                             macros: macros,
                             certainty: macrosProvenance == .estimated ? .estimated : .known
@@ -137,7 +145,10 @@ struct LogEntryDetailSheet: View {
                     // `meal-contract.md` §3: a meal with no breakdown shows its
                     // totals and never gains invented component detail.
                     if let breakdown = entry.feedback?.breakdown, breakdown.isSupported {
-                        MealBreakdownCard(breakdown: breakdown)
+                        MealBreakdownCard(breakdown: breakdown, onEditAmounts: canModify ? {
+                            onClearActionError?()
+                            showBreakdownEditor = true
+                        } : nil)
                     }
 
                     if !analysisExplanation.isEmpty {
@@ -169,43 +180,26 @@ struct LogEntryDetailSheet: View {
             if canModify {
                 ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    if editableBreakdown != nil {
-                        Button("Edit amounts", systemImage: "ruler") {
-                            onClearActionError?()
-                            showBreakdownEditor = true
-                        }
-                        .disabled(isPerformingAction)
-                        Divider()
-                    }
-                    Button("Edit Manually", systemImage: "slider.horizontal.3") {
-                        onClearActionError?()
-                        showManualEditSheet = true
-                    }
-                    .disabled(!canEditManually)
-                    Divider()
-                    Button("Edit Time", systemImage: "clock") {
-                        onClearActionError?()
-                        showTimeEditSheet = true
-                    }
-                    .disabled(isPerformingAction)
                     if !isSavedMealEntry {
-                        Divider()
-                        Button("Edit with AI", systemImage: "sparkles") {
-                            onClearAIError?()
-                            editedRawInput = entry.rawInput
-                            isEditingRawInput = true
-                        }
-                        .disabled(isPerformingAction)
-                        Divider()
-                        Button("Save Meal", systemImage: "bookmark") {
+                        Button("Save meal", systemImage: "bookmark") {
                             onClearActionError?()
                             savedMealsViewModel.clearErrorMessage()
                             showSaveMealSheet = true
                         }
                         .disabled(!canSaveAsMeal || isPerformingAction)
                     }
+                    Button("Edit time", systemImage: "clock") {
+                        onClearActionError?()
+                        showTimeEditSheet = true
+                    }
+                    .disabled(isPerformingAction)
+                    Button("Edit totals", systemImage: "slider.horizontal.3") {
+                        onClearActionError?()
+                        showManualEditSheet = true
+                    }
+                    .disabled(!canEditManually)
                     Divider()
-                    Button("Delete Entry", systemImage: "trash", role: .destructive) {
+                    Button("Delete entry", systemImage: "trash", role: .destructive) {
                         onClearActionError?()
                         showDeleteConfirmation = true
                     }
@@ -298,7 +292,7 @@ struct LogEntryDetailSheet: View {
             isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete Entry", role: .destructive) {
+            Button("Delete entry", role: .destructive) {
                 onDeleteEntry?()
             }
 
@@ -366,9 +360,11 @@ struct LogEntryDetailSheet: View {
                                 .accessibilityLabel("Cancel rewording")
 
                                 Button {
-                                    let trimmedText = editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    guard !trimmedText.isEmpty else { return }
-                                    onUseAIAgain?(trimmedText)
+                                    if rewordWarning != nil {
+                                        showRewordWarning = true
+                                    } else {
+                                        submitReword()
+                                    }
                                 } label: {
                                     Image(systemName: "checkmark")
                                         .font(.subheadline.weight(.semibold))
@@ -382,6 +378,16 @@ struct LogEntryDetailSheet: View {
                                 .buttonStyle(.plain)
                                 .accessibilityLabel("Re-estimate meal")
                                 .disabled(editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                .confirmationDialog(
+                                    "Re-estimate the whole meal?",
+                                    isPresented: $showRewordWarning,
+                                    titleVisibility: .visible
+                                ) {
+                                    Button("Re-estimate", role: .destructive, action: submitReword)
+                                    Button("Cancel", role: .cancel) { }
+                                } message: {
+                                    Text(rewordWarning ?? "")
+                                }
                             }
                         }
                     }
@@ -391,11 +397,32 @@ struct LogEntryDetailSheet: View {
                     }
                 }
             } else {
-                Text(verbatim: displayTitle)
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(Color.circaInk)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.isHeader)
+                HStack(alignment: .top, spacing: 6) {
+                    Text(verbatim: displayTitle)
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(Color.circaInk)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityAddTraits(.isHeader)
+
+                    if canReword {
+                        Button {
+                            onClearAIError?()
+                            editedRawInput = entry.rawInput
+                            isEditingRawInput = true
+                        } label: {
+                            Image(systemName: "sparkles")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(Color.circaAccent)
+                                .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, -8)
+                        .padding(.trailing, -12)
+                        .accessibilityLabel("Reword and re-estimate")
+                        .disabled(isPerformingAction)
+                    }
+                }
 
                 if let description = MealCopy.photoDescription(of: entry) {
                     Text(verbatim: description)
@@ -403,31 +430,18 @@ struct LogEntryDetailSheet: View {
                         .foregroundStyle(Color.circaInk2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-
-                if canModify, editableBreakdown != nil || !isSavedMealEntry {
-                    Button {
-                        if editableBreakdown != nil {
-                            onClearActionError?()
-                            showBreakdownEditor = true
-                        } else {
-                            onClearAIError?()
-                            editedRawInput = entry.rawInput
-                            isEditingRawInput = true
-                        }
-                    } label: {
-                        Label(editableBreakdown != nil ? "Edit amounts" : "Reword and re-estimate", systemImage: "pencil")
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .buttonStyle(.circa(.link))
-                    .padding(.leading, -10)
-                    .disabled(isPerformingAction)
-                }
             }
 
             if let actionErrorMessage, !actionErrorMessage.isEmpty {
                 errorRow(actionErrorMessage)
             }
         }
+    }
+
+    private func submitReword() {
+        let trimmedText = editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else { return }
+        onUseAIAgain?(trimmedText)
     }
 
     private func errorRow(_ message: String) -> some View {

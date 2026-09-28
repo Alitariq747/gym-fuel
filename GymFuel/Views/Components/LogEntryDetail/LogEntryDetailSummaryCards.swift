@@ -6,36 +6,56 @@ struct DetailMacroSummaryCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var calorieSize = Circa.Display.entryTotal
 
+    private struct Part: Identifiable {
+        let glyph: CircaMacroGlyph.Macro
+        let name: String
+        let grams: Double
+        var id: String { name }
+    }
+
+    private var parts: [Part] {
+        [
+            Part(glyph: .protein, name: "Protein", grams: macros.protein),
+            Part(glyph: .carbs, name: "Carbs", grams: macros.carbs),
+            Part(glyph: .fat, name: "Fat", grams: macros.fat)
+        ]
+    }
+
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                stackedSummary
-            } else {
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .bottom, spacing: 18) {
-                        calorieTotal.fixedSize()
-                        Spacer(minLength: 0)
-                        HStack(spacing: 18) {
-                            macro("PROT", name: "Protein", value: macros.protein)
-                            macro("CARB", name: "Carbohydrate", value: macros.carbs)
-                            macro("FAT", name: "Fat", value: macros.fat)
+        let isStacked = dynamicTypeSize.isAccessibilitySize
+        let totalLayout = isStacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
+            : AnyLayout(HStackLayout(spacing: 12))
+
+        CircaCard {
+            VStack(alignment: .leading, spacing: 16) {
+                totalLayout {
+                    CircaMacroGlyph(.calories, size: .large)
+                    calorieTotal
+                }
+
+                CircaHairline(weight: .inCard)
+
+                if isStacked {
+                    stackedParts
+                } else {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: 12) {
+                            ForEach(parts) { part in
+                                partView(part)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
-                        .fixedSize()
+                        stackedParts
                     }
-                    stackedSummary
                 }
             }
         }
-        .foregroundStyle(Color.circaInk)
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var stackedSummary: some View {
+    private var stackedParts: some View {
         VStack(alignment: .leading, spacing: 14) {
-            calorieTotal
-            macro("Protein", name: "Protein", value: macros.protein, stacked: true)
-            macro("Carbs", name: "Carbohydrate", value: macros.carbs, stacked: true)
-            macro("Fat", name: "Fat", value: macros.fat, stacked: true)
+            ForEach(parts) { partView($0, stacked: true) }
         }
     }
 
@@ -60,18 +80,24 @@ struct DetailMacroSummaryCard: View {
                       font: .system(size: calorieSize, weight: .semibold, design: .monospaced))
     }
 
-    private func macro(_ label: String, name: String, value: Double, stacked: Bool = false) -> some View {
-        let number = value.rounded().formatted(.number.precision(.fractionLength(0)))
+    private func partView(_ part: Part, stacked: Bool = false) -> some View {
+        let number = MealCopy.grams(part.grams)
         let layout = stacked
-            ? AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 10))
-            : AnyLayout(VStackLayout(alignment: .trailing, spacing: 2))
+            ? AnyLayout(HStackLayout(spacing: 12))
+            : AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
         return layout {
-            CircaEstimate(number, certainty: certainty)
-            Text(label)
-                .font(.circaMono)
-                .foregroundStyle(Color.circaInk3)
+            CircaMacroGlyph(part.glyph)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    CircaEstimate(number, certainty: certainty, font: .circaMonoLarge)
+                    Text("g").font(.circaMono).foregroundStyle(Color.circaInk3)
+                }
+                Text(part.name)
+                    .font(.circaCaption)
+                    .foregroundStyle(Color.circaInk2)
+            }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(name), \(number) grams\(certainty == .estimated ? ", estimated" : "")")
+        .accessibilityLabel("\(part.name), \(number) grams\(certainty == .estimated ? ", estimated" : "")")
     }
 }
