@@ -64,11 +64,14 @@ struct DailyMacroDetailSheet: View {
 
             Spacer(minLength: 8)
 
-            Text(trailingLine)
-                .font(.circaMono)
-                .monospacedDigit()
-                .foregroundStyle(analysingCount > 0 ? Color.circaAccent : Color.circaInk3)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 4) {
+                CircaInlineGlyph(.calories)
+                Text(trailingLine)
+                    .font(.circaMono)
+                    .monospacedDigit()
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .foregroundStyle(analysingCount > 0 ? Color.circaAccent : Color.circaInk3)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(

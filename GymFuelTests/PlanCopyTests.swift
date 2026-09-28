@@ -213,6 +213,7 @@ struct PlanCopyTests {
         let reasons = try planReasons(for: edited)
 
         #expect(reasons.protein == PlanCopy.setByYou)
+        #expect(reasons.carbs == PlanCopy.carbs)
         #expect(reasons.calories?.amount.hasSuffix("470") == true)
     }
 

@@ -147,13 +147,13 @@ struct OnboardingSummaryStepView: View {
             CircaCard {
                 VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
                     CircaSectionLabel("Your daily targets")
-                    row("Calories", targets.calories, suffix: "kcal", font: .circaMonoLarge)
+                    CircaTargetRow(title: "Calories", value: targets.calories, suffix: "kcal", font: .circaMonoLarge, glyph: .calories)
                     CircaHairline(weight: .inCard)
-                    row("Protein", targets.protein, suffix: "g")
+                    CircaTargetRow(title: "Protein", value: targets.protein, suffix: "g", glyph: .protein)
                     CircaHairline(weight: .inCard)
-                    row("Carbs", targets.carbs, suffix: "g")
+                    CircaTargetRow(title: "Carbs", value: targets.carbs, suffix: "g", glyph: .carbs)
                     CircaHairline(weight: .inCard)
-                    row("Fat", targets.fat, suffix: "g")
+                    CircaTargetRow(title: "Fat", value: targets.fat, suffix: "g", glyph: .fat)
                 }
             }
 
@@ -172,7 +172,7 @@ struct OnboardingSummaryStepView: View {
                         step(calories.reason) { Text(calories.amount) }
                     }
                     CircaHairline(weight: .inCard)
-                    row("Your daily target", targets.calories, suffix: "kcal")
+                    CircaTargetRow(title: "Your daily target", value: targets.calories, suffix: "kcal")
                     CircaHairline(weight: .inCard)
                     macroReasons(reasons)
                     CircaHairline(weight: .inCard)
@@ -208,18 +208,6 @@ struct OnboardingSummaryStepView: View {
 
     // MARK: - Shapes
 
-    /// A target and its number.
-    private func row(_ title: String, _ value: Double, suffix: String, font: Font = .circaMonoValue) -> some View {
-        adaptive {
-            Text(title)
-                .font(.circaRow)
-                .foregroundStyle(Color.circaInk)
-            if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
-            amount(value, suffix: suffix, font: font)
-        }
-        .accessibilityElement(children: .combine)
-    }
-
     /// A line of the calorie sum: quieter than the target it adds up to.
     private func step<Value: View>(_ title: String, @ViewBuilder value: () -> Value) -> some View {
         adaptive {
@@ -245,19 +233,6 @@ struct OnboardingSummaryStepView: View {
                     .foregroundStyle(Color.circaInk2)
                     .fixedSize(horizontal: false, vertical: true)
             }
-        }
-    }
-
-    /// A whole number with its unit beside it, quieter, as on the artboard.
-    private func amount(_ value: Double, suffix: String, font: Font) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            Text(value.formatted(.number.precision(.fractionLength(0))))
-                .font(font)
-                .monospacedDigit()
-                .foregroundStyle(Color.circaInk)
-            Text(suffix)
-                .font(.circaMono)
-                .foregroundStyle(Color.circaInk3)
         }
     }
 

@@ -159,6 +159,10 @@ enum Circa {
     /// Apple's floor, and `design.md`'s — no exceptions.
     static let minHitTarget: CGFloat = 44
 
+    /// The square at the head of a journal entry — photo or glyph. Shared so
+    /// the photo the timeline loads fills the kit's well exactly.
+    static let entryWell: CGFloat = 50
+
     /// Mono section labels are uppercased and tracked. `Font` cannot carry
     /// tracking, so it is applied at the call site with `.tracking(_:)`.
     static let sectionLabelTracking: CGFloat = 1.4

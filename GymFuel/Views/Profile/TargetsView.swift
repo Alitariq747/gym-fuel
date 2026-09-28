@@ -143,21 +143,13 @@ struct TargetsView: View {
         CircaCard {
             VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
                 CircaSectionLabel("Daily targets")
-
-                HStack(alignment: .firstTextBaseline, spacing: 7) {
-                    Text(whole(targets.calories))
-                        .font(.circaMonoLarge)
-                        .monospacedDigit()
-                    Text("kcal")
-                        .font(.circaRow)
-                        .foregroundStyle(Color.circaInk2)
-                }
-
-                Text("\(whole(targets.protein)) g protein · \(whole(targets.carbs)) g carbs · \(whole(targets.fat)) g fat")
-                    .font(.circaMono)
-                    .monospacedDigit()
-                    .foregroundStyle(Color.circaInk2)
-                    .fixedSize(horizontal: false, vertical: true)
+                CircaTargetRow(title: "Calories", value: targets.calories, suffix: "kcal", font: .circaMonoLarge, glyph: .calories)
+                CircaHairline(weight: .inCard)
+                CircaTargetRow(title: "Protein", value: targets.protein, suffix: "g", glyph: .protein)
+                CircaHairline(weight: .inCard)
+                CircaTargetRow(title: "Carbs", value: targets.carbs, suffix: "g", glyph: .carbs)
+                CircaHairline(weight: .inCard)
+                CircaTargetRow(title: "Fat", value: targets.fat, suffix: "g", glyph: .fat)
 
                 if let setAt = TargetsCopy.setAt(
                     weightKg: profile.targetsSetAtWeightKg,
@@ -517,10 +509,5 @@ struct TargetsView: View {
 
     private func kilograms(_ value: Int) -> Double {
         unit == .kilograms ? Double(value) : BodyWeight.kilograms(fromPounds: Double(value))
-    }
-
-    /// Grams and calories as whole numbers, with the thousands grouped.
-    private func whole(_ value: Double) -> String {
-        value.formatted(.number.precision(.fractionLength(0)))
     }
 }

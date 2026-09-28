@@ -585,9 +585,12 @@ headed, roughly when, and why each number is what it is.
 1. **Rebuild the summary step** (`Onboarding · your numbers` on the canvas) as the
    plan screen, in the same place. `saveOnboarding` still fires the paywall.
 2. **Chart** to the goal date, reusing 4e's chart. *Maintain* shows no date.
-3. **One reason per target.** For calories: "About 2,420 kcal a day to stay at your
-   weight. Your target is 470 less, to lose about 0.4 kg a week."
-4. **Edit** with 4d's editor before continuing.
+3. **One reason per target**, in a card of their own under the targets (revised
+   26 September). Calories are a sum rather than a sentence: "To stay at your
+   weight · about 2,420", "To lose about 0.4 kg a week · − 470", then the target.
+   Protein, carbs and fat follow, one line each.
+4. **Edit** with 4d's editor before continuing — the link sits between the two
+   cards.
 
 **Files** `OnboardingSummaryStepView.swift` · `OnboardingFlowView.swift` · 4d's editor ·
 4e's chart

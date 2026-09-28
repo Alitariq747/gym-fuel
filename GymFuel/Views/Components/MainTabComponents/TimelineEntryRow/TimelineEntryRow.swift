@@ -123,11 +123,11 @@ struct TimelineEntryRow: View {
                 MealImageThumbnailView(
                     entryId: entry.id,
                     storagePath: rowState.imageStoragePath,
-                    size: Circa.minHitTarget
+                    size: Circa.entryWell
                 )
             }
         }
-        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+        .frame(width: Circa.entryWell, height: Circa.entryWell)
         .clipped()
         .overlay {
             if rowState.isAnalyzingImageEntry {
@@ -143,7 +143,7 @@ struct TimelineEntryRow: View {
 
         return shape
             .fill(Color.circaMediaWell)
-            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
+            .frame(width: Circa.entryWell, height: Circa.entryWell)
             .overlay { photoContent.clipShape(shape) }
     }
 

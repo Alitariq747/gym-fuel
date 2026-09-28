@@ -184,21 +184,25 @@ struct TargetsEditorSheet: View {
     /// accessibility sizes — `design.md` rule 8, solved by the layout instead of a
     /// branch.
     private func field(_ field: TargetField, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            CircaSectionLabel(TargetsCopy.fieldLabel(field))
+        HStack(spacing: 12) {
+            CircaMacroGlyph(field.glyph)
 
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                TextField("0", text: text)
-                    .font(.circaMonoLarge)
-                    .monospacedDigit()
-                    .foregroundStyle(Color.circaInk)
-                    .keyboardType(.numberPad)
-                    .focused($focusedField, equals: field)
-                    .frame(width: fieldWidth)
-                Text(TargetsCopy.fieldUnit(field))
-                    .font(.circaMono)
-                    .foregroundStyle(Color.circaInk3)
-                Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 4) {
+                CircaSectionLabel(TargetsCopy.fieldLabel(field))
+
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    TextField("0", text: text)
+                        .font(.circaMonoLarge)
+                        .monospacedDigit()
+                        .foregroundStyle(Color.circaInk)
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: field)
+                        .frame(width: fieldWidth)
+                    Text(TargetsCopy.fieldUnit(field))
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk3)
+                    Spacer(minLength: 0)
+                }
             }
         }
         .frame(minHeight: Circa.minHitTarget, alignment: .leading)
@@ -315,6 +319,17 @@ struct TargetsEditorSheet: View {
     /// Plain digits, for a field that is typed into.
     private static func digits(_ value: Double) -> String {
         String(Int(value.rounded()))
+    }
+}
+
+private extension TargetField {
+    var glyph: CircaMacroGlyph.Macro {
+        switch self {
+        case .calories: .calories
+        case .protein: .protein
+        case .carbs: .carbs
+        case .fat: .fat
+        }
     }
 }
 

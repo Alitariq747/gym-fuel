@@ -12,7 +12,6 @@ struct AddSavedMealSheet: View {
     @EnvironmentObject private var authManager: FirebaseAuthManager
     
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var nameText: String = ""
     @State private var descriptionText: String = ""
     @State private var caloriesText: String = ""
@@ -34,23 +33,11 @@ struct AddSavedMealSheet: View {
                     }
 
                     VStack(spacing: 12) {
-                        premiumField("fork.knife", title: "Meal name", text: $nameText, color: .circaInk)
-                        premiumField("text.alignleft", title: "Description", text: $descriptionText, color: .circaInk2, lineLimit: 3...6)
+                        SavedMealTextField(systemImage: "fork.knife", title: "Meal name", text: $nameText, color: .circaInk)
+                        SavedMealTextField(systemImage: "text.alignleft", title: "Description", text: $descriptionText, color: .circaInk2, lineLimit: 3...6)
                     }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Macros", systemImage: "chart.bar.fill")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(Color.circaInk2)
-                        macroField("Calories", symbol: "flame", text: $caloriesText)
-                        macroField("Protein", symbol: "fish", text: $proteinText)
-                        macroField("Carbs", symbol: "leaf", text: $carbsText)
-                        macroField("Fat", symbol: "drop", text: $fatText)
-                    }
-                    .padding(16)
-                    .background(Color.circaCard,
-                        in: RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    )
+                    SavedMealMacrosCard(calories: $caloriesText, protein: $proteinText, carbs: $carbsText, fat: $fatText)
                     if let errorMessage {
                         Text(errorMessage)
                             .foregroundStyle(Color.circaDanger)
@@ -124,49 +111,6 @@ struct AddSavedMealSheet: View {
         let hasName = !nameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let macros = editedMacros
         return hasName && (macros.calories > 0 || macros.protein > 0 || macros.carbs > 0 || macros.fat > 0)
-    }
-
-    private func premiumField(_ systemImage: String, title: String, text: Binding<String>, color: Color, lineLimit: ClosedRange<Int>? = nil) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(color)
-                .frame(width: 30, height: 30)
-                .background(Color.circaWell, in: Circle())
-            Group {
-                if let lineLimit {
-                    TextField(title, text: text, axis: .vertical)
-                        .lineLimit(lineLimit)
-                } else {
-                    TextField(title, text: text, axis: .vertical)
-                }
-            }
-            .font(.subheadline.weight(.medium))
-        }
-        .padding(14)
-        .background(Color.circaCard, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-    }
-
-    private func macroField(_ title: String, symbol: String, text: Binding<String>) -> some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
-            : AnyLayout(HStackLayout(spacing: 12))
-        return layout {
-            Image(systemName: symbol)
-                .foregroundStyle(Color.circaInk2)
-                .frame(width: 30, height: 30)
-                .background(Color.circaWell, in: Circle())
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
-            TextField("0", text: text)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .font(.subheadline.weight(.bold))
-                .frame(minWidth: 74, alignment: .trailing)
-        }
-        .padding(12)
-        .background(Color.circaSunken, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     private func createSavedMeal() {

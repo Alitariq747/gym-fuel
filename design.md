@@ -263,6 +263,20 @@ bars fill from the right, the thumbnail moves right. The artboards prove it.
 Inline SVG in the mockups, SF Symbols in the build. The current paywall carries
 eight emoji and the summary step four; all twelve go.
 
+**The one exception: the four target glyphs** (added 26 September). A steaming
+bowl for calories, an egg for protein, wheat for carbs, a drop for fat — drawn,
+because SF Symbols has no egg or grain. Calories are heat, so steam and not a
+flame: a flame says *burn*. The plate is not used either — its three dots are the
+estimate mark, and rule 1 keeps that off a target.
+
+- **One colour, never four.** Rule 5. They are template images, so they take ink
+  from the code in both themes and need no dark twins — unlike the mascot, whose
+  drawings carry their own colours.
+- **Drawn to the mascot's SVG rules** (basic shapes, no transforms), on a 24 × 24
+  canvas, outlines at 1.5–1.7.
+- **Files:** `GymFuel/Assets.xcassets/Macros/`. **Shown by** `CircaMacroGlyph` in a
+  round well, and `CircaTargetRow` puts it beside a target.
+
 ### 11. Keep meal explanations factual
 
 Explain the portions, ingredients and preparation used in the estimate. Give the
@@ -447,7 +461,7 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 | `Onboarding · daily movement` | "Within two or three weeks Circa has measured what you actually burn, and stops using it." | **Remove the line.** It claims a measurement that was dropped — an App Store 1.4.1 problem. Four options, each a normal week *including* exercise. |
 | `Onboarding · goal` | "From your first check-in onward, Circa moves them…" · "at a rate you set" | No rate to set, and nothing moves on its own. Gain, Lose fat or Maintain, then a goal weight for Gain and Lose fat (4c). |
 | `Onboarding · reminders (3a)` | "Your weekly check-in … once your targets have actually moved" | A reminder to weigh in, claiming nothing moved. The built screen already leaves it out until Step 12. |
-| `Onboarding · your numbers` | "Circa moves them to match what your body is actually doing" | Becomes the plan screen (4f): a line to the goal date, the targets with one reason each ("about 2,420 kcal a day to stay at your weight"), with **Edit numbers** under them and **Save my progress** alone at the bottom. No starting-estimate caveat — removed 26 September; the dotted rule carries it. Targets stay as set until the user changes them. |
+| `Onboarding · your numbers` | "Circa moves them to match what your body is actually doing" | Becomes the plan screen (4f): a line to the goal date; a card of the four targets, numbers only; **Edit numbers**; then a card that shows the working — the calories as a sum (about 2,420 to stay at your weight, − 470 to lose about 0.4 kg a week, the target) and one line each for protein, carbs and fat. **Save my progress** alone at the bottom. No starting-estimate caveat — removed 26 September; the dotted rule carries it. Targets stay as set until the user changes them. |
 | `Paywall`, `Paywall · dark` | "Targets that move with your weight, not a formula that guessed once" · "A weekly check-in that shows its working" | As in `store-copy.md`: a steady plan to a goal weight, targets that show their working and change only when you change them, and weigh-ins against the plan. |
 | `Settings · your targets` | "set at Sunday's check-in" · Rate 0.5% a week · "Changing your goal closes the current phase…" | The targets screen (4d): the numbers, "Set at 85 kg on 3 Sep", the stay-at-your-weight estimate, **Edit** and **Recalculate**, and goal weight in place of Rate. Changing the goal restarts the plan line; there are no phases. |
 | `Settings · delete account` | "Weigh-ins and check-ins" | Weigh-ins only — check-ins are never stored. |

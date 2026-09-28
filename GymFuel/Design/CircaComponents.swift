@@ -38,7 +38,8 @@ private enum Kit {
     static let pendingRuleWidth: CGFloat = 38
 
     static let entryRowGap: CGFloat = 13
-    static let entryWell: CGFloat = 44
+    static let macroWell: CGFloat = 32
+    static let inlineGlyph: CGFloat = 12
 
     static let barHeight: CGFloat = 3
     static let barHeightAX: CGFloat = 4
@@ -428,23 +429,23 @@ struct CircaMacroBars: View {
 
     private var isStacked: Bool { typeSize.isAccessibilitySize }
 
-    private var bars: [(letter: String, value: CircaMacroValue)] {
-        [("P", protein), ("C", carbs), ("F", fat)]
+    private var bars: [(glyph: CircaMacroGlyph.Macro, name: String, value: CircaMacroValue)] {
+        [(.protein, "Protein", protein), (.carbs, "Carbs", carbs), (.fat, "Fat", fat)]
     }
 
     var body: some View {
         if isStacked {
             VStack(alignment: .leading, spacing: 10) {
-                ForEach(bars, id: \.letter) { bar($0.letter, $0.value) }
+                ForEach(bars, id: \.name) { bar($0.glyph, $0.name, $0.value) }
             }
         } else {
             HStack(alignment: .top, spacing: 14) {
-                ForEach(bars, id: \.letter) { bar($0.letter, $0.value) }
+                ForEach(bars, id: \.name) { bar($0.glyph, $0.name, $0.value) }
             }
         }
     }
 
-    private func bar(_ letter: String, _ value: CircaMacroValue) -> some View {
+    private func bar(_ glyph: CircaMacroGlyph.Macro, _ name: String, _ value: CircaMacroValue) -> some View {
         VStack(alignment: .leading, spacing: isStacked ? 6 : 5) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -457,15 +458,111 @@ struct CircaMacroBars: View {
             }
             .frame(height: isStacked ? Kit.barHeightAX : Kit.barHeight)
 
-            Text("\(value.consumed) / \(value.target) \(letter)")
-                .font(.circaMono)
-                .monospacedDigit()
-                .foregroundStyle(Color.circaInk3)
-                .fixedSize(horizontal: false, vertical: true)
+            // Bare, without the well: three columns leave no room for one.
+            HStack(spacing: 4) {
+                CircaInlineGlyph(glyph)
+                Text("\(value.consumed) / \(value.target)")
+                    .font(.circaMono)
+                    .monospacedDigit()
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .foregroundStyle(Color.circaInk3)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(letter == "P" ? "Protein" : letter == "C" ? "Carbs" : "Fat"), \(value.consumed) of \(value.target) grams")
+        .accessibilityLabel("\(name), \(value.consumed) of \(value.target) grams")
+    }
+}
+
+/// A target's mark in a round well — `design.md` rule 10's exception.
+struct CircaMacroGlyph: View {
+    enum Macro: String {
+        case calories = "MacroCalories"
+        case protein = "MacroProtein"
+        case carbs = "MacroCarbs"
+        case fat = "MacroFat"
+    }
+
+    let macro: Macro
+
+    @ScaledMetric(relativeTo: .callout) private var size = Kit.macroWell
+
+    init(_ macro: Macro) {
+        self.macro = macro
+    }
+
+    var body: some View {
+        Circle()
+            .fill(Color.circaWell)
+            .overlay { Circle().strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline) }
+            .overlay {
+                Image(macro.rawValue)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(Color.circaInk2)
+                    .padding(size * 0.2)
+            }
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}
+
+/// A target's mark with no well, sized to sit beside a `circaMono` figure. It
+/// takes the figure's ink.
+struct CircaInlineGlyph: View {
+    let macro: CircaMacroGlyph.Macro
+
+    @ScaledMetric(relativeTo: .caption2) private var size = Kit.inlineGlyph
+
+    init(_ macro: CircaMacroGlyph.Macro) {
+        self.macro = macro
+    }
+
+    var body: some View {
+        Image(macro.rawValue)
+            .resizable()
+            .scaledToFit()
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}
+
+/// A target, its whole number and unit, and its glyph when it has one. Goes
+/// vertical at AX sizes (`design.md` rule 8); the glyph stays beside both.
+struct CircaTargetRow: View {
+    let title: String
+    let value: Double
+    let suffix: String
+    var font: Font = .circaMonoValue
+    var glyph: CircaMacroGlyph.Macro?
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        let isStacked = typeSize.isAccessibilitySize
+        let layout = isStacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 6))
+
+        HStack(spacing: 12) {
+            if let glyph { CircaMacroGlyph(glyph) }
+            layout {
+                Text(title)
+                    .font(.circaRow)
+                    .foregroundStyle(Color.circaInk)
+                if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(value.formatted(.number.precision(.fractionLength(0))))
+                        .font(font)
+                        .monospacedDigit()
+                        .foregroundStyle(Color.circaInk)
+                    Text(suffix)
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk3)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -673,7 +770,7 @@ struct CircaEntryRow: View {
         case .glyph(let systemName):
             shape
                 .fill(Color.circaWell)
-                .frame(width: Kit.entryWell, height: Kit.entryWell)
+                .frame(width: Circa.entryWell, height: Circa.entryWell)
                 .overlay {
                     Image(systemName: systemName)
                         .font(.system(size: 17, weight: .regular))
@@ -686,7 +783,7 @@ struct CircaEntryRow: View {
         case .photo(let image):
             shape
                 .fill(Color.circaMediaWell)
-                .frame(width: Kit.entryWell, height: Kit.entryWell)
+                .frame(width: Circa.entryWell, height: Circa.entryWell)
                 .overlay {
                     if let image {
                         image
@@ -699,7 +796,7 @@ struct CircaEntryRow: View {
         case .photoContent(let content):
             shape
                 .fill(Color.circaMediaWell)
-                .frame(width: Kit.entryWell, height: Kit.entryWell)
+                .frame(width: Circa.entryWell, height: Circa.entryWell)
                 .overlay { content.clipShape(shape) }
 
         case .none:

@@ -86,13 +86,21 @@ enum PlanCopy {
             weeklyChangeKg: weeklyChangeKg,
             unit: unit
         )
+        // Editing calories, protein or fat recalculates carbs, which are still what
+        // the calories leave. Only carbs that differ from that were typed.
+        let remainder = MacroTargetCalculator.edited(
+            calories: targets.calories,
+            proteinG: targets.protein,
+            fatG: targets.fat,
+            gender: profile.gender
+        ).carbs
 
         return Reasons(
             calories: targets.calories == workedOut.calories
                 ? step
                 : step.map { CalorieStep(reason: yourChange, amount: $0.amount) },
             protein: targets.protein == workedOut.protein ? perKg(goal.proteinPerKg, of: basis) : setByYou,
-            carbs: targets.carbs == workedOut.carbs ? carbs : setByYou,
+            carbs: targets.carbs == remainder ? carbs : setByYou,
             fat: targets.fat == workedOut.fat ? perKg(goal.fatPerKg, of: basis) : setByYou
         )
     }
