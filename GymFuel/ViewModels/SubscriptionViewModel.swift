@@ -227,7 +227,7 @@ final class SubscriptionViewModel: ObservableObject {
 
             guard restoredStatus.hasProAccess else {
                 applyFreeStatus()
-                errorMessage = "No active LiftEats Pro subscription was found for this Apple ID."
+                errorMessage = "No active Circa Pro subscription was found for this Apple ID."
                 isRestoring = false
                 return false
             }

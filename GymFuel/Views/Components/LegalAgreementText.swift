@@ -14,22 +14,19 @@ struct LegalAgreementText: View {
 
     let context: Context
 
-    private let privacyURL = URL(string: "https://ahmadtariq.co/apps/lifteats/privacy")!
-    private let termsURL = URL(string: "https://ahmadtariq.co/apps/lifteats/terms")!
-
     var body: some View {
         WrappingHStack(horizontalSpacing: 4, verticalSpacing: 2) {
             Text(context.prefix)
                 .foregroundStyle(Color.circaInk2)
 
-            Link("Terms of Service", destination: termsURL)
+            Link("Terms of Service", destination: AppConfig.termsURL)
                 .foregroundStyle(Color.circaAccent)
                 .underline()
 
             Text("and acknowledge our")
                 .foregroundStyle(Color.circaInk2)
 
-            Link("Privacy Policy", destination: privacyURL)
+            Link("Privacy Policy", destination: AppConfig.privacyPolicyURL)
                 .foregroundStyle(Color.circaAccent)
                 .underline()
 

@@ -6,9 +6,6 @@ struct SubscriptionPaywallSheet: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject private var subscriptionViewModel: SubscriptionViewModel
 
-    private let privacyURL = URL(string: "https://ahmadtariq.co/apps/lifteats/privacy")!
-    private let termsURL = URL(string: "https://ahmadtariq.co/apps/lifteats/terms")!
-
     private var selectedPackage: Package? {
         subscriptionViewModel.selectedPackage
     }
@@ -133,8 +130,8 @@ struct SubscriptionPaywallSheet: View {
             .disabled(subscriptionViewModel.isPurchasing || subscriptionViewModel.isRestoring)
 
             VStack(spacing: 4) {
-                Link("Privacy Policy", destination: privacyURL)
-                Link("Terms of Service", destination: termsURL)
+                Link("Privacy Policy", destination: AppConfig.privacyPolicyURL)
+                Link("Terms of Service", destination: AppConfig.termsURL)
             }
             .font(.circaCaption)
             .foregroundStyle(Color.circaInk2)

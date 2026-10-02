@@ -74,7 +74,7 @@ fresh session reads this file, not the chat history.
 - [x] **5** · Meal contract and editable meal client
 - [x] **6** · Meal backend, references and saved-meal round trip
 - [x] **7** · Visual sweep and final share card
-- [ ] **8** · Rename
+- [x] **8** · Rename
 - [ ] **9** · App Store Connect metadata
 - [ ] **10** · Screenshots and submit
 - [ ] **11** · After approval — CPPs, creator outreach

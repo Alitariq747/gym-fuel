@@ -171,7 +171,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
              "quota/image-monthly-limit-exceeded":
             return .monthlyQuotaExceeded(message ?? "You have reached your monthly scan limit.")
         case "subscription/inactive":
-            return .subscriptionInactive(message ?? "Upgrade to LiftEats Pro to keep logging with AI.")
+            return .subscriptionInactive(message ?? "Upgrade to Circa Pro to keep logging with AI.")
         case "rate-limit/too-many-interpret-text-requests":
             return .rateLimited(message ?? "Too many requests. Please wait a moment and try again.")
         default:

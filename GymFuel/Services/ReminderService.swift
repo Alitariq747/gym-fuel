@@ -66,9 +66,9 @@ enum ReminderServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .authorizationDenied:
-            "Notifications are disabled for LiftEats. Enable them in iOS Settings to use reminders."
+            "Notifications are disabled for Circa. Enable them in iOS Settings to use reminders."
         case .authorizationUnavailable:
-            "LiftEats could not enable reminders right now. Please try again."
+            "Circa could not enable reminders right now. Please try again."
         }
     }
 }
@@ -139,7 +139,7 @@ final class ReminderService {
     ) -> UNNotificationRequest {
         let messages = [
             (
-                title: "Quick LiftEats check-in",
+                title: "Quick Circa check-in",
                 body: "Log your latest meal while it’s still fresh."
             ),
             (
@@ -148,7 +148,7 @@ final class ReminderService {
             ),
             (
                 title: "Small log, useful insight",
-                body: "Add what you ate and let LiftEats do the rest."
+                body: "Add what you ate and let Circa do the rest."
             ),
         ]
         let message = messages[contentIndex % messages.count]

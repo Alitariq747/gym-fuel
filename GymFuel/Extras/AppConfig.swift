@@ -23,4 +23,8 @@ enum AppConfig {
 
         return url
     }
+
+    static let privacyPolicyURL = URL(string: "https://ahmadtariq.co/apps/circa/privacy")!
+    static let termsURL = URL(string: "https://ahmadtariq.co/apps/circa/terms")!
+    static let supportEmailURL = URL(string: "mailto:support-circa@ahmadtariq.co")!
 }

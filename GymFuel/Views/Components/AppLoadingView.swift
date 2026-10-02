@@ -5,7 +5,7 @@ struct AppLoadingView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Text("LiftEats")
+            Text("Circa")
                 .font(.title2.weight(.bold))
                 .foregroundStyle(Color.circaInk)
 
