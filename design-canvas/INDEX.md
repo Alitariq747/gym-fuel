@@ -44,6 +44,10 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `StateFailed.dc.html` | Failed · retry |
 | `Week.dc.html` | Week · after a check-in |
 | `WeekEarly.dc.html` | Week · day 2 |
+| `WidgetLock.dc.html` | Widget · lock screen |
+| `WidgetLockStates.dc.html` | Widget · lock screen states |
+| `WidgetMedium.dc.html` | Widget · medium |
+| `WidgetSmall.dc.html` | Widget · small |
 
 ## Page 2 — Round 1 · not chosen
 
@@ -71,6 +75,7 @@ Row 4: onboarding.
 Row 5: the summary-to-paywall seam.
 Row 6: the rest of onboarding, and settings.
 Row 7: the constraints, proven.
+Row 8: widgets (Step 14).
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
@@ -196,6 +201,26 @@ NOTE the third movement glyph. The obvious pick is figure.strengthtraining.tradi
 Settings: target, scalemass, bookmark, bell, circle.lefthalf.filled, sparkles, chart.bar.xaxis, books.vertical, hand.raised, doc.text, envelope, rectangle.portrait.and.arrow.right, trash
 
 Glyphs sit in 30pt wells, monochrome on paper, NOT iOS Settings' coloured squares — a row of tinted icons would break rule 5 and the palette in one go. Delete account is the single exception: its well and glyph carry danger.
+
+### note-widgets (page-1)
+
+WIDGETS (Step 14) · redrawn 2 October, round 2
+
+The plate mascot sits in the corner; the number still leads. Round 1 copied the Day card onto the home screen and read as flat. This round takes what works in the category's widgets — a character, a big warm number, a compact macro panel, a gauge on the lock screen — and leaves out the flame (rule 10: a flame says burn) and a colour per macro (rule 5).
+
+THE MASCOT NEVER REACTS TO THE NUMBERS. Its pose follows whether the day has anything in it, never how the day is going: writing in its notepad once anything is logged (normal, estimating and over alike), waving on a new day, holding the phone when there is nothing to show. No cheering under target, no sad face over it — that would be judging progress, and Circa judges nothing. Estimating keeps the writing pose: the mascot is never the analysing indicator (rule 8); the ochre line says it.
+
+This amends mascot rule 8 for home-screen widgets only. The number is the largest thing on the widget and sits top-left; the mascot is cropped by the edge, decoration only, hidden from VoiceOver, and drawn at rest — widgets do not animate.
+
+The number is accentLarge (#A8762A, dark #D9A94E): the palette's colour for large numerals, and the plate's own ochre. It carries the dotted rule whenever an estimate is in it (rule 1). On a new day it is the saved target, so it carries none. The Day card's headline does not carry the dotted rule yet.
+
+Small: calories only, as decided. Medium: the mascot standing on the left, the number, and a card with protein, carbs and fat — grams eaten above a bar against the target, one ink.
+
+Lock screen: no mascot. Accessory widgets render in one system tint, which would recolour the drawings (rule 7). The system gauge carries progress instead — one ring, calories eaten against the target, never a ring per macro. The rectangular puts the steaming bowl in its gauge; the circular puts the number in its own.
+
+Unchanged from round 1: one tap opens Today; free, not Pro; the lock screen shows the number whenever the screen is on; signing out clears the snapshot; no streak, no burn, no weight, no app name.
+
+To check on a device: the iOS 18 tinted home screen (the mascot keeps its own colours or desaturates — it never takes the tint) and StandBy.
 
 ## Not from the canvas — `app-icon/`
 

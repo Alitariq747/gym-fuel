@@ -266,21 +266,18 @@ is about $3.54 before other costs; the quota alone does not prove the actual mar
 
 ### 7. Additional retention surfaces — after approval
 
-State-aware reminders and widgets remain after approval. Onboarding opt-in and
-HealthKit body mass are complete and ship with the revamp. The core meal reuse
-experience remains required for launch. `build-order.md` owns timing.
+Widgets remain after approval. Onboarding opt-in, fixed daily reminders and
+HealthKit body mass ship with the revamp. The core meal reuse experience remains
+required for launch. `build-order.md` owns timing.
 
-**Reminders that read the app's state.** The `ReminderService` note under *Noted,
-not scheduled* is now scheduled. Two halves, split across the launch boundary:
-
-- **Step 3a, complete.** Onboarding offers notification opt-in. This enables
-  reminders; it does not implement Step 12's state-aware suppression. Launch copy
-  must not promise suppression before that behavior ships.
-- **Step 12, after approval.** Local notification content is fixed at *schedule*
-  time and a Notification Service Extension only intercepts push — so intelligence
-  means rescheduling on every state change, not deciding late. Ranked: a weekly
-  weigh-in nudge, streak protection, and suppressing a nudge when the window
-  already has an entry.
+**Fixed daily reminders — Steps 3a and 12.** Simplified 2 October: the
+state-aware experiment was removed. Quiet is the default; Normal sends three
+repeating local reminders a day, Frequent sends six. Copy is fixed by time slot
+and makes no claim about what the person logged. There is no weekly weigh-in
+reminder, suppression, inactivity taper, or special notification destination.
+Onboarding asks permission only on Enable; Not now selects Quiet. Sign-out clears
+Circa's pending and delivered reminders while retaining the chosen mode for
+sign-in. Scheduling does not read meals, weights, HealthKit, or Firebase.
 
 **HealthKit, body mass only — `Step 13`, done early as Step 4a2.** Read
 `HKQuantityTypeIdentifier.bodyMass` into `weighIns`, whose `source` field already
@@ -333,7 +330,7 @@ sequence; one public release still permits focused TestFlight checks beforehand.
 | **6** | Backend, documented references, saved-version round trip | Shared contract with Step 5 |
 | **7** | Remaining visual sweep and final share card | Final meal presentation |
 | **8–10** | Rename, metadata, launch checks, screenshots, submission | Promises agree with working behavior |
-| **11–14** | CPPs/outreach, state-aware reminders, widgets | After approval; Step 13 already completed as 4a2 |
+| **11–14** | CPPs/outreach and widgets; fixed reminders and HealthKit already built | Steps 11 and 14 after approval; device reminder checks remain in Step 12 |
 
 ### Earlier exercise/dead-code audit — reference only
 
@@ -391,11 +388,10 @@ Do not treat it as new work or remove code without checking its current callers:
 
 ## Noted, not scheduled
 
-- ~~**Reminders are timeline-blind.**~~ **Now scheduled** — §7 above, and
-  `build-order.md` Steps 3a and 12. The diagnosis held: `ReminderService` fires
-  fixed wall-clock times from a three-mode enum and never reads the timeline. The
-  thing it missed is that the mode defaults to `.quiet`, so the reminders were not
-  merely dumb, they were off.
+- **Reminders deliberately use a fixed schedule.** Decided 2 October: the
+  state-aware experiment was removed in favor of predictable daily reminders
+  with polished copy. Steps 3a and 12 own onboarding opt-in and implementation;
+  no future intelligence layer is currently scheduled.
 - **`SavedMealsPickerSheet` is unreachable on older days.** It hangs off the
   `LogActionDock` bookmark button, which hides outside the today−7d…today window.
 - **Saved meals losing their explanation is now scheduled.** Steps 5–6 preserve

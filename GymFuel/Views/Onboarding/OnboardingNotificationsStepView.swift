@@ -4,20 +4,7 @@
 //
 //  Step 3a — the soft pre-prompt.
 //
-//  Two rules shape this screen, and both are easy to undo by accident:
-//
-//  1. **Nothing fires on appearance.** iOS grants exactly one
-//     `requestAuthorization` per install and a denial is permanent from inside
-//     the app — `ReminderService.hasAuthorization()` returns `false` forever
-//     after, and Settings can then only point at iOS. So only "Turn reminders
-//     on" reaches `ReminderService`; the copy has to earn the tap before the
-//     single system alert is spent.
-//  2. **The three rows describe what this build actually schedules** — three
-//     fixed reminders a day. Suppression ("silence when you've logged") and the
-//     weekly check-in nudge are Step 12 and Step 4. The canvas draws them; they
-//     must not be promised here until they exist.
-//
-//  Built entirely from the Step 2a kit. Nothing from the old palette.
+//  Only an explicit enable tap may request notification permission.
 //
 
 import SwiftUI
@@ -30,9 +17,6 @@ struct OnboardingNotificationsStepView: View {
     let stepCount: Int
     /// Called on both paths — Enable and Not now both continue to the summary.
     let onFinished: () -> Void
-
-    @AppStorage(ReminderMode.preferenceKey)
-    private var reminderModeValue = ReminderMode.quiet.rawValue
 
     @State private var isRequesting = false
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -48,17 +32,17 @@ struct OnboardingNotificationsStepView: View {
         ReminderReason(
             symbol: "clock",
             title: "Three times a day",
-            detail: "9:00, 2:00 and 8:30. That's the whole schedule."
+            detail: "\(ReminderMode.normal.scheduleDescription)."
         ),
         ReminderReason(
             symbol: "text.bubble",
-            title: "One line, then it's gone",
-            detail: "A nudge to log what you ate. No badges, no streak alarms."
+            title: "Keep it simple",
+            detail: "A few words or a photo are enough."
         ),
         ReminderReason(
             symbol: "slider.horizontal.3",
-            title: "More, fewer, or none",
-            detail: "Three paces to pick from, all in Settings."
+            title: "You choose the pace",
+            detail: "Choose more reminders or turn them off in Settings."
         )
     ]
 
@@ -93,7 +77,7 @@ struct OnboardingNotificationsStepView: View {
                 .foregroundStyle(Color.circaInk)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("The hardest part of any food journal is remembering to write in it. Three a day, and nothing else.")
+            Text("A little reminder to make room for your food diary.")
                 .font(.circaBody)
                 .foregroundStyle(Color.circaInk2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -173,7 +157,7 @@ struct OnboardingNotificationsStepView: View {
             .disabled(isRequesting)
 
             Button("Not now") {
-                skip()
+                Task { await skip() }
             }
             .buttonStyle(.circa(.quiet))
             .disabled(isRequesting)
@@ -184,21 +168,17 @@ struct OnboardingNotificationsStepView: View {
 
     // MARK: - Actions
 
-    /// The only path that spends the install's single `requestAuthorization`.
     @MainActor
     private func enable() async {
         guard !isRequesting else { return }
         isRequesting = true
 
         do {
-            try await ReminderService.shared.apply(.normal)
-            reminderModeValue = ReminderMode.normal.rawValue
+            // Onboarding can run before sign-up; RootView schedules once the account exists.
+            try await ReminderService.shared.apply(.normal, mayAskPermission: true, scheduleNow: false)
             FirebaseTelemetryService.logOnboardingEvent("reminders_enabled", step: Self.analyticsStep)
         } catch {
-            // A denial is the user's answer, not an error to surface — an app
-            // alert about the prompt they just dismissed is noise. The stored
-            // mode follows what is actually scheduled, which is nothing.
-            reminderModeValue = ReminderMode.quiet.rawValue
+            // The service falls back to Quiet; a denied prompt needs no second alert.
             FirebaseTelemetryService.logOnboardingEvent("reminders_denied", step: Self.analyticsStep)
         }
 
@@ -206,11 +186,12 @@ struct OnboardingNotificationsStepView: View {
         onFinished()
     }
 
-    /// Writes `.quiet` explicitly rather than leaning on the stored default, so
-    /// the saved mode always matches what is scheduled. Touches nothing in
-    /// `ReminderService`, leaving the one system ask unspent for Settings.
-    private func skip() {
-        reminderModeValue = ReminderMode.quiet.rawValue
+    @MainActor
+    private func skip() async {
+        guard !isRequesting else { return }
+        isRequesting = true
+        try? await ReminderService.shared.apply(.quiet, mayAskPermission: false)
+        isRequesting = false
         FirebaseTelemetryService.logOnboardingEvent("reminders_skipped", step: Self.analyticsStep)
         onFinished()
     }

@@ -10,9 +10,16 @@ struct ProfileReminderSection: View {
     @State private var modeBeingApplied: ReminderMode?
     @State private var errorMessage: String?
     @State private var showError = false
+    @State private var notificationsOffInIOS = false
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
 
     private var selectedMode: ReminderMode {
         ReminderMode(rawValue: reminderModeValue) ?? .quiet
+    }
+
+    private var isSilencedByIOS: Bool {
+        notificationsOffInIOS && selectedMode != .quiet
     }
 
     var body: some View {
@@ -25,13 +32,18 @@ struct ProfileReminderSection: View {
                 ProfileSettingsRow(
                     title: "Logging Reminders",
                     systemImage: "bell.badge.fill",
-                    value: selectedMode.displayName
+                    value: selectedMode.displayName,
+                    detail: isSilencedByIOS ? "Off in iOS Settings" : nil
                 )
             }
             .buttonStyle(.plain)
             .background(ProfileCardBackground())
         }
         .padding(.horizontal, Circa.Space.screenMargin)
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            notificationsOffInIOS = await ReminderService.shared.notificationsOffInIOSSettings()
+        }
         .sheet(isPresented: $showPreferences) {
             preferenceSheet
                 .preferredColorScheme(preferredColorScheme)
@@ -75,10 +87,29 @@ struct ProfileReminderSection: View {
                             .font(.circaTitle)
                             .foregroundStyle(Color.circaInk)
 
-                        Text("Choose how often Circa reminds you to log meals.")
+                        Text("Choose how often Circa reminds you to write in your food diary.")
                             .font(.circaBody)
                             .foregroundStyle(Color.circaInk2)
                             .fixedSize(horizontal: false, vertical: true)
+
+                        Text("Reminders arrive at these times, even after you log.")
+                            .font(.circaCaption)
+                            .foregroundStyle(Color.circaInk2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    if isSilencedByIOS {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Notifications for Circa are off in iOS Settings, so no reminders arrive.")
+                                .font(.circaCaption)
+                                .foregroundStyle(Color.circaInk)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            Button("Open iOS Settings") {
+                                if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
+                            }
+                            .buttonStyle(.circa(.link))
+                        }
                     }
 
                     VStack(spacing: 10) {
@@ -152,10 +183,8 @@ struct ProfileReminderSection: View {
         }
 
         do {
-            try await ReminderService.shared.apply(mode)
-            reminderModeValue = mode.rawValue
+            try await ReminderService.shared.apply(mode, mayAskPermission: true)
         } catch {
-            reminderModeValue = ReminderMode.quiet.rawValue
             errorMessage = error.localizedDescription
             showError = true
         }

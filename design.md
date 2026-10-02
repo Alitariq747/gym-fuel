@@ -20,6 +20,9 @@ nutrition in one card, macros on every breakdown row, and each correction beside
 what it changes. See rule 2 and the screen inventory. The 7k share card was drawn
 the same day.
 
+Revised 2 October: widgets (Step 14), the one place the mascot shares a screen with
+a leading number. See *The plate mascot* and the screen inventory.
+
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
 > progress. Older product audits and artboards may describe superseded behavior.
@@ -324,13 +327,21 @@ in every pose.** Ink lines and one ochre, like everything else.
    paywall show no mascot. `OnboardingIllustrationTests` holds the onboarding half.
 6. **Decoration only.** Hidden from VoiceOver; still, in its rest pose, under
    Reduce Motion; on onboarding steps, 90 pt instead of 130 at accessibility
-   text sizes.
+   text sizes. Always still on a widget, because widgets don't animate.
 7. **Drawings carry their own colours; never tint them in code.** An arm across
    the plate must stay dark in dark mode, because the plate stays light. Every
    piece that sits on the paper has a dark twin in the asset catalogue, except
-   the faint ground shadow, which simply fades out in dark.
+   the faint ground shadow, which simply fades out in dark. That keeps it off the
+   lock screen, where the system recolours every widget in one tint.
 8. **Not where a number must lead.** Not on the Day screen, and never the
-   analysing indicator — rule 1 allows no spinner.
+   analysing indicator — rule 1 allows no spinner. The exception is the
+   home-screen widget (Step 14): there the number is the largest thing and sits
+   top-left, and the mascot is cropped by the widget's edge.
+9. **It never reacts to the numbers.** Its pose follows whether the day has
+   anything logged, never how the day is going. It writes in its notepad once
+   anything is logged, including when estimating or over; it waves on a new day,
+   and holds the phone when there is nothing to show. No cheering under target and
+   no sad face over it: that would be judging progress, which Step 4 rules out.
 
 **The plate without its face is the app's mark, not the mascot.** It is the app
 icon's plate, ring and three dots, centred, and it is the share card's watermark
@@ -429,6 +440,7 @@ Everything on the canvas, and what is not there yet.
 | Paywall | `Paywall` + `Paywall · dark` | Six invariants marked in source |
 | Settings ×3 | `Settings`, `· your targets`, `· delete account` | `· your targets` and `· delete account` carry check-in copy; see *Canvas drift* |
 | Constraint proofs | `Dark`, `Arabic RTL`, `Dynamic Type AX3` | **Day view only so far** |
+| Widgets (Step 14) | `Widget · small`, `Widget · medium`, `Widget · lock screen`, `Widget · lock screen states` | **Drawn 2 October.** Small is calories left only; medium adds a card of grams eaten, with bars against the target. The number is large ochre (`accentLarge`), with the dotted rule whenever an estimate is in it and none on a new day, because then it is the saved target. Five states: normal, new day, estimating, over, no data. The mascot sits in the corner (mascot rules 8 and 9). The lock screen has no mascot and one system gauge, for calories only. Never shown: a flame, a colour per macro, a streak, a burn, weight, or the app's name |
 
 **Deliberately not drawn:** age, height and goal weight (the weight artboard with a
 different label and range). **Not yet drawn:** reminders settings, appearance,
@@ -458,7 +470,7 @@ and agreed launch contract. Follow the rules here and the build order.
 | Where | What it assumes | Reality |
 |---|---|---|
 | `Entry` — items list | Per-item calories **and** macros | Covered by Steps 5–6: every item and component stores its nutrition, and `MealBreakdownCalculator` returns each one's macros. The build does not show them on the rows yet. |
-| `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | Step 12's suppression ships **after approval**. Soften both lines for launch; onboarding opt-in alone does not deliver this behavior. |
+| `Paywall`, `Onboarding · reminders` | "Reminders that stay quiet when you've already logged" | **Removed when Step 12 was simplified (2 October).** Reminders follow fixed daily times even after logging. Onboarding and Settings describe the schedule; the paywall carries no reminder line. |
 | `Week`, `Settings · your targets` | A check-in has set a target and a rate | **No longer planned.** Targets are saved and change only when the user acts (Step 4); `Settings · your targets` becomes the targets screen (4d). See *Canvas drift* below. `Week · day 2` is still the honest early state. |
 
 ### Canvas drift — 17 and 19 September
@@ -480,15 +492,15 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 | `Onboarding · formula` | "from your first check-in it measures the real number anyway" | Nothing measures a burn. The number is a starting estimate: the Weight screen shows whether it is right, and the user can recalculate or edit. |
 | `Onboarding · daily movement` | "Within two or three weeks Circa has measured what you actually burn, and stops using it." | **Remove the line.** It claims a measurement that was dropped — an App Store 1.4.1 problem. Four options, each a normal week *including* exercise. |
 | `Onboarding · goal` | "From your first check-in onward, Circa moves them…" · "at a rate you set" | No rate to set, and nothing moves on its own. Gain, Lose fat or Maintain, then a goal weight for Gain and Lose fat (4c). |
-| `Onboarding · reminders (3a)` | "Your weekly check-in … once your targets have actually moved" | A reminder to weigh in, claiming nothing moved. The built screen already leaves it out until Step 12. |
+| `Onboarding · reminders (3a)` | "Your weekly check-in … once your targets have actually moved" | **Removed when Step 12 was simplified (2 October).** Onboarding offers three fixed daily food-diary reminders, with a few words or a photo and a choice of pace in Settings. No weekly weigh-in reminder. |
 | `Onboarding · your numbers` | "Circa moves them to match what your body is actually doing" | Becomes the plan screen (4f): a line to the goal date; a card of the four targets, numbers only; **Edit numbers**; then a card that shows the working — the calories as a sum (about 2,420 to stay at your weight, − 470 to lose about 0.4 kg a week, the target) and one line each for protein, carbs and fat. **Save my progress** alone at the bottom. No starting-estimate caveat — removed 26 September; the dotted rule carries it. Targets stay as set until the user changes them. |
 | `Paywall`, `Paywall · dark` | "Targets that move with your weight, not a formula that guessed once" · "A weekly check-in that shows its working" | As in `store-copy.md`: a steady plan to a goal weight, targets that show their working and change only when you change them, and weigh-ins against the plan. |
 | `Settings · your targets` | "set at Sunday's check-in" · Rate 0.5% a week · "Changing your goal closes the current phase…" | The targets screen (4d): the numbers, "Set at 85 kg on 3 Sep", the stay-at-your-weight estimate, **Edit** and **Recalculate**, and goal weight in place of Rate. Changing the goal restarts the plan line; there are no phases. |
 | `Settings · delete account` | "Weigh-ins and check-ins" | Weigh-ins only — check-ins are never stored. |
 
-The day-streak tile on both Week artboards is still undecided. Onboarding promises
-"No badges, no streak alarms", but Step 12 still plans streak protection, and the
-weekly page that was going to settle it is gone.
+The day-streak tile on both Week artboards is settled: it is gone (Step 7t), and
+Step 12 uses fixed daily food-diary reminders. No badges, streak alarms, empty-day
+claims, or weight-based messages. The state-aware experiment was removed 2 October.
 
 ---
 
@@ -511,6 +523,8 @@ weekly page that was going to settle it is gone.
    with `.preferredColorScheme`. That *should* propagate, but a theme that
    silently ignores the in-app toggle is exactly the bug that reaches the store.
    Check it with a swatch view before building on top.
+6. **The Day card's headline has no dotted rule**, though it counts estimates
+   (rule 1). The widgets carry one. Decide whether the Day card should match.
 
 ---
 
@@ -522,12 +536,14 @@ weekly page that was going to settle it is gone.
   whole content is one JSON blob, so fetching the page is not enough. Read the
   URL with the `Artifact` tool's `read` action — it saves the full HTML locally
   — then take the `<script type="application/json" id="appifact-doc">` block and
-  read `content.files`: 38 `.dc.html` artboards plus `canvas.json`, which maps
+  read `content.files`: 42 `.dc.html` artboards plus `canvas.json`, which maps
   each file to its artboard title and page. **`page-2` is `Round 1 · not
   chosen`.** So the live Entry artboards are `DetailB.dc.html` (`Entry`),
   `DetailMenu.dc.html` and `DetailReword.dc.html`; `DetailA` and `DetailC` are
   the two directions that lost. The share card is `ShareText.dc.html`,
-  `SharePhoto.dc.html` and `SharePreview.dc.html`.
+  `SharePhoto.dc.html` and `SharePreview.dc.html`. The widgets are
+  `WidgetSmall.dc.html`, `WidgetMedium.dc.html`, `WidgetLock.dc.html` and
+  `WidgetLockStates.dc.html`.
 - `build-order.md` — where the design work sits in the sequence
 - `store-copy.md` — the copy the onboarding intro and paywall are built from
 - `product-as-built.md` — what the code does today, which is not this

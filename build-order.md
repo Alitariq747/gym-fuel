@@ -46,8 +46,9 @@ Do not schedule "the redesign" as a phase. There isn't one.
 review, so they are genuinely post-launch work — but they need the new screenshots,
 so they cannot start early either.
 
-**Additional retention surfaces come after approval.** State-aware reminders and
-widgets remain Steps 12 and 14. The core repeat-use experience ships at launch:
+**Widgets come after approval** in Step 14. Step 12 now uses fixed daily reminders
+with polished copy; the state-aware experiment was removed on 2 October. The core
+repeat-use experience ships at launch:
 corrected saved meals, the plan and weight history. Onboarding
 notification opt-in and Apple Health body mass are already complete.
 
@@ -78,7 +79,7 @@ fresh session reads this file, not the chat history.
 - [ ] **9** · App Store Connect metadata
 - [ ] **10** · Screenshots and submit
 - [ ] **11** · After approval — CPPs, creator outreach
-- [ ] **12** · State-aware reminders · *post-approval*
+- [x] **12** · Fixed daily reminders · *simplified, 2 October; device checks pending*
 - [x] **13** · HealthKit body mass — done early as 4a2
 - [ ] **14** · Widgets · *post-approval*
 
@@ -296,30 +297,25 @@ render without crashing.
 **Ships in the launch build.** Everything else retention-shaped waits until after
 approval; this one does not, because it is a leak rather than a feature.
 
-Reminders default to `.quiet`
-(`ProfileReminderSection.swift:6`) and the permission ask exists only behind
-Settings → Reminders. Effectively nobody has reminders on. No amount of Step 12
-intelligence fixes a feature that is never switched on, and the paywall is already
-selling "Smart reminders" as a Pro benefit at `SubscriptionPaywallSheet.swift:25`.
+Reminders default to `.quiet`. Onboarding now offers the opt-in as well as
+Settings → Reminders. Step 12 was simplified on 2 October to fixed daily
+reminders with polished copy; the paywall makes no smart-reminder promise.
 
 **Where it goes: between `loggingTips` and `summary`.** Not after the summary —
 `OnboardingSummaryStepView` commits the profile through `RootView.saveOnboarding`,
 which fires `SubscriptionPaywallSheet` on success. An ask placed after it competes
 with the paywall sheet for the same moment.
 
-**Soft pre-prompt, not the system prompt.** iOS grants exactly one
-`requestAuthorization` per install, and a denial is permanent from inside the app —
-`ReminderService.hasAuthorization()` returns `false` forever after, and
-`ProfileReminderSection` can only surface `authorizationDenied` and point at iOS
-Settings. So the step is an explanatory screen with **Enable** and **Not now**, and
-only **Enable** calls through to `ReminderService`. Firing the system prompt on
-step appearance burns the single attempt on users who were not yet convinced.
+**Soft pre-prompt, not the system prompt.** The step explains the fixed schedule
+and offers **Enable** and **Not now**. Only Enable may request system permission;
+Not now selects Quiet and clears existing reminders without prompting. A denied
+permission can be changed in iOS Settings. Nothing asks on screen appearance.
 
 1. New `OnboardingNotificationsStepView`, plus the case in the `private enum
    OnboardingStep` at `OnboardingFlowView.swift:10` and its `analyticsName`.
-2. Default flips `.quiet` → `.normal` on Enable; **Not now** leaves `.quiet`.
-   The `@AppStorage` default at `ProfileReminderSection.swift:6` changes with it.
-3. Assumes Step 3 has already fixed the three workout strings in `ReminderService`.
+2. The stored mode changes from `.quiet` to `.normal` after successful Enable;
+   **Not now** selects `.quiet`. The unset preference continues to default to Quiet.
+3. Copy and schedules live in `ReminderService`; neither mentions workouts.
 
 **Files** new `OnboardingNotificationsStepView.swift` · `OnboardingFlowView.swift` ·
 `ProfileReminderSection.swift`
@@ -861,7 +857,7 @@ Keep the parent Step 7 box unticked until every part is done.
   the numeric confidence per `design.md`; give the assumptions the room.
   **Done when** no screen presents model confidence as an accuracy figure.
 - [x] **7t · The Week screen.** `StatsView` and its cards take `CircaCard` and
-  the Circa type scale; the streak tile goes, its data stays for Step 12.
+  the Circa type scale; the streak tile goes. Its data is not used by reminders.
   **Done when** the Week screen shows the week's food and the weight card, with
   no check-in, no burn number and no streak.
 
@@ -944,11 +940,11 @@ then.
 
 ---
 
-# Retention — after approval
+# Retention
 
-Two features still held back until the listing is live. Ordered by cost, cheapest
-first: Step 12 adds no target and no entitlement, Step 14 adds a whole target.
-Step 13 was pulled forward into the launch build as 4a2.
+Fixed daily reminders (Step 12) ship at launch; their state-aware experiment was
+removed. Widgets (Step 14) remain after approval and add a new target. Step 13
+was pulled forward into the launch build as 4a2.
 
 **App Intents, Siri, Shortcuts and Control Center controls are out.** Decided
 7 September — too much lift for this stack, and widgets do not need them. See
@@ -957,44 +953,55 @@ APNs setup and no push entitlement today, and Step 12 does not need one.
 
 ---
 
-## Step 12 — State-aware reminders · M
+## Step 12 — Fixed daily reminders · complete
 
-Step 3a turned reminders on. This makes them worth having on.
+**Simplified 2 October.** The state-aware experiment has been replaced with fixed,
+repeating local notifications. No meal/weight reads, weekly weigh-in reminder,
+suppression after logging, inactivity taper, or notification-specific navigation.
+Tapping opens the app normally. No APNs, backend, or new dependency.
 
-**The constraint that shapes the whole design.** `UNNotificationRequest` content is
-fixed at *schedule* time, and a Notification Service Extension only intercepts
-*push* — which we do not have. There is no way to compute a message at fire time.
-"Intelligent" therefore has to mean **rescheduling aggressively**, not deciding
-late. `ReminderService.apply(_:)` already has the right shape — tear down, rebuild
-— it just takes a `ReminderMode` where it should take a state struct.
+- **Quiet** is the default: no reminders. **Normal** repeats at 9:00 AM, 2:00 PM
+  and 8:30 PM. **Frequent** repeats at 8:00 AM, 11:00 AM, 2:00 PM, 5:00 PM,
+  8:00 PM and 10:00 PM. Its stored value remains `aggressive`.
+- Copy is fixed by time slot in `ReminderService.swift`: breakfast, snacks,
+  lunch, a note, dinner, and a last opportunity to add something. No claims about
+  whether the person logged, no streak language, and no nutritional judgments.
+- Onboarding offers three daily reminders; Settings explains that they arrive
+  even after logging. Only an explicit enable tap can request permission.
+  **Not now** selects Quiet and clears existing Circa reminders without prompting.
+- One serialized queue owns notification replacement and preference updates.
+  Explicit enable failures clear partial requests and select Quiet. Automatic
+  restoration preserves the preference and reports failures through telemetry.
+- Signed-in launch, sign-in and return from background restore the saved mode
+  independently of profile loading or Health imports. Canceled or stale account
+  callbacks are rejected before enqueueing. Sign-out and signed-out launch clear
+  pending and delivered Circa reminders, retaining the saved mode for sign-in.
+  Onboarding asks and saves the choice without scheduling; reminders start once signed in.
+- Prefix cleanup removes old repeating and experimental one-shot requests under
+  `lifteats.reminder.`; unrelated notifications remain untouched. Repeating
+  requests use stable time-based identifiers. The old weekly-toggle preference
+  is unused and may remain on devices that ran the experiment.
 
-Rebuild the pending set on: app foreground, app background, after every log write,
-after a weigh-in, after a target change.
+**Validation:** all 20 `ReminderServiceTests` pass in an isolated macOS Swift
+package, covering schedules and copy, repeating triggers, mode transitions,
+migration, permission handling, partial failures, sign-out during an in-flight
+apply, and canceled lifecycle callbacks. The iOS-only ephemeral-authorization
+test, iOS Debug/Release builds and device checks remain for the user to run.
+Swift 6 service type-checking, changed-source parsing and `git diff --check` pass.
 
-**`allReminderTimes` breaks here.** `removePendingReminders()` cancels by
-enumerating a hardcoded list of eight times (`ReminderService.swift:80-89`). Once
-times are state-driven it cannot enumerate what to cancel. Track the identifiers
-actually scheduled, or clear all — but do not leave the hardcoded list in place
-while the schedule moves, or reminders will accumulate and never be cancellable.
+**Device acceptance — still required:**
 
-Content, ranked by value:
-
-1. **Weigh-in nudge.** Once a week, a reminder to weigh in that opens the Weight
-   screen. It says nothing about whether the plan is working, because Step 4 judges
-   nothing. Needs Step 4e.
-2. **Streak protection.** `StatsSnapshot.currentStreakDays` already exists
-   (`StatsCalculator.swift:57`). Highest-converting nudge shape in this category.
-3. **Suppression.** Skip the nudge when the window already has an entry. A reminder
-   that stays quiet because you already logged beats a cleverer one that always
-   fires, and it is the cheapest thing on this list.
-
-Mind the 64 pending-request cap.
-
-**Files** `ReminderService.swift` · `TimelineViewModel` / `LogComposerViewModel`
-hooks · `GymFuelApp.swift` scene phase
-
-**Done when** logging lunch cancels the afternoon nudge, and the weekly weigh-in
-nudge fires on the right day and opens the Weight screen.
+1. Settings → Logging Reminders → Normal, Frequent, then Quiet. Verify exactly
+   three, six, then zero pending Circa requests, with the documented times/copy.
+2. Enable reminders, log a meal and a weight, and confirm the schedule is unchanged.
+3. Sign out: pending and delivered Circa reminders clear. Sign in: the saved mode
+   returns, without a permission prompt. Repeat during an in-flight mode change.
+4. Test onboarding Enable and Not now, deny permission, then enable it in iOS
+   Settings and return. Relaunch and repeat offline.
+5. Tap a delivered reminder with the app terminated, backgrounded, and with
+   Settings or a sheet already open. It should open normally without redirecting.
+6. Launch over an install containing experimental one-shot requests; confirm only
+   the selected repeating schedule remains. Complete Debug/Release builds.
 
 ---
 
@@ -1021,7 +1028,8 @@ Imports run on connect and on every app open. There is no background delivery.
 
 ## Step 14 — Widgets · L
 
-The passive half of the retention loop. Read-only.
+The passive half of the retention loop. Read-only. Drawn on the canvas, row 8
+(2 October); `design.md` owns the look.
 
 **No Firebase in the extension.** A widget process cannot practically reach
 Firestore — its own auth via keychain access groups, a cold start, a network
@@ -1030,25 +1038,45 @@ the app writes a small `Codable` `TodaySnapshot` into an App Group container
 whenever the timeline changes, then calls
 `WidgetCenter.shared.reloadTimelines(ofKind:)`. The widget reads only that file.
 
-Snapshot: date, consumed calories, target calories, consumed and target P/C/F,
-last-logged-at, streak. **No burned field** — see Step 3.
+Snapshot: the day it describes; target and eaten calories, protein, carbs and
+fat, with eaten counting settled entries only; how many entries are logged and how
+many are still estimating; and whether any settled nutrition is an estimate, which
+decides the dotted rule. **No burn, streak or weight field** — see Steps 3 and 12.
 
-**Staleness is the whole difficulty.** The widget has to render something sane
-when the snapshot is missing, from a previous day, or written before a target
-change. Show the date it came from rather than a confidently wrong number.
+**A snapshot from an earlier day rolls over.** At midnight the widget shows a new
+day from the saved target: the whole target left, nothing eaten. Targets change only
+when the person acts, so the saved target is still right. The timeline holds two
+entries: now, and the next midnight. With no snapshot at all — never opened, signed
+out, or no saved target yet — the widget asks the person to open the app.
 
-- Tap → `widgetURL` deep link into that day. **No App Intents** — interactive
-  buttons are the only thing that would need them, and they are out of scope.
-- `systemSmall` (calories-left ring) and `systemMedium` (ring + macro bars).
-  Lock Screen accessory circular/rectangular are near-free once the target exists.
-- **After Step 8.** A new target means new bundle identifiers, new provisioning and
-  an App Group id. Settle the name once.
+- **Sizes:** `systemSmall` (calories left), `systemMedium` (adds the macro card),
+  and on the Lock Screen `accessoryInline`, `accessoryCircular` and
+  `accessoryRectangular`. No large widget.
+- **The mascot appears on home-screen widgets only, never the lock screen,** and
+  never reacts to the numbers (`design.md`, mascot rules 8 and 9). On the lock
+  screen, progress is the system gauge: one ring, calories only.
+- **A tap opens Today** through the `widgetURL`, at every size. **No App
+  Intents**, and no second link.
+- **Free.** No entitlement check; the extension couldn't reach RevenueCat anyway.
+- **The number shows on the Lock Screen** whenever the screen is on, with no
+  privacy hiding. Decided 2 October.
+- **Signing out and deleting the account delete the snapshot** and reload the
+  widgets, so the next account never sees the last one's day.
+- **No app name** in the widgets or the gallery text, because the name may change
+  again.
+- **App Group:** `group.com.ahmad.GymFuel`. Step 8 kept the bundle identifier, so
+  this is settled.
 
-**Files** new Widget Extension target · new shared `TodaySnapshot.swift` ·
-`TimelineViewModel` write point · `GymFuelApp.swift` · entitlements on both targets
+**Files** new Widget Extension target · new shared `TodaySnapshot.swift`, with
+tests for rollover and state selection · `TimelineViewModel` write point · snapshot
+clear on sign-out and deletion · `GymFuelApp.swift` deep link · `Info.plist` URL
+scheme · a still mode for `PlateMascot.swift` · entitlements on both targets ·
+`CircaTheme.swift`, the glyphs, and the Mascot and Macros assets shared with the
+extension
 
-**Done when** the widget matches the app within one refresh of a log, and a cold
-device with no snapshot yet shows a sensible empty state rather than zeros.
+**Done when** the widget matches the app within one refresh of a log, a cold device
+shows the open-the-app state rather than zeros, and the widget rolls over at
+midnight without the app opening.
 
 ---
 
@@ -1081,4 +1109,4 @@ contract (5–6), and the coherent visual sweep (7).
 | Before Step 10 | The live privacy policy and terms updated for the revamp, including Apple Health (App Store 5.1.3) — once the app is final, before submission |
 | Step 11 | Creator list |
 | ~~Before Step 13~~ | ~~HealthKit capability enabled on the App ID~~ — **done 12 September, in 4a2** |
-| Before Step 14 | An App Group registered, with the bundle identifier settled in Step 8 |
+| Before Step 14 | Register `group.com.ahmad.GymFuel` on both App IDs, and add the Widget Extension target in Xcode |

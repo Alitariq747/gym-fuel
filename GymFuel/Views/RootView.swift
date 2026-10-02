@@ -49,6 +49,21 @@ struct RootView: View {
     }
 
     @MainActor
+    private func restoreReminders(for userId: String?) async {
+        guard !Task.isCancelled, authManager.user?.uid == userId else { return }
+        do {
+            try await ReminderService.shared.restore(isSignedIn: userId != nil)
+        } catch is CancellationError {
+            return
+        } catch ReminderServiceError.authorizationDenied {
+            // Notifications off in iOS Settings is the user's choice, not a failure.
+            return
+        } catch {
+            FirebaseTelemetryService.recordNonFatal(error, reason: "reminder_restore_failed")
+        }
+    }
+
+    @MainActor
     private func saveOnboarding(_ answers: OnboardingAnswers) {
         guard let uid = authManager.user?.uid else { return }
 
@@ -68,6 +83,7 @@ struct RootView: View {
                 // and nothing else would import until the next foreground. The
                 // guest path gets this from `finishGuestOnboarding`.
                 await importHealthWeight(for: uid)
+                await restoreReminders(for: uid)
 
                 if !subscriptionViewModel.hasProAccess {
                     FirebaseTelemetryService.logOnboardingEvent("paywall_presented")
@@ -142,6 +158,7 @@ struct RootView: View {
             await subscriptionViewModel.syncUser(userId: uid)
             await savedMealsViewModel.loadSavedMeals(userId: uid)
             await importHealthWeight(for: uid)
+            await restoreReminders(for: uid)
 
             isFinishingOnboarding = false
             guestCompletionNeedsPaywall = completedNewOnboarding && !subscriptionViewModel.hasProAccess
@@ -214,6 +231,9 @@ struct RootView: View {
             SubscriptionPaywallSheet()
         }
         .task(id: authManager.user?.uid) {
+            await restoreReminders(for: authManager.user?.uid)
+        }
+        .task(id: authManager.user?.uid) {
             if let user = authManager.user {
                 if guestOnboardingActive { return }
                 await subscriptionViewModel.syncUser(userId: user.uid)
@@ -234,6 +254,8 @@ struct RootView: View {
                 didEnterBackground = false
 
                 guard let uid = authManager.user?.uid else { return }
+
+                Task { await restoreReminders(for: uid) }
 
                 // A scale that synced overnight should be on the trend before
                 // the user looks at it. Ahead of the subscription guard below
