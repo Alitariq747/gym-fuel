@@ -294,7 +294,7 @@ estimate mark, and rule 1 keeps that off a target.
   drawings carry their own colours.
 - **Drawn to the mascot's SVG rules** (basic shapes, no transforms), on a 24 × 24
   canvas, outlines at 1.5–1.7.
-- **Files:** `GymFuel/Assets.xcassets/Macros/`. **Shown by** `CircaMacroGlyph` in a
+- **Files:** `GymFuel/SharedAssets.xcassets/Macros/`, shared with the widget. **Shown by** `CircaMacroGlyph` in a
   round well, and `CircaTargetRow` puts it beside a target.
 
 ### 11. Keep meal explanations factual
@@ -342,6 +342,8 @@ in every pose.** Ink lines and one ochre, like everything else.
    anything is logged, including when estimating or over; it waves on a new day,
    and holds the phone when there is nothing to show. No cheering under target and
    no sad face over it: that would be judging progress, which Step 4 rules out.
+   **On the widget, a meal counts as logged once its estimate lands** — the widget
+   ignores unfinished meals, so it waves until then. Decided 3 October.
 
 **The plate without its face is the app's mark, not the mascot.** It is the app
 icon's plate, ring and three dots, centred, and it is the share card's watermark
@@ -352,10 +354,11 @@ Decided 28 September.
 
 | What | Where |
 |---|---|
-| The drawings | `GymFuel/Assets.xcassets/Mascot/` — one SVG per piece, plus `-dark` twins |
+| The drawings | `GymFuel/SharedAssets.xcassets/Mascot/`, shared with the widget — one SVG per piece, plus `-dark` twins |
 | Stacking, joints, blink and breathe | `GymFuel/Design/PlateMascot.swift` |
 | Each move's drawings, rest pose and keyframes | `GymFuel/Design/PlateMascotMoves.swift` |
 | Which onboarding step shows what | `OnboardingStep.illustration` in `OnboardingFlowView.swift` |
+| Which pose the widget shows (rule 9) | `PlateMascot+Today.swift` |
 | Welcome (wave, 180 pt) and save progress (hug, 168 pt) | `WelcomeView.swift`, `AuthChoicesView.swift` |
 | App icon sources | `design-canvas/app-icon/` — export rules in `design-canvas/INDEX.md` |
 | Preview of every move, light and dark | `python3 design-canvas/mascot/preview.py` |
@@ -403,13 +406,13 @@ part, report in the usual order.
    `rest`, `costume`, one keyframes function and the switch in `PlateMascot.swift`.
    Keep `preview.py` matching, or it stops telling the truth.
 3. **Check without building:** compile in Swift 6 mode; run `actool` on a *copy*
-   of the asset catalogue and expect no warnings; confirm every drawing name in
+   of `SharedAssets.xcassets` and expect no warnings; confirm every drawing name in
    the code exists and every drawing is used; run `OnboardingIllustrationTests`
    when the step list changes.
 
 ```
-xcrun actool <copy>/Assets.xcassets --compile <out> --platform iphoneos \
-  --minimum-deployment-target 17.6 --target-device iphone --app-icon AppIcon \
+xcrun actool <copy>/SharedAssets.xcassets --compile <out> --platform iphoneos \
+  --minimum-deployment-target 17.6 --target-device iphone \
   --output-partial-info-plist <out>/partial.plist --warnings --errors
 ```
 
@@ -440,7 +443,7 @@ Everything on the canvas, and what is not there yet.
 | Paywall | `Paywall` + `Paywall · dark` | Six invariants marked in source |
 | Settings ×3 | `Settings`, `· your targets`, `· delete account` | `· your targets` and `· delete account` carry check-in copy; see *Canvas drift* |
 | Constraint proofs | `Dark`, `Arabic RTL`, `Dynamic Type AX3` | **Day view only so far** |
-| Widgets (Step 14) | `Widget · small`, `Widget · medium`, `Widget · lock screen`, `Widget · lock screen states` | **Drawn 2 October.** Small is calories left only; medium adds a card of grams eaten, with bars against the target. The number is large ochre (`accentLarge`), with the dotted rule whenever an estimate is in it and none on a new day, because then it is the saved target. Five states: normal, new day, estimating, over, no data. The mascot sits in the corner (mascot rules 8 and 9). The lock screen has no mascot and one system gauge, for calories only. Never shown: a flame, a colour per macro, a streak, a burn, weight, or the app's name |
+| Widgets (Step 14) | `Widget · small`, `Widget · medium`, `Widget · lock screen`, `Widget · lock screen states` | **Drawn 2 October.** Small is calories left only; medium adds a card of grams eaten, with bars against the target. The number is large ochre (`accentLarge`), with the dotted rule whenever an estimate is in it and none on a new day, because then it is the saved target. Four states: normal, new day, over, no data. **The estimating state was dropped 3 October** — the canvas still draws it; build none of it, including the "1 still estimating" line. An unsettled meal is simply not counted yet. The mascot sits in the corner (mascot rules 8 and 9), and hides whenever iOS is not drawing in full colour (tinted and clear home screens). In tinted and clear, the macro card loses its ground and the bar tracks are drawn see-through, because iOS keeps only opacity. The lock screen has no mascot and one system gauge, for calories only. Never shown: a flame, a colour per macro, a streak, a burn, weight, or the app's name |
 
 **Deliberately not drawn:** age, height and goal weight (the weight artboard with a
 different label and range). **Not yet drawn:** reminders settings, appearance,

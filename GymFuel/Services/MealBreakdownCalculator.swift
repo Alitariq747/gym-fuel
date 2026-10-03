@@ -159,6 +159,13 @@ struct MealBreakdownCalculator {
         return sources.allSatisfy { $0 == .reference } ? .reference : .estimated
     }
 
+    /// A whole meal's provenance, as the entry screen decides it. Without a
+    /// breakdown — a typed total among them — the meal-level value stands.
+    func provenance(of feedback: LogEntryFeedback) -> MealProvenance {
+        guard let breakdown = feedback.breakdown else { return feedback.macrosProvenance ?? .estimated }
+        return provenance(of: breakdown)
+    }
+
     /// The nodes that actually carry a number. A descriptive component has no say
     /// in how certain the total is.
     private func contributingSources(of item: MealItem) -> [MealProvenance] {

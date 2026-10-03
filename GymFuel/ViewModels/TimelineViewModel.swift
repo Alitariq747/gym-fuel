@@ -40,6 +40,9 @@ final class TimelineViewModel: ObservableObject {
     private var previousEntryStatusesByID: [String: LogEntryStatus] = [:]
     private var attemptedImageUploadRetryEntryIDs: Set<String> = []
     private var timelineLoadTrace: Trace?
+    /// The day whose entries last arrived. `nil` while loading and after a
+    /// failure, when `timeline` is an empty placeholder.
+    private var loadedDay: Date?
 
     init(
         service: LogEntryService = FirebaseLogEntryService(),
@@ -64,6 +67,7 @@ final class TimelineViewModel: ObservableObject {
         }
 
         selectedDate = startOfDay
+        loadedDay = nil
         isLoading = true
         errorMessage = nil
         timelineLoadTrace = FirebaseTelemetryService.startPerformanceTrace("timeline_load_time")
@@ -84,6 +88,7 @@ final class TimelineViewModel: ObservableObject {
                     )
                     self.timelineLoadTrace = nil
                     self.trackStatusTransitions(for: entries)
+                    self.loadedDay = startOfDay
                     self.timeline = DayTimeline(date: startOfDay, entries: entries, calendar: calendar)
                     self.errorMessage = nil
                 case .failure(let error):
@@ -98,6 +103,7 @@ final class TimelineViewModel: ObservableObject {
                         for: error,
                         fallback: "We couldn't load your timeline. Please try again."
                     )
+                    self.loadedDay = nil
                     self.timeline = DayTimeline(date: startOfDay)
                 }
                 self.isLoading = false
@@ -118,6 +124,19 @@ final class TimelineViewModel: ObservableObject {
 
     func setSelectedDate(_ date: Date, userId: String, calendar: Calendar = .current) async {
         await loadTimeline(for: date, userId: userId, calendar: calendar)
+    }
+
+    func todaySnapshot(target: Macros?) -> TodaySnapshot? {
+        TodaySnapshot(today: timeline, isLoaded: loadedDay == timeline.date, target: target, eaten: consumedMacros)
+    }
+
+    func saveTodaySnapshot(_ snapshot: TodaySnapshot?) {
+        guard let snapshot else { return }
+        do {
+            try TodaySnapshotStore.save(snapshot)
+        } catch {
+            FirebaseTelemetryService.recordNonFatal(error, reason: "today_snapshot_save_failed")
+        }
     }
 
     func stopObservingEntries() {

@@ -173,6 +173,9 @@ enum Circa {
     enum Display {
         static let entryTotal: CGFloat = 44
         static let shareTotal: CGFloat = 30
+        static let widgetTotal: CGFloat = 32
+        static let widgetMediumTotal: CGFloat = 34
+        static let lockTotal: CGFloat = 24
     }
 
     enum Rule {

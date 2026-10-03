@@ -243,6 +243,7 @@ struct RootView: View {
             } else {
                 await subscriptionViewModel.syncUser(userId: nil)
                 profileViewModel.clear()
+                TodaySnapshotStore.clear()
             }
         }
         .onChange(of: scenePhase) { _, newPhase in

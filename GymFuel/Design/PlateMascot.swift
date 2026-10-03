@@ -8,13 +8,15 @@ struct PlateMascot: View {
     }
 
     let move: Move
+    /// The rest pose only, as under Reduce Motion. Widgets cannot animate (rule 6).
+    var isStill = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GeometryReader { proxy in
             Group {
-                if reduceMotion {
+                if reduceMotion || isStill {
                     figure(Idle(), move.rest)
                 } else {
                     KeyframeAnimator(initialValue: Idle(), repeating: true) { idle in

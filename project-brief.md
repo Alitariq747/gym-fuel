@@ -264,10 +264,10 @@ failure costs per completed meal. Compare cheaper image models on documented
 examples before switching. At $49.99/yr and a 15% commission, the monthly equivalent
 is about $3.54 before other costs; the quota alone does not prove the actual margin.
 
-### 7. Additional retention surfaces — after approval
+### 7. Additional retention surfaces
 
-Widgets remain after approval. Onboarding opt-in, fixed daily reminders and
-HealthKit body mass ship with the revamp. The core meal reuse experience remains
+Widgets, onboarding opt-in, fixed daily reminders and HealthKit body mass ship
+with the revamp. The core meal reuse experience remains
 required for launch. `build-order.md` owns timing.
 
 **Fixed daily reminders — Steps 3a and 12.** Simplified 2 October: the
@@ -290,8 +290,9 @@ one type, with a purpose string naming the actual use.
 **Widgets — `Step 14`.** The passive half of the loop. The app writes a small
 `TodaySnapshot` to an App Group container on every timeline change; the widget
 reads that and nothing else. **No Firebase in the extension** — a widget process
-reaching Firestore means its own auth, a cold start and a read per refresh. Tap is
-a `widgetURL` deep link. Read-only, so no App Intents are required.
+reaching Firestore means its own auth, a cold start and a read per refresh. A tap
+opens the app where it was left; there is no deep link. Read-only, so no App
+Intents are required.
 
 ---
 
@@ -330,7 +331,7 @@ sequence; one public release still permits focused TestFlight checks beforehand.
 | **6** | Backend, documented references, saved-version round trip | Shared contract with Step 5 |
 | **7** | Remaining visual sweep and final share card | Final meal presentation |
 | **8–10** | Rename, metadata, launch checks, screenshots, submission | Promises agree with working behavior |
-| **11–14** | CPPs/outreach and widgets; fixed reminders and HealthKit already built | Steps 11 and 14 after approval; device reminder checks remain in Step 12 |
+| **11–14** | CPPs/outreach; widgets, fixed reminders and HealthKit already built | Step 11 after approval; Step 14 built early; device reminder checks remain in Step 12 |
 
 ### Earlier exercise/dead-code audit — reference only
 
@@ -378,8 +379,8 @@ Do not treat it as new work or remove code without checking its current callers:
   17 September (§4). Targets change only when the user acts.
 - **App Intents, Siri, Shortcuts, and Control Center controls.** Decided
   7 September — too much lift for this stack. Widgets do not need them: a
-  read-only widget uses a `widgetURL` deep link, and only in-widget buttons would
-  require an intent. Revisit if Apple Intelligence surfaces start mattering for
+  read-only widget just opens the app, and only in-widget buttons would require
+  an intent. Revisit if Apple Intelligence surfaces start mattering for
   discovery.
 - **Push notifications and APNs.** Parked, not rejected — there is no push
   entitlement today and Step 12 does not need one.

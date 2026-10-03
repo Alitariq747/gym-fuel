@@ -301,6 +301,9 @@ struct MainTabView: View {
         .onChange(of: timelineViewModel.timeline.entries) { _, _ in
             retryFailedMealImageUploadsIfNeeded()
         }
+        .onChange(of: timelineViewModel.todaySnapshot(target: targetMacros), initial: true) { _, snapshot in
+            timelineViewModel.saveTodaySnapshot(snapshot)
+        }
         .onChange(of: composerViewModel.isSubmitting) { _, isSubmitting in
             if isSubmitting {
                 dismissComposerKeyboard()

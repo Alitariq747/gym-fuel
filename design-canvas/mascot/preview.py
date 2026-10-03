@@ -18,7 +18,7 @@ import json
 import pathlib
 
 HERE = pathlib.Path(__file__).resolve().parent
-ASSETS = HERE.parent.parent / "GymFuel" / "Assets.xcassets" / "Mascot"
+ASSETS = HERE.parent.parent / "GymFuel" / "SharedAssets.xcassets" / "Mascot"
 DRAFTS = HERE / "drafts"
 
 # Joints on the 300 × 300 canvas, the same numbers as Rig in PlateMascot.swift.

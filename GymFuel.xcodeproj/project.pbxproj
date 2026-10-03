@@ -12,6 +12,9 @@
 		301C35022F64B626000FF9B2 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 301C35012F64B626000FF9B2 /* FirebaseAppCheck */; };
 		30285C6830013759007F6824 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30285C6730013759007F6824 /* StoreKit.framework */; };
 		30285C6B30013816007F6824 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 30285C6A30013816007F6824 /* RevenueCat */; };
+		305F6FBD3070BA19009C0559 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 305F6FBC3070BA19009C0559 /* WidgetKit.framework */; };
+		305F6FBF3070BA19009C0559 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 305F6FBE3070BA19009C0559 /* SwiftUI.framework */; };
+		305F6FCA3070BA1C009C0559 /* TodayWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 305F6FBB3070BA18009C0559 /* TodayWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		30A54E512FA60D5700590A38 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 30A54E502FA60D5700590A38 /* FirebaseStorage */; };
 		30BA6FA92EE44DB700DD124D /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FA82EE44DB700DD124D /* FirebaseAnalytics */; };
 		30BA6FAB2EE44DB700DD124D /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 30BA6FAA2EE44DB700DD124D /* FirebaseAuth */; };
@@ -22,6 +25,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		305F6FC83070BA1C009C0559 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 30BA6F8F2EE44A5100DD124D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 305F6FBA3070BA18009C0559;
+			remoteInfo = TodayWidgetExtension;
+		};
 		30E717772F853A8400C68864 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 30BA6F8F2EE44A5100DD124D /* Project object */;
@@ -31,13 +41,54 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		305F6FCF3070BA1C009C0559 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				305F6FCA3070BA1C009C0559 /* TodayWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		30285C6730013759007F6824 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		305F6FBB3070BA18009C0559 /* TodayWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TodayWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		305F6FBC3070BA19009C0559 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		305F6FBE3070BA19009C0559 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		305F6FD03070BAEC009C0559 /* TodayWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TodayWidgetExtension.entitlements; sourceTree = "<group>"; };
 		30BA6F972EE44A5100DD124D /* LiftEats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiftEats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		30E717732F853A8400C68864 /* GymFuelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymFuelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		305F6FCE3070BA1C009C0559 /* Exceptions for "TodayWidget" folder in "TodayWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 305F6FBA3070BA18009C0559 /* TodayWidgetExtension */;
+		};
+		305F6FD83070C2EB009C0559 /* Exceptions for "GymFuel" folder in "TodayWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Design/CircaComponents.swift,
+				Design/CircaTheme.swift,
+				Design/PlateMascot.swift,
+				"Design/PlateMascot+Today.swift",
+				Design/PlateMascotMoves.swift,
+				Extras/TodayCopy.swift,
+				Models/Macros.swift,
+				Models/TodaySnapshot.swift,
+				Services/TodaySnapshotStore.swift,
+				SharedAssets.xcassets,
+			);
+			target = 305F6FBA3070BA18009C0559 /* TodayWidgetExtension */;
+		};
 		30C33C932F3A17ED00D4263A /* Exceptions for "GymFuel" folder in "GymFuel" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -48,10 +99,19 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		305F6FC03070BA19009C0559 /* TodayWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				305F6FCE3070BA1C009C0559 /* Exceptions for "TodayWidget" folder in "TodayWidgetExtension" target */,
+			);
+			path = TodayWidget;
+			sourceTree = "<group>";
+		};
 		30BA6F992EE44A5100DD124D /* GymFuel */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				30C33C932F3A17ED00D4263A /* Exceptions for "GymFuel" folder in "GymFuel" target */,
+				305F6FD83070C2EB009C0559 /* Exceptions for "GymFuel" folder in "TodayWidgetExtension" target */,
 			);
 			path = GymFuel;
 			sourceTree = "<group>";
@@ -64,6 +124,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		305F6FB83070BA18009C0559 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				305F6FBF3070BA19009C0559 /* SwiftUI.framework in Frameworks */,
+				305F6FBD3070BA19009C0559 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		30BA6F942EE44A5100DD124D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -96,8 +165,10 @@
 		30BA6F8E2EE44A5100DD124D = {
 			isa = PBXGroup;
 			children = (
+				305F6FD03070BAEC009C0559 /* TodayWidgetExtension.entitlements */,
 				30BA6F992EE44A5100DD124D /* GymFuel */,
 				30E717742F853A8400C68864 /* GymFuelTests */,
+				305F6FC03070BA19009C0559 /* TodayWidget */,
 				30EAF3D92F4487E300FBFB87 /* Frameworks */,
 				30BA6F982EE44A5100DD124D /* Products */,
 			);
@@ -108,6 +179,7 @@
 			children = (
 				30BA6F972EE44A5100DD124D /* LiftEats.app */,
 				30E717732F853A8400C68864 /* GymFuelTests.xctest */,
+				305F6FBB3070BA18009C0559 /* TodayWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,6 +188,8 @@
 			isa = PBXGroup;
 			children = (
 				30285C6730013759007F6824 /* StoreKit.framework */,
+				305F6FBC3070BA19009C0559 /* WidgetKit.framework */,
+				305F6FBE3070BA19009C0559 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -123,6 +197,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		305F6FBA3070BA18009C0559 /* TodayWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 305F6FCB3070BA1C009C0559 /* Build configuration list for PBXNativeTarget "TodayWidgetExtension" */;
+			buildPhases = (
+				305F6FB73070BA18009C0559 /* Sources */,
+				305F6FB83070BA18009C0559 /* Frameworks */,
+				305F6FB93070BA18009C0559 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				305F6FC03070BA19009C0559 /* TodayWidget */,
+			);
+			name = TodayWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = TodayWidgetExtension;
+			productReference = 305F6FBB3070BA18009C0559 /* TodayWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		30BA6F962EE44A5100DD124D /* GymFuel */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 30BA6FA22EE44A5200DD124D /* Build configuration list for PBXNativeTarget "GymFuel" */;
@@ -131,10 +227,12 @@
 				30BA6F942EE44A5100DD124D /* Frameworks */,
 				30BA6F952EE44A5100DD124D /* Resources */,
 				30C8A7042FE440F500F491EF /* ShellScript */,
+				305F6FCF3070BA1C009C0559 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				305F6FC93070BA1C009C0559 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				30BA6F992EE44A5100DD124D /* GymFuel */,
@@ -187,9 +285,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2640;
+				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
+					305F6FBA3070BA18009C0559 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					30BA6F962EE44A5100DD124D = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -220,11 +321,19 @@
 			targets = (
 				30BA6F962EE44A5100DD124D /* GymFuel */,
 				30E717722F853A8400C68864 /* GymFuelTests */,
+				305F6FBA3070BA18009C0559 /* TodayWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		305F6FB93070BA18009C0559 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		30BA6F952EE44A5100DD124D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -269,6 +378,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		305F6FB73070BA18009C0559 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		30BA6F932EE44A5100DD124D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -286,6 +402,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		305F6FC93070BA1C009C0559 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 305F6FBA3070BA18009C0559 /* TodayWidgetExtension */;
+			targetProxy = 305F6FC83070BA1C009C0559 /* PBXContainerItemProxy */;
+		};
 		30E717782F853A8400C68864 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 30BA6F962EE44A5100DD124D /* GymFuel */;
@@ -294,6 +415,79 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		305F6FCC3070BA1C009C0559 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TodayWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1.6;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8Q2JY29B23;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TodayWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TodayWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmad.GymFuel.TodayWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		305F6FCD3070BA1C009C0559 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TodayWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1.6;
+				DEVELOPMENT_TEAM = 8Q2JY29B23;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TodayWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TodayWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmad.GymFuel.TodayWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		30BA6FA02EE44A5200DD124D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -544,6 +738,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		305F6FCB3070BA1C009C0559 /* Build configuration list for PBXNativeTarget "TodayWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				305F6FCC3070BA1C009C0559 /* Debug */,
+				305F6FCD3070BA1C009C0559 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		30BA6F922EE44A5100DD124D /* Build configuration list for PBXProject "GymFuel" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

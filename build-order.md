@@ -46,7 +46,7 @@ Do not schedule "the redesign" as a phase. There isn't one.
 review, so they are genuinely post-launch work — but they need the new screenshots,
 so they cannot start early either.
 
-**Widgets come after approval** in Step 14. Step 12 now uses fixed daily reminders
+**Widgets ship at launch**: Step 14 was built early, on 3–4 October. Step 12 now uses fixed daily reminders
 with polished copy; the state-aware experiment was removed on 2 October. The core
 repeat-use experience ships at launch:
 corrected saved meals, the plan and weight history. Onboarding
@@ -81,7 +81,7 @@ fresh session reads this file, not the chat history.
 - [ ] **11** · After approval — CPPs, creator outreach
 - [x] **12** · Fixed daily reminders · *simplified, 2 October; device checks pending*
 - [x] **13** · HealthKit body mass — done early as 4a2
-- [ ] **14** · Widgets · *post-approval*
+- [x] **14** · Widgets · *built 3–4 October; device checks pending*
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
 and nothing here commits on your behalf. Fresh session for the next step.
@@ -943,7 +943,7 @@ then.
 # Retention
 
 Fixed daily reminders (Step 12) ship at launch; their state-aware experiment was
-removed. Widgets (Step 14) remain after approval and add a new target. Step 13
+removed. Widgets (Step 14) were built early and ship at launch, in their own target. Step 13
 was pulled forward into the launch build as 4a2.
 
 **App Intents, Siri, Shortcuts and Control Center controls are out.** Decided
@@ -1035,13 +1035,23 @@ The passive half of the retention loop. Read-only. Drawn on the canvas, row 8
 Firestore — its own auth via keychain access groups, a cold start, a network
 round trip, and a read burned on every timeline refresh. The design is one-way:
 the app writes a small `Codable` `TodaySnapshot` into an App Group container
-whenever the timeline changes, then calls
-`WidgetCenter.shared.reloadTimelines(ofKind:)`. The widget reads only that file.
+whenever today's entries or the saved target change, then calls
+`WidgetCenter.shared.reloadAllTimelines()` — there is one widget kind, so no name
+has to match in two places. The widget reads only that file.
+The Day screen (`MainTabView`) writes it, because it holds both the entries and
+the target, and only while it is showing today. Decided 3 October.
+
+**The widget learns only what the app writes.** A meal that finishes estimating
+while the app is closed reaches the widget the next time the app opens, or is
+replaced at midnight. Accepted 3 October: the alternatives are push or Firebase in
+the extension, and both are out.
 
 Snapshot: the day it describes; target and eaten calories, protein, carbs and
-fat, with eaten counting settled entries only; how many entries are logged and how
-many are still estimating; and whether any settled nutrition is an estimate, which
-decides the dotted rule. **No burn, streak or weight field** — see Steps 3 and 12.
+fat, with eaten counting settled entries only; how many entries are logged; and
+whether any settled nutrition is an estimate, which decides the dotted rule. **No
+burn, streak or weight field** — see Steps 3 and 12. **No estimating count:** the
+widget never says a meal is still estimating; an unsettled meal is simply not
+counted yet, as on the Day card. Dropped 3 October as overkill.
 
 **A snapshot from an earlier day rolls over.** At midnight the widget shows a new
 day from the saved target: the whole target left, nothing eaten. Targets change only
@@ -1054,9 +1064,15 @@ out, or no saved target yet — the widget asks the person to open the app.
   `accessoryRectangular`. No large widget.
 - **The mascot appears on home-screen widgets only, never the lock screen,** and
   never reacts to the numbers (`design.md`, mascot rules 8 and 9). On the lock
-  screen, progress is the system gauge: one ring, calories only.
-- **A tap opens Today** through the `widgetURL`, at every size. **No App
-  Intents**, and no second link.
+  screen, progress is the system gauge: one ring, calories only. **It also hides
+  whenever iOS is not drawing in full colour** — tinted and clear home screens
+  (iOS 18+) recolour it, which mascot rule 7 forbids. Decided 3 October.
+- **Light and dark follow the phone,** not the in-app appearance setting, which
+  cannot reach a widget cleanly. Decided 3 October.
+- **A tap opens the app where it was left.** No `widgetURL` and no deep link:
+  a fresh launch starts on today, and a resumed app keeps its day and any open
+  sheet. The "go to today" link was dropped on 4 October as not worth it. **No
+  App Intents.**
 - **Free.** No entitlement check; the extension couldn't reach RevenueCat anyway.
 - **The number shows on the Lock Screen** whenever the screen is on, with no
   privacy hiding. Decided 2 October.
@@ -1066,17 +1082,40 @@ out, or no saved target yet — the widget asks the person to open the app.
   again.
 - **App Group:** `group.com.ahmad.GymFuel`. Step 8 kept the bundle identifier, so
   this is settled.
+- **The extension's version and build numbers always match the app's.** Raise
+  both together for every upload; App Store Connect flags a mismatch.
 
-**Files** new Widget Extension target · new shared `TodaySnapshot.swift`, with
-tests for rollover and state selection · `TimelineViewModel` write point · snapshot
-clear on sign-out and deletion · `GymFuelApp.swift` deep link · `Info.plist` URL
-scheme · a still mode for `PlateMascot.swift` · entitlements on both targets ·
-`CircaTheme.swift`, the glyphs, and the Mascot and Macros assets shared with the
-extension
+**Files** new `TodayWidgetExtension` target (`TodayWidget/`) · shared with it:
+`TodaySnapshot.swift`, `TodaySnapshotStore.swift`, `TodayCopy.swift`,
+`PlateMascot+Today.swift`, `Macros.swift`, `CircaTheme.swift`,
+`CircaComponents.swift` and the mascot · app only: `TodaySnapshot+Entries.swift`,
+the write point on the Day screen, the clear on sign-out and deletion · a still
+mode for `PlateMascot.swift` · `CircaMacroBar` pulled out of `CircaMacroBars` ·
+the Mascot and Macros drawings moved to `SharedAssets.xcassets` · entitlements on
+both targets · tests for the snapshot, the copy and the pose
 
 **Done when** the widget matches the app within one refresh of a log, a cold device
 shows the open-the-app state rather than zeros, and the widget rolls over at
 midnight without the app opening.
+
+**Built 3–4 October** in seven parts. Things the canvas does not say:
+
+- **Text size.** The small widget stays at standard size — one step larger runs
+  its last line into the mascot. The medium headline grows one step; its macro
+  card does not, or the three columns stop fitting on an SE. The Lock Screen
+  grows one step.
+- **The small widget's mascot sits 4 pt below the canvas**, so a descender in the
+  last line clears the plate.
+- **The Lock Screen ring keeps the system gauge's own size** (about 58 pt) in the
+  rectangle too; squeezed to the canvas's 40 pt it spills over the number. The
+  inline line is text only — a custom image there was judged too unreliable.
+
+**Validation:** 40 tests across `TodaySnapshotTests`, `TodayCopyTests` and
+`TodayMascotTests`. Every home-screen and Lock Screen state was rendered in the
+simulator, light and dark, at the regular and SE sizes and the largest allowed
+text. Device checks still owed: the overnight rollover without opening the app, a
+Lock Screen read while locked, a cold install showing "Your day shows here", and
+Debug and Release builds after the last part.
 
 ---
 
@@ -1090,8 +1129,8 @@ Reduce optional breadth first; do not reopen completed Steps 0–4.
 3. **Share-card variants and destination-specific integrations** — keep one
    readable card and the system share sheet.
 
-Steps 12 and 14 are not on this list. They are after approval either way, and
-Step 13 already shipped as 4a2.
+Steps 12 and 14 are not on this list: both are already built, and Step 13
+already shipped as 4a2.
 
 **Required for launch:** completed Steps 0–4, the editable meal and saved-version
 contract (5–6), and the coherent visual sweep (7).
@@ -1109,4 +1148,4 @@ contract (5–6), and the coherent visual sweep (7).
 | Before Step 10 | The live privacy policy and terms updated for the revamp, including Apple Health (App Store 5.1.3) — once the app is final, before submission |
 | Step 11 | Creator list |
 | ~~Before Step 13~~ | ~~HealthKit capability enabled on the App ID~~ — **done 12 September, in 4a2** |
-| Before Step 14 | Register `group.com.ahmad.GymFuel` on both App IDs, and add the Widget Extension target in Xcode |
+| ~~Before Step 14~~ | ~~Register `group.com.ahmad.GymFuel` on both App IDs, and add the Widget Extension target in Xcode~~ — **done 3 October:** target `TodayWidgetExtension`, bundle `com.ahmad.GymFuel.TodayWidget` |

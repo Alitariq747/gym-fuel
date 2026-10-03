@@ -25,6 +25,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 // MARK: - Metrics local to the kit
 
@@ -45,6 +46,7 @@ private enum Kit {
     static let barHeight: CGFloat = 3
     static let barHeightAX: CGFloat = 4
     static let barRadius: CGFloat = 2
+    static let recolouredTrackOpacity: Double = 0.3
 
     static let dockItemHeight: CGFloat = 48
     static let dockItemHeightAX: CGFloat = 56
@@ -415,6 +417,33 @@ struct CircaMacroValue: Equatable {
         guard target > 0 else { return 0 }
         return min(max(Double(consumed) / Double(target), 0), 1)
     }
+
+    /// What VoiceOver says for one macro, wherever its bar is drawn.
+    func spoken(_ name: String) -> String {
+        "\(name), \(consumed) of \(target) grams"
+    }
+}
+
+/// One macro's bar: ink filling its track toward the target, never past it.
+struct CircaMacroBar: View {
+    let value: CircaMacroValue
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                // Tinted and clear widgets keep only opacity: a solid track would match the fill.
+                RoundedRectangle(cornerRadius: Kit.barRadius, style: .continuous)
+                    .fill(renderingMode == .fullColor ? Color.circaBarTrack : Color.circaInk.opacity(Kit.recolouredTrackOpacity))
+                RoundedRectangle(cornerRadius: Kit.barRadius, style: .continuous)
+                    .fill(Color.circaInk)
+                    .frame(width: geo.size.width * value.fraction)
+            }
+        }
+        .frame(height: typeSize.isAccessibilitySize ? Kit.barHeightAX : Kit.barHeight)
+    }
 }
 
 /// The three macro bars under a day total.
@@ -448,16 +477,7 @@ struct CircaMacroBars: View {
 
     private func bar(_ glyph: CircaMacroGlyph.Macro, _ name: String, _ value: CircaMacroValue) -> some View {
         VStack(alignment: .leading, spacing: isStacked ? 6 : 5) {
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: Kit.barRadius, style: .continuous)
-                        .fill(Color.circaBarTrack)
-                    RoundedRectangle(cornerRadius: Kit.barRadius, style: .continuous)
-                        .fill(Color.circaInk)
-                        .frame(width: geo.size.width * value.fraction)
-                }
-            }
-            .frame(height: isStacked ? Kit.barHeightAX : Kit.barHeight)
+            CircaMacroBar(value: value)
 
             // Bare, without the well: three columns leave no room for one.
             HStack(spacing: 4) {
@@ -471,7 +491,7 @@ struct CircaMacroBars: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(name), \(value.consumed) of \(value.target) grams")
+        .accessibilityLabel(value.spoken(name))
     }
 }
 
