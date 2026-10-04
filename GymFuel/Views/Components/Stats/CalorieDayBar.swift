@@ -17,6 +17,10 @@ enum CalorieBarPlot {
     /// Distance from the top of the plot down to the target line.
     static var targetInset: CGFloat { height * (1 - 1 / headroom) }
     static let barRadius: CGFloat = 5
+
+    static func caloriesLabel(for day: DailyStatsSnapshot) -> String {
+        day.hasFood ? Int(day.caloriesEaten.rounded()).formatted() : "—"
+    }
 }
 
 /// One day of the week's food, from the `Week` artboard. A day with nothing on
@@ -24,6 +28,9 @@ enum CalorieBarPlot {
 /// `Week · day 2` — so five days still to come read as waiting, not as fasting.
 struct CalorieDayBar: View {
     let day: DailyStatsSnapshot
+    /// The week's longest calorie label. Every bar's label takes its width, so all
+    /// seven make the same choice below: numbers under every bar or under none.
+    let widestLabel: String
     @Environment(\.dynamicTypeSize) private var typeSize
 
     private var fillRatio: Double {
@@ -46,14 +53,25 @@ struct CalorieDayBar: View {
                 .font(.circaMono)
                 .foregroundStyle(day.hasFood ? Color.circaInk3 : Color.circaDotted)
             if !typeSize.isAccessibilitySize {
-                Text(day.hasFood ? Int(day.caloriesEaten.rounded()).formatted() : "—")
-                    .font(.circaMono)
-                    .monospacedDigit()
-                    .foregroundStyle(day.hasFood ? Color.circaInk3 : Color.circaDotted)
+                ViewThatFits(in: .horizontal) {
+                    caloriesLabel
+                    caloriesLabel.dynamicTypeSize(...DynamicTypeSize.large)
+                    Color.clear.frame(width: 0, height: 0)
+                }
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var caloriesLabel: some View {
+        ZStack {
+            Text(widestLabel).hidden()
+            Text(CalorieBarPlot.caloriesLabel(for: day))
+                .foregroundStyle(day.hasFood ? Color.circaInk3 : Color.circaDotted)
+        }
+        .font(.circaMono)
+        .monospacedDigit()
     }
 
     private var plot: some View {

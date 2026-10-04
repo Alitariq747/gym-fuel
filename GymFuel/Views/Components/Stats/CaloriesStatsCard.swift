@@ -10,11 +10,10 @@ import SwiftUI
 /// The week's food, from the `Week` artboard: seven bars against the target, and
 /// underneath them how many days landed in range.
 ///
-/// Below `minimumDaysForAverages` the footer says what is missing instead of
-/// summarising two days as if they were a week — `Week · day 2`.
+/// Below `minimumDaysForAverages` the header counts days instead of averaging
+/// them. The legend's counts are not averages, so it shows from the first day.
 struct CaloriesStatsCard: View {
     let snapshot: StatsSnapshot
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var calorieTargetLabel: String? {
         guard let target = snapshot.dailyStats.compactMap(\.targetCalories).first else { return nil }
@@ -51,9 +50,10 @@ struct CaloriesStatsCard: View {
     }
 
     private var chart: some View {
-        HStack(alignment: .bottom, spacing: 8) {
+        let widestLabel = snapshot.dailyStats.map(CalorieBarPlot.caloriesLabel(for:)).max { $0.count < $1.count } ?? ""
+        return HStack(alignment: .bottom, spacing: 8) {
             ForEach(snapshot.dailyStats) { day in
-                CalorieDayBar(day: day)
+                CalorieDayBar(day: day, widestLabel: widestLabel)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -79,10 +79,10 @@ struct CaloriesStatsCard: View {
 
     @ViewBuilder
     private var footer: some View {
-        if snapshot.hasEnoughDaysForAverages {
+        if snapshot.daysWithFood > 0 {
             legend
         } else {
-            Text("Averages appear once there are \(StatsSnapshot.minimumDaysForAverages) days to average.")
+            Text("Nothing logged this week.")
                 .font(.circaCaption)
                 .foregroundStyle(Color.circaInk3)
                 .fixedSize(horizontal: false, vertical: true)
@@ -90,17 +90,20 @@ struct CaloriesStatsCard: View {
     }
 
     private var legend: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
-            : AnyLayout(HStackLayout(spacing: 14))
-        return layout {
-            legendItem(swatch: Color.circaInk, title: "\(snapshot.calorieTargetDays) days in range")
-            legendItem(swatch: Color.circaAccentLarge, title: "\(snapshot.daysOutsideCalorieRange) outside")
-            if let calorieTargetLabel {
-                HStack(spacing: 6) {
-                    targetRule.frame(width: 16)
-                    legendText("target \(calorieTargetLabel)")
-                }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 14) { legendItems }
+            VStack(alignment: .leading, spacing: 8) { legendItems }
+        }
+    }
+
+    @ViewBuilder
+    private var legendItems: some View {
+        legendItem(swatch: Color.circaInk, title: "\(snapshot.calorieTargetDays) \(snapshot.calorieTargetDays == 1 ? "day" : "days") in range")
+        legendItem(swatch: Color.circaAccentLarge, title: "\(snapshot.daysOutsideCalorieRange) outside")
+        if let calorieTargetLabel {
+            HStack(spacing: 6) {
+                targetRule.frame(width: 16)
+                legendText("target \(calorieTargetLabel)")
             }
         }
     }

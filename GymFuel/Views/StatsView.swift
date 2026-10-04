@@ -169,9 +169,9 @@ struct StatsView: View {
 
     /// Daily average against target, from the `Week` artboard.
     ///
-    /// `Week · day 2` has no such card, and this follows it: a "daily average"
-    /// over two days is the same overclaim `CaloriesStatsCard`'s gate exists to
-    /// avoid, so the whole card waits for the fourth day with food.
+    /// A "daily average" over two days is the same overclaim `CaloriesStatsCard`'s
+    /// gate exists to avoid, so until the fourth day with food the days are listed
+    /// instead (design.md, *Canvas drift*, `Week · day 2`).
     @ViewBuilder
     private var macroSection: some View {
         if snapshot.hasEnoughDaysForAverages {
@@ -191,6 +191,8 @@ struct StatsView: View {
                     }
                 }
             }
+        } else if snapshot.daysWithFood > 0 {
+            StatsMacroDaysCard(snapshot: snapshot)
         }
     }
 
