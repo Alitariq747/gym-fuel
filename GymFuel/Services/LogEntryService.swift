@@ -29,5 +29,5 @@ protocol LogEntryService: Sendable {
     func replaceEntryLocally(_ entry: LogEntry) throws
     func saveEntry(_ entry: LogEntry) async throws
     func updateEntry(_ entry: LogEntry) async throws
-    func deleteEntry(userId: String, entryId: String) async throws
+    func deleteEntryLocally(userId: String, entryId: String)
 }

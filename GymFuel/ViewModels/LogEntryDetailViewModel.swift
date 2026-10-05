@@ -18,15 +18,18 @@ final class LogEntryDetailViewModel: ObservableObject {
     private let service: LogEntryService
     private let interpretationService: LogInterpretationService
     private let mealImageUploadService: MealImageUploadService
+    private let networkMonitor: NetworkMonitoring
 
     init(
         service: LogEntryService = FirebaseLogEntryService(),
         interpretationService: LogInterpretationService = BackendLogInterpretationService(),
-        mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService()
+        mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService(),
+        networkMonitor: NetworkMonitoring = NetworkMonitor.shared
     ) {
         self.service = service
         self.interpretationService = interpretationService
         self.mealImageUploadService = mealImageUploadService
+        self.networkMonitor = networkMonitor
     }
 
     func clearError() {
@@ -138,10 +141,17 @@ final class LogEntryDetailViewModel: ObservableObject {
         clearActionError()
 
         do {
+            // Storage can't queue a delete offline, and the photo must go first:
+            // only the document records where it is.
             if let storagePath = entry.image?.storagePath {
+                guard networkMonitor.isConnected else {
+                    setActionError("You're offline. Reconnect and try again.")
+                    isSaving = false
+                    return false
+                }
                 try await mealImageUploadService.deleteMealImage(at: storagePath)
             }
-            try await service.deleteEntry(userId: entry.userId, entryId: entry.id)
+            service.deleteEntryLocally(userId: entry.userId, entryId: entry.id)
             await deleteCachedMealImage(entryId: entry.id)
             isSaving = false
             return true

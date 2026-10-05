@@ -183,17 +183,7 @@ extension FirebaseLogEntryService: LogEntryService {
         }
     }
 
-    func deleteEntry(userId: String, entryId: String) async throws {
-        let docRef = entriesCollection(for: userId).document(entryId)
-
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            docRef.delete { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(returning: ())
-                }
-            }
-        }
+    func deleteEntryLocally(userId: String, entryId: String) {
+        entriesCollection(for: userId).document(entryId).delete()
     }
 }
