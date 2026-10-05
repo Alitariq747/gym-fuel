@@ -4,7 +4,11 @@ import Testing
 
 struct MealPhotoPresentationTests {
     private let date = Date(timeIntervalSince1970: 1_700_000_000)
-    private let image = PreparedMealImage(originalData: Data([1]), compressedJPEGData: Data([2]))
+    private let photo = ConfirmedMealPhoto(
+        image: PreparedMealImage(originalData: Data([1]), compressedJPEGData: Data([2])),
+        description: "rice and stew",
+        isDescriptionEdited: false
+    )
 
     @Test("Opening again cannot replace an active session or its logging date")
     func preventReopening() throws {
@@ -23,7 +27,7 @@ struct MealPhotoPresentationTests {
         presentation.present(source: .photoLibrary, loggedAt: date)
         let id = try #require(presentation.session?.id)
         presentation.dismiss()
-        presentation.confirm(image, source: .photoLibrary)
+        presentation.confirm(photo, source: .photoLibrary)
         #expect(presentation.isActive)
         let cancelled = presentation.finishDismissal(sessionID: id)
         #expect(cancelled == nil)
@@ -37,15 +41,20 @@ struct MealPhotoPresentationTests {
         let id = try #require(presentation.session?.id)
         let premature = presentation.finishDismissal(sessionID: id)
         #expect(premature == nil)
-        presentation.confirm(image, source: .camera)
-        presentation.confirm(PreparedMealImage(originalData: Data([9]), compressedJPEGData: Data([9])), source: .camera)
+        presentation.confirm(photo, source: .camera)
+        presentation.confirm(ConfirmedMealPhoto(
+            image: PreparedMealImage(originalData: Data([9]), compressedJPEGData: Data([9])),
+            description: "bread",
+            isDescriptionEdited: true
+        ), source: .camera)
         presentation.dismiss()
         presentation.present(source: .photoLibrary, loggedAt: .now)
         #expect(presentation.isActive)
         #expect(presentation.isDismissing)
         let result = presentation.finishDismissal(sessionID: id)
         let submission = try #require(result)
-        #expect(submission.image.compressedJPEGData == image.compressedJPEGData)
+        #expect(submission.photo.image.compressedJPEGData == photo.image.compressedJPEGData)
+        #expect(submission.photo.description == photo.description)
         #expect(submission.loggedAt == date)
         let repeated = presentation.finishDismissal(sessionID: id)
         #expect(repeated == nil)
@@ -56,7 +65,7 @@ struct MealPhotoPresentationTests {
     func rejectWrongSource() {
         var presentation = MealPhotoPresentation()
         presentation.present(source: .camera, loggedAt: date)
-        presentation.confirm(image, source: .photoLibrary)
+        presentation.confirm(photo, source: .photoLibrary)
         #expect(!presentation.isDismissing)
     }
 
@@ -65,7 +74,7 @@ struct MealPhotoPresentationTests {
         var presentation = MealPhotoPresentation()
         presentation.present(source: .camera, loggedAt: date)
         let id = try #require(presentation.session?.id)
-        presentation.confirm(image, source: .camera)
+        presentation.confirm(photo, source: .camera)
         presentation.cancel()
         let cancelled = presentation.finishDismissal(sessionID: id)
         #expect(cancelled == nil)
@@ -81,11 +90,11 @@ struct MealPhotoPresentationTests {
         presentation.cancel()
         presentation.present(source: .photoLibrary, loggedAt: date)
         let newID = try #require(presentation.session?.id)
-        presentation.confirm(image, source: .photoLibrary)
+        presentation.confirm(photo, source: .photoLibrary)
         let stale = presentation.finishDismissal(sessionID: oldID)
         #expect(stale == nil)
         #expect(presentation.session?.id == newID)
         let current = presentation.finishDismissal(sessionID: newID)
-        #expect(current?.image.originalData == image.originalData)
+        #expect(current?.photo.image.originalData == photo.image.originalData)
     }
 }

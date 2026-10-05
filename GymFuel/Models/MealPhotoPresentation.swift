@@ -8,13 +8,13 @@ struct MealPhotoPresentation {
     }
 
     struct Submission {
-        let image: PreparedMealImage
+        let photo: ConfirmedMealPhoto
         let loggedAt: Date
     }
 
     private(set) var session: Session?
     private(set) var isDismissing = false
-    private var confirmedImage: PreparedMealImage?
+    private var confirmedPhoto: ConfirmedMealPhoto?
     var isActive: Bool { session != nil }
 
     mutating func present(source: MealImageSource, loggedAt: Date) {
@@ -27,17 +27,17 @@ struct MealPhotoPresentation {
         isDismissing = true
     }
 
-    mutating func confirm(_ image: PreparedMealImage, source: MealImageSource) {
+    mutating func confirm(_ photo: ConfirmedMealPhoto, source: MealImageSource) {
         guard session?.source == source, !isDismissing else { return }
-        confirmedImage = image
+        confirmedPhoto = photo
         isDismissing = true
     }
 
     mutating func finishDismissal(sessionID: UUID) -> Submission? {
         guard let session, session.id == sessionID, isDismissing else { return nil }
         defer { cancel() }
-        guard let confirmedImage else { return nil }
-        return Submission(image: confirmedImage, loggedAt: session.loggedAt)
+        guard let confirmedPhoto else { return nil }
+        return Submission(photo: confirmedPhoto, loggedAt: session.loggedAt)
     }
 
     mutating func cancel() {

@@ -120,7 +120,7 @@ enum MealCopy {
 
         switch preserved {
         case .words: return "\(lead) Your words are saved — nothing to retype."
-        case .photo: return "\(lead) Your photo is saved — nothing to re-shoot."
+        case .photo: return "\(lead) Your photo and description are saved — nothing to redo."
         }
     }
 

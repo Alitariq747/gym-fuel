@@ -8,8 +8,10 @@ protocol LogInterpretationService: Sendable {
         loggedAt: Date
     ) async throws -> LogEntry
 
-    func interpretMealImage(
-        _ imageData: Data,
+    func describeMealImage(_ imageData: Data) async throws -> String
+
+    func interpretPhotoDescription(
+        _ text: String,
         userId: String,
         goal: GoalType,
         loggedAt: Date

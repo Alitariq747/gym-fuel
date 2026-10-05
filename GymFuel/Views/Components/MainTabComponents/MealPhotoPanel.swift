@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MealPhotoPanel<Content: View>: View {
     let isReviewing: Bool
+    var isExpanded = false
     let isDismissing: Bool
     let onClose: () -> Void
     let onDismissed: () -> Void
@@ -18,7 +19,7 @@ struct MealPhotoPanel<Content: View>: View {
         GeometryReader { geometry in
             let width = max(0, geometry.size.width - margin * 2)
             let availableHeight = max(0, geometry.size.height - margin * 2)
-            let height = isReviewing && typeSize.isAccessibilitySize
+            let height = isExpanded || isReviewing && typeSize.isAccessibilitySize
                 ? availableHeight : min(width * 4 / 3, availableHeight)
             ZStack(alignment: .bottom) {
                 Color.clear
@@ -32,6 +33,7 @@ struct MealPhotoPanel<Content: View>: View {
                 }
                 .padding(isReviewing ? Circa.Space.screenMargin : 0)
                 .frame(width: width, height: height)
+                .animation(animation, value: isExpanded)
                 .background {
                     if isReviewing { LinearGradient.circaPaper }
                     else { Color(white: 0.12) }

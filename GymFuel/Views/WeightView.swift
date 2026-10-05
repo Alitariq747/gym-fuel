@@ -43,9 +43,6 @@ struct WeightView: View {
                     WeightChart(series: viewModel.series, unit: unit, domain: viewModel.chartDomain(), plan: plan)
                 }
 
-                Button("Adjust targets") { isTargetsPresented = true }
-                    .buttonStyle(.circa(.secondary))
-
                 if let message = viewModel.errorMessage ?? profileVm.errorMessage {
                     Text(message)
                         .font(.circaCaption)

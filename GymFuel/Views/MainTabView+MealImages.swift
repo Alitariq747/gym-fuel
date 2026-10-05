@@ -35,8 +35,8 @@ extension MainTabView {
         mealPhotoPresentation.present(source: source, loggedAt: loggedAtForSelectedDay())
     }
 
-    func confirmMealPhoto(_ image: PreparedMealImage, source: MealImageSource) {
-        mealPhotoPresentation.confirm(image, source: source)
+    func confirmMealPhoto(_ photo: ConfirmedMealPhoto, source: MealImageSource) {
+        mealPhotoPresentation.confirm(photo, source: source)
     }
 
     func submitConfirmedMealPhoto(sessionID: UUID) {
@@ -44,15 +44,15 @@ extension MainTabView {
         isSubmittingMealPhoto = true
         Task {
             defer { isSubmittingMealPhoto = false }
-            await analyzePreparedMealImage(submission.image, loggedAt: submission.loggedAt)
+            await analyzePreparedMealImage(submission.photo, loggedAt: submission.loggedAt)
         }
     }
 
-    func analyzePreparedMealImage(_ image: PreparedMealImage, loggedAt: Date) async {
+    func analyzePreparedMealImage(_ photo: ConfirmedMealPhoto, loggedAt: Date) async {
         dismissComposerKeyboard()
         guard canUseAIFeatures(), !composerViewModel.isSubmitting else { return }
 
-        let imageData = image.compressedJPEGData
+        let imageData = photo.image.compressedJPEGData
         let goalType = profile.goalType ?? GoalType.defaultValue
         let entryId = UUID().uuidString
         timelineViewModel.setLocalImagePreviewData(imageData, for: entryId)
@@ -62,6 +62,8 @@ extension MainTabView {
         }.value
         let savedEntry = await composerViewModel.submitMealImage(
             imageData,
+            description: photo.description,
+            isDescriptionEdited: photo.isDescriptionEdited,
             userId: profile.id,
             goal: goalType,
             loggedAt: loggedAt,

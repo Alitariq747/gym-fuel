@@ -23,7 +23,6 @@ struct WeightTrendCard: View {
     var onOpen: (() -> Void)? = nil
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @State private var isSourcesPresented = false
 
     var body: some View {
         CircaCard {
@@ -50,14 +49,7 @@ struct WeightTrendCard: View {
                     Button("See weigh-ins and plan", action: onOpen)
                         .buttonStyle(.circa(.link, height: 32))
                 }
-
-                // One tap from the number to the method and its citations.
-                Button("How the trend is calculated") { isSourcesPresented = true }
-                    .buttonStyle(.circa(.link, height: 32))
             }
-        }
-        .sheet(isPresented: $isSourcesPresented) {
-            NutritionSourcesView()
         }
     }
 

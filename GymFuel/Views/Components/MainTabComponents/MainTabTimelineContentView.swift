@@ -11,6 +11,7 @@ struct MainTabTimelineContentView: View {
 
     @State private var lastAutoScrolledPendingEntryID: String?
     @ScaledMetric(relativeTo: .largeTitle) private var emptyGlyphSize: CGFloat = 34
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -55,9 +56,11 @@ struct MainTabTimelineContentView: View {
                     ForEach(viewModel.timeline.entries) { entry in
                         timelineButton(for: entry)
                             .id(entry.id)
+                            .transition(.opacity.combined(with: .offset(y: 12)))
                     }
                 }
                 .padding(.bottom, bottomContentInset)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: viewModel.timeline.entries.map(\.id))
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)

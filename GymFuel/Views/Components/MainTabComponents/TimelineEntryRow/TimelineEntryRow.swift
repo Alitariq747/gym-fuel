@@ -9,7 +9,7 @@ struct TimelineEntryRow: View {
     @State private var imageAnalysisMessageTask: Task<Void, Never>?
     @Environment(\.dynamicTypeSize) private var typeSize
     private let settleAnimationDuration = 0.3
-    private static let firstImageAnalysisMessage = "reading your meal"
+    private static let firstImageAnalysisMessage = "estimating calories and macros"
 
     private var rowState: TimelineEntryRowState {
         TimelineEntryRowState(entry: entry, localPreviewData: localPreviewData)
@@ -28,26 +28,22 @@ struct TimelineEntryRow: View {
         imageAnalysisMessageTask = Task {
             try? await Task.sleep(for: .seconds(3))
             guard !Task.isCancelled else { return }
-            await MainActor.run { imageAnalysisMessage = "estimating calories and macros" }
-
-            try? await Task.sleep(for: .seconds(3))
-            guard !Task.isCancelled else { return }
             await MainActor.run { imageAnalysisMessage = "preparing your summary" }
         }
     }
 
     var body: some View {
         Group {
-            switch entry.status {
-            case .succeeded: settledRow
-            case .analyzing: analysingRow
-            case .failed: failedCard
+            if entry.status == .failed {
+                failedCard
+            } else {
+                entryRow
             }
         }
-        // The estimate fades in over the pending rule that is already there.
-        // design.md rule 1 — nothing jumps when the number lands, so this is one
-        // transition on the value, never a sequence that grows the row.
-        .animation(.easeInOut(duration: settleAnimationDuration), value: entry.feedback?.macros)
+        .animation(.easeInOut(duration: settleAnimationDuration), value: entry.status)
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.5), trigger: entry.status) { (old: LogEntryStatus, new: LogEntryStatus) in
+            old == .analyzing && new == .succeeded
+        }
         .onAppear {
             syncImageAnalysisMessageState()
         }
@@ -60,12 +56,18 @@ struct TimelineEntryRow: View {
         }
     }
 
+    /// One row in both states, so its parts settle in place over the rule that
+    /// is already there, rather than the row being swapped.
+    private var entryRow: CircaEntryRow {
+        entry.status == .analyzing ? analysingRow : settledRow
+    }
+
     // MARK: - Settled
 
     /// A meal that has landed. The whole row is the kit's — including the
     /// certainty rule under the number and the AX3 vertical layout, neither of
     /// which this screen re-solves.
-    private var settledRow: some View {
+    private var settledRow: CircaEntryRow {
         CircaEntryRow(
             title: displayTitle,
             calories: MealCopy.calories(rowState.feedback?.macros),
@@ -152,9 +154,9 @@ struct TimelineEntryRow: View {
     /// Built from the `Analysing · text + photo` artboard. The same row, the same
     /// well and the same place for the number — only the number is missing, and
     /// the rule is already holding its spot (design.md rule 1).
-    private var analysingRow: some View {
+    private var analysingRow: CircaEntryRow {
         CircaEntryRow(
-            title: rowState.isAnalyzingImageEntry ? "Meal photo" : entry.rawInput,
+            title: rowState.isAnalyzingImageEntry ? "Working out your meal" : entry.rawInput,
             calories: nil,
             certainty: .pending,
             meta: rowState.isAnalyzingImageEntry ? imageAnalysisMessage : "estimating",
@@ -174,7 +176,7 @@ struct TimelineEntryRow: View {
                 failedLeading
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(rowState.isMealImageEntry ? "your photo" : displayTitle)
+                    Text(rowState.isMealImageEntry ? "Not estimated yet" : displayTitle)
                         .font(.circaEntryTitle)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -239,52 +241,6 @@ struct TimelineEntryRow: View {
                 delete
                 Spacer(minLength: 0)
             }
-        }
-    }
-}
-
-/// The sweep across a photo that is being read. Paired with `CircaProgressRail`
-/// under the row, never with a percentage.
-private struct ImageAnalysisScannerOverlay: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isScanning = false
-
-    var body: some View {
-        GeometryReader { proxy in
-            let width = max(proxy.size.width, 1)
-            let scannerWidth = max(width * 0.28, 18)
-
-            ZStack(alignment: .leading) {
-                Color.clear
-
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.clear,
-                                Color.white.opacity(0.26),
-                                Color.white.opacity(0.18),
-                                Color.clear
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: scannerWidth)
-                    .offset(x: reduceMotion ? width * 0.36 : (isScanning ? width : -scannerWidth))
-            }
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-        .onAppear {
-            guard !reduceMotion else { return }
-            isScanning = false
-            withAnimation(.easeInOut(duration: 1.55).repeatForever(autoreverses: false)) {
-                isScanning = true
-            }
-        }
-        .onChange(of: reduceMotion) { _, isEnabled in
-            if isEnabled { isScanning = false }
         }
     }
 }

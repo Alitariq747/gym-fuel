@@ -247,8 +247,8 @@ final class LogComposerViewModel: ObservableObject {
             retryingEntry.feedback = nil
             try await logEntryService.updateEntry(retryingEntry)
 
-            let interpretedEntry = try await interpretationService.interpretMealImage(
-                imageData,
+            let interpretedEntry = try await interpretationService.interpretPhotoDescription(
+                entry.rawInput,
                 userId: entry.userId,
                 goal: goal,
                 loggedAt: entry.loggedAt
@@ -264,7 +264,8 @@ final class LogComposerViewModel: ObservableObject {
                 detail: interpretedEntry.detail,
                 feedback: interpretedEntry.feedback,
                 image: interpretedEntry.image,
-                imageUploadStatus: .localOnly
+                imageUploadStatus: .localOnly,
+                isRawInputReworded: entry.isRawInputReworded
             )
             try await logEntryService.updateEntry(resolvedEntry)
             startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)
@@ -285,6 +286,8 @@ final class LogComposerViewModel: ObservableObject {
 
     func submitMealImage(
         _ imageData: Data,
+        description: String,
+        isDescriptionEdited: Bool,
         userId: String,
         goal: GoalType,
         loggedAt: Date = .now,
@@ -297,8 +300,9 @@ final class LogComposerViewModel: ObservableObject {
             status: .analyzing,
             loggedAt: loggedAt,
             title: "Analyzing meal image",
-            rawInput: LogEntry.photoRawInputPlaceholder,
-            imageUploadStatus: .localOnly
+            rawInput: description,
+            imageUploadStatus: .localOnly,
+            isRawInputReworded: isDescriptionEdited ? true : nil
         )
         let trace = FirebaseTelemetryService.startPerformanceTrace("image_meal_log_total")
         isSubmitting = true
@@ -329,8 +333,8 @@ final class LogComposerViewModel: ObservableObject {
             try await logEntryService.saveEntry(pendingEntry)
             didSavePendingEntry = true
             draft = LogComposerDraft()
-            let interpretedEntry = try await interpretationService.interpretMealImage(
-                imageData,
+            let interpretedEntry = try await interpretationService.interpretPhotoDescription(
+                description,
                 userId: userId,
                 goal: goal,
                 loggedAt: loggedAt
@@ -346,7 +350,8 @@ final class LogComposerViewModel: ObservableObject {
                 detail: interpretedEntry.detail,
                 feedback: interpretedEntry.feedback,
                 image: interpretedEntry.image,
-                imageUploadStatus: .localOnly
+                imageUploadStatus: .localOnly,
+                isRawInputReworded: pendingEntry.isRawInputReworded
             )
             try await logEntryService.updateEntry(resolvedEntry)
             startBackgroundMealImageUpload(for: resolvedEntry, imageData: imageData)

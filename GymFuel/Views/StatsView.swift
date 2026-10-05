@@ -10,29 +10,25 @@ import SwiftUI
 struct StatsView: View {
     let profile: UserProfile
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: StatsViewModel
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
     @State private var isWeightPresented = false
-    @State private var isDatePickerPresented = false
     @State private var selectedDate: Date
-    @State private var pendingDayDate: Date?
  
     private let onWeighIn: (Double) -> Void
     private let onSelectedDateChange: (Date) -> Void
-    private let onShowDay: (Date) -> Void
     init(
         profile: UserProfile,
         selectedDate: Date,
         viewModel: StatsViewModel? = nil,
         onWeighIn: @escaping (Double) -> Void = { _ in },
-        onSelectedDateChange: @escaping (Date) -> Void,
-        onShowDay: @escaping (Date) -> Void
+        onSelectedDateChange: @escaping (Date) -> Void
     ) {
         self.profile = profile
         self.onWeighIn = onWeighIn
         self.onSelectedDateChange = onSelectedDateChange
-        self.onShowDay = onShowDay
         _selectedDate = State(initialValue: selectedDate)
         _viewModel = StateObject(wrappedValue: viewModel ?? StatsViewModel(now: selectedDate))
     }
@@ -66,8 +62,7 @@ struct StatsView: View {
                     isLoading: viewModel.isLoading,
                     canGoNext: viewModel.canGoToNextWeek(),
                     onPrevious: { moveWeek(by: -1) },
-                    onNext: { moveWeek(by: 1) },
-                    onDateTap: { isDatePickerPresented = true }
+                    onNext: { moveWeek(by: 1) }
                 )
                 .padding(.horizontal, Circa.Space.screenMargin)
 
@@ -121,31 +116,17 @@ struct StatsView: View {
         .task(id: viewModel.selectedWeekStart) {
             await viewModel.loadWeightTrend(userId: profile.id)
         }
+        // A new presentation, so it is handed the appearance this screen already has.
         .sheet(isPresented: $isWeighInPresented) {
-            NavigationStack {
-                EditWeightSheet(
-                    userId: profile.id,
-                    initialWeightKg: viewModel.weightTrend.latest?.weightKg ?? profile.weightKg,
-                    onWeighIn: { kg in
-                        onWeighIn(kg)
-                        Task { await viewModel.loadWeightTrend(userId: profile.id) }
-                    }
-                )
-            }
-        }
-        .sheet(isPresented: $isDatePickerPresented, onDismiss: {
-            if let date = pendingDayDate {
-                pendingDayDate = nil
-                onShowDay(date)
-            }
-        }) {
-            DayWeekPickerSheet(date: selectedDate, scale: .week) { date, scale in
-                if scale == .day {
-                    pendingDayDate = date
-                } else {
-                    selectDate(date)
+            EditWeightSheet(
+                userId: profile.id,
+                initialWeightKg: viewModel.weightTrend.latest?.weightKg ?? profile.weightKg,
+                onWeighIn: { kg in
+                    onWeighIn(kg)
+                    Task { await viewModel.loadWeightTrend(userId: profile.id) }
                 }
-            }
+            )
+            .preferredColorScheme(colorScheme)
         }
         .navigationDestination(isPresented: $isWeightPresented) {
             WeightView()

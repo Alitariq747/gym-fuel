@@ -138,6 +138,12 @@ extension FirebaseLogEntryService: LogEntryService {
         try saveEntryLocally(entry)
     }
 
+    /// `updateEntry`'s full replace, without waiting for the server to confirm it.
+    func replaceEntryLocally(_ entry: LogEntry) throws {
+        let data = try encodeEntry(entry)
+        entriesCollection(for: entry.userId).document(entry.id).setData(data)
+    }
+
     func saveEntry(_ entry: LogEntry) async throws {
         let data = try encodeEntry(entry)
         let docRef = entriesCollection(for: entry.userId).document(entry.id)
@@ -159,9 +165,10 @@ extension FirebaseLogEntryService: LogEntryService {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             // Deliberately not `merge: true`. Encoding omits a nil field, so a
             // merge would leave a superseded breakdown on the server and it would
-            // return on the next snapshot. This is the only write that clears, and
-            // a full replace is correct for every nullable field rather than for a
-            // list of them someone has to remember to extend.
+            // return on the next snapshot. This and `replaceEntryLocally` are the
+            // only writes that clear, and a full replace is correct for every
+            // nullable field rather than for a list of them someone has to
+            // remember to extend.
             //
             // The cost, named in `meal-contract.md` §7: any key not mirrored in
             // `LogEntryDocument` is destroyed by a user edit. Today that is only

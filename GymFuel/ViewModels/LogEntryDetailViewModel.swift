@@ -83,7 +83,9 @@ final class LogEntryDetailViewModel: ObservableObject {
                 isRawInputReworded: true
             )
 
-            try await service.updateEntry(updatedEntry)
+            // The detail screen shows the returned copy, not the listener, so
+            // awaiting the server's confirmation would add a round trip to the wait.
+            try service.replaceEntryLocally(updatedEntry)
             isSaving = false
             return updatedEntry
         } catch {
@@ -170,7 +172,8 @@ final class LogEntryDetailViewModel: ObservableObject {
         clearActionError()
 
         do {
-            try await service.updateEntry(updatedEntry)
+            // Not awaited, for the reason given in `reinterpretEntry`.
+            try service.replaceEntryLocally(updatedEntry)
             isSaving = false
             return updatedEntry
         } catch {

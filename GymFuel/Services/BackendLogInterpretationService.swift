@@ -55,17 +55,12 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
     private struct TextInterpretationRequest: Codable {
         var text: String
         var goal: GoalType
+        var inputSource: String?
     }
 
     private struct MultipartFormDataBuilder {
         let boundary: String
         private(set) var body = Data()
-
-        mutating func addTextField(name: String, value: String) {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)
-            body.append("\(value)\r\n".data(using: .utf8)!)
-        }
 
         mutating func addFileField(name: String, filename: String, mimeType: String, data: Data) {
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
@@ -81,8 +76,11 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         }
     }
 
+    private struct ImageDescriptionResponse: Codable {
+        var description: String
+    }
+
     private struct TextInterpretationResponse: Codable {
-        var rawInput: String?
         var title: String
         var detail: String?
         var feedback: LogEntryFeedback
@@ -113,10 +111,9 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         try JSONEncoder().encode(request)
     }
 
-    private func makeImageMultipartFormData(imageData: Data, goal: GoalType) -> (boundary: String, body: Data) {
+    private func makeImageMultipartFormData(imageData: Data) -> (boundary: String, body: Data) {
         let boundary = "Boundary-\(UUID().uuidString)"
         var builder = MultipartFormDataBuilder(boundary: boundary)
-        builder.addTextField(name: "goal", value: goal.rawValue)
         builder.addFileField(
             name: "image",
             filename: "meal.jpg",
@@ -299,11 +296,11 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         }
     }
 
-    private func sendImageInterpretationRequest(imageData: Data, goal: GoalType) async throws -> TextInterpretationResponse {
-        let url = baseURL.appendingPathComponent("interpretMealImage")
+    private func sendImageDescriptionRequest(imageData: Data) async throws -> String {
+        let url = baseURL.appendingPathComponent("describeMealImage")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        let multipartBody = makeImageMultipartFormData(imageData: imageData, goal: goal)
+        let multipartBody = makeImageMultipartFormData(imageData: imageData)
         request.setValue("multipart/form-data; boundary=\(multipartBody.boundary)", forHTTPHeaderField: "Content-Type")
         request.httpBody = multipartBody.body
 
@@ -328,19 +325,12 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         }
 
         do {
-            let decodedResponse = try JSONDecoder().decode(TextInterpretationResponse.self, from: data)
-            return normalizeAIResponseIfNeeded(
-                decodedResponse,
-                route: "interpretMealImage",
-                statusCode: httpResponse.statusCode
-            )
+            let decodedResponse = try JSONDecoder().decode(ImageDescriptionResponse.self, from: data)
+            return decodedResponse.description.trimmingCharacters(in: .whitespacesAndNewlines)
         } catch {
-            if let backendError = error as? BackendLogInterpretationError {
-                throw backendError
-            }
             recordResponseDecodingFailure(
                 error,
-                route: "interpretMealImage",
+                route: "describeMealImage",
                 statusCode: httpResponse.statusCode
             )
             throw BackendLogInterpretationError.decodingFailed
@@ -354,24 +344,32 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         goal: GoalType,
         loggedAt: Date
     ) async throws -> LogEntry {
-        let request = TextInterpretationRequest(text: text, goal: goal)
-        let requestData = try makeRequestData(from: request) // encoding
-        let response = try await sendTextInterpretationRequest(requestData)  // sending request
-        return makeLogEntry(from: response, rawText: text, userId: userId, loggedAt: loggedAt)  
+        try await interpret(text, inputSource: nil, userId: userId, goal: goal, loggedAt: loggedAt)
     }
 
-    func interpretMealImage(
-        _ imageData: Data,
+    func describeMealImage(_ imageData: Data) async throws -> String {
+        try await sendImageDescriptionRequest(imageData: imageData)
+    }
+
+    func interpretPhotoDescription(
+        _ text: String,
         userId: String,
         goal: GoalType,
         loggedAt: Date
     ) async throws -> LogEntry {
-        let response = try await sendImageInterpretationRequest(imageData: imageData, goal: goal)
-        return makeLogEntry(
-            from: response,
-            rawText: response.rawInput ?? LogEntry.photoRawInputPlaceholder,
-            userId: userId,
-            loggedAt: loggedAt
-        )
+        try await interpret(text, inputSource: "reviewedPhoto", userId: userId, goal: goal, loggedAt: loggedAt)
+    }
+
+    private func interpret(
+        _ text: String,
+        inputSource: String?,
+        userId: String,
+        goal: GoalType,
+        loggedAt: Date
+    ) async throws -> LogEntry {
+        let request = TextInterpretationRequest(text: text, goal: goal, inputSource: inputSource)
+        let requestData = try makeRequestData(from: request) // encoding
+        let response = try await sendTextInterpretationRequest(requestData)  // sending request
+        return makeLogEntry(from: response, rawText: text, userId: userId, loggedAt: loggedAt)
     }
 }

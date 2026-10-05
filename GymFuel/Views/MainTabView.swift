@@ -26,7 +26,6 @@ struct MainTabView: View {
     @State private var showStats = false
     @State private var showDatePicker = false
     @State private var weekAnchorDate: Date = .now
-    @State private var pendingWeekDate: Date?
     @State private var showTextLogSheet = false
     @State private var showSubscriptionPaywall = false
     @State private var showFutureLoggingToast = false
@@ -232,26 +231,14 @@ struct MainTabView: View {
                     profile: profile,
                     selectedDate: weekAnchorDate,
                     onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) },
-                    onSelectedDateChange: { weekAnchorDate = $0 },
-                    onShowDay: { date in
-                        weekAnchorDate = date
-                        showStats = false
-                    }
+                    onSelectedDateChange: { weekAnchorDate = $0 }
                 )
             }
             .preferredColorScheme(preferredColorScheme)
         }
-        .sheet(isPresented: $showDatePicker, onDismiss: {
-            if let date = pendingWeekDate {
-                pendingWeekDate = nil
-                openWeek(on: date)
-            }
-        }) {
-            DayWeekPickerSheet(date: timelineViewModel.selectedDate, scale: .day) { date, scale in
-                selectDay(date)
-                if scale == .week { pendingWeekDate = date }
-            }
-            .preferredColorScheme(preferredColorScheme)
+        .sheet(isPresented: $showDatePicker) {
+            DayPickerSheet(date: timelineViewModel.selectedDate) { selectDay($0) }
+                .preferredColorScheme(preferredColorScheme)
         }
         .sheet(isPresented: $showSubscriptionPaywall) {
             SubscriptionPaywallSheet()
@@ -332,8 +319,8 @@ struct MainTabView: View {
         }
     }
 
-    private func openWeek(on date: Date? = nil) {
-        weekAnchorDate = date ?? timelineViewModel.selectedDate
+    private func openWeek() {
+        weekAnchorDate = timelineViewModel.selectedDate
         showStats = true
     }
 
@@ -378,6 +365,9 @@ struct MainTabView: View {
                     consumedMacros: consumedMacros,
                     analysingCount: timelineViewModel.analysingCount
                 )
+                // A fresh card per load, so only a meal landing in a loaded day
+                // animates — never launch, and never a day swipe's stale totals.
+                .id(timelineViewModel.isLoading)
             }
 
             MainTabTimelineContentView(

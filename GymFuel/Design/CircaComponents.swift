@@ -39,6 +39,7 @@ private enum Kit {
     static let pendingRuleWidth: CGFloat = 38
 
     static let entryRowGap: CGFloat = 13
+    static let settleBeat: Double = 0.12
     static let macroWell: CGFloat = 32
     static let macroWellLarge: CGFloat = 40
     static let inlineGlyph: CGFloat = 12
@@ -47,6 +48,7 @@ private enum Kit {
     static let barHeightAX: CGFloat = 4
     static let barRadius: CGFloat = 2
     static let recolouredTrackOpacity: Double = 0.3
+    static let barStagger: Double = 0.06
 
     static let dockItemHeight: CGFloat = 48
     static let dockItemHeightAX: CGFloat = 56
@@ -266,6 +268,7 @@ struct CircaEstimate: View {
     var font: Font = .circaMonoValue
 
     @ScaledMetric(relativeTo: .callout) private var pendingWidth = Kit.pendingRuleWidth
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(_ value: String?, certainty: CircaCertainty, font: Font = .circaMonoValue) {
         self.value = value
@@ -279,6 +282,7 @@ struct CircaEstimate: View {
         Group {
             if let value {
                 Text(value)
+                    .transition(reduceMotion ? .opacity : AnyTransition(.blurReplace))
             } else {
                 // Reserves the number's line height without drawing anything.
                 Text(verbatim: "0")
@@ -454,6 +458,8 @@ struct CircaMacroBars: View {
     let protein: CircaMacroValue
     let carbs: CircaMacroValue
     let fat: CircaMacroValue
+    /// How a change settles, one bar after another. Nil snaps.
+    var animation: Animation? = nil
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -466,17 +472,19 @@ struct CircaMacroBars: View {
     var body: some View {
         if isStacked {
             VStack(alignment: .leading, spacing: 10) {
-                ForEach(bars, id: \.name) { bar($0.glyph, $0.name, $0.value) }
+                ForEach(bars.indices, id: \.self) { bar(at: $0) }
             }
         } else {
             HStack(alignment: .top, spacing: 14) {
-                ForEach(bars, id: \.name) { bar($0.glyph, $0.name, $0.value) }
+                ForEach(bars.indices, id: \.self) { bar(at: $0) }
             }
         }
     }
 
-    private func bar(_ glyph: CircaMacroGlyph.Macro, _ name: String, _ value: CircaMacroValue) -> some View {
-        VStack(alignment: .leading, spacing: isStacked ? 6 : 5) {
+    private func bar(at index: Int) -> some View {
+        let (glyph, name, value) = bars[index]
+
+        return VStack(alignment: .leading, spacing: isStacked ? 6 : 5) {
             CircaMacroBar(value: value)
 
             // Bare, without the well: three columns leave no room for one.
@@ -485,11 +493,13 @@ struct CircaMacroBars: View {
                 Text("\(value.consumed) / \(value.target)")
                     .font(.circaMono)
                     .monospacedDigit()
+                    .contentTransition(.numericText(value: Double(value.consumed)))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(Color.circaInk3)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(animation?.delay(Double(index) * Kit.barStagger), value: value)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(value.spoken(name))
     }
@@ -636,6 +646,51 @@ struct CircaProgressRail: View {
     }
 }
 
+/// The sweep across a photo that is being read. Never paired with a percentage.
+struct ImageAnalysisScannerOverlay: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isScanning = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = max(proxy.size.width, 1)
+            let scannerWidth = max(width * 0.28, 18)
+
+            ZStack(alignment: .leading) {
+                Color.clear
+
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.clear,
+                                Color.white.opacity(0.26),
+                                Color.white.opacity(0.18),
+                                Color.clear
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: scannerWidth)
+                    .offset(x: reduceMotion ? width * 0.36 : (isScanning ? width : -scannerWidth))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onAppear {
+            guard !reduceMotion else { return }
+            isScanning = false
+            withAnimation(.easeInOut(duration: 1.55).repeatForever(autoreverses: false)) {
+                isScanning = true
+            }
+        }
+        .onChange(of: reduceMotion) { _, isEnabled in
+            if isEnabled { isScanning = false }
+        }
+    }
+}
+
 // MARK: - Entry row
 
 /// What sits at the head of a journal entry.
@@ -733,6 +788,7 @@ struct CircaEntryRow: View {
                 // The same band under the title in both states, so the row keeps
                 // its height when the estimate lands — design.md rule 1.
                 .frame(minHeight: 40, alignment: .center)
+                .transaction(value: isAnalysing) { $0.animation = $0.animation?.delay(Kit.settleBeat) }
             }
         }
     }

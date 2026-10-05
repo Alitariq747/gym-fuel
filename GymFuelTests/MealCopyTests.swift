@@ -251,10 +251,10 @@ struct MealCopyTests {
         #expect(MealCopy.failure(reason: "   \n ", preserved: .words) == expected)
     }
 
-    @Test("A photo failure promises the photo, not the words")
+    @Test("A photo failure promises the photo and its description, not the words")
     func failureKeepsThePhoto() {
         let line = MealCopy.failure(reason: "That was too dark to read.", preserved: .photo)
-        #expect(line.hasSuffix("Your photo is saved — nothing to re-shoot."))
+        #expect(line.hasSuffix("Your photo and description are saved — nothing to redo."))
         #expect(!line.contains("retype"))
     }
 

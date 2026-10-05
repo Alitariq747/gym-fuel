@@ -47,3 +47,9 @@ struct MealImageDraft: Equatable, Sendable {
         self = MealImageDraft()
     }
 }
+
+struct ConfirmedMealPhoto: Sendable {
+    let image: PreparedMealImage
+    let description: String
+    let isDescriptionEdited: Bool
+}

@@ -5,7 +5,7 @@ struct MealGallerySheet: View {
     let isDismissing: Bool
     let onClose: () -> Void
     let onDismissed: () -> Void
-    let onUsePhoto: (PreparedMealImage, MealImageSource) -> Void
+    let onUsePhoto: (ConfirmedMealPhoto, MealImageSource) -> Void
     @StateObject private var review = MealPhotoReviewModel(source: .photoLibrary)
     @State private var selection: [PhotosPickerItem] = []
     @State private var allPhotosSelection: PhotosPickerItem?
@@ -14,7 +14,7 @@ struct MealGallerySheet: View {
 
     var body: some View {
         MealPhotoPanel(
-            isReviewing: review.isReviewing, isDismissing: isDismissing,
+            isReviewing: review.isReviewing, isExpanded: review.hasUsedPhoto, isDismissing: isDismissing,
             onClose: close, onDismissed: onDismissed
         ) {
             ZStack {
@@ -22,8 +22,8 @@ struct MealGallerySheet: View {
                     MealPhotoReviewView(model: review, onReplace: {
                         selection = []
                         review.clearSelection()
-                    }, onUsePhoto: { image in
-                        onUsePhoto(image, .photoLibrary)
+                    }, onUsePhoto: { photo in
+                        onUsePhoto(photo, .photoLibrary)
                     })
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97)))
                 } else {

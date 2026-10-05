@@ -3,26 +3,140 @@ import Testing
 
 @testable import LiftEats
 
+private let reading = "two eggs, a slice of bread"
+
 @Suite("Photo review confirmation and cancellation")
 @MainActor
 struct MealPhotoReviewTests {
     private func model() -> MealPhotoReviewModel {
-        MealPhotoReviewModel(source: .photoLibrary) {
+        MealPhotoReviewModel(source: .photoLibrary, prepare: {
             PreparedMealImage(originalData: $0, compressedJPEGData: $0)
-        }
+        }, describe: { _ in reading })
     }
 
-    @Test("Preparation alone does not confirm; the image can be confirmed only once")
+    @Test("A prepared photo is read before it can be confirmed, and confirmed only once")
     func explicitConfirmation() async {
         let model = model()
         #expect(model.confirm() == nil)
         await model.select(data: Data([1]))?.value
+        #expect(model.canDescribe)
+        #expect(!model.canConfirm)
+        #expect(model.confirm() == nil)
+        await model.describePhoto()?.value
+        #expect(model.isDescribed)
+        #expect(model.mealDescription == reading)
         #expect(model.canConfirm)
         #expect(!model.isConfirmed)
-        #expect(model.confirm()?.compressedJPEGData == Data([1]))
+        let photo = model.confirm()
+        #expect(photo?.image.compressedJPEGData == Data([1]))
+        #expect(photo?.description == reading)
+        #expect(photo?.isDescriptionEdited == false)
         #expect(model.confirm() == nil)
         #expect(!model.canConfirm)
         #expect(model.select(data: Data([2])) == nil)
+    }
+
+    @Test("An edited description is marked as edited; surrounding whitespace is not an edit")
+    func editedDescription() async {
+        let unchanged = model()
+        await unchanged.select(data: Data([1]))?.value
+        await unchanged.describePhoto()?.value
+        unchanged.mealDescription = "  \(reading)\n"
+        let kept = unchanged.confirm()
+        #expect(kept?.description == reading)
+        #expect(kept?.isDescriptionEdited == false)
+
+        let edited = model()
+        await edited.select(data: Data([1]))?.value
+        await edited.describePhoto()?.value
+        edited.mealDescription = "two eggs, two slices of bread "
+        let changed = edited.confirm()
+        #expect(changed?.description == "two eggs, two slices of bread")
+        #expect(changed?.isDescriptionEdited == true)
+    }
+
+    @Test("A blank description cannot be logged")
+    func blankDescription() async {
+        let model = model()
+        await model.select(data: Data([1]))?.value
+        await model.describePhoto()?.value
+        model.mealDescription = "  \n "
+        #expect(!model.canConfirm)
+        #expect(model.confirm() == nil)
+    }
+
+    @Test("A failed read retries the read without preparing the photo again")
+    func retryReading() async {
+        let preparations = CallCounter()
+        let reader = FailingOncePreparer()
+        let model = MealPhotoReviewModel(source: .camera, prepare: { data in
+            await preparations.increment()
+            return PreparedMealImage(originalData: data, compressedJPEGData: data)
+        }, describe: { data in
+            _ = try await reader.prepare(data)
+            return reading
+        })
+        await model.select(data: Data([5]))?.value
+        await model.describePhoto()?.value
+        #expect(model.draft.failureMessage != nil)
+        #expect(!model.canConfirm)
+        await model.retry()?.value
+        #expect(model.isDescribed)
+        #expect(model.confirm()?.description == reading)
+        #expect(await reader.attempts == 2)
+        #expect(await preparations.count == 1)
+    }
+
+    @Test("The photo counts as used from Use Photo until a retake, even when the read fails")
+    func usedPhotoStage() async {
+        let failingRead = FailingOncePreparer()
+        let model = MealPhotoReviewModel(source: .camera, prepare: {
+            PreparedMealImage(originalData: $0, compressedJPEGData: $0)
+        }, describe: { data in
+            _ = try await failingRead.prepare(data)
+            return reading
+        })
+        #expect(!model.hasUsedPhoto)
+        await model.select(data: Data([1]))?.value
+        #expect(!model.hasUsedPhoto)
+        await model.describePhoto()?.value
+        #expect(model.draft.failureMessage != nil)
+        #expect(model.hasUsedPhoto)
+        await model.retry()?.value
+        #expect(model.isDescribed)
+        #expect(model.hasUsedPhoto)
+        model.clearSelection()
+        #expect(!model.hasUsedPhoto)
+    }
+
+    @Test("A photo that failed to load has not been used")
+    func failedLoadIsNotUsed() async {
+        let preparer = FailingOncePreparer()
+        let model = MealPhotoReviewModel(source: .camera, prepare: {
+            try await preparer.prepare($0)
+        }, describe: { _ in reading })
+        await model.select(data: Data([3]))?.value
+        #expect(model.draft.failureMessage != nil)
+        #expect(!model.hasUsedPhoto)
+    }
+
+    @Test("Retaking while the photo is being read ignores the late description")
+    func retakeWhileReading() async {
+        let gate = PhotoLoadGate()
+        let model = MealPhotoReviewModel(source: .camera, prepare: {
+            PreparedMealImage(originalData: $0, compressedJPEGData: $0)
+        }, describe: { _ in String(decoding: try await gate.load(), as: UTF8.self) })
+        await model.select(data: Data([1]))?.value
+        let inFlight = model.describePhoto()
+        await gate.waitUntilStarted()
+        #expect(model.draft.state == .analyzing)
+        #expect(model.hasUsedPhoto)
+        model.clearSelection()
+        await gate.finish(Data("rice and stew".utf8))
+        await inFlight?.value
+        #expect(model.draft.state == .idle)
+        #expect(model.mealDescription.isEmpty)
+        #expect(model.confirm() == nil)
     }
 
     @Test("Closing while a photo is loading ignores its eventual result")
@@ -48,7 +162,8 @@ struct MealPhotoReviewTests {
         await model.select(data: Data([2]))?.value
         await gate.finish(Data([1]))
         await older?.value
-        #expect(model.confirm()?.originalData == Data([2]))
+        await model.describePhoto()?.value
+        #expect(model.confirm()?.image.originalData == Data([2]))
     }
 
     @Test("Closing during preparation cannot bring back the discarded photo")
@@ -61,6 +176,7 @@ struct MealPhotoReviewTests {
         let preparing = model.select(data: Data([1]))
         await gate.waitUntilStarted()
         #expect(model.draft.originalData == Data([1]))
+        #expect(!model.hasUsedPhoto)
         #expect(model.confirm() == nil)
         model.clearSelection()
         await gate.finish(Data([9]))
@@ -72,13 +188,16 @@ struct MealPhotoReviewTests {
     @Test("Preparation failure retains the image and retries without another selection")
     func retryPreparation() async {
         let preparer = FailingOncePreparer()
-        let model = MealPhotoReviewModel(source: .camera) { try await preparer.prepare($0) }
+        let model = MealPhotoReviewModel(source: .camera, prepare: {
+            try await preparer.prepare($0)
+        }, describe: { _ in reading })
         await model.select(data: Data([3]))?.value
         #expect(model.draft.failureMessage != nil)
         #expect(model.draft.originalData == Data([3]))
-        #expect(!model.canConfirm)
+        #expect(!model.canDescribe)
         await model.retry()?.value
-        #expect(model.confirm()?.compressedJPEGData == Data([3]))
+        await model.describePhoto()?.value
+        #expect(model.confirm()?.image.compressedJPEGData == Data([3]))
         #expect(await preparer.attempts == 2)
     }
 
@@ -90,7 +209,8 @@ struct MealPhotoReviewTests {
         #expect(model.draft.failureMessage != nil)
         #expect(!model.draft.hasImage)
         await model.retry()?.value
-        #expect(model.confirm()?.originalData == Data([4]))
+        await model.describePhoto()?.value
+        #expect(model.confirm()?.image.originalData == Data([4]))
         #expect(await loader.attempts == 2)
     }
 
@@ -117,11 +237,14 @@ struct MealPhotoReviewTests {
     func retake() async {
         let model = model()
         await model.select(data: Data([1]))?.value
+        await model.describePhoto()?.value
         model.clearSelection()
         #expect(!model.isReviewing)
+        #expect(model.mealDescription.isEmpty)
         #expect(model.confirm() == nil)
         await model.select(data: Data([2]))?.value
-        #expect(model.confirm()?.originalData == Data([2]))
+        await model.describePhoto()?.value
+        #expect(model.confirm()?.image.originalData == Data([2]))
     }
 }
 
@@ -146,6 +269,12 @@ private actor PhotoLoadGate {
         continuation?.resume(returning: data)
         continuation = nil
     }
+}
+
+private actor CallCounter {
+    private(set) var count = 0
+
+    func increment() { count += 1 }
 }
 
 private actor FailingOncePreparer {

@@ -5,7 +5,7 @@ struct MealCameraCaptureView: View {
     let isDismissing: Bool
     let onClose: () -> Void
     let onDismissed: () -> Void
-    let onUsePhoto: (PreparedMealImage, MealImageSource) -> Void
+    let onUsePhoto: (ConfirmedMealPhoto, MealImageSource) -> Void
     @StateObject private var review = MealPhotoReviewModel(source: .camera)
     @StateObject private var camera = MealCameraModel()
     @State private var isVisible = false
@@ -15,7 +15,7 @@ struct MealCameraCaptureView: View {
 
     var body: some View {
         MealPhotoPanel(
-            isReviewing: review.isReviewing, isDismissing: isDismissing,
+            isReviewing: review.isReviewing, isExpanded: review.hasUsedPhoto, isDismissing: isDismissing,
             onClose: close, onDismissed: onDismissed
         ) {
             ZStack {
@@ -23,8 +23,8 @@ struct MealCameraCaptureView: View {
                     MealPhotoReviewView(model: review, onReplace: {
                         camera.clearCapture()
                         review.clearSelection()
-                    }, onUsePhoto: { image in
-                        onUsePhoto(image, .camera)
+                    }, onUsePhoto: { photo in
+                        onUsePhoto(photo, .camera)
                     })
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97)))
                 } else {

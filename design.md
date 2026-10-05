@@ -435,7 +435,7 @@ Everything on the canvas, and what is not there yet.
 | Failed | `Failed · retry` | Both failure shapes |
 | Empty day | `Empty day` | Full target still the headline |
 | Saved meals | `Saved meals` | Reuse a corrected version with its breakdown and provenance, without an AI call |
-| Day picker | `Day picker` | **Day / Week only — no Month** |
+| Day picker | `Day picker` | **Replaced 4 October; the artboard is out of date.** A short sheet with the system calendar, Today (only selects today) and Done (goes to the chosen day). No Day/Week switch — Week is the header's `calendar` icon — and no logging-window note. The Week screen's title opens nothing; its ‹ › page the weeks |
 | Menu | `Menu` | **Dropped 28 September.** The Day header has two icons instead — Week (`calendar`) and Settings (`gearshape`). Weight opens from Week's weight card and Settings; Your targets from Settings and the Weight screen |
 | Week | `Week · after a check-in` | **Out of date** — drawn for the dropped expenditure engine. The Week screen keeps the week's food and the weight card; see *Canvas drift* |
 | Week, early | `Week · day 2` | The state most trialists actually see |
@@ -459,9 +459,9 @@ and the weigh-in; a month view would be a dashboard idea with nothing to put in
 it. The long view of weight is the Weight screen's chart. The calendar in the day picker is for jumping to a date, not a third
 scale.
 
-The day picker also states out loud the rule the current build only enforces
-silently: `LogActionDock` hides outside today−7d, so **older days can be read but
-not written to.**
+Older days can be read but not written to: `LogActionDock` hides outside
+today−7d. **The day picker no longer states this (dropped 4 October)** — the rule
+is enforced silently.
 
 ---
 

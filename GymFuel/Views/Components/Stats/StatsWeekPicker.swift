@@ -8,10 +8,7 @@
 import SwiftUI
 
 /// The Week screen's header, from the `Week` artboard: a stacked title and mono
-/// range that together open the date picker, and the two week steps.
-///
-/// Deliberately the same shape as `MainTabHeaderView` — tapping the title opens
-/// the same `DayWeekPickerSheet`, which is where the Day/Week choice now lives.
+/// range, and the two week steps.
 struct StatsWeekPicker: View {
     let title: String
     let rangeLabel: String
@@ -19,18 +16,13 @@ struct StatsWeekPicker: View {
     let canGoNext: Bool
     let onPrevious: () -> Void
     let onNext: () -> Void
-    let onDateTap: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Button(action: onDateTap) {
-                weekBlock
-                    .frame(minHeight: Circa.minHitTarget, alignment: .topLeading)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("\(title), \(rangeLabel)")
-            .accessibilityHint("Choose a date, or switch to the day")
+            weekBlock
+                .frame(minHeight: Circa.minHitTarget, alignment: .topLeading)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(title), \(rangeLabel)")
 
             Spacer(minLength: 8)
 
@@ -47,14 +39,9 @@ struct StatsWeekPicker: View {
 
     private var weekBlock: some View {
         VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 6) {
-                Text(title)
-                    .font(.circaTitle)
-                    .foregroundStyle(Color.circaInk)
-                Image(systemName: "chevron.down")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.circaInk)
-            }
+            Text(title)
+                .font(.circaTitle)
+                .foregroundStyle(Color.circaInk)
             Text(rangeLabel.uppercased())
                 .font(.circaMono)
                 .tracking(Circa.sectionLabelTracking)
@@ -90,8 +77,7 @@ struct StatsWeekPicker: View {
             isLoading: false,
             canGoNext: false,
             onPrevious: {},
-            onNext: {},
-            onDateTap: {}
+            onNext: {}
         )
         StatsWeekPicker(
             title: "Week of 25 Aug",
@@ -99,8 +85,7 @@ struct StatsWeekPicker: View {
             isLoading: true,
             canGoNext: true,
             onPrevious: {},
-            onNext: {},
-            onDateTap: {}
+            onNext: {}
         )
     }
     .padding(Circa.Space.screenMargin)

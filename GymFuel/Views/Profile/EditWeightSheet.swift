@@ -38,6 +38,8 @@ struct EditWeightSheet: View {
     @State private var enteredKg: Double
     @State private var errorMessage: String?
 
+    @ScaledMetric(relativeTo: .largeTitle) private var readingSize: CGFloat = 52
+
     private var unit: BodyWeightUnit {
         BodyWeightUnit(rawValue: unitRawValue) ?? .kilograms
     }
@@ -57,44 +59,37 @@ struct EditWeightSheet: View {
 
     var body: some View {
         AdaptiveScrollContainer {
-            VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 14) {
                 header
-
-                UnitToggle(
-                    options: BodyWeightUnit.allCases,
-                    label: { $0.shortLabel },
-                    selection: $unitRawValue.asBodyWeightUnit
-                )
-
-                summaryCard
-                inputCard
+                weightCard
 
                 if let message = errorMessage ?? viewModel.errorMessage {
                     Text(message)
-                        .font(.footnote)
+                        .font(.circaCaption)
                         .foregroundStyle(Color.circaDanger)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+
+                Button(action: handleDone) {
+                    Group {
+                        if viewModel.isSaving {
+                            ProgressView()
+                                .tint(Color.circaPaperTop)
+                        } else {
+                            Text("Save")
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.circa(.primary, height: 52))
+                .disabled(viewModel.isSaving)
 
                 Spacer(minLength: 0)
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.horizontal, Circa.Space.screenMargin)
+            .padding(.vertical, 18)
         }
-        .navigationTitle("Weigh in")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                toolbarIconButton(systemImage: "xmark", action: { dismiss() })
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                if viewModel.isSaving {
-                    ProgressView()
-                } else {
-                    toolbarIconButton(systemImage: "checkmark", action: handleDone)
-                }
-            }
-        }
+        .circaPaper()
         .interactiveDismissDisabled(viewModel.isSaving)
         // The two wheels step differently, so the same weight is not on a row in
         // both units. Snap, or the summary and the wheel disagree.
@@ -103,96 +98,83 @@ struct EditWeightSheet: View {
 
     // MARK: - UI
 
-    private func toolbarIconButton(systemImage: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(Color.circaInk2)
-        }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.circle)
-        .tint(Color.circaInk2)
-    }
-
     private var header: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "scalemass")
-                .font(.system(size: 40, weight: .regular))
-                .foregroundStyle(Color.circaAccent)
-                .frame(width: 96, height: 96)
-                .background(Color.circaWell, in: Circle())
-                .padding(.top, 12)
-
-            Text("Weigh in under the same conditions each time — first thing in the morning is easiest to repeat.")
-                .font(.footnote)
-                .foregroundStyle(Color.circaInk2)
-                .multilineTextAlignment(.center)
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Weigh in")
+                    .font(.circaTitle)
+                    .foregroundStyle(Color.circaInk)
+                Text("Weigh in under the same conditions each time — first thing in the morning is easiest to repeat.")
+                    .font(.circaBody)
+                    .foregroundStyle(Color.circaInk2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: Circa.Space.rowGap)
+            Button("Cancel") { dismiss() }
+                .buttonStyle(.circa(.quiet))
         }
     }
 
-    private var summaryCard: some View {
-        VStack(spacing: 6) {
-            Text(primaryWeightText)
-                .font(.system(size: 42, weight: .bold, design: .rounded))
-                .monospacedDigit()
+    /// A weigh-in is a measurement, so the reading carries no certainty rule.
+    private var weightCard: some View {
+        CircaCard {
+            VStack(spacing: Circa.Space.rowGap) {
+                HStack {
+                    CircaSectionLabel("Weight")
+                    Spacer(minLength: Circa.Space.rowGap)
+                    UnitToggle(
+                        options: BodyWeightUnit.allCases,
+                        label: { $0.shortLabel },
+                        selection: $unitRawValue.asBodyWeightUnit
+                    )
+                }
 
-            Text(secondaryWeightText)
-                .font(.subheadline)
-                .foregroundStyle(Color.circaInk2)
+                VStack(spacing: 4) {
+                    Text(primaryWeightText)
+                        .font(.system(size: readingSize, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(Color.circaAccentLarge)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    Text(secondaryWeightText)
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk3)
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+
+                CircaHairline(weight: .inCard)
+
+                wheels
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.circaCard)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.circaCardBorder, lineWidth: 1)
-        )
     }
 
     /// Two adjacent wheels rather than one 0.1-step wheel: a single wheel over
     /// 30.0–200.0 kg is 1,701 rows, and scrolling 75 → 120 is unusable.
-    private var inputCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(unit == .kilograms ? "Weight (kg)" : "Weight (lbs)")
-                .font(.headline)
-
-            HStack(spacing: 0) {
-                Picker("", selection: wholeBinding) {
-                    ForEach(wheel.wholeRange, id: \.self) { value in
-                        Text("\(value)").tag(value)
-                    }
+    private var wheels: some View {
+        HStack(spacing: 0) {
+            Picker("", selection: wholeBinding) {
+                ForEach(wheel.wholeRange, id: \.self) { value in
+                    Text("\(value)").font(.circaMonoValue).tag(value)
                 }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-                .clipped()
-                .accessibilityLabel(unit == .kilograms ? "Kilograms" : "Pounds")
-
-                Picker("", selection: tenthBinding) {
-                    ForEach(wheel.tenthRange, id: \.self) { value in
-                        Text(".\(value)").tag(value)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(maxWidth: .infinity)
-                .clipped()
-                .accessibilityLabel("Decimal")
             }
-            .frame(height: 160)
-            .labelsHidden()
+            .pickerStyle(.wheel)
+            .frame(maxWidth: .infinity)
+            .clipped()
+            .accessibilityLabel(unit == .kilograms ? "Kilograms" : "Pounds")
+
+            Picker("", selection: tenthBinding) {
+                ForEach(wheel.tenthRange, id: \.self) { value in
+                    Text(".\(value)").font(.circaMonoValue).tag(value)
+                }
+            }
+            .pickerStyle(.wheel)
+            .frame(maxWidth: .infinity)
+            .clipped()
+            .accessibilityLabel("Decimal")
         }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.circaCard)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.circaCardBorder, lineWidth: 1)
-        )
+        .frame(height: 160)
+        .labelsHidden()
     }
 
     // MARK: - Derived values
@@ -245,7 +227,5 @@ struct EditWeightSheet: View {
 }
 
 #Preview {
-    NavigationStack {
-        EditWeightSheet(userId: "preview", initialWeightKg: 83.4, onWeighIn: { _ in })
-    }
+    EditWeightSheet(userId: "preview", initialWeightKg: 83.4, onWeighIn: { _ in })
 }

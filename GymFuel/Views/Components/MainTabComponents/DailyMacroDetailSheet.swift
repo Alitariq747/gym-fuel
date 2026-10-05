@@ -42,7 +42,8 @@ struct DailyMacroDetailSheet: View {
                 CircaMacroBars(
                     protein: macro(consumedMacros.protein, targetMacros.protein),
                     carbs: macro(consumedMacros.carbs, targetMacros.carbs),
-                    fat: macro(consumedMacros.fat, targetMacros.fat)
+                    fat: macro(consumedMacros.fat, targetMacros.fat),
+                    animation: countAnimation
                 )
             }
         }
@@ -54,7 +55,7 @@ struct DailyMacroDetailSheet: View {
                 Text(abs(remainingCalories).formatted())
                     .font(.circaMonoLarge)
                     .monospacedDigit()
-                    .contentTransition(.numericText())
+                    .contentTransition(.numericText(value: Double(abs(remainingCalories))))
                     .animation(countAnimation, value: remainingCalories)
                 Text(remainingLabel)
                     .font(.circaRow)
@@ -69,9 +70,11 @@ struct DailyMacroDetailSheet: View {
                 Text(trailingLine)
                     .font(.circaMono)
                     .monospacedDigit()
+                    .contentTransition(.numericText())
                     .fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(analysingCount > 0 ? Color.circaAccent : Color.circaInk3)
+            .animation(countAnimation, value: trailingLine)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
