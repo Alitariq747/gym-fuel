@@ -148,7 +148,8 @@ If a custom face is ever wanted, it is a swap of two constants — but it is a
 post-launch decision, not a launch one.
 
 **Section labels** are mono, uppercase, ~10.5px, `letter-spacing: 1.4px`, `ink3`.
-They replace bold sans headers everywhere.
+They replace bold sans headers everywhere. A label may carry one link on its
+right, like **Sources ›** (`CircaSectionHeader`); it drops under the label at AX sizes.
 
 ### Shape and space
 
@@ -237,7 +238,7 @@ corrections visible; the displayed breakdown describes the current saved version
 ### 4. Weight is never typed
 
 It comes from weigh-ins only. `SettingsTargets` deliberately has no weight row.
-If weight can be edited directly, the trend the Weight screen rests on
+If weight can be edited directly, the weigh-ins the Weight screen rests on
 can be overwritten by hand — the same class of failure as the calorie rebate.
 Deleting a mistaken *manual* weigh-in is allowed (Step 4e); editing one is not.
 
@@ -449,8 +450,9 @@ Everything on the canvas, and what is not there yet.
 different label and range). **Not yet drawn:** reminders settings, appearance,
 saved-meal editor, nutrition sources, the four auth screens — all
 variants of patterns already on the canvas. **Not yet drawn, and new:** the Weight
-screen (4e) — weigh-in dots, the trend line, a dotted plan line and the goal, with
-the weigh-in list below.
+screen (4e) — the last weigh-in, a solid line through the weigh-ins with 30d · 90d
+· All, a dashed goal line, a goal card and Weigh in, with the weigh-in list below.
+No trend and no plan line (dropped 6 October).
 
 ### Navigation
 
@@ -488,7 +490,7 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 | Artboard | Still says | Should say, in substance |
 |---|---|---|
 | `Saved meals` | Reused totals without their reasoning | The corrected meal version, retaining items, assumptions and provenance (Step 6). |
-| `Day`, `Dark` | "Trend weight down 0.4 kg. Your targets moved." | The trend only. Targets never move by themselves, so nothing announces that they did. |
+| `Day`, `Dark` | "Trend weight down 0.4 kg. Your targets moved." | Neither. There is no trend (dropped 6 October), and targets never move by themselves, so nothing announces either. |
 | `Menu` | The whole artboard | **No menu.** Replaced 28 September by Week and Settings icons in the Day header; its Weight and Your targets rows only repeated routes that already existed. |
 | `Week · after a check-in` | "Check-in · done Sunday" · "your new daily target" · "you are burning about 2,810 a day" | The week's food and the weight card, which opens the Weight screen (4e). No check-in, no new target, **never a burn number**. |
 | `Week · day 2` | "First check-in · Sunday" · "Averages appear once there are 4 days to average" | No check-in date. With few weigh-ins, the weight card shows its early state. *4 October:* the food card's legend shows from the first day with food, and a week with none says "Nothing logged this week." Below four days a **Day by day** card lists each day's protein, carbs and fat in grams with the target underneath, nothing averaged; the daily-average card replaces it on the fourth day. |
@@ -496,9 +498,9 @@ Final wording is settled in each step and must agree with `store-copy.md`.
 | `Onboarding · daily movement` | "Within two or three weeks Circa has measured what you actually burn, and stops using it." | **Remove the line.** It claims a measurement that was dropped — an App Store 1.4.1 problem. Four options, each a normal week *including* exercise. |
 | `Onboarding · goal` | "From your first check-in onward, Circa moves them…" · "at a rate you set" | No rate to set, and nothing moves on its own. Gain, Lose fat or Maintain, then a goal weight for Gain and Lose fat (4c). |
 | `Onboarding · reminders (3a)` | "Your weekly check-in … once your targets have actually moved" | **Removed when Step 12 was simplified (2 October).** Onboarding offers three fixed daily food-diary reminders, with a few words or a photo and a choice of pace in Settings. No weekly weigh-in reminder. |
-| `Onboarding · your numbers` | "Circa moves them to match what your body is actually doing" | Becomes the plan screen (4f): a line to the goal date; a card of the four targets, numbers only; **Edit numbers**; then a card that shows the working — the calories as a sum (about 2,420 to stay at your weight, − 470 to lose about 0.4 kg a week, the target) and one line each for protein, carbs and fat. **Save my progress** alone at the bottom. No starting-estimate caveat — removed 26 September; the dotted rule carries it. Targets stay as set until the user changes them. |
+| `Onboarding · your numbers` | "Circa moves them to match what your body is actually doing" | Becomes the plan screen (4f): a line to the goal date; a card of the four targets, numbers only, with **Sources ›** in its header so the citations show without scrolling (App Store 1.4.1, added 6 October); **Edit numbers**; then a card that shows the working — the calories as a sum (about 2,420 to stay at your weight, − 470 to lose about 0.4 kg a week, the target) and one line each for protein, carbs and fat. **Save my progress** alone at the bottom. No starting-estimate caveat — removed 26 September; the dotted rule carries it. Targets stay as set until the user changes them. |
 | `Paywall`, `Paywall · dark` | "Targets that move with your weight, not a formula that guessed once" · "A weekly check-in that shows its working" | As in `store-copy.md`: a steady plan to a goal weight, targets that show their working and change only when you change them, and weigh-ins against the plan. |
-| `Settings · your targets` | "set at Sunday's check-in" · Rate 0.5% a week · "Changing your goal closes the current phase…" | The targets screen (4d): the numbers, "Set at 85 kg on 3 Sep", the stay-at-your-weight estimate, **Edit** and **Recalculate**, and goal weight in place of Rate. Changing the goal restarts the plan line; there are no phases. |
+| `Settings · your targets` | "set at Sunday's check-in" · Rate 0.5% a week · "Changing your goal closes the current phase…" | The targets screen (4d): the numbers, with **Sources ›** in the card's header (App Store 1.4.1, added 6 October), "Set at 85 kg on 3 Sep", the stay-at-your-weight estimate, **Edit** and **Recalculate**, and goal weight in place of Rate. Changing the goal restarts the plan line; there are no phases. |
 | `Settings · delete account` | "Weigh-ins and check-ins" | Weigh-ins only — check-ins are never stored. |
 
 The day-streak tile on both Week artboards is settled: it is gone (Step 7t), and

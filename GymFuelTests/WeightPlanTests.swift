@@ -237,23 +237,49 @@ struct WeightPlanTests {
     func reachedWhenLosing() throws {
         let plan = try losing()
 
-        #expect(!plan.isGoalReached(trendKg: 80.4))
-        #expect(plan.isGoalReached(trendKg: 80))
-        #expect(plan.isGoalReached(trendKg: 79.6))
+        #expect(!plan.isGoalReached(weightKg: 80.4))
+        #expect(plan.isGoalReached(weightKg: 80))
+        #expect(plan.isGoalReached(weightKg: 79.6))
     }
 
     @Test("Gaining reaches the goal at or above it")
     func reachedWhenGaining() throws {
         let plan = try gaining()
 
-        #expect(!plan.isGoalReached(trendKg: 74.9))
-        #expect(plan.isGoalReached(trendKg: 75))
+        #expect(!plan.isGoalReached(weightKg: 74.9))
+        #expect(plan.isGoalReached(weightKg: 75))
     }
 
     @Test("Maintain never reaches a goal")
     func maintainNeverReaches() throws {
         let plan = try #require(WeightPlan(profile: profile(goal: .maintain), timeZone: utc))
 
-        #expect(!plan.isGoalReached(trendKg: 85))
+        #expect(!plan.isGoalReached(weightKg: 85))
+    }
+
+    // MARK: - Distance to the goal
+
+    @Test("Losing counts down to the goal, then stops")
+    func remainingWhenLosing() throws {
+        let plan = try losing()
+
+        #expect(abs(try #require(plan.remainingKg(from: 83.5)) - 3.5) < 1e-9)
+        #expect(plan.remainingKg(from: 80) == nil)
+        #expect(plan.remainingKg(from: 79) == nil)
+    }
+
+    @Test("Gaining counts up to the goal, then stops")
+    func remainingWhenGaining() throws {
+        let plan = try gaining()
+
+        #expect(abs(try #require(plan.remainingKg(from: 72.4)) - 2.6) < 1e-9)
+        #expect(plan.remainingKg(from: 75) == nil)
+    }
+
+    @Test("Maintain has nothing to go")
+    func maintainHasNoDistance() throws {
+        let plan = try #require(WeightPlan(profile: profile(goal: .maintain), timeZone: utc))
+
+        #expect(plan.remainingKg(from: 85) == nil)
     }
 }

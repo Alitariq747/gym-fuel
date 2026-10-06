@@ -36,7 +36,7 @@ struct OnboardingWeightStepView: View {
     var body: some View {
         OnboardingMetricPage(
             title: "What do you weigh?",
-            detail: "Weights after this one come from weigh-ins, so the trend stays a measurement.",
+            detail: "After this, your weight changes only when you weigh in.",
             onContinue: handleNext
         ) {
             OnboardingValueCard(value: weightText, label: "Weight") {

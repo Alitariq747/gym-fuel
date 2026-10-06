@@ -5,11 +5,11 @@
 
 import SwiftUI
 
-/// The user's weigh-ins against their plan. Opens from the Week card until 7
+/// The user's weigh-ins against their goal. Opens from the Week card until 7
 /// puts it in the menu.
 ///
-/// **Nothing here judges.** No red, no "behind", no advice: the chart shows where
-/// the weigh-ins are and where the plan heads, and the user reads the distance.
+/// **Nothing here judges.** No red, no "behind", no advice: the chart shows the
+/// weigh-ins and the goal, and the user reads the distance.
 struct WeightView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
     @EnvironmentObject private var healthWeightSync: HealthWeightSyncService
@@ -17,6 +17,8 @@ struct WeightView: View {
     @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
     @StateObject private var viewModel = WeightViewModel()
     @State private var isTargetsPresented = false
+    @State private var isWeighInPresented = false
+    @State private var chartRange: WeightChartRange = .ninetyDays
     @State private var isConfirmingMaintain = false
     @State private var weighInToDelete: WeighIn?
 
@@ -25,7 +27,7 @@ struct WeightView: View {
     }
 
     /// Read from the live profile, so a goal changed on the targets screen redraws
-    /// the line the moment it saves.
+    /// the goal the moment it saves.
     private var plan: WeightPlan? {
         profileVm.profile.flatMap { WeightPlan(profile: $0) }
     }
@@ -40,7 +42,20 @@ struct WeightView: View {
                 }
 
                 CircaCard {
-                    WeightChart(series: viewModel.series, unit: unit, domain: viewModel.chartDomain(), plan: plan)
+                    VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
+                        UnitToggle(options: WeightChartRange.allCases, label: { $0.title }, selection: $chartRange)
+                        WeightChart(
+                            series: viewModel.series,
+                            unit: unit,
+                            domain: chartRange.domain(firstWeighIn: viewModel.series.points.first?.date),
+                            goalKg: plan?.goalWeightKg
+                        )
+                    }
+                }
+
+                if let goalKg = plan?.goalWeightKg, let latest = viewModel.series.latest,
+                   let remainingKg = plan?.remainingKg(from: latest.weightKg) {
+                    goalCard(goalKg: goalKg, remainingKg: remainingKg)
                 }
 
                 if let message = viewModel.errorMessage ?? profileVm.errorMessage {
@@ -49,6 +64,11 @@ struct WeightView: View {
                         .foregroundStyle(Color.circaDanger)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
+                Button { isWeighInPresented = true } label: {
+                    Text("Weigh in").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.circa(.primary))
 
                 if let weighIns = viewModel.weighIns {
                     weighInList(weighIns)
@@ -66,6 +86,17 @@ struct WeightView: View {
         .sheet(isPresented: $isTargetsPresented) {
             TargetsView()
                 .preferredColorScheme(colorScheme)
+        }
+        .sheet(isPresented: $isWeighInPresented) {
+            EditWeightSheet(
+                userId: profileVm.profile?.id ?? "",
+                initialWeightKg: viewModel.series.latest?.weightKg ?? profileVm.profile?.weightKg,
+                onWeighIn: { kg in
+                    profileVm.applyWeighIn(kg: kg)
+                    Task { await viewModel.load(userId: profileVm.profile?.id ?? "") }
+                }
+            )
+            .preferredColorScheme(colorScheme)
         }
         .confirmationDialog(
             "Delete this weigh-in?",
@@ -90,17 +121,38 @@ struct WeightView: View {
 
     // MARK: - Parts
 
-    /// The trend is the number that matters. It is an estimate, so it carries the
-    /// dotted rule, and stays pending until there are enough weigh-ins.
+    /// The last weigh-in, as the scale said it. A measurement, so no dotted rule.
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Weight")
                 .font(.circaTitle)
                 .foregroundStyle(Color.circaInk)
-            CircaEstimate(trendText, certainty: .estimated, font: .circaMonoLarge)
-            Text(caption)
-                .font(.circaMono)
-                .foregroundStyle(Color.circaInk3)
+            if let latest = viewModel.series.latest {
+                Text(BodyWeight.displayString(kilograms: latest.weightKg, unit: unit))
+                    .font(.circaMonoLarge)
+                    .monospacedDigit()
+                    .foregroundStyle(Color.circaInk)
+                Text("Last weigh-in · \(latest.date.formatted(.dateTime.day().month(.abbreviated).year()))")
+                    .font(.circaMono)
+                    .foregroundStyle(Color.circaInk3)
+            }
+        }
+    }
+
+    private func goalCard(goalKg: Double, remainingKg: Double) -> some View {
+        CircaCard {
+            VStack(alignment: .leading, spacing: 4) {
+                CircaSectionLabel("Goal")
+                Text(BodyWeight.displayString(kilograms: goalKg, unit: unit))
+                    .font(.circaMonoLarge)
+                    .monospacedDigit()
+                    .foregroundStyle(Color.circaInk)
+                Text("\(BodyWeight.displayString(kilograms: remainingKg, unit: unit)) to go")
+                    .font(.circaMono)
+                    .foregroundStyle(Color.circaInk3)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
         }
     }
 
@@ -134,7 +186,7 @@ struct WeightView: View {
             }
 
             if weighIns.isEmpty {
-                Text("No weigh-ins in the last \(StatsViewModel.trendWindowDays) days.")
+                Text("No weigh-ins yet.")
                     .font(.circaCaption)
                     .foregroundStyle(Color.circaInk3)
                     .padding(Circa.Space.screenMargin)
@@ -163,24 +215,12 @@ struct WeightView: View {
 
     // MARK: - Derived
 
-    /// The goal weight, once the trend has got there.
+    /// The goal weight, once the last weigh-in has got there.
     private var reachedGoalKg: Double? {
-        guard let plan, let goalKg = plan.goalWeightKg, viewModel.series.hasTrend,
-              let trendKg = viewModel.series.latest?.trendKg, plan.isGoalReached(trendKg: trendKg)
+        guard let plan, let goalKg = plan.goalWeightKg,
+              let latest = viewModel.series.latest, plan.isGoalReached(weightKg: latest.weightKg)
         else { return nil }
         return goalKg
-    }
-
-    private var trendText: String? {
-        guard viewModel.series.hasTrend, let latest = viewModel.series.latest else { return nil }
-        return BodyWeight.displayString(kilograms: latest.trendKg, unit: unit)
-    }
-
-    /// Labels the number and states the goal in words, because the chart draws the
-    /// goal only when it is close.
-    private var caption: String {
-        guard let goalKg = plan?.goalWeightKg else { return "Trend" }
-        return "Trend · Goal \(BodyWeight.displayString(kilograms: goalKg, unit: unit))"
     }
 
     private func dayText(_ weighIn: WeighIn) -> String {

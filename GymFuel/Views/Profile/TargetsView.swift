@@ -18,6 +18,7 @@ struct TargetsView: View {
     @EnvironmentObject private var profileVm: UserProfileViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorScheme) private var colorScheme
     /// Shared with the weigh-in sheet and the goal weight step, so a pounds user
     /// reads "Set at 183 lbs" here too.
     @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
@@ -26,6 +27,7 @@ struct TargetsView: View {
     private let calculator = MacroTargetCalculator()
     @State private var isEditingTargets = false
     @State private var isConfirmingRecalculate = false
+    @State private var isShowingSources = false
     @State private var planSheet: PlanSheet?
     /// A goal chosen but not yet saved: Gain and Lose fat need a goal weight first.
     @State private var pendingGoal: GoalType?
@@ -106,6 +108,10 @@ struct TargetsView: View {
         } message: {
             Text("This replaces your numbers with fresh ones worked out from your latest weigh-in, and restarts your plan from today.")
         }
+        .sheet(isPresented: $isShowingSources) {
+            NutritionSourcesView()
+                .preferredColorScheme(colorScheme)
+        }
         .sheet(item: $planSheet, onDismiss: clearPendingPlanChange) { sheet in
             switch sheet {
             case .goalAndGoalWeight:
@@ -142,7 +148,7 @@ struct TargetsView: View {
     private func numbersCard(_ targets: Macros, profile: UserProfile) -> some View {
         CircaCard {
             VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
-                CircaSectionLabel("Daily targets")
+                CircaSectionHeader(title: "Daily targets", link: "Sources") { isShowingSources = true }
                 CircaTargetRow(title: "Calories", value: targets.calories, suffix: "kcal", font: .circaMonoLarge, glyph: .calories)
                 CircaHairline(weight: .inCard)
                 CircaTargetRow(title: "Protein", value: targets.protein, suffix: "g", glyph: .protein)

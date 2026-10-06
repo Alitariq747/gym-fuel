@@ -15,27 +15,24 @@ final class StatsViewModel: ObservableObject {
 
     @Published private(set) var selectedWeekStart: Date
     @Published private(set) var snapshot: StatsSnapshot = .empty
-    @Published private(set) var weightTrend: WeightTrendSeries = .empty
+    @Published private(set) var weightTrend: WeightSeries = .empty
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
 
     private let logEntryService: LogEntryService
     private let statsCalculator: StatsCalculator
     private let weighInService: WeighInService
-    private let weightTrendCalculator: WeightTrendCalculator
 
     init(
         logEntryService: LogEntryService = FirebaseLogEntryService(),
         statsCalculator: StatsCalculator = StatsCalculator(),
         weighInService: WeighInService = FirebaseWeighInService(),
-        weightTrendCalculator: WeightTrendCalculator = WeightTrendCalculator(),
         calendar: Calendar = .current,
         now: Date = .now
     ) {
         self.logEntryService = logEntryService
         self.statsCalculator = statsCalculator
         self.weighInService = weighInService
-        self.weightTrendCalculator = weightTrendCalculator
         self.selectedWeekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? calendar.startOfDay(for: now)
     }
 
@@ -94,7 +91,7 @@ final class StatsViewModel: ObservableObject {
                 fromKey: window.fromKey,
                 throughKey: window.throughKey
             )
-            weightTrend = weightTrendCalculator.series(from: weighIns, timeZone: timeZone)
+            weightTrend = WeightSeries(weighIns: weighIns, timeZone: timeZone)
         } catch {
             FirebaseTelemetryService.recordNonFatal(
                 error,

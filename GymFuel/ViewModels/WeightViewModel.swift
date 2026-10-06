@@ -5,63 +5,41 @@
 
 import Foundation
 
-/// The Weight screen's state: the weigh-ins in view and the trend through them.
-/// The plan line comes from the profile, not from here.
+/// The Weight screen's state: every weigh-in, and the same as a chart series.
+/// The goal comes from the profile, not from here.
 @MainActor
 final class WeightViewModel: ObservableObject {
-    /// How far past today the chart runs, so a plan started today still shows its
-    /// line (decided 19 September). The window back is `StatsViewModel.trendWindowDays`.
-    static let lookaheadDays = 28
-
     /// Ascending by day. Nil until the first read answers, so the screen never
     /// says "no weigh-ins" before it knows.
     @Published private(set) var weighIns: [WeighIn]?
-    @Published private(set) var series: WeightTrendSeries = .empty
+    @Published private(set) var series: WeightSeries = .empty
     @Published private(set) var errorMessage: String?
 
     private let weighInService: WeighInService
     private let profileService: FirebaseUserProfileService
     private let networkMonitor: NetworkMonitoring
-    private let weightTrendCalculator: WeightTrendCalculator
 
     init(
         weighInService: WeighInService = FirebaseWeighInService(),
         profileService: FirebaseUserProfileService = .shared,
-        networkMonitor: NetworkMonitoring = NetworkMonitor.shared,
-        weightTrendCalculator: WeightTrendCalculator = WeightTrendCalculator()
+        networkMonitor: NetworkMonitoring = NetworkMonitor.shared
     ) {
         self.weighInService = weighInService
         self.profileService = profileService
         self.networkMonitor = networkMonitor
-        self.weightTrendCalculator = weightTrendCalculator
     }
 
-    /// The same 90 days as the Week card and the Health import, then four weeks
-    /// ahead. Anchored to the start of today, so it holds still between redraws.
-    func chartDomain(now: Date = .now, calendar: Calendar = .current) -> ClosedRange<Date> {
-        let today = calendar.startOfDay(for: now)
-        let start = calendar.date(byAdding: .day, value: -StatsViewModel.trendWindowDays, to: today) ?? today
-        let end = calendar.date(byAdding: .day, value: Self.lookaheadDays, to: today) ?? today
-        return start...end
-    }
-
-    func load(userId: String, now: Date = .now, calendar: Calendar = .current, timeZone: TimeZone = .current) async {
+    /// All of them, so the chart's All means all; 30d and 90d only narrow the view.
+    func load(userId: String, timeZone: TimeZone = .current) async {
         guard !userId.isEmpty else { return }
 
-        let fromKey = DateKey.key(for: chartDomain(now: now, calendar: calendar).lowerBound, timeZone: timeZone)
-        let throughKey = DateKey.key(for: now, timeZone: timeZone)
-
         do {
-            let fetched = try await weighInService.fetchWeighIns(for: userId, fromKey: fromKey, throughKey: throughKey)
+            let fetched = try await weighInService.fetchAllWeighIns(for: userId)
             weighIns = fetched
-            series = weightTrendCalculator.series(from: fetched, timeZone: timeZone)
+            series = WeightSeries(weighIns: fetched, timeZone: timeZone)
             errorMessage = nil
         } catch {
-            FirebaseTelemetryService.recordNonFatal(
-                error,
-                reason: "weigh_in_fetch_failed",
-                metadata: ["fromKey": fromKey, "throughKey": throughKey]
-            )
+            FirebaseTelemetryService.recordNonFatal(error, reason: "weigh_in_fetch_failed")
             errorMessage = AppErrorMessage.message(
                 for: error,
                 fallback: "We couldn't load your weigh-ins. Please try again."

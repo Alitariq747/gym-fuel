@@ -21,7 +21,7 @@ struct WeightPlanPoint: Identifiable, Equatable, Sendable {
 /// because the saved calorie target is fixed.
 struct WeightPlan: Equatable, Sendable {
     let goal: GoalType
-    /// Local midday of `planStartedOn` — the same x coordinate the trend uses.
+    /// Local midday of `planStartedOn` — the same x coordinate the weigh-ins use.
     let startDate: Date
     let startWeightKg: Double
     /// Nil when maintaining.
@@ -91,18 +91,25 @@ struct WeightPlan: Equatable, Sendable {
         }
     }
 
-    /// Whether the trend has got to the goal weight. Never while maintaining.
+    /// Whether a weigh-in has got to the goal weight. Never while maintaining.
     ///
     /// Reaching it changes nothing by itself: the screen says so, and the user
     /// picks what comes next.
-    func isGoalReached(trendKg: Double) -> Bool {
+    func isGoalReached(weightKg: Double) -> Bool {
         guard let goalWeightKg else { return false }
 
         switch goal {
-        case .cut: return trendKg <= goalWeightKg
-        case .leanBulk: return trendKg >= goalWeightKg
+        case .cut: return weightKg <= goalWeightKg
+        case .leanBulk: return weightKg >= goalWeightKg
         case .maintain: return false
         }
+    }
+
+    /// How far a weigh-in is from the goal, for "6.5 kg to go". Nil while
+    /// maintaining and once the goal is reached.
+    func remainingKg(from weightKg: Double) -> Double? {
+        guard let goalWeightKg, !isGoalReached(weightKg: weightKg) else { return nil }
+        return abs(goalWeightKg - weightKg)
     }
 
     /// Whether the line moves at all: a goal weight on the side the pace heads.

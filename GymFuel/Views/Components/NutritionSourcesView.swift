@@ -95,14 +95,14 @@ struct NutritionSourcesView: View {
             sourceIDs: []
         ),
         NutritionMethod(
-            id: "trend",
+            id: "weighIns",
             index: "04",
             systemImage: "scalemass",
-            title: "Your weight trend",
+            title: "Your weigh-ins",
             tint: .circaAccent,
-            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. The trend line smooths your weigh-ins with an exponential moving average, weighting the newest reading at 25% and everything before it at 75%, so it moves slower than the scale on purpose.",
-            formula: "trend = 0.25 × today's weigh-in\n      + 0.75 × previous trend",
-            footnote: "The trend is an estimate calculated from your own weigh-ins — it is shown with a dotted rule everywhere it appears, the same way estimated food values are. It needs at least three weigh-ins before it means anything, and it describes what has happened rather than predicting what will. Weighing in is never required, and nothing here is streaked.",
+            body: "Scale weight moves day to day for reasons that have nothing to do with fat — water, the salt in last night's dinner, stored carbohydrate, and what is still in your gut. A single reading is a snapshot, not a direction. Over weeks, the line through your weigh-ins shows which way you are heading.",
+            formula: nil,
+            footnote: "Every point on the chart is a weigh-in you typed or one Apple Health recorded, exactly as the scale gave it. Nothing is smoothed or estimated. Weighing in is never required, and nothing here is streaked.",
             sourceIDs: ["zheng", "jmirScale"]
         )
     ]

@@ -16,6 +16,9 @@ struct OnboardingSummaryStepView: View {
     /// Hands back the numbers edited here, or nil to keep the worked-out ones.
     let onStartTracking: (Macros?) -> Void
 
+    /// So a plan started today still shows its line (decided 19 September).
+    private static let lookaheadDays = 28
+
     /// Shared with the weight steps, so a pounds user reads pounds here too.
     @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -121,16 +124,17 @@ struct OnboardingSummaryStepView: View {
     private func chart(_ line: WeightPlan) -> some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
-        // A line with no goal date gets the four weeks the Weight screen shows.
+        // A line with no goal date gets four weeks.
         let end = line.goalDate
-            ?? calendar.date(byAdding: .day, value: WeightViewModel.lookaheadDays, to: today)
+            ?? calendar.date(byAdding: .day, value: Self.lookaheadDays, to: today)
             ?? today
 
         return CircaCard {
             WeightChart(
-                series: WeightTrendCalculator().series(from: [WeighIn(weightKg: line.startWeightKg)]),
+                series: WeightSeries(weighIns: [WeighIn(weightKg: line.startWeightKg)]),
                 unit: unit,
                 domain: today...max(end, today),
+                goalKg: line.goalWeightKg,
                 plan: line
             )
         }
@@ -146,7 +150,9 @@ struct OnboardingSummaryStepView: View {
            let reasons = PlanCopy.reasons(for: profile, workedOut: workedOut, unit: unit, calculator: calculator) {
             CircaCard {
                 VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
-                    CircaSectionLabel("Your daily targets")
+                    // Beside the numbers so App Store review finds the citations
+                    // without scrolling (1.4.1).
+                    CircaSectionHeader(title: "Your daily targets", link: "Sources") { isShowingSources = true }
                     CircaTargetRow(title: "Calories", value: targets.calories, suffix: "kcal", font: .circaMonoLarge, glyph: .calories)
                     CircaHairline(weight: .inCard)
                     CircaTargetRow(title: "Protein", value: targets.protein, suffix: "g", glyph: .protein)

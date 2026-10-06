@@ -12,9 +12,8 @@ import SwiftUI
 /// Two properties this screen has to hold, and the reasons they are not
 /// negotiable:
 ///
-/// - **0.1 precision.** The trend is an exponential moving average over these
-///   values. At whole-kilogram resolution it cannot represent a 0.3 kg week, so
-///   the line would be noise rather than a direction.
+/// - **0.1 precision.** At whole-kilogram resolution the chart cannot show a
+///   0.3 kg week, so the line would be noise rather than a direction.
 /// - **One source of truth.** `enteredKg` is the only stored value; both wheels
 ///   read and write it through computed bindings. The previous version kept two
 ///   integer pickers in sync with each other through a pair of `onChange`

@@ -87,8 +87,8 @@ Each one is a real failure mode, not a style preference.
   `bodyMass`, read-only.
 - **Don't hardcode a trial length or a price** — read both from StoreKit.
 - **Don't let weight be edited anywhere except a weigh-in.** Same failure class as
-  the calorie rebate: the trend the Weight screen rests on stops being a measurement
-  the moment it can be typed. Settings shows weight; it never edits it. Deleting a
+  the calorie rebate: the weigh-ins the Weight screen rests on stop being
+  measurements the moment one can be typed. Settings shows weight; it never edits it. Deleting a
   mistaken *manual* weigh-in is allowed (Step 4e); editing one is not.
 - **Don't let the app change targets on its own.** Targets are worked out once and
   saved. They change only when the user edits them, taps Recalculate, or changes

@@ -100,7 +100,7 @@ struct OnboardingAppleHealthStepView: View {
                 .foregroundStyle(Color.circaInk)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("If your scale writes to Apple Health, Circa picks those weights up and adds them to your trend. You never type them twice.")
+            Text("If your scale writes to Apple Health, Circa picks those weights up and adds them to your weigh-ins. You never type them twice.")
                 .font(.circaBody)
                 .foregroundStyle(Color.circaInk2)
                 .fixedSize(horizontal: false, vertical: true)

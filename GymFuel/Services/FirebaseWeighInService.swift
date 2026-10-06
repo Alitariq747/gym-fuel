@@ -75,6 +75,14 @@ extension FirebaseWeighInService: WeighInService {
         return snapshot.documents.compactMap { decodeWeighIn(skippingFailuresFrom: $0) }
     }
 
+    func fetchAllWeighIns(for userId: String) async throws -> [WeighIn] {
+        let snapshot: QuerySnapshot = try await weighInsCollection(for: userId)
+            .order(by: "dateKey", descending: false)
+            .getDocuments()
+
+        return snapshot.documents.compactMap { decodeWeighIn(skippingFailuresFrom: $0) }
+    }
+
     func fetchLatestWeighIn(for userId: String) async throws -> WeighIn? {
         let snapshot: QuerySnapshot = try await weighInsCollection(for: userId)
             .order(by: "dateKey", descending: true)

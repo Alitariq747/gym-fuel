@@ -19,8 +19,7 @@ struct HealthKitWeightSample: Equatable, Sendable {
 
 /// Decides which Apple Health samples become `weighIns` rows.
 ///
-/// Pure arithmetic and comparison, no I/O — the same posture as
-/// `WeightTrendCalculator`, and for the same reason: every rule below has a
+/// Pure arithmetic and comparison, no I/O, because every rule below has a
 /// failure mode that looks like correct data.
 struct WeighInImportPlanner {
     init() {}

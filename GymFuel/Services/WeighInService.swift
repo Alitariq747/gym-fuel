@@ -25,6 +25,9 @@ protocol WeighInService: Sendable {
         throughKey: String
     ) async throws -> [WeighIn]
 
+    /// Every weigh-in the user has, ascending by day.
+    func fetchAllWeighIns(for userId: String) async throws -> [WeighIn]
+
     func fetchLatestWeighIn(for userId: String) async throws -> WeighIn?
 
     /// A point read — no index, and serves from the local cache when offline.

@@ -6,9 +6,9 @@
 import Charts
 import SwiftUI
 
-/// Weight over time: the weigh-ins, the trend through them and, when given one,
-/// the plan line and the goal. Shared by the Week card, the Weight screen and the
-/// onboarding plan screen, so no two of them draw weight differently.
+/// Weight over time: a line through the weigh-ins, the goal when given one, and
+/// the plan line for the onboarding plan screen. Shared by the Week card, the
+/// Weight screen and onboarding, so no two of them draw weight differently.
 ///
 /// Swift Charts rather than a hand-drawn `Path`: every other chart in this app is
 /// a fixed seven-column bar layout with no scale and no date mapping, and a
@@ -16,20 +16,24 @@ import SwiftUI
 /// framework, so it costs no dependency, and it brings date-axis scaling, RTL
 /// mirroring, Dynamic Type on axis labels and per-mark VoiceOver with it.
 struct WeightChart: View {
-    let series: WeightTrendSeries
+    let series: WeightSeries
     let unit: BodyWeightUnit
     let domain: ClosedRange<Date>
+    var goalKg: Double? = nil
     var plan: WeightPlan? = nil
 
-    /// Estimates are dotted — `design.md` rule 1. The trend and the plan are both
-    /// estimates, so both wear it, and the ink tells them apart.
+    /// Estimates are dotted — `design.md` rule 1 — so only the plan wears it.
     private static let dottedStroke = StrokeStyle(lineWidth: 2, lineCap: .round, dash: [0.01, 4])
+    /// Dashes, not dots: the goal is set, not estimated.
+    private static let goalStroke = StrokeStyle(lineWidth: 1, dash: [5, 4])
+    private static let weighInStroke = StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
     /// How close the goal must sit to what is drawn before the chart draws it.
     /// Further out, fitting it in would flatten every weigh-in into a line.
-    private static let goalReachKg: Double = 2
+    private static let goalReachKg: Double = 10
 
     @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 160
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var selectedDate: Date?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -43,30 +47,41 @@ struct WeightChart: View {
     private var chart: some View {
         Chart {
             // Measurements: solid. These are facts.
-            ForEach(series.points) { point in
+            ForEach(visiblePoints) { point in
+                LineMark(
+                    x: .value("Day", point.date),
+                    y: .value("Weight", displayValue(point.weightKg)),
+                    series: .value("Series", "weigh-ins")
+                )
+                .foregroundStyle(Color.circaAccent)
+                .lineStyle(Self.weighInStroke)
+                .accessibilityHidden(true)
+
                 PointMark(
                     x: .value("Day", point.date),
                     y: .value("Weight", displayValue(point.weightKg))
                 )
-                .symbolSize(22)
-                .foregroundStyle(Color.circaInk3)
+                .symbolSize(point == selectedPoint ? 90 : 28)
+                .foregroundStyle(Color.circaAccent)
                 .accessibilityLabel(accessibilityDate(point.date))
                 .accessibilityValue(BodyWeight.displayString(kilograms: point.weightKg, unit: unit))
             }
 
-            // Trend: dotted. This is an estimate.
-            if series.hasTrend {
-                ForEach(series.points) { point in
-                    LineMark(
-                        x: .value("Day", point.date),
-                        y: .value("Trend", displayValue(point.trendKg)),
-                        series: .value("Series", "trend")
-                    )
-                    .interpolationMethod(.linear)
-                    .foregroundStyle(Color.circaAccent)
-                    .lineStyle(Self.dottedStroke)
+            if let selectedPoint {
+                RuleMark(x: .value("Day", selectedPoint.date))
+                    .foregroundStyle(Color.circaRule)
+                    .lineStyle(StrokeStyle(lineWidth: 1))
                     .accessibilityHidden(true)
+
+                PointMark(
+                    x: .value("Day", selectedPoint.date),
+                    y: .value("Weight", displayValue(selectedPoint.weightKg))
+                )
+                .symbolSize(0)
+                .annotation(position: .top, spacing: 6, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                    selectionLabel(selectedPoint)
                 }
+                .accessibilityHidden(true)
             }
 
             // Plan: dotted too, in the certainty rule's grey. Where the plan
@@ -85,8 +100,8 @@ struct WeightChart: View {
             if let goalKg = visibleGoalKg {
                 RuleMark(y: .value("Goal", displayValue(goalKg)))
                     .foregroundStyle(Color.circaInk3)
-                    .lineStyle(StrokeStyle(lineWidth: 1))
-                    .annotation(position: .top, alignment: .trailing) {
+                    .lineStyle(Self.goalStroke)
+                    .annotation(position: .top, alignment: .leading) {
                         Text("Goal \(BodyWeight.displayString(kilograms: goalKg, unit: unit))")
                             .font(.circaMono)
                             .foregroundStyle(Color.circaInk3)
@@ -100,8 +115,15 @@ struct WeightChart: View {
         // Without an explicit y domain, Swift Charts includes zero and every
         // real variation collapses into a flat line.
         .chartYScale(domain: yDomain)
+        // A tap, not a drag, so a scroll that starts on the chart still scrolls.
+        .chartXSelection(value: $selectedDate)
+        .chartGesture { proxy in
+            SpatialTapGesture().onEnded { proxy.selectXValue(at: $0.location.x) }
+        }
+        .onChange(of: domain) { selectedDate = nil }
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 3)) {
+            // Aligned keeps a label near today inside the card instead of cutting it off.
+            AxisMarks(preset: .aligned, values: .automatic(desiredCount: 3)) {
                 AxisValueLabel()
                     .font(.circaMono)
                     .foregroundStyle(Color.circaInk3)
@@ -116,24 +138,30 @@ struct WeightChart: View {
             }
         }
         .frame(height: chartHeight)
-        .accessibilityLabel(plan == nil ? "Weight trend, \(rangeLabel)" : "Weight trend and plan, \(rangeLabel)")
+        .accessibilityLabel(plan == nil ? "Weigh-ins, \(rangeLabel)" : "Weigh-ins and plan, \(rangeLabel)")
+    }
+
+    private func selectionLabel(_ point: WeightPoint) -> some View {
+        Text("\(point.date.formatted(.dateTime.day().month(.abbreviated))) · \(BodyWeight.displayString(kilograms: point.weightKg, unit: unit))")
+            .font(.circaMono)
+            .monospacedDigit()
+            .foregroundStyle(Color.circaInk)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Color.circaCard, in: RoundedRectangle(cornerRadius: 4))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.circaCardBorder))
     }
 
     // MARK: - Legend
 
-    /// Names the two dotted lines, which differ only in ink. Stacks at
-    /// accessibility sizes rather than truncating — `design.md` rule 8.
+    /// Stacks at accessibility sizes rather than truncating — `design.md` rule 8.
     private var legend: some View {
         let layout = dynamicTypeSize.isAccessibilitySize
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
             : AnyLayout(HStackLayout(spacing: 14))
 
         return layout {
-            legendItem("Weigh-ins", mark: Circle().fill(Color.circaInk3).frame(width: 5, height: 5))
-            // Named only once it is drawn, which takes three weigh-ins.
-            if series.hasTrend {
-                legendItem("Trend", mark: dottedSample(Color.circaAccent))
-            }
+            legendItem("Weigh-ins", mark: Circle().fill(Color.circaAccent).frame(width: 5, height: 5))
             legendItem("Plan", mark: dottedSample(Color.circaDotted))
         }
         .accessibilityHidden(true)
@@ -159,19 +187,29 @@ struct WeightChart: View {
 
     // MARK: - Derived
 
+    /// Only what is on screen sets the scale, so a shorter range zooms in both ways.
+    private var visiblePoints: [WeightPoint] {
+        series.points(in: domain)
+    }
+
+    private var selectedPoint: WeightPoint? {
+        selectedDate.flatMap { series.nearest(to: $0, in: domain) }
+    }
+
     private var planPoints: [WeightPlanPoint] {
         plan?.points(from: domain.lowerBound, through: domain.upperBound) ?? []
     }
 
     /// Every weight drawn, in kilograms, before the goal is considered.
     private var drawnKilograms: [Double] {
-        series.points.flatMap { [$0.weightKg, $0.trendKg] } + planPoints.map(\.weightKg)
+        visiblePoints.map(\.weightKg) + planPoints.map(\.weightKg)
     }
 
-    /// The goal, when it sits within reach of what is drawn (decided 19 September).
+    /// The goal, when it sits within reach of what is drawn (decided 19 September;
+    /// reach widened from 2 kg to 10 kg on 6 October).
     /// The Weight screen states the goal in words either way.
     private var visibleGoalKg: Double? {
-        guard let goalKg = plan?.goalWeightKg,
+        guard let goalKg,
               let low = drawnKilograms.min(),
               let high = drawnKilograms.max(),
               (low - Self.goalReachKg)...(high + Self.goalReachKg) ~= goalKg
@@ -217,9 +255,10 @@ struct WeightChart: View {
 
     return CircaCard {
         WeightChart(
-            series: WeightTrendCalculator().series(from: weighIns),
+            series: WeightSeries(weighIns: weighIns),
             unit: .kilograms,
             domain: domainStart...domainEnd,
+            goalKg: 83,
             plan: WeightPlan(goal: .cut, startDate: planStart, startWeightKg: 86, goalWeightKg: 83, weeklyChangeKg: -0.43)
         )
     }

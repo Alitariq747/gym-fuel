@@ -441,9 +441,11 @@ everyday lifestyles start at 1.40.
 **Store only the current plan and targets**, overwritten in place, never a history.
 Past days therefore show against the current targets. Accepted.
 
-**The Weight screen** draws the plan line dotted and a trend line through the
-weigh-ins, uses no red and no "behind" copy, and lets only manual weigh-ins be
-deleted. Nothing edits a weigh-in.
+**The Weight screen** draws a solid line through the weigh-ins, exactly as weighed,
+and the goal as a dashed line. No trend and no plan line: both were dropped on
+6 October, and only the onboarding plan screen keeps the plan line. It uses no red,
+no green and no "behind" copy, and lets only manual weigh-ins be deleted. Nothing
+edits a weigh-in.
 
 ### 4a — Weigh-ins and the trend · done 12 September
 
@@ -451,8 +453,8 @@ deleted. Nothing edits a weigh-in.
   first, then `UserProfile.weightKg`, sequentially rather than batched: a batch
   fails atomically, so a rules rejection on the profile half would discard a
   correct weigh-in.
-- Trend weight is an EMA (`alpha ≈ 0.25`) per observation. Gaps are skipped, not
-  filled. It is only ever shown as a level; nothing divides it by elapsed days.
+- The trend weight built here (an EMA) was dropped on 6 October. Weigh-ins are
+  drawn as weighed; nothing is smoothed.
 - Onboarding seeds the first weigh-in, so the first real one draws a line.
 - Every row keeps `source: manual | healthKit`. 4e uses it to decide what can be
   deleted.
@@ -552,9 +554,13 @@ moves the plan start to today.
 **What the user gets:** their weigh-ins against their plan. Built in the Circa design.
 It opens from the Week screen's weight card until 7 puts it in the menu.
 
-1. **Chart:** weigh-in dots, the trend line, the plan line (dotted, from the plan
-   start toward the goal at the plan's pace) and the goal weight. *Maintain* draws a
-   flat line.
+1. **Chart** (revised 6 October): a solid line through the weigh-ins, and a dashed
+   goal line when the goal is within 10 kg of the weigh-ins in view. **30d · 90d ·
+   All** (90d first) only change how much is in view, each starting no earlier
+   than the first weigh-in. Tapping the chart shows the nearest weigh-in's day and
+   weight. The screen reads every weigh-in. Above the chart, the last weigh-in and
+   its date; below it, a goal card ("6.5 kg to go") and **Weigh in**. *Maintain*
+   shows no goal.
 2. **List** of weigh-ins below it, newest first, showing where each came from.
 3. **Delete manual weigh-ins only.** A deleted Apple Health row would come back on
    the next open, because the import fills any day without a row
@@ -563,13 +569,13 @@ It opens from the Week screen's weight card until 7 puts it in the menu.
    manual rows only. Deleting the newest weigh-in sets `weightKg` back to the one
    before it.
 4. **"Adjust targets"** opens 4d.
-5. **Goal reached:** a plain note and a way to pick *Maintain* or a new goal. Nothing
-   changes on its own.
+5. **Goal reached** (by the last weigh-in): a plain note and a way to pick
+   *Maintain* or a new goal. Nothing changes on its own.
 
 **Files** new `WeightView.swift` · `WeighInService.swift` · `firestore.rules` ·
 `WeightTrendCard.swift` · `StatsView.swift` · `UserProfileViewModel.swift`
 
-**Done when** backdated Apple Health weights show as dots around a dotted plan line,
+**Done when** backdated Apple Health weights show as a line of dots,
 a deleted manual weigh-in stays gone after a relaunch, a Health weigh-in cannot be
 deleted, and reaching the goal shows the note without changing a target.
 

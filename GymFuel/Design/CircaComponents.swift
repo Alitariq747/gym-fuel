@@ -193,6 +193,41 @@ struct CircaSectionLabel: View {
     }
 }
 
+/// A section label with one link on its right, like "Sources ›". The link
+/// drops under the label at AX sizes.
+struct CircaSectionHeader: View {
+    let title: String
+    let link: String
+    let action: () -> Void
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        let isStacked = typeSize.isAccessibilitySize
+        let layout = isStacked
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 6))
+
+        layout {
+            CircaSectionLabel(title)
+            if !isStacked { Spacer(minLength: Circa.Space.rowGap) }
+            Button(action: action) {
+                HStack(spacing: 4) {
+                    Text(link)
+                    Image(systemName: "chevron.forward")
+                        .font(.circaCaption.weight(.semibold))
+                }
+                .font(.circaCaption.weight(.medium))
+            }
+            .buttonStyle(.circa(.link))
+            // Keeps the 44 pt tap area without making the header taller. At AX
+            // sizes the text is taller than 44 pt already.
+            .padding(.vertical, isStacked ? 0 : -14)
+            .padding(isStacked ? .leading : .trailing, -10)
+        }
+    }
+}
+
 // MARK: - The certainty rule
 
 /// How sure the number above the rule is. design.md rule 1, and the mark that
@@ -992,6 +1027,8 @@ private struct CircaGallery: View {
                 }
 
                 CircaHairline()
+
+                CircaSectionHeader(title: "Daily targets", link: "Sources") {}
 
                 VStack(alignment: .leading, spacing: 10) {
                     CircaSectionLabel("Certainty")
