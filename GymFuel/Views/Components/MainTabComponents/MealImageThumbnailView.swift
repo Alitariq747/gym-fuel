@@ -62,21 +62,7 @@ struct MealImageThumbnailView: View {
                             .frame(width: width ?? size, height: height ?? size)
                             .clipped()
                     case .fullPhoto:
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: width ?? size, height: height ?? size)
-                            .blur(radius: 18)
-                            .opacity(0.55)
-                            .clipped()
-                            .accessibilityHidden(true)
-
-                        Color.circaMediaWell.opacity(0.25)
-
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: width ?? size, height: height ?? size)
+                        MealFullPhoto(image: image, width: width ?? size, height: height ?? size)
                     }
                 }
             } else {
@@ -110,6 +96,37 @@ struct MealImageThumbnailView: View {
         image = await loader.image(entryId: entryId, storagePath: storagePath, maxSizeBytes: maxSizeBytes)
         didFail = image == nil
         isLoading = false
+    }
+}
+
+/// The whole photo, never cropped, its blurred copy filling the rest of the frame.
+/// The Entry screen and the share card both draw it, so the two cannot differ.
+struct MealFullPhoto: View {
+    let image: UIImage
+    let width: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        ZStack {
+            Color.circaMediaWell
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: width, height: height)
+                .blur(radius: 18)
+                .opacity(0.55)
+                .clipped()
+                .accessibilityHidden(true)
+
+            Color.circaMediaWell.opacity(0.25)
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(width: width, height: height)
+        }
+        .frame(width: width, height: height)
     }
 }
 

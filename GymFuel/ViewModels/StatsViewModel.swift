@@ -41,14 +41,10 @@ final class StatsViewModel: ObservableObject {
         selectedWeekStart = previousWeek
     }
 
-    func goToNextWeek(calendar: Calendar = .current) {
-        guard let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: selectedWeekStart) else { return }
+    func goToNextWeek(calendar: Calendar = .current, now: Date = .now) {
+        guard canGoToNextWeek(calendar: calendar, now: now),
+              let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: selectedWeekStart) else { return }
         selectedWeekStart = nextWeek
-    }
-
-    func selectWeek(containing date: Date, calendar: Calendar = .current) {
-        selectedWeekStart = calendar.dateInterval(of: .weekOfYear, for: date)?.start
-            ?? calendar.startOfDay(for: date)
     }
 
     func canGoToNextWeek(calendar: Calendar = .current, now: Date = .now) -> Bool {

@@ -10,12 +10,11 @@ struct MealShareCard: View {
         let macros: Macros
         let certainty: CircaCertainty
         var provenance: String?
-        var explanation: String?
+        var breakdown: MealShareBreakdown?
     }
 
     static let width: CGFloat = 360
-    private static let photoWidth = width - 2 * Circa.Space.screenMargin
-    private static let photoHeight = photoWidth * 9 / 16
+    private static let photoSide: CGFloat = 192
     private static let markSize: CGFloat = 24
 
     let content: Content
@@ -24,11 +23,11 @@ struct MealShareCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             if let photo {
-                Image(uiImage: photo)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: Self.photoWidth, height: Self.photoHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous))
+                let shape = RoundedRectangle(cornerRadius: Circa.Radius.cardSmall, style: .continuous)
+                MealFullPhoto(image: photo, width: Self.photoSide, height: Self.photoSide)
+                    .clipShape(shape)
+                    .overlay { shape.strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline) }
+                    .frame(maxWidth: .infinity)
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -47,14 +46,8 @@ struct MealShareCard: View {
                     .foregroundStyle(Color.circaAccent)
             }
 
-            if let explanation = content.explanation {
-                VStack(alignment: .leading, spacing: 6) {
-                    CircaSectionLabel("How this was estimated")
-                    Text(explanation)
-                        .font(.caption)
-                        .foregroundStyle(Color.circaInk)
-                        .lineLimit(6)
-                }
+            if let breakdown = content.breakdown {
+                breakdownList(breakdown)
             }
 
             footer
@@ -106,6 +99,51 @@ struct MealShareCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func breakdownList(_ breakdown: MealShareBreakdown) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            CircaSectionLabel("Breakdown")
+            VStack(spacing: 8) {
+                ForEach(Array(breakdown.rows.enumerated()), id: \.element.id) { index, row in
+                    if index > 0 { CircaHairline(weight: .inCard) }
+                    breakdownRow(
+                        row.name, amount: MealCopy.amount(row.amount), macros: row.macros,
+                        certainty: row.source == .estimated ? .estimated : .known
+                    )
+                }
+                if breakdown.moreCount > 0 {
+                    CircaHairline(weight: .inCard)
+                    breakdownRow(
+                        MealCopy.Share.more(breakdown.moreCount), amount: nil, macros: breakdown.moreMacros,
+                        certainty: content.certainty, nameColor: .circaInk2
+                    )
+                }
+            }
+        }
+    }
+
+    /// One line, whatever the meal: the name gives way so the amount and the number never do.
+    private func breakdownRow(
+        _ name: String, amount: String?, macros: Macros?, certainty: CircaCertainty, nameColor: Color = .circaInk
+    ) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(verbatim: name)
+                .font(.circaBody)
+                .foregroundStyle(nameColor)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if let amount {
+                Text(verbatim: amount)
+                    .font(.circaMono)
+                    .foregroundStyle(Color.circaInk3)
+                    .fixedSize()
+            }
+            if let calories = MealCopy.calories(macros) {
+                CircaEstimate(calories, certainty: certainty)
+                    .fixedSize()
+            }
+        }
+    }
+
     private var footer: some View {
         VStack(spacing: 14) {
             CircaHairline()
@@ -125,20 +163,33 @@ struct MealShareCard: View {
     }
 }
 
+private func previewBreakdown(_ items: [(String, Double, String, Double)]) -> MealShareBreakdown? {
+    MealShareBreakdown(MealBreakdown(items: items.map { name, quantity, unit, calories in
+        MealItem(
+            id: name, name: name, amount: MealAmount(quantity: quantity, unit: unit),
+            nutrition: Macros(calories: calories, protein: 0, carbs: 0, fat: 0)
+        )
+    }))
+}
+
 #Preview("Text meal") {
     MealShareCard(content: MealShareCard.Content(
         label: "Your words",
-        title: "chicken stew, a cup of rice and a slice of bread",
-        macros: Macros(calories: 665, protein: 37, carbs: 71, fat: 24),
+        title: "rice, chicken stew, lentils, a flatbread, yogurt, salad and tea",
+        macros: Macros(calories: 1060, protein: 52, carbs: 128, fat: 36),
         certainty: .estimated,
-        explanation: "A home-style chicken stew, one bowl, with bone-in pieces simmered in onion and tomato. The rice is plain boiled white rice. The bread is one slice from a standard sandwich loaf."
+        breakdown: previewBreakdown([
+            ("White rice, boiled", 1, "plate", 310), ("Chicken stew", 1, "bowl", 340),
+            ("Lentils", 1, "bowl", 180), ("Flatbread", 1, "piece", 120), ("Yogurt", 3, "tbsp", 45),
+            ("Salad", 1, "small plate", 25), ("Tea with milk", 1, "cup", 40)
+        ])
     ))
 }
 
 #Preview("Photo meal") {
-    let photo = UIGraphicsImageRenderer(size: CGSize(width: 400, height: 300)).image { context in
+    let photo = UIGraphicsImageRenderer(size: CGSize(width: 300, height: 400)).image { context in
         UIColor.systemGray4.setFill()
-        context.fill(CGRect(x: 0, y: 0, width: 400, height: 300))
+        context.fill(CGRect(x: 0, y: 0, width: 300, height: 400))
     }
     return MealShareCard(
         content: MealShareCard.Content(
@@ -146,7 +197,10 @@ struct MealShareCard: View {
             title: "Scrambled eggs with toast and tea",
             macros: Macros(calories: 470, protein: 20, carbs: 36, fat: 27),
             certainty: .estimated,
-            explanation: "Two eggs scrambled in a little butter. Two slices of white toast, each thinly buttered. Tea with a splash of whole milk and no sugar."
+            breakdown: previewBreakdown([
+                ("Scrambled eggs", 2, "eggs", 200), ("White toast, buttered", 2, "slice", 230),
+                ("Tea with milk", 1, "cup", 40)
+            ])
         ),
         photo: photo
     )

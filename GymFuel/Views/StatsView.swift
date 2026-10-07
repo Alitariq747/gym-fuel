@@ -15,22 +15,16 @@ struct StatsView: View {
     @AppStorage(BodyWeightUnit.preferenceKey) private var weightUnitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isWeighInPresented = false
     @State private var isWeightPresented = false
-    @State private var selectedDate: Date
  
     private let onWeighIn: (Double) -> Void
-    private let onSelectedDateChange: (Date) -> Void
     init(
         profile: UserProfile,
-        selectedDate: Date,
         viewModel: StatsViewModel? = nil,
-        onWeighIn: @escaping (Double) -> Void = { _ in },
-        onSelectedDateChange: @escaping (Date) -> Void
+        onWeighIn: @escaping (Double) -> Void = { _ in }
     ) {
         self.profile = profile
         self.onWeighIn = onWeighIn
-        self.onSelectedDateChange = onSelectedDateChange
-        _selectedDate = State(initialValue: selectedDate)
-        _viewModel = StateObject(wrappedValue: viewModel ?? StatsViewModel(now: selectedDate))
+        _viewModel = StateObject(wrappedValue: viewModel ?? StatsViewModel())
     }
     private var targetMacros: Macros? {
         profile.savedTargets
@@ -61,8 +55,8 @@ struct StatsView: View {
                     rangeLabel: weekLabel,
                     isLoading: viewModel.isLoading,
                     canGoNext: viewModel.canGoToNextWeek(),
-                    onPrevious: { moveWeek(by: -1) },
-                    onNext: { moveWeek(by: 1) }
+                    onPrevious: { viewModel.goToPreviousWeek() },
+                    onNext: { viewModel.goToNextWeek() }
                 )
                 .padding(.horizontal, Circa.Space.screenMargin)
 
@@ -135,17 +129,6 @@ struct StatsView: View {
         .onChange(of: isWeightPresented) { _, isPresented in
             if !isPresented { Task { await viewModel.loadWeightTrend(userId: profile.id) } }
         }
-    }
-
-    private func moveWeek(by offset: Int) {
-        guard let candidate = Calendar.current.date(byAdding: .weekOfYear, value: offset, to: selectedDate) else { return }
-        selectDate(min(candidate, .now))
-    }
-
-    private func selectDate(_ date: Date) {
-        selectedDate = Calendar.current.startOfDay(for: date)
-        viewModel.selectWeek(containing: selectedDate)
-        onSelectedDateChange(selectedDate)
     }
 
     /// Daily average against target, from the `Week` artboard.

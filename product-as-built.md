@@ -113,7 +113,7 @@ LogEntryDetailSheet  (pushed)
 
 ```
 StatsView  (sheet)
-└── StatsWeekPicker ‹ › — week paging, clamped at the current week
+└── StatsWeekPicker ‹ › — opens on the current week; paging is clamped at it and never moves the Day screen
     StatsStreakCard · StatsActivitySummaryRow · CaloriesStatsCard · macro bars
     ✕ dismiss
 ```

@@ -54,6 +54,8 @@ enum MealCopy {
         static let previewTitle = "Share this meal"
         static let privacy = "Only this meal is shared. No targets, weight or other meals."
         static let photoMissing = "The photo couldn't load, so the card leaves it out."
+
+        static func more(_ count: Int) -> String { "+ \(count) more" }
     }
 
     /// Why rewording needs a second tap, or `nil` when it loses nothing. Names are

@@ -112,7 +112,7 @@ struct LogEntryDetailSheet: View {
             macros: macros,
             certainty: macrosCertainty,
             provenance: macrosProvenanceLine,
-            explanation: analysisExplanation.isEmpty ? nil : analysisExplanation
+            breakdown: editableBreakdown.flatMap { MealShareBreakdown($0) }
         )
     }
     private var analysisExplanation: String {

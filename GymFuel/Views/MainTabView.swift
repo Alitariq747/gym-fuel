@@ -25,7 +25,6 @@ struct MainTabView: View {
     @State private var showSavedMeals = false
     @State private var showStats = false
     @State private var showDatePicker = false
-    @State private var weekAnchorDate: Date = .now
     @State private var showTextLogSheet = false
     @State private var showSubscriptionPaywall = false
     @State private var showFutureLoggingToast = false
@@ -109,7 +108,7 @@ struct MainTabView: View {
                     onDateTap: {
                         showDatePicker = true
                     },
-                    onWeekTap: { openWeek() },
+                    onWeekTap: { showStats = true },
                     onSettingsTap: {
                         showProfile = true
                     }
@@ -223,15 +222,11 @@ struct MainTabView: View {
         .allowsHitTesting(!mealPhotoPresentation.isActive)
         .accessibilityHidden(mealPhotoPresentation.isActive)
         .overlay { mealPhotoOverlay.preferredColorScheme(preferredColorScheme) }
-        .sheet(isPresented: $showStats, onDismiss: {
-            selectDay(weekAnchorDate)
-        }) {
+        .sheet(isPresented: $showStats) {
             NavigationStack {
                 StatsView(
                     profile: profile,
-                    selectedDate: weekAnchorDate,
-                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) },
-                    onSelectedDateChange: { weekAnchorDate = $0 }
+                    onWeighIn: { kg in profileViewModel.applyWeighIn(kg: kg) }
                 )
             }
             .preferredColorScheme(preferredColorScheme)
@@ -319,14 +314,8 @@ struct MainTabView: View {
         }
     }
 
-    private func openWeek() {
-        weekAnchorDate = timelineViewModel.selectedDate
-        showStats = true
-    }
-
     private func selectDay(_ date: Date) {
         dayNavigationDirection = date < timelineViewModel.selectedDate ? .previous : .next
-        weekAnchorDate = date
         Task { await timelineViewModel.setSelectedDate(date, userId: profile.id) }
     }
 
