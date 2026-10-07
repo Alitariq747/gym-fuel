@@ -58,6 +58,11 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         var inputSource: String?
     }
 
+    private struct GuestMealRequest: Codable {
+        var text: String
+        var installId: String
+    }
+
     private struct MultipartFormDataBuilder {
         let boundary: String
         private(set) var body = Data()
@@ -169,7 +174,8 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             return .monthlyQuotaExceeded(message ?? "You have reached your monthly scan limit.")
         case "subscription/inactive":
             return .subscriptionInactive(message ?? "Upgrade to Circa Pro to keep logging with AI.")
-        case "rate-limit/too-many-interpret-text-requests":
+        case "rate-limit/too-many-interpret-text-requests",
+             "rate-limit/too-many-guest-meal-tries":
             return .rateLimited(message ?? "Too many requests. Please wait a moment and try again.")
         default:
             return nil
@@ -248,15 +254,21 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         return normalizedResponse
     }
 
-    private func sendTextInterpretationRequest(_ requestData: Data) async throws -> TextInterpretationResponse {
-        let url = baseURL.appendingPathComponent("interpretText")
+    private func sendTextInterpretationRequest(
+        _ requestData: Data,
+        route: String = "interpretText",
+        signedIn: Bool = true
+    ) async throws -> TextInterpretationResponse {
+        let url = baseURL.appendingPathComponent(route)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = requestData
 
-        let idToken = try await Auth.auth().currentUser?.getIDToken() ?? ""
-        request.setValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
+        if signedIn {
+            let idToken = try await Auth.auth().currentUser?.getIDToken() ?? ""
+            request.setValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
+        }
 
         let appCheckToken = try await AppCheck.appCheck().token(forcingRefresh: false).token
         request.setValue(appCheckToken, forHTTPHeaderField: "X-Firebase-AppCheck")
@@ -280,7 +292,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             let decodedResponse = try JSONDecoder().decode(TextInterpretationResponse.self, from: data)
             return normalizeAIResponseIfNeeded(
                 decodedResponse,
-                route: "interpretText",
+                route: route,
                 statusCode: httpResponse.statusCode
             )
         } catch {
@@ -289,7 +301,7 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
             }
             recordResponseDecodingFailure(
                 error,
-                route: "interpretText",
+                route: route,
                 statusCode: httpResponse.statusCode
             )
             throw BackendLogInterpretationError.decodingFailed
@@ -351,6 +363,17 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         try await sendImageDescriptionRequest(imageData: imageData)
     }
 
+    /// Onboarding's one guest estimate: App Check only, no account (build-order 15a).
+    func tryMeal(_ text: String) async throws -> TriedMeal {
+        let request = GuestMealRequest(text: text, installId: GuestInstallID.current())
+        let response = try await sendTextInterpretationRequest(
+            try JSONEncoder().encode(request),
+            route: "onboarding/tryMeal",
+            signedIn: false
+        )
+        return TriedMeal(words: text, title: response.title, feedback: response.feedback)
+    }
+
     func interpretPhotoDescription(
         _ text: String,
         userId: String,
@@ -371,5 +394,18 @@ final class BackendLogInterpretationService: LogInterpretationService, @unchecke
         let requestData = try makeRequestData(from: request) // encoding
         let response = try await sendTextInterpretationRequest(requestData)  // sending request
         return makeLogEntry(from: response, rawText: text, userId: userId, loggedAt: loggedAt)
+    }
+}
+
+/// Lets the guest route count tries without an account. A reinstall starts
+/// fresh, accepted (build-order 15b).
+enum GuestInstallID {
+    static func current(in defaults: UserDefaults = .standard) -> String {
+        let key = "onboarding.installId"
+        if let stored = defaults.string(forKey: key) { return stored }
+
+        let created = UUID().uuidString
+        defaults.set(created, forKey: key)
+        return created
     }
 }

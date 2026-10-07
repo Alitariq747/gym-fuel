@@ -82,9 +82,9 @@ fresh session reads this file, not the chat history.
 - [x] **12** · Fixed daily reminders · *simplified, 2 October; device checks pending*
 - [x] **13** · HealthKit body mass — done early as 4a2
 - [x] **14** · Widgets · *built 3–4 October; device checks pending*
-- [ ] **15a** · Onboarding: the guest meal route (backend)
-- [ ] **15b** · Onboarding: the live meal screen
-- [ ] **15c** · Onboarding: one edit, saved as their first meal · rating request after the first saved correction
+- [x] **15a** · Onboarding: the guest meal route (backend)
+- [x] **15b** · Onboarding: the live meal screen
+- [ ] **15c** · Onboarding: one edit, its result shown prominently · rating request after the first saved correction
 - [ ] **15d** · Onboarding: the logging-problem question and the plan callback · no preselected goal
 - [ ] **15e** · Onboarding: a paywall that continues the story
 
@@ -1152,7 +1152,7 @@ aha is **the correction**: "it assumed two spoons of oil, I changed it to one, a
 the total followed." That still works when the first guess is off, and it is the
 one thing a database app cannot demo. So the onboarding moment **ends on the
 person's edit, not on the AI's number**, and that meal then follows them to the plan
-screen, the paywall and their saved meals.
+screen and the paywall. It is not saved — dropped 7 October (15c).
 
 ### Screen order
 
@@ -1185,7 +1185,8 @@ Health is unavailable.
   what the first one only described, and its assumptions teach what the second one
   explained ("a little detail helps") on the person's own words.
 - **Sign-in stays after the plan, and the paywall stays last.** Already right.
-- **Step count stays at 13.** Two screens in, two out.
+- **Step count stays at 13.** Two screens in, two out. Between 15b and 15d it is
+  12: 15b removes two and adds one.
 
 Both the order in `orderedSteps` and the literal destinations change. Today
 `goal` (Maintain) and `goalWeight` point at `.loggingTips`; after 15b they point at
@@ -1223,6 +1224,8 @@ sessions. Ahmad decides.
 
 ### 15a — The guest meal route (backend) · ~90 lines
 
+**Built 7 October** (~96 lines). Deploy it before 15b; nothing calls it until then.
+
 **What the user gets:** nothing visible yet. The route the live meal calls, with no
 account and no subscription.
 
@@ -1233,38 +1236,59 @@ account and no subscription.
 2. **Middleware:** `requireAppCheck` only. No `requireFirebaseAuth`, no
    `requireActiveProSubscription`, no quota read or write.
 3. **Text only.** No photo: it costs more, takes longer, and "in your own words" is
-   the point. Body `{ text, installId }`; text goes through `requireTextValue` and a
-   short length cap (200 characters).
+   the point. Body `{ text, installId }`; `installId` must be a UUID
+   (`UUID().uuidString`), and text goes through `requireTextValue` with a
+   200-character cap. Bad input is a 400 and uses no try.
 4. **Same response shape as `/interpretText`** — `type`, `title`, `detail`,
    `feedback` — so the client decodes it with existing code and the payload is
    `meal-contract.md`'s. No contract change.
-5. **Limits.** Three attempts per `installId` (one try, plus room for a typo or a
-   second go). A generous per-IP ceiling (30 an hour), because carrier NAT puts many
-   phones behind one address — which hits South Asian and diaspora users hardest.
-   In-memory per instance, like `applyInterpretTextRateLimit`; a Cloud Run restart
-   resets it, accepted.
+5. **Limits.** Three tries per `installId` (one try, plus room for a typo or a
+   second go), counted once the input is valid, so a timeout or server error uses
+   one. They reset 24 hours after the install's first try. A fourth gets 429
+   `rate-limit/too-many-guest-meal-tries`. The rule lives in
+   `src/routes/guestTryLimiter.js`. In-memory per instance, like
+   `applyInterpretTextRateLimit`; a Cloud Run restart resets it, accepted.
+   - **No per-IP limit — decided 7 October.** Carrier NAT puts many phones behind
+     one address, which hits South Asian and diaspora users hardest, and on Cloud
+     Run `req.ip` is Google's front end unless `trust proxy` is set.
+   - **The install ID comes from the phone**, so the limit stops a real person
+     looping, not a script that invents a new ID each time. App Check is the
+     actual lock.
 6. **Writes nothing to Firestore.** `logAIMetrics` with `route: "/onboarding/tryMeal"`
    and no uid, so onboarding cost shows in the existing logs.
 
 **Timeout — done 7 October.** `OPENAI_TEXT_TIMEOUT_MS` is 25000 in Cloud Run and in
-the backend `.env`. The code fallback in `openaiClient.js:4` is still 12000 and
-returns if the variable is ever lost; raise it to 25000 here, one line. The client
-stops waiting at 15 s (15b); the server call may still finish, accepted at ~$0.001.
+the backend `.env`, and the code fallback in `openaiClient.js:4` is now 25000 too.
+The client stops waiting at 20 s (15b); the server call may still finish, accepted
+at ~$0.001.
 
 **Cost:** Luna is ~$0.0011 per text call, so at the strategy's 1,400 installs a
-month this is about **$1.50 a month**. If abuse ever shows in the logs, Apple
-DeviceCheck's two per-device bits are the upgrade. Not now.
+month this is about **$1.50 a month**. Abuse costs about $110 per 100,000 calls;
+the bigger risk is that the route shares the OpenAI key's rate limits with paying
+users. App Check tokens can be reused for about an hour, so one copied through a
+proxy can be replayed from a script.
+
+**Upgrade if abuse shows in the logs — later, not now (7 October):** single-use
+App Check tokens. `verifyToken(token, { consume: true })` on this route and
+`limitedUseToken()` in the app, so a copied token works once. About 10–15 lines in
+`appCheckMiddleware.js` plus one in the 15b client.
 
 **Considered, not chosen:** Firebase anonymous sign-in with `link(with:)` at Save
 your progress. Cleaner long term, but it rewires sign-in right before launch.
 
-**Files** `src/routes/logEntryRoute.js` · `src/ai/openaiClient.js` · tests
+**Files** `src/routes/logEntryRoute.js` · new `src/routes/guestTryLimiter.js` ·
+`src/ai/openaiClient.js` · `test/guestTryLimiter.test.js` ·
+`test/onboardingTryMealRoute.test.js`
 
 **Done when** a request with App Check and no ID token returns the same shape as
 `/interpretText`; a fourth try from one install gets 429; a request without App
 Check gets 401; and nothing is written to Firestore.
 
 ### 15b — The live meal screen · ~170 lines
+
+**Built 7 October**, in three parts because it came to ~390 lines: the call and
+view model (~183), the screen (~153), then the flow wiring, the example and the
+removals (~51). About 260 lines of the two old screens went with it.
 
 **What the user gets:** in the first minute, they describe a meal they actually eat
 and see what Circa assumed.
@@ -1277,8 +1301,10 @@ and see what Circa assumed.
    its decoding and error mapping), an `OnboardingTryMealViewModel` holding screen
    state (typing, working, result, fallback), and `OnboardingTryMealStepView`, which
    only draws.
-3. **Install ID:** a random UUID in `UserDefaults`. A reinstall gets fresh tries;
-   accepted at this cost.
+3. **Install ID:** a random UUID in `UserDefaults` (`GuestInstallID`, in the service
+   file). A reinstall gets fresh tries; accepted at this cost. The text field stops
+   at 200 UTF-16 units, the length the backend measures, so emoji and some scripts
+   never earn a 400.
 4. **Prompt:** "Tell us a meal you often eat." Detail: "Say it the way you'd tell a
    friend." Three tap-to-fill examples from *Rules*. Ask for a *usual* meal, not
    "what did you last eat": it is more likely to be the home-cooked food databases
@@ -1288,87 +1314,83 @@ and see what Circa assumed.
 6. **Result:** `MealBreakdownCard`, read-only in this part, under "Circa's first
    guess. Anything different?" The top assumption from
    `MealBreakdownCalculator.assumptions(of:)` (already ranked) sits highlighted above
-   it. Continue is enabled.
-7. **Fallback:** an error, App Check failure, offline, a 429, or 15 s without an
+   it, under "Biggest assumption". Continue is enabled.
+7. **Fallback:** an error, App Check failure, offline, a 429, or 20 s without an
    answer shows the static example — today's eggs-and-toast card, moved into this
    screen — with "We couldn't reach Circa just now. Here's an example." and
    Continue. A **"Show me an example instead"** link reaches the same state without
-   typing. No blocking error, no retry loop.
+   typing, under "Here's an example." No blocking error, no retry loop.
+   - **20 s, not 15 — decided 7 October.** About one Luna call in eight takes
+     longer than 12 s, so 15 s would show many people the example instead of their
+     own meal, after paying for the call.
+   - **An answer with no breakdown** has no card to draw, so it goes back to typing
+     with their words kept: "Circa couldn't find a meal in that. Try naming what's
+     on the plate." The backend's other two tries are for this.
 8. **`OnboardingAnswers.triedMeal`** holds the typed words and the decoded result,
-   in memory only, until sign-up (15c).
+   in memory only. Nothing writes it to Firestore (15c).
 9. **Remove** `liftEatsDifference` and `loggingTips`: their cases,
    `OnboardingLiftEats.swift`, `OnboardingLoggingTipsStepView.swift`, and the
    `shake_simple`, `shake_refined`, `pasta_simple`, `pasta_refined` images (used
    nowhere else). `eggs_toast_coffee` stays for the fallback.
 10. **Telemetry** through `logOnboardingEvent`: `meal_try_submitted`,
-    `meal_try_succeeded`, `meal_try_failed` (timeout, offline, server, limit) and
-    `meal_try_example_shown`.
-
-The closest part to the limit. If it grows past 200, split the fallback out as its
-own part and ask first.
+    `meal_try_succeeded`, `meal_try_failed_timeout`, `meal_try_failed_offline`,
+    `meal_try_failed_server`, `meal_try_failed_limit` and `meal_try_example_shown`.
+    Separate event names rather than a reason parameter, decided 7 October, so
+    `FirebaseTelemetryService` stays as it is.
 
 **Files** new `OnboardingTryMealStepView.swift` · new `OnboardingTryMealViewModel.swift` ·
 `BackendLogInterpretationService.swift` · `OnboardingFlowView.swift` ·
 `UserProfile.swift` (`OnboardingAnswers`) · removed `OnboardingLiftEats.swift`,
 `OnboardingLoggingTipsStepView.swift` and four images ·
-`OnboardingIllustrationTests.swift`
+`OnboardingIllustrationTests.swift` · new `OnboardingTryMealViewModelTests.swift`
 
 **Done when** a fresh install types "rice with chicken stew" and sees a breakdown
 with a highlighted assumption, airplane mode shows the example and still continues,
-and the flow is 13 steps with no `loggingTips` or `liftEatsDifference`.
+and the flow is 12 steps with no `loggingTips` or `liftEatsDifference` — 13 once
+15d adds `loggingProblem`.
 
-### 15c — One edit, saved as their first meal · ~170 lines
+### 15c — One edit, its result shown prominently · ~150 lines
 
-**What the user gets:** they correct Circa's guess, see the total follow, and find
-that meal saved when they arrive. Later, the first time they save a corrected meal
-in the app, iOS may ask them for a rating.
+**Rescoped 7 October.** Saving the tried meal as a `SavedMeal` after sign-up was
+dropped as more work than value: no snapshot written at sign-up, no "saved to your
+meals" line, nothing waiting at first open. The edit stays, because it is Step 15's
+idea; nothing in onboarding is written to Firestore. Two parts, rating first.
 
-1. **Tap an item to edit it** with `MealBreakdownEditorSheet`; the total updates
-   through `MealBreakdownCalculator` and shows its delta
-   (`displayedCalorieDelta`). **Quantity edits only** — reinterpretation needs another
-   AI call, and the guest route allows one try. The edit is invited, never
-   required.
-2. **Close line after an edit:** "Saved to your meals. Next time it's one tap."
-   That is the reuse loop, planted on day 0.
-3. **After sign-up, write it as a `SavedMeal`** through
-   `SavedMealsViewModel.saveSavedMeal`, in both completion paths in `RootView`
-   (`saveOnboarding` and `finishGuestOnboarding`). **New accounts only** — an existing
-   account signing in at Save your progress gets nothing (`outcome.isNewUser`).
-4. **The snapshot follows `meal-contract.md` §8:** the breakdown as it stands, every
-   `adjustedQuantity`, assumption and source; name from the AI title; description
-   is the person's own words; `macrosProvenance` from the feedback.
-   `LogEntryDetailSheet.savedMeal(named:description:macros:)` already builds this —
-   extract it to one shared place rather than writing it twice.
-5. **Not logged to today.** A usual meal is not necessarily eaten today.
-6. **A failed save never blocks finishing onboarding.** Record a non-fatal and
-   move on.
-7. **Telemetry:** `meal_try_item_edited`.
-8. **Ask for a rating after the first saved correction in the app — never in
-   onboarding.** When someone saves a meal from `LogEntryDetailSheet` whose breakdown
-   has at least one adjustment (`MealBreakdownCalculator.adjustedParts(of:)` is not
-   empty), and no rating has been requested on this install, call SwiftUI's
-   `requestReview` (StoreKit, no new dependency) after the save sheet closes and the
-   toast shows.
-   - **Why here:** this part already opens that save path for the snapshot
-     extraction, and it's the moment someone has just used Circa's difference on
-     their own food. The listing still shows "insufficient ratings".
-   - **The rule lives in one small pure type:** the meal was corrected, nothing has
-     been asked before, and it isn't the onboarding save. Tested. The "asked" flag
-     is kept in `UserDefaults`.
-   - **The meal written in item 3 never triggers it.**
+**What the user gets:** they correct Circa's guess and see, prominently, what their
+edit did to the total. Later, the first time they save a corrected meal in the app,
+iOS may ask them for a rating.
+
+1. **Rating request — built 7 October** (~32 lines). When someone saves a meal from
+   `LogEntryDetailSheet` whose breakdown has at least one adjustment
+   (`MealBreakdownCalculator.adjustedParts(of:)` is not empty), and no rating has
+   been requested on this install, SwiftUI's `requestReview` runs from the save
+   sheet's `onDismiss`, after the sheet has closed and while the toast shows.
+   - **The rule lives in `RatingRequestRule`**, pure and tested. The "asked" flag is
+     `@AppStorage(RatingRequestRule.requestedKey)`, set whenever it asks.
+   - **Never in onboarding.** Apple's HIG says to wait until people have used the
+     app, and onboarding saves nothing, so it cannot reach the rule.
    - **iOS decides whether the prompt appears** and caps it at three a year, so
      nothing may depend on it showing. No "Rate us" button.
+2. **The edit.** Quantity edits only, with `MealBreakdownEditorSheet` —
+   reinterpretation needs another AI call, and the guest route allows one try. The
+   edit is invited, never required. The corrected breakdown replaces the guess in
+   `OnboardingAnswers.triedMeal`, through the same rule the app uses (§6), so 15d's
+   plan card reads the edited total.
+3. **Its result, shown prominently.** After an edit the screen leads with what
+   changed: the first guess, their total, the difference, and which parts they
+   changed. The first guess comes from the breakdown itself — every
+   `adjustedQuantity` sits beside the original `quantity` (§6).
+4. **Telemetry:** `meal_try_item_edited`.
 
-**Files** `OnboardingTryMealStepView.swift` · `OnboardingTryMealViewModel.swift` ·
-`RootView.swift` · `LogEntryDetailSheet.swift` (extraction, rating request) · the
-shared snapshot builder (+ tests) · new rating rule (+ tests)
+**Files** new `RatingRequestRule.swift` (+ tests) · `LogEntryDetailSheet.swift` ·
+`OnboardingTryMealStepView.swift` · `OnboardingTryMealViewModel.swift` ·
+`UserProfile.swift` (`TriedMeal`) · `MealBreakdownCalculator.swift` (+ tests)
 
-**Done when** changing one amount moves the total by the shown delta, a new account
-finds that meal under saved meals with its corrected amount and assumptions, and
-re-logging it makes no AI call. Saving a corrected meal in the app requests a
-rating once. Saving an uncorrected meal, or the onboarding meal, does not. In a
-Debug build the prompt always shows; in TestFlight it never does, by Apple's
-design.
+**Done when** saving a corrected meal in the app requests a rating once, and saving
+an uncorrected meal does not; in a Debug build the prompt always shows, and in
+TestFlight it never does, by Apple's design. In onboarding, changing one amount
+moves the total, the screen shows the first guess, the new total and the
+difference, and nothing appears under saved meals after sign-up.
 
 ### 15d — The logging-problem question and the plan callback · ~130 lines
 
@@ -1435,8 +1457,9 @@ their meal, and shows exactly when billing starts.
    75 kg by 14 March." The date comes from `WeightPlan.goalDate`. Maintain, or no
    date: "Your plan is ready: 2,100 kcal a day to stay at 60 kg."
 3. **Subtitle** from `LoggingProblem` (15d).
-4. **First feature row is their meal:** "Rice with chicken stew, saved with its
-   assumptions." The four existing rows follow. No meal, no extra row.
+4. **First feature row is their meal.** It must not say "saved": the tried meal is
+   not saved (15c, 7 October). Settle the wording in this part. The four existing
+   rows follow. No meal, no extra row.
 5. **Trial timeline** (Blinkist): *Today* — full access; *Day N* — billing starts
    at `package.localizedPriceString`. N comes from the StoreKit intro offer. Move
    the period maths out of the private `trialLengthText(for:)` into a pure
@@ -1471,8 +1494,7 @@ didn't — keen people edit more, so it is a signal, not proof.
   the aha, but distribution is creator seeding with no ad attribution, and this is
   the cheapest way to learn which creator brought installs. Worth adding before
   Step 11's outreach.
-- **First-open nudge** pointing at the saved meal ("Log your usual rice and
-  chicken stew in one tap"), ~30 lines.
+- ~~**First-open nudge** pointing at the saved meal~~ — dropped with the save, 7 October (15c).
 
 **Not copied from Cal AI**, with the reason: the "lose 2× more" chart (1.4.1), "add
 calories burned back?" (Step 3), the potential and pace screens (nothing judges),
@@ -1496,8 +1518,8 @@ wheel on dismiss.
   named unknown ingredients or portions; 22 of 94 who stopped had reached their goal.
 - IKEA effect (Norton, Mochon & Ariely 2012): effort raises value, but only when
   the task succeeds — hence a quantity edit that cannot fail. Endowed progress
-  (Nunes & Drèze 2006): 34% against 19% — hence the saved meal waiting at first
-  open.
+  (Nunes & Drèze 2006): 34% against 19% — the reason for the saved meal waiting at
+  first open, dropped 7 October (15c).
 
 ---
 

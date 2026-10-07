@@ -56,13 +56,16 @@ in place. There is a back chevron and a progress bar; there is no skip-to-end an
 no way to exit to the main app.
 
 ```
-liftEatsIntro → OnboardingLiftEats
-  → [OnboardingNameStepView]      ← only when showsNameStep (email/password accounts)
+liftEatsIntro → OnboardingTryMealStepView
   → OnboardingGenderStepView → OnboardingAgeStepView → OnboardingHeightStepView
   → OnboardingWeightStepView → OnboardingActivityLevelStepView
-  → OnboardingTrainingGoalStepView → OnboardingLoggingTipsStepView
-  → OnboardingSummaryStepView  ──"Start Tracking"──► RootView.saveOnboarding
-                                                     └── success + no Pro → SubscriptionPaywallSheet
+  → OnboardingTrainingGoalStepView
+  → [OnboardingGoalWeightStepView]     ← not on Maintain
+  → [OnboardingAppleHealthStepView]    ← only where Health is available
+  → OnboardingNotificationsStepView
+  → OnboardingSummaryStepView  ──"Save my progress"──► guest: PostOnboardingAuthView
+                                                        signed in: RootView.saveOnboarding
+                                                        └── success + no Pro → SubscriptionPaywallSheet
 ```
 
 `OnboardingSummaryStepView` renders only when all five required answers are
@@ -173,15 +176,13 @@ row). `NutritionSourcesView` is reachable from two: the profile and the
 | Screen | Job |
 |---|---|
 | `liftEatsIntro` | Show how an estimate can be inspected and corrected. |
-| `OnboardingLiftEats` | Show what a finished analysis looks like before asking for anything. |
-| `OnboardingNameStepView` | Collect a display name when the auth provider supplied none. |
+| `OnboardingTryMealStepView` | Estimate a meal the user often eats, in their own words, with no account (`/onboarding/tryMeal`); show the static example when that fails. |
 | `OnboardingGenderStepView` | Collect the sex constant the BMR formula needs. |
 | `OnboardingAgeStepView` | Collect age for BMR. |
 | `OnboardingHeightStepView` | Collect height for BMR, in cm or ft-in. |
 | `OnboardingWeightStepView` | Collect weight for BMR and protein/fat-per-kg, in kg or lb. |
 | `OnboardingActivityLevelStepView` | Collect *non-training* activity to pick the TDEE multiplier. |
 | `OnboardingTrainingGoalStepView` | Collect cut / maintain / lean bulk — the single variable everything else keys off. |
-| `OnboardingLoggingTipsStepView` | Teach the user to write logs the AI can estimate from. |
 | `OnboardingSummaryStepView` | Show the computed targets and commit the profile. |
 
 ### Daily loop
@@ -373,12 +374,6 @@ will happily create a second identical saved meal.
 `LogEntryDetail/LogEntryDetailSheet.swift:16`, never passed by `MainTabView` and
 never invoked inside the file. The Save Meal path bypasses it entirely and calls
 `savedMealsViewModel` directly from the view.
-
-**"and sets" in `OnboardingLoggingTipsStepView:133`** — the onboarding tip tells
-the user to include *sets* so LiftEats can judge workouts more accurately. The AI
-schema has no field for sets, the prompt has no instruction to extract them, and
-`ExerciseEstimate` has nowhere to put them. The information is requested from the
-user and then discarded.
 
 **`MealImageInterpretationError.unsupported`** — the protocol default in
 `LogInterpretationService` that throws "not available yet." The only conforming

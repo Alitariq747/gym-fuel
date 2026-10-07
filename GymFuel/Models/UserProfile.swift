@@ -205,6 +205,8 @@ struct OnboardingAnswers {
     var goalWeightKg: Double? = nil
     /// Numbers the user changed on the plan screen. Nil keeps the worked-out ones.
     var editedTargets: Macros? = nil
+    /// Nil when they took the example instead.
+    var triedMeal: TriedMeal? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
     /// A goal weight left over from an earlier answer is dropped on Maintain.
@@ -250,6 +252,13 @@ struct OnboardingAnswers {
         profile.startPlan(on: date)
         return profile
     }
+}
+
+/// A meal estimated during onboarding, before there is an account to log it to.
+struct TriedMeal: Equatable, Sendable {
+    let words: String
+    let title: String
+    let feedback: LogEntryFeedback
 }
 
 #if DEBUG

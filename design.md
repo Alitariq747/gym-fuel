@@ -324,7 +324,7 @@ in every pose.** Ink lines and one ochre, like everything else.
 3. **No gendered props or colours.** The gender step's move is *wonder*.
 4. **No words in the art.** Arabic is coming and the name may change again. The
    dotted question mark is a symbol, not a word.
-5. **Not on the busiest screens.** Logging tips, the plan summary and the
+5. **Not on the busiest screens.** The live meal, the plan summary and the
    paywall show no mascot. `OnboardingIllustrationTests` holds the onboarding half.
 6. **Decoration only.** Hidden from VoiceOver; still, in its rest pose, under
    Reduce Motion; on onboarding steps, 90 pt instead of 130 at accessibility

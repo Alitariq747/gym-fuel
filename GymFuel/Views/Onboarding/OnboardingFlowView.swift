@@ -9,7 +9,7 @@ import SwiftUI
 
 enum OnboardingStep: Hashable, CaseIterable {
     case liftEatsIntro
-    case liftEatsDifference
+    case tryMeal
     case gender
     case age
     case height
@@ -17,7 +17,6 @@ enum OnboardingStep: Hashable, CaseIterable {
     case activityLevel
     case goal
     case goalWeight
-    case loggingTips
     case appleHealth
     case notifications
     case summary
@@ -26,8 +25,8 @@ enum OnboardingStep: Hashable, CaseIterable {
         switch self {
         case .liftEatsIntro:
             return "lift_eats_intro"
-        case .liftEatsDifference:
-            return "lift_eats_difference"
+        case .tryMeal:
+            return "try_meal"
         case .gender:
             return "gender"
         case .age:
@@ -42,8 +41,6 @@ enum OnboardingStep: Hashable, CaseIterable {
             return "goal"
         case .goalWeight:
             return "goal_weight"
-        case .loggingTips:
-            return "logging_tips"
         case .appleHealth:
             return "apple_health"
         case .notifications:
@@ -53,11 +50,11 @@ enum OnboardingStep: Hashable, CaseIterable {
         }
     }
 
-    /// The two teaching screens and the two busiest ones give their whole
-    /// height to content. design.md, "The plate mascot", rule 5.
+    /// The intro, the live meal and the plan give their whole height to
+    /// content. design.md, "The plate mascot", rule 5.
     var illustration: OnboardingIllustration {
         switch self {
-        case .liftEatsIntro, .liftEatsDifference, .loggingTips, .summary: .hidden
+        case .liftEatsIntro, .tryMeal, .summary: .hidden
         case .gender: .plate(.wonder)
         case .age: .plate(.write)
         case .height: .plate(.stretch)
@@ -96,15 +93,20 @@ struct OnboardingFlowView: View {
     private var healthStepAvailable: Bool { healthWeightSync.isAvailable }
 
     private var orderedSteps: [OnboardingStep] {
-        var steps: [OnboardingStep] = [.liftEatsIntro, .liftEatsDifference]
+        var steps: [OnboardingStep] = [.liftEatsIntro, .tryMeal]
         steps += [.gender, .age, .height, .weight, .activityLevel, .goal]
         // Maintain has no goal weight, so it skips that step.
         if data.goalType != .maintain { steps.append(.goalWeight) }
-        steps.append(.loggingTips)
         // No Health database on this hardware means no step to show.
         if healthStepAvailable { steps.append(.appleHealth) }
         steps += [.notifications, .summary]
         return steps
+    }
+
+    /// Destinations are literal, not derived from `orderedSteps`, so a skipped
+    /// Health step has to be skipped twice — in the order and here.
+    private var stepAfterGoal: OnboardingStep {
+        healthStepAvailable ? .appleHealth : .notifications
     }
 
     private var currentIndex: Int { index(of: step) }
@@ -176,11 +178,12 @@ struct OnboardingFlowView: View {
         switch step {
         case .liftEatsIntro:
             liftEatsIntro(
-                onNext: { go(to: .liftEatsDifference) }
+                onNext: { go(to: .tryMeal) }
             )
 
-        case .liftEatsDifference:
-            OnboardingLiftEats(
+        case .tryMeal:
+            OnboardingTryMealStepView(
+                triedMeal: $data.triedMeal,
                 onNext: { go(to: .gender) }
             )
 
@@ -221,7 +224,7 @@ struct OnboardingFlowView: View {
                 weightKg: data.weightKg,
                 onFinish: {
                     if data.goalType == .maintain { data.goalWeightKg = nil }
-                    go(to: data.goalType == .maintain ? .loggingTips : .goalWeight)
+                    go(to: data.goalType == .maintain ? stepAfterGoal : .goalWeight)
                 }
             )
 
@@ -234,17 +237,9 @@ struct OnboardingFlowView: View {
                     goalWeightKg: $data.goalWeightKg,
                     stepPosition: index(of: step) + 1,
                     stepCount: orderedSteps.count,
-                    onNext: { go(to: .loggingTips) }
+                    onNext: { go(to: stepAfterGoal) }
                 )
             }
-
-        case .loggingTips:
-            OnboardingLoggingTipsStepView(
-                // Destinations here are literal, not derived from
-                // `orderedSteps`, so a skipped Health step has to be skipped
-                // twice — once in the order, once in what points at it.
-                onNext: { go(to: healthStepAvailable ? .appleHealth : .notifications) }
-            )
 
         case .appleHealth:
             OnboardingAppleHealthStepView(

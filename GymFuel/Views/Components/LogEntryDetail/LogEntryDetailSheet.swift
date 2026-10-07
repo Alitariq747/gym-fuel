@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 struct LogEntryDetailSheet: View {
@@ -22,6 +23,9 @@ struct LogEntryDetailSheet: View {
     @State private var showTimeEditSheet = false
     @State private var showSaveMealSheet = false
     @State private var showSavedMealToast = false
+    @State private var ratingEarned = false
+    @AppStorage(RatingRequestRule.requestedKey) private var ratingRequested = false
+    @Environment(\.requestReview) private var requestReview
     @State private var showDeleteConfirmation = false
     @State private var showRewordWarning = false
     @State private var showSharePreview = false
@@ -310,7 +314,7 @@ struct LogEntryDetailSheet: View {
                 editedLoggedAt = entry.loggedAt
             }
         }
-        .sheet(isPresented: $showSaveMealSheet) {
+        .sheet(isPresented: $showSaveMealSheet, onDismiss: requestRatingIfEarned) {
             if let saveableMealMacros {
                 SaveLoggedMealSheet(
                     initialName: entry.title,
@@ -322,6 +326,7 @@ struct LogEntryDetailSheet: View {
                     let meal = savedMeal(named: name, description: description, macros: macros)
                     Task {
                         if await savedMealsViewModel.saveSavedMeal(meal) {
+                            ratingEarned = RatingRequestRule.shouldRequest(saving: meal, alreadyRequested: ratingRequested)
                             showSaveMealSheet = false
                             presentSavedMealToast()
                         }
@@ -521,6 +526,14 @@ struct LogEntryDetailSheet: View {
                 showSavedMealToast = false
             }
         }
+    }
+
+    /// After the sheet has gone, so the prompt never lands on a closing sheet.
+    private func requestRatingIfEarned() {
+        guard ratingEarned else { return }
+        ratingEarned = false
+        ratingRequested = true
+        requestReview()
     }
 
     private func mergedLoggedAt(from selectedTime: Date, calendar: Calendar = .current) -> Date {

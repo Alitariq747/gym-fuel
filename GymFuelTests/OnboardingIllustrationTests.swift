@@ -9,11 +9,10 @@ import Testing
 
 @Suite("Onboarding illustration")
 struct OnboardingIllustrationTests {
-    @Test("The two teaching screens and the two busiest steps show no illustration")
+    @Test("The intro, the live meal and the plan show no illustration")
     func teachingAndBusyStepsShowNothing() {
         #expect(OnboardingStep.liftEatsIntro.illustration == .hidden)
-        #expect(OnboardingStep.liftEatsDifference.illustration == .hidden)
-        #expect(OnboardingStep.loggingTips.illustration == .hidden)
+        #expect(OnboardingStep.tryMeal.illustration == .hidden)
         #expect(OnboardingStep.summary.illustration == .hidden)
     }
 
@@ -24,9 +23,7 @@ struct OnboardingIllustrationTests {
 
     @Test("Every other step shows a moving plate")
     func otherStepsMove() {
-        let exempt: Set<OnboardingStep> = [
-            .liftEatsIntro, .liftEatsDifference, .loggingTips, .summary
-        ]
+        let exempt: Set<OnboardingStep> = [.liftEatsIntro, .tryMeal, .summary]
         for step in OnboardingStep.allCases where !exempt.contains(step) {
             #expect(isPlate(step.illustration), "\(step)")
         }
