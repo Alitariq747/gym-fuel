@@ -246,4 +246,48 @@ struct PlanCopyTests {
 
         #expect(!copy.contains("burn"))
     }
+
+    // MARK: - Their meal
+
+    @Test("A meal's share of the day is a rough fraction", arguments: [
+        (150.0, "Less than a fifth of"),
+        (450, "About a quarter of"),
+        (640, "Roughly a third of"),
+        (1_000, "About half of"),
+        (1_500, "More than half of"),
+        (2_000, "About all of"),
+        (2_400, "More than"),
+    ])
+    func mealShare(mealKcal: Double, words: String) {
+        let text = PlanCopy.mealShare(mealKcal: mealKcal, targetKcal: 1_950)
+
+        #expect(text.hasPrefix("\(words) your "))
+        #expect(text.contains((1_950.0).formatted(.number.precision(.fractionLength(0)))))
+    }
+
+    /// Against 2,000 kcal: 20%, 30%, 40%, 60%, 95% and 105% exactly.
+    @Test("Each fraction starts at its bound", arguments: [
+        (400.0, "About a quarter of"),
+        (600, "Roughly a third of"),
+        (800, "About half of"),
+        (1_200, "More than half of"),
+        (1_900, "About all of"),
+        (2_100, "More than"),
+    ])
+    func mealShareBounds(mealKcal: Double, words: String) {
+        #expect(PlanCopy.mealShare(mealKcal: mealKcal, targetKcal: 2_000).hasPrefix("\(words) your "))
+    }
+
+    /// "Nothing judges" (build-order Step 15).
+    @Test("The meal line never judges the meal's size")
+    func mealShareNeverJudges() {
+        let copy = [100.0, 500, 700, 1_000, 1_500, 2_000, 3_000]
+            .map { PlanCopy.mealShare(mealKcal: $0, targetKcal: 2_000) }
+            .joined(separator: " ")
+            .lowercased()
+
+        for word in ["too", "big", "small", "heavy", "light", "only", "just", "over"] {
+            #expect(!copy.contains(word), "\(word)")
+        }
+    }
 }

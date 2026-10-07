@@ -4,12 +4,14 @@ struct OnboardingMetricPage<Content: View>: View {
     let title: String
     /// Optional: a step whose question answers itself carries no subtitle.
     let detail: String?
+    let canContinue: Bool
     let onContinue: () -> Void
     let content: Content
 
-    init(title: String, detail: String? = nil, onContinue: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+    init(title: String, detail: String? = nil, canContinue: Bool = true, onContinue: @escaping () -> Void, @ViewBuilder content: () -> Content) {
         self.title = title
         self.detail = detail
+        self.canContinue = canContinue
         self.onContinue = onContinue
         self.content = content()
     }
@@ -46,6 +48,8 @@ struct OnboardingMetricPage<Content: View>: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.circa(.primary, height: 52))
+            .disabled(!canContinue)
+            .opacity(canContinue ? 1 : 0.45)
             .padding(.horizontal, Circa.Space.screenMargin)
             .padding(.top, 12)
             .padding(.bottom, 20)

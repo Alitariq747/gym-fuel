@@ -312,4 +312,35 @@ struct MealBreakdownCalculatorTests {
     func restoredAmountIsNotAChange() {
         #expect(calculator.adjustedParts(of: sandwich(mayonnaise: 2)).isEmpty)
     }
+
+    // MARK: - Editing (§6)
+
+    @Test("The first guess undoes every correction and nothing else")
+    func firstGuessUndoesCorrections() {
+        var meal = sandwich(mayonnaise: 1)
+        meal.items[0].amount?.adjustedQuantity = 2
+        meal.items[1].amount?.adjustedQuantity = 0
+
+        #expect(calculator.firstGuess(of: meal) == sandwich())
+        #expect(calculator.firstGuess(of: sandwich()) == sandwich())
+    }
+
+    @Test("A quantity edit recomputes the total and its provenance, and keeps the rest")
+    func correctingFollowsTheBreakdown() {
+        let feedback = LogEntryFeedback(
+            explanation: "Estimated from typical shop-bought portions.",
+            confidence: 0.64,
+            macros: Macros(calories: 607, protein: 4.5, carbs: 18.8, fat: 17.2),
+            breakdown: sandwich(),
+            macrosProvenance: .reference
+        )
+        let corrected = MealBreakdownCalculator.correcting(feedback, to: sandwich(mayonnaise: 1))
+
+        #expect(corrected.breakdown == sandwich(mayonnaise: 1))
+        #expect(corrected.macros == calculator.total(of: sandwich(mayonnaise: 1)))
+        #expect(corrected.macros?.calories == 513.5)
+        #expect(corrected.macrosProvenance == .estimated)
+        #expect(corrected.explanation == feedback.explanation)
+        #expect(corrected.confidence == feedback.confidence)
+    }
 }

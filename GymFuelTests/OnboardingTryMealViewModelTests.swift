@@ -133,6 +133,42 @@ struct OnboardingTryMealViewModelTests {
         #expect(await sent.all.isEmpty)
     }
 
+    @Test("Changing an amount moves the total and keeps the first guess beside it")
+    func correctionShowsFirstGuess() {
+        let model = model(restoring: meal())
+        #expect(model.correction == nil)
+
+        var breakdown = MealFixtures.sampleBreakdown
+        breakdown.items[0].components[2].amount?.adjustedQuantity = 1
+        model.correct(to: breakdown)
+
+        #expect(model.correction == .init(firstGuess: 607, total: 514, changed: ["Mayonnaise"]))
+        #expect(model.triedMeal?.feedback.breakdown == breakdown)
+        #expect(model.triedMeal?.feedback.macros?.calories == 513.5)
+    }
+
+    @Test("Typing the original amount back clears the correction")
+    func originalAmountClearsCorrection() {
+        let model = model(restoring: meal())
+        var breakdown = MealFixtures.sampleBreakdown
+        breakdown.items[0].components[2].amount?.adjustedQuantity = 1
+        model.correct(to: breakdown)
+
+        breakdown.items[0].components[2].amount?.adjustedQuantity = nil
+        model.correct(to: breakdown)
+
+        #expect(model.correction == nil)
+        #expect(model.canContinue)
+    }
+
+    @Test("Coming back to the step keeps their correction")
+    func restoresCorrection() {
+        var corrected = meal()
+        corrected.feedback.breakdown?.items[0].components[2].amount?.adjustedQuantity = 1
+
+        #expect(model(restoring: corrected).correction?.total == 514)
+    }
+
     @Test("Text stops at 200 UTF-16 units without splitting a character")
     func textLimit() {
         let model = model()

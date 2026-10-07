@@ -69,6 +69,11 @@ enum MealCopy {
             : "You set the amounts of \(list) yourself. A new estimate reads your words from the start and replaces those amounts."
     }
 
+    static func changed(_ names: [String]) -> String? {
+        guard !names.isEmpty else { return nil }
+        return "You changed \(names.map { "“\($0)”" }.formatted(.list(type: .and)))."
+    }
+
     /// "607 → 514 kcal · −93" — what an edit will do, before it is committed.
     ///
     /// Both ends are the *displayed* totals, so the three numbers on the line

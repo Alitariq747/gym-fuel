@@ -2,14 +2,17 @@ import SwiftUI
 
 struct OnboardingTryMealStepView: View {
     @Binding var triedMeal: TriedMeal?
+    let problem: LoggingProblem?
     let onNext: () -> Void
 
     @StateObject private var model: OnboardingTryMealViewModel
+    @State private var showEditor = false
 
     private let examples = ["2 eggs, toast and tea", "rice with chicken stew", "a bowl of noodles with vegetables"]
 
-    init(triedMeal: Binding<TriedMeal?>, onNext: @escaping () -> Void) {
+    init(triedMeal: Binding<TriedMeal?>, problem: LoggingProblem?, onNext: @escaping () -> Void) {
         _triedMeal = triedMeal
+        self.problem = problem
         self.onNext = onNext
         _model = StateObject(wrappedValue: OnboardingTryMealViewModel(restoring: triedMeal.wrappedValue))
     }
@@ -36,6 +39,11 @@ struct OnboardingTryMealStepView: View {
         }
         .circaPaper()
         .onChange(of: model.phase) { triedMeal = model.triedMeal }
+        .sheet(isPresented: $showEditor) {
+            if let breakdown = model.triedMeal?.feedback.breakdown {
+                MealBreakdownEditorSheet(breakdown: breakdown) { model.correct(to: $0) }
+            }
+        }
     }
 
     private var typing: some View {
@@ -46,7 +54,7 @@ struct OnboardingTryMealStepView: View {
                     .font(.circaTitle)
                     .foregroundStyle(Color.circaInk)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Say it the way you'd tell a friend.")
+                Text(problem?.tryMealDetail ?? LoggingProblem.defaultTryMealDetail)
                     .font(.circaBody)
                     .foregroundStyle(Color.circaInk2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -94,13 +102,15 @@ struct OnboardingTryMealStepView: View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 10) {
                 CircaSectionLabel(meal.title)
-                Text("Circa's first guess. Anything different?")
+                Text(model.correction == nil ? "Circa's first guess. Anything different?" : "You changed it. The total followed.")
                     .font(.circaTitle)
                     .foregroundStyle(Color.circaInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if let assumption = MealBreakdownCalculator().assumptions(of: meal.feedback).first {
+            if let correction = model.correction {
+                correctionCard(correction)
+            } else if let assumption = MealBreakdownCalculator().assumptions(of: meal.feedback).first {
                 CircaCard(.sunken) {
                     VStack(alignment: .leading, spacing: 6) {
                         CircaSectionLabel("Biggest assumption")
@@ -113,9 +123,30 @@ struct OnboardingTryMealStepView: View {
             }
 
             if let breakdown = meal.feedback.breakdown {
-                MealBreakdownCard(breakdown: breakdown)
+                MealBreakdownCard(breakdown: breakdown) { showEditor = true }
+                Button("Change an amount") { showEditor = true }
+                    .buttonStyle(.circa(.secondary, height: Circa.minHitTarget))
             }
         }
+    }
+
+    private func correctionCard(_ correction: OnboardingTryMealViewModel.Correction) -> some View {
+        CircaCard {
+            VStack(alignment: .leading, spacing: 6) {
+                CircaEstimate("\(correction.total) kcal", certainty: .estimated, font: .circaMonoLarge)
+                    .foregroundStyle(Color.circaAccentLarge)
+                Text(MealCopy.delta(from: correction.firstGuess, to: correction.total))
+                    .font(.circaMono)
+                    .foregroundStyle(Color.circaInk2)
+                if let changed = MealCopy.changed(correction.changed) {
+                    Text(changed)
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private func example(afterFailure: Bool) -> some View {
@@ -181,5 +212,5 @@ struct OnboardingTryMealStepView: View {
 }
 
 #Preview {
-    OnboardingTryMealStepView(triedMeal: .constant(nil), onNext: {})
+    OnboardingTryMealStepView(triedMeal: .constant(nil), problem: .notInDatabase, onNext: {})
 }

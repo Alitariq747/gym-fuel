@@ -59,6 +59,15 @@ struct OnboardingSummaryStepView: View {
 
                     if let profile {
                         if let line { chart(line) }
+                        if let problem = answers.loggingProblem {
+                            Text(problem.planLine)
+                                .font(.circaBody)
+                                .foregroundStyle(Color.circaInk2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        if let meal = answers.triedMeal, let targets = profile.savedTargets {
+                            mealCard(meal, targetKcal: targets.calories)
+                        }
                         plan(profile)
                     }
                 }
@@ -137,6 +146,26 @@ struct OnboardingSummaryStepView: View {
                 goalKg: line.goalWeightKg,
                 plan: line
             )
+        }
+    }
+
+    /// The meal from the try-meal step, with their edit, against the target shown
+    /// below — so editing the numbers here moves the sentence too.
+    @ViewBuilder
+    private func mealCard(_ meal: TriedMeal, targetKcal: Double) -> some View {
+        if let breakdown = meal.feedback.breakdown {
+            let mealKcal = MealBreakdownCalculator().total(of: breakdown).calories
+            CircaCard {
+                VStack(alignment: .leading, spacing: 6) {
+                    CircaSectionLabel(meal.title)
+                    CircaEstimate("\(mealKcal.formatted(.number.precision(.fractionLength(0)))) kcal", certainty: .estimated)
+                    Text(PlanCopy.mealShare(mealKcal: mealKcal, targetKcal: targetKcal))
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .accessibilityElement(children: .combine)
         }
     }
 

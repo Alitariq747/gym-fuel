@@ -108,6 +108,26 @@ struct MealCopyTests {
         #expect(warning.hasSuffix("replaces those amounts."))
     }
 
+    // MARK: - What an edit changed
+
+    @Test("Nothing changed says nothing")
+    func nothingChangedIsSilent() {
+        #expect(MealCopy.changed([]) == nil)
+    }
+
+    @Test("A changed part is named, in quotes")
+    func changedNamesOnePart() {
+        #expect(MealCopy.changed(["White rice, boiled"]) == "You changed “White rice, boiled”.")
+    }
+
+    @Test("Several changed parts are all named")
+    func changedNamesEveryPart() throws {
+        let line = try #require(MealCopy.changed(["White rice, boiled", "Oil"]))
+
+        #expect(line.hasPrefix("You changed “White rice, boiled”"))
+        #expect(line.hasSuffix("“Oil”."))
+    }
+
     // MARK: - The delta (§6)
 
     @Test("The delta line is the difference of the two displayed totals")

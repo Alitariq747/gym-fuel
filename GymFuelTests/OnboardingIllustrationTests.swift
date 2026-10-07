@@ -21,6 +21,11 @@ struct OnboardingIllustrationTests {
         #expect(OnboardingStep.gender.illustration == .plate(.wonder))
     }
 
+    @Test("The logging-problem question wonders too")
+    func loggingProblemStepWonders() {
+        #expect(OnboardingStep.loggingProblem.illustration == .plate(.wonder))
+    }
+
     @Test("Every other step shows a moving plate")
     func otherStepsMove() {
         let exempt: Set<OnboardingStep> = [.liftEatsIntro, .tryMeal, .summary]

@@ -16,6 +16,12 @@ final class OnboardingTryMealViewModel: ObservableObject {
         case timeout, offline, server, limit
     }
 
+    struct Correction: Equatable {
+        let firstGuess: Int
+        let total: Int
+        let changed: [String]
+    }
+
     /// The backend measures JavaScript string length, which is UTF-16 (build-order 15a).
     static let maxTextLength = 200
 
@@ -57,6 +63,27 @@ final class OnboardingTryMealViewModel: ObservableObject {
 
     var triedMeal: TriedMeal? {
         if case .result(let meal) = phase { meal } else { nil }
+    }
+
+    /// Nil until they change an amount, and again if they type the original back.
+    var correction: Correction? {
+        guard let breakdown = triedMeal?.feedback.breakdown else { return nil }
+        let calculator = MealBreakdownCalculator()
+        let changed = calculator.adjustedParts(of: breakdown)
+        guard !changed.isEmpty else { return nil }
+
+        return Correction(
+            firstGuess: Int(calculator.total(of: calculator.firstGuess(of: breakdown)).calories.rounded()),
+            total: Int(calculator.total(of: breakdown).calories.rounded()),
+            changed: changed
+        )
+    }
+
+    func correct(to breakdown: MealBreakdown) {
+        guard case .result(var meal) = phase else { return }
+        meal.feedback = MealBreakdownCalculator.correcting(meal.feedback, to: breakdown)
+        phase = .result(meal)
+        log("meal_try_item_edited")
     }
 
     @discardableResult

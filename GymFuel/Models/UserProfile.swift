@@ -207,6 +207,8 @@ struct OnboardingAnswers {
     var editedTargets: Macros? = nil
     /// Nil when they took the example instead.
     var triedMeal: TriedMeal? = nil
+    /// Never saved: nothing after onboarding reads it (build-order 15d).
+    var loggingProblem: LoggingProblem? = nil
 
     /// Builds a completed profile, or `nil` if any required answer is missing.
     /// A goal weight left over from an earlier answer is dropped on Maintain.
@@ -258,7 +260,7 @@ struct OnboardingAnswers {
 struct TriedMeal: Equatable, Sendable {
     let words: String
     let title: String
-    let feedback: LogEntryFeedback
+    var feedback: LogEntryFeedback
 }
 
 #if DEBUG

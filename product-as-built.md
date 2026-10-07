@@ -56,7 +56,7 @@ in place. There is a back chevron and a progress bar; there is no skip-to-end an
 no way to exit to the main app.
 
 ```
-liftEatsIntro → OnboardingTryMealStepView
+liftEatsIntro → OnboardingLoggingProblemStepView → OnboardingTryMealStepView
   → OnboardingGenderStepView → OnboardingAgeStepView → OnboardingHeightStepView
   → OnboardingWeightStepView → OnboardingActivityLevelStepView
   → OnboardingTrainingGoalStepView
@@ -176,14 +176,15 @@ row). `NutritionSourcesView` is reachable from two: the profile and the
 | Screen | Job |
 |---|---|
 | `liftEatsIntro` | Show how an estimate can be inspected and corrected. |
-| `OnboardingTryMealStepView` | Estimate a meal the user often eats, in their own words, with no account (`/onboarding/tryMeal`); show the static example when that fails. |
+| `OnboardingLoggingProblemStepView` | Ask what makes logging hard (four answers, `LoggingProblem`). Kept in memory only; the answer picks the try-meal line and a plan-screen line, and is logged as `logging_problem_<answer>`. |
+| `OnboardingTryMealStepView` | Estimate a meal the user often eats, in their own words, with no account (`/onboarding/tryMeal`); let them change amounts and lead with the result (first guess → their total, what changed); show the static example when that fails. Nothing is saved. |
 | `OnboardingGenderStepView` | Collect the sex constant the BMR formula needs. |
 | `OnboardingAgeStepView` | Collect age for BMR. |
 | `OnboardingHeightStepView` | Collect height for BMR, in cm or ft-in. |
 | `OnboardingWeightStepView` | Collect weight for BMR and protein/fat-per-kg, in kg or lb. |
 | `OnboardingActivityLevelStepView` | Collect *non-training* activity to pick the TDEE multiplier. |
-| `OnboardingTrainingGoalStepView` | Collect cut / maintain / lean bulk — the single variable everything else keys off. |
-| `OnboardingSummaryStepView` | Show the computed targets and commit the profile. |
+| `OnboardingTrainingGoalStepView` | Collect cut / maintain / lean bulk — the single variable everything else keys off. Opens with nothing selected; Continue waits for a choice. |
+| `OnboardingSummaryStepView` | Show the computed targets and commit the profile. The logging-problem answer's line sits above the targets. When a meal was tried, a card above the targets shows its total (after any edit) as a rough share of the calorie target. |
 
 ### Daily loop
 | Screen | Job |
@@ -196,7 +197,7 @@ row). `NutritionSourcesView` is reachable from two: the profile and the
 | `TextEntrySheet` | Type what you ate or trained in plain language. |
 | `MealCameraCaptureView` | Take a photo of a meal. |
 | `SavedMealsPickerSheet` | Log a previously-saved meal without spending an AI scan. |
-| `LogEntryDetailSheet` | Show the full analysis of one entry and offer every correction the user can make to it. |
+| `LogEntryDetailSheet` | Show the full analysis of one entry and offer every correction the user can make to it. The first meal saved with corrected amounts asks iOS for a rating, once per install (`RatingRequestRule`). |
 | `ManualMacroEditSheet` | Override the AI's macros (food) or its calorie burn (exercise). |
 | Edit Time sheet | Move an entry to a different time of the same day. |
 | `SaveLoggedMealSheet` | Promote a good analysis into a reusable saved meal. |

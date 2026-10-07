@@ -84,8 +84,8 @@ fresh session reads this file, not the chat history.
 - [x] **14** · Widgets · *built 3–4 October; device checks pending*
 - [x] **15a** · Onboarding: the guest meal route (backend)
 - [x] **15b** · Onboarding: the live meal screen
-- [ ] **15c** · Onboarding: one edit, its result shown prominently · rating request after the first saved correction
-- [ ] **15d** · Onboarding: the logging-problem question and the plan callback · no preselected goal
+- [x] **15c** · Onboarding: one edit, its result shown prominently · rating request after the first saved correction
+- [x] **15d** · Onboarding: the logging-problem question and the plan callback · no preselected goal
 - [ ] **15e** · Onboarding: a paywall that continues the story
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
@@ -1351,6 +1351,8 @@ and the flow is 12 steps with no `loggingTips` or `liftEatsDifference` — 13 on
 
 ### 15c — One edit, its result shown prominently · ~150 lines
 
+**Built 7 October** (~137 lines): the rating request (~32), then the edit (~105).
+
 **Rescoped 7 October.** Saving the tried meal as a `SavedMeal` after sign-up was
 dropped as more work than value: no snapshot written at sign-up, no "saved to your
 meals" line, nothing waiting at first open. The edit stays, because it is Step 15's
@@ -1393,6 +1395,11 @@ moves the total, the screen shows the first guess, the new total and the
 difference, and nothing appears under saved meals after sign-up.
 
 ### 15d — The logging-problem question and the plan callback · ~130 lines
+
+**Built 7 October** (~187 lines), in two parts: the goal step and the meal card
+(~51), then the question and its lines (~145). The meal card names the meal by
+Circa's `title`, not the typed words, so it fits. The paywall subtitles are not in
+`LoggingProblem` yet — 15e adds them with the paywall that reads them.
 
 **What the user gets:** one question about *their* problem, answered back to them
 twice, a goal they chose themselves, and a plan that meets their own meal.
@@ -1456,7 +1463,8 @@ their meal, and shows exactly when billing starts.
 2. **Headline from the saved plan:** "Your plan is ready: 1,950 kcal a day, toward
    75 kg by 14 March." The date comes from `WeightPlan.goalDate`. Maintain, or no
    date: "Your plan is ready: 2,100 kcal a day to stay at 60 kg."
-3. **Subtitle** from `LoggingProblem` (15d).
+3. **Subtitle** from `LoggingProblem` (15d). 15d left the four subtitles out;
+   add them to `LoggingProblem.swift` (+ tests) in this part.
 4. **First feature row is their meal.** It must not say "saved": the tried meal is
    not saved (15c, 7 October). Settle the wording in this part. The four existing
    rows follow. No meal, no extra row.

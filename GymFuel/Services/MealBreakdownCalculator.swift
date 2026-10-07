@@ -59,6 +59,29 @@ struct MealBreakdownCalculator {
         Int(total(of: after).calories.rounded()) - Int(total(of: before).calories.rounded())
     }
 
+    /// Exact, because an edit only ever writes `adjustedQuantity` (§6).
+    func firstGuess(of breakdown: MealBreakdown) -> MealBreakdown {
+        var guess = breakdown
+        for item in guess.items.indices {
+            guess.items[item].amount?.adjustedQuantity = nil
+            for part in guess.items[item].components.indices {
+                guess.items[item].components[part].amount?.adjustedQuantity = nil
+            }
+        }
+        return guess
+    }
+
+    /// A quantity edit is not an override: the total and its provenance follow the
+    /// corrected breakdown, and the explanation and assumptions stay (§6).
+    static func correcting(_ feedback: LogEntryFeedback, to breakdown: MealBreakdown) -> LogEntryFeedback {
+        let calculator = MealBreakdownCalculator()
+        var corrected = feedback
+        corrected.breakdown = breakdown
+        corrected.macros = calculator.total(of: breakdown)
+        corrected.macrosProvenance = calculator.provenance(of: breakdown)
+        return corrected
+    }
+
     // MARK: - Assumptions
 
     /// Every assumption this meal rests on, **most consequential first**, so

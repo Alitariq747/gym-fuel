@@ -15,8 +15,9 @@ struct OnboardingTrainingGoalStepView: View {
  
     let onFinish: () -> Void
     
-    @State private var tempSelection: GoalType = .leanBulk
-    @State private var errorMessage: String?
+    /// Starts empty: a preselected goal hands a plan to anyone who taps Continue
+    /// without reading (build-order 15d).
+    @State private var tempSelection: GoalType?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,12 +38,6 @@ struct OnboardingTrainingGoalStepView: View {
                             goalOption(goal)
                         }
                     }
-
-                    if let errorMessage {
-                        Text(errorMessage)
-                            .font(.circaCaption)
-                            .foregroundStyle(Color.circaDanger)
-                    }
                 }
                 .padding(.horizontal, Circa.Space.screenMargin)
                 .padding(.top, 18)
@@ -53,6 +48,8 @@ struct OnboardingTrainingGoalStepView: View {
                 Text("Continue").frame(maxWidth: .infinity)
             }
             .buttonStyle(.circa(.primary, height: 52))
+            .disabled(tempSelection == nil)
+            .opacity(tempSelection == nil ? 0.45 : 1)
             .padding(.horizontal, Circa.Space.screenMargin)
             .padding(.bottom, 16)
         }
@@ -72,7 +69,6 @@ struct OnboardingTrainingGoalStepView: View {
 
         return Button {
             tempSelection = goal
-            errorMessage = nil
         } label: {
             HStack(alignment: .top, spacing: 14) {
                 goalSymbol(goal)
@@ -114,9 +110,8 @@ struct OnboardingTrainingGoalStepView: View {
     }
 
     private func handleFinish() {
-       
+        guard let tempSelection else { return }
         selectedGoal = tempSelection
-        errorMessage = nil
         onFinish()
     }
 }

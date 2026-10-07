@@ -115,18 +115,9 @@ final class LogEntryDetailViewModel: ObservableObject {
         }
     }
 
-    /// A quantity edit is not an override. The corrected breakdown replaces the
-    /// old one and the total is recomputed from it, while the explanation,
-    /// assumptions stay exactly as they were — `meal-contract.md` §6.
     func updateBreakdown(for entry: LogEntry, to breakdown: MealBreakdown) async -> LogEntry? {
-        let calculator = MealBreakdownCalculator()
-        let macros = calculator.total(of: breakdown)
-        let provenance = calculator.provenance(of: breakdown)
-
-        return await updateEntry(entry) { updated in
-            updated.feedback?.breakdown = breakdown
-            updated.feedback?.macros = macros
-            updated.feedback?.macrosProvenance = provenance
+        await updateEntry(entry) { updated in
+            updated.feedback = updated.feedback.map { MealBreakdownCalculator.correcting($0, to: breakdown) }
         }
     }
 

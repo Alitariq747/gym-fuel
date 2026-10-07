@@ -3,7 +3,7 @@ import ImageIO
 import UniformTypeIdentifiers
 
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-let sourceURL = URL(fileURLWithPath: "/Users/ahmadalitariq/Downloads/circa_actual screens/Screenshot 2026-10-07 at 2.17.09\u{202F}PM.png")
+let sourceURL = URL(fileURLWithPath: "/Users/ahmadalitariq/Downloads/circa_actual screens/Screenshot 2026-10-07 at 6.37.44\u{202F}PM.png")
 let outputURL = root.appendingPathComponent("app-store/screenshots/en-US/01-understand-your-food.png")
 let width = 1290, height = 2796
 let space = CGColorSpace(name: CGColorSpace.sRGB)!
@@ -36,9 +36,10 @@ let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil)!
 let original = CGImageSourceCreateImageAtIndex(source, 0, nil)!
 precondition(original.width == width && original.height == height)
 // One contiguous source crop; no internal UI rearrangement or regenerated text.
-let cropRect = CGRect(x: 32, y: 340, width: 1226, height: 2024)
+let cropRect = CGRect(x: 32, y: 340, width: 1226, height: 2240)
 let crop = original.cropping(to: cropRect)!
-let panel = rect(32, 546, 1226, 2024)
+let panelWidth: CGFloat = 1152
+let panel = rect(69, 530, panelWidth, cropRect.height * panelWidth / cropRect.width)
 let outline = CGPath(roundedRect: panel, cornerWidth: 48, cornerHeight: 48, transform: nil)
 context.saveGState()
 context.setShadow(offset: CGSize(width: 0, height: -14), blur: 35,
@@ -50,6 +51,7 @@ context.restoreGState()
 context.saveGState()
 context.addPath(outline)
 context.clip()
+context.interpolationQuality = .high
 context.draw(crop, in: panel)
 context.restoreGState()
 context.addPath(outline)

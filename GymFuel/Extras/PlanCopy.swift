@@ -142,6 +142,26 @@ enum PlanCopy {
         return "\(grams.formatted(.number.precision(.fractionLength(1)))) g for each kg of \(whichWeight)."
     }
 
+    // MARK: - Their meal
+
+    /// "Roughly a third of your 1,950 kcal a day." Rough fractions only, and no
+    /// word on whether the meal is big or small (build-order 15d).
+    static func mealShare(mealKcal: Double, targetKcal: Double) -> String {
+        let share = mealKcal / targetKcal
+        let words = shareWords.first { share < $0.below }?.words ?? "More than"
+        return "\(words) your \(targetKcal.formatted(.number.precision(.fractionLength(0)))) kcal a day."
+    }
+
+    /// Checked in order: each applies below its bound.
+    private static let shareWords: [(below: Double, words: String)] = [
+        (0.2, "Less than a fifth of"),
+        (0.3, "About a quarter of"),
+        (0.4, "Roughly a third of"),
+        (0.6, "About half of"),
+        (0.95, "More than half of"),
+        (1.05, "About all of"),
+    ]
+
     // MARK: - Numbers in words
 
     /// "about 0.4 kg", or "less than 0.1 kg" when one decimal place would show 0.0.

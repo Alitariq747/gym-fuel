@@ -9,6 +9,7 @@ import SwiftUI
 
 enum OnboardingStep: Hashable, CaseIterable {
     case liftEatsIntro
+    case loggingProblem
     case tryMeal
     case gender
     case age
@@ -25,6 +26,8 @@ enum OnboardingStep: Hashable, CaseIterable {
         switch self {
         case .liftEatsIntro:
             return "lift_eats_intro"
+        case .loggingProblem:
+            return "logging_problem"
         case .tryMeal:
             return "try_meal"
         case .gender:
@@ -55,7 +58,7 @@ enum OnboardingStep: Hashable, CaseIterable {
     var illustration: OnboardingIllustration {
         switch self {
         case .liftEatsIntro, .tryMeal, .summary: .hidden
-        case .gender: .plate(.wonder)
+        case .gender, .loggingProblem: .plate(.wonder)
         case .age: .plate(.write)
         case .height: .plate(.stretch)
         case .weight: .plate(.weigh)
@@ -93,7 +96,7 @@ struct OnboardingFlowView: View {
     private var healthStepAvailable: Bool { healthWeightSync.isAvailable }
 
     private var orderedSteps: [OnboardingStep] {
-        var steps: [OnboardingStep] = [.liftEatsIntro, .tryMeal]
+        var steps: [OnboardingStep] = [.liftEatsIntro, .loggingProblem, .tryMeal]
         steps += [.gender, .age, .height, .weight, .activityLevel, .goal]
         // Maintain has no goal weight, so it skips that step.
         if data.goalType != .maintain { steps.append(.goalWeight) }
@@ -178,12 +181,24 @@ struct OnboardingFlowView: View {
         switch step {
         case .liftEatsIntro:
             liftEatsIntro(
-                onNext: { go(to: .tryMeal) }
+                onNext: { go(to: .loggingProblem) }
+            )
+
+        case .loggingProblem:
+            OnboardingLoggingProblemStepView(
+                problem: $data.loggingProblem,
+                onNext: {
+                    if let problem = data.loggingProblem {
+                        FirebaseTelemetryService.logOnboardingEvent("logging_problem_\(problem.rawValue)")
+                    }
+                    go(to: .tryMeal)
+                }
             )
 
         case .tryMeal:
             OnboardingTryMealStepView(
                 triedMeal: $data.triedMeal,
+                problem: data.loggingProblem,
                 onNext: { go(to: .gender) }
             )
 
