@@ -20,6 +20,7 @@ enum OnboardingStep: Hashable, CaseIterable {
     case goalWeight
     case appleHealth
     case notifications
+    case widget
     case summary
 
     var analyticsName: String {
@@ -48,16 +49,19 @@ enum OnboardingStep: Hashable, CaseIterable {
             return "apple_health"
         case .notifications:
             return "notifications"
+        case .widget:
+            return "widget"
         case .summary:
             return "summary"
         }
     }
 
     /// The intro, the live meal and the plan give their whole height to
-    /// content. design.md, "The plate mascot", rule 5.
+    /// content. design.md, "The plate mascot", rule 5. The widget step's
+    /// preview is its picture.
     var illustration: OnboardingIllustration {
         switch self {
-        case .liftEatsIntro, .tryMeal, .summary: .hidden
+        case .liftEatsIntro, .tryMeal, .widget, .summary: .hidden
         case .gender, .loggingProblem: .plate(.wonder)
         case .age: .plate(.write)
         case .height: .plate(.stretch)
@@ -102,7 +106,7 @@ struct OnboardingFlowView: View {
         if data.goalType != .maintain { steps.append(.goalWeight) }
         // No Health database on this hardware means no step to show.
         if healthStepAvailable { steps.append(.appleHealth) }
-        steps += [.notifications, .summary]
+        steps += [.notifications, .widget, .summary]
         return steps
     }
 
@@ -265,6 +269,13 @@ struct OnboardingFlowView: View {
 
         case .notifications:
             OnboardingNotificationsStepView(
+                stepPosition: index(of: step) + 1,
+                stepCount: orderedSteps.count,
+                onFinished: { go(to: .widget) }
+            )
+
+        case .widget:
+            OnboardingWidgetStepView(
                 stepPosition: index(of: step) + 1,
                 stepCount: orderedSteps.count,
                 onFinished: { go(to: .summary) }

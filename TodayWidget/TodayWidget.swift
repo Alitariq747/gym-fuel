@@ -15,20 +15,6 @@ struct TodayEntry: TimelineEntry {
     let snapshot: TodaySnapshot?
 }
 
-extension TodaySnapshot {
-    /// A made-up day: the gallery before the app has written a note, the loading
-    /// placeholder, and the previews.
-    static func sample(eaten calories: Double = 1380, logged: Int = 3) -> TodaySnapshot {
-        TodaySnapshot(
-            day: Calendar.current.startOfDay(for: .now),
-            target: Macros(calories: 2400, protein: 150, carbs: 260, fat: 80),
-            eaten: logged == 0 ? .zero : Macros(calories: calories, protein: 81, carbs: 134, fat: 56),
-            loggedCount: logged,
-            hasEstimate: logged > 0
-        )
-    }
-}
-
 struct TodayProvider: TimelineProvider {
     func placeholder(in context: Context) -> TodayEntry {
         TodayEntry(date: .now, snapshot: .sample())

@@ -32,6 +32,10 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `OnbSummary.dc.html` | Onboarding · your numbers |
 | `OnbTips.dc.html` | Onboarding · how to write |
 | `OnbWeight.dc.html` | Onboarding · weight |
+| `OnbWidgetHome.dc.html` | Onboarding · widget · Home Screen |
+| `OnbWidgetHomeDark.dc.html` | Onboarding · widget · Home Screen · dark |
+| `OnbWidgetLock.dc.html` | Onboarding · widget · Lock Screen |
+| `OnbWidgetLockDark.dc.html` | Onboarding · widget · Lock Screen · dark |
 | `Paywall.dc.html` | Paywall |
 | `Paywall3InApp.dc.html` | Paywall · 1 · in-app |
 | `Paywall3Plan.dc.html` | Paywall · 1 · your plan |
@@ -90,6 +94,7 @@ Row 6: the rest of onboarding, and settings.
 Row 7: the constraints, proven.
 Row 8: widgets (Step 14).
 Row 9: the paywall, three pages (15e) — 8 October.
+Row 10: onboarding · the widget step — 10 October.
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
@@ -283,6 +288,28 @@ The six invariants are marked in the source of every page-3 artboard. Prices are
 DARK · the trial journey, pages 1–3. The button and Today's well invert (design rule 7). The plate mark has no dark twin, so it stays a light plate.
 
 COPY · settled 9 October, and built. The plan line is the plan screen's own sentence (PlanCopy.headline): month and year only, never a day. The meal sentence has a second version for someone who didn't edit: "It shows what it assumed, and every amount is yours to change." Build-order 15e has every line.
+
+### note-widget-step (page-1)
+
+ONBOARDING · THE WIDGET STEP · drawn 10 October
+
+One screen, after reminders and before the plan. Both are about remembering to write, and the plan and paywall stay one moment.
+
+The preview is the real widget, not a picture of one. The build draws the widget's own views with TodaySnapshot.sample() — 1,020 left of 2,400 — the same made-up day iOS shows in the widget gallery, so the person recognises it when they search. Not their own number: the plan screen reveals that next, with its working.
+
+Home Screen and Lock Screen are one segmented control, the existing UnitToggle. It swaps the panel and the four steps; nothing else moves. Both panels are the same height.
+
+The Home panel suggests a Home Screen: the widget, the name iOS prints under it, blank tiles. The Lock panel's clock and wallpaper are the system's, drawn for placement only. No phone frame and no status bar.
+
+One line per step at standard text size. iOS 17 has no Edit button, so there step 2 reads "Tap + in the top corner." Every other line is the same on every supported iOS.
+
+Continue only. Nothing is asked of iOS, so there is nothing to skip. The mono line is there because anyone who adds the widget now sees "Your day shows here" until the plan is saved.
+
+No mascot above the content: the panel is the illustration, and the medium widget already carries the still mascot (mascot rule 8, the widget exception).
+
+NOT COPIED FROM AMY · "people that add this are 75% more likely to build the habit" (no invented numbers, Step 15) · the eyes emoji (rule 10) · a phone frame and wallpaper (no fake chrome) · purple · "Tap + on the top left" for everyone (iOS 18 changed it to Edit) · "Bonus: tap any nutrition ring" (no rings; a tap opens the app where it was left).
+
+Not drawn, offered separately: saying "Added" once WidgetCenter reports a Circa widget on the phone.
 
 ## Not from the canvas — `app-icon/`
 

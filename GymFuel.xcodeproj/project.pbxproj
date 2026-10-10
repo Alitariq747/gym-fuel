@@ -86,6 +86,9 @@
 				Models/TodaySnapshot.swift,
 				Services/TodaySnapshotStore.swift,
 				SharedAssets.xcassets,
+				Views/Components/Widget/TodayLockViews.swift,
+				Views/Components/Widget/TodayMediumView.swift,
+				Views/Components/Widget/TodayWidgetParts.swift,
 			);
 			target = 305F6FBA3070BA18009C0559 /* TodayWidgetExtension */;
 		};

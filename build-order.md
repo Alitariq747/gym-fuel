@@ -87,6 +87,7 @@ fresh session reads this file, not the chat history.
 - [x] **15c** · Onboarding: one edit, its result shown prominently · rating request after the first saved correction
 - [x] **15d** · Onboarding: the logging-problem question and the plan callback · no preselected goal
 - [x] **15e** · Onboarding: a paywall that continues the story
+- [x] **15f** · Onboarding: the widget step
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
 and nothing here commits on your behalf. Fresh session for the next step.
@@ -1170,7 +1171,7 @@ After Step 15:
 ```
 Welcome → liftEatsIntro → loggingProblem (15d) → tryMeal (15b, 15c) → gender → age
   → height → weight → activityLevel → goal → goalWeight* → appleHealth*
-  → notifications → summary, now with their meal (15d)
+  → notifications → widget (15f) → summary, now with their meal (15d)
   → Save your progress (sign-in) → paywall, now with their plan and a trial timeline (15e)
 ```
 
@@ -1186,7 +1187,7 @@ Health is unavailable.
   what the first one only described, and its assumptions teach what the second one
   explained ("a little detail helps") on the person's own words.
 - **Sign-in stays after the plan, and the paywall stays last.** Already right.
-- **Step count stays at 13.** Two screens in, two out. Between 15b and 15d it is
+- **Step count stays at 13** — 14 since 15f added the widget step (10 October). Two screens in, two out. Between 15b and 15d it is
   12: 15b removes two and adds one.
 
 Both the order in `orderedSteps` and the literal destinations change. Today
@@ -1548,6 +1549,45 @@ calories, goal and date and its meal on the first, a trial page whose length and
 date match the StoreKit offer, then the plans — an account with no trial goes from
 page 1 straight to the plans, and an in-app gate shows the same pages with today's
 copy on page 1.
+
+### 15f — The widget step · ~290 lines
+
+**Added and built 10 October**, in two parts, after studying Amy's widget screen.
+Drawn on the canvas, Row 10 (`design-canvas/OnbWidget*.dc.html`), light and dark.
+
+**What the user gets:** one step after reminders and before the plan, "Keep today
+in view", showing how to add the Today widget (Step 14) to the Home Screen or the
+Lock Screen.
+
+- **The preview is the real widget.** The step draws `TodayMediumView` and the Lock
+  Screen views on `TodaySnapshot.sample()` (1,020 left of 2,400) — the day iOS
+  shows in the widget gallery, so the person recognises it when they search. Not
+  their own target: the plan screen reveals that next, with its working. The
+  widget views moved into `GymFuel/Views/Components/Widget/` and are shared with
+  the extension, like `TodayCopy.swift`.
+- **Home Screen / Lock Screen** is `UnitToggle`. It swaps the 198 pt panel and the
+  four steps; nothing else moves. The Lock panel is forced dark so the widgets draw
+  white, as on a Lock Screen; its wallpaper and 9:41 are the system's, drawn for
+  placement only.
+- **The steps follow the OS.** iOS 17 has no Home Screen Edit button, so step 2
+  there reads "Tap + in the top corner." `WidgetGuideCopy` (+ tests).
+- **Continue only.** Nothing is asked of iOS. "It fills in once you've finished
+  setting up", because a widget added now shows "Your day shows here" until the
+  plan is saved.
+- **No mascot above it** — the panel is the illustration.
+
+**Not copied from Amy:** "75% more likely to build the habit" (no invented
+numbers), emoji (rule 10), a phone frame (no fake chrome), "Tap + on the top left"
+for everyone, and "tap any nutrition ring" (no rings).
+
+**Not built:** saying "Added" once `WidgetCenter` reports a Circa widget; the faint
+disc iOS draws behind the circular widget (it does not draw inside an app);
+tracking which tab is opened.
+
+**Files** `OnboardingWidgetStepView.swift` (new) · `WidgetGuideCopy.swift` (new,
++ tests) · `OnboardingFlowView.swift` · `TodaySnapshot.swift` (`sample()` moved in)
+· `TodayMediumView.swift`, `TodayWidgetParts.swift`, `TodayLockViews.swift` moved
+into the app folder · `project.pbxproj` · `OnboardingIllustrationTests`
 
 ### Measuring it
 

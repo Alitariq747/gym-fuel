@@ -449,6 +449,42 @@
       "y": 10720,
       "w": 390,
       "h": 844
+    },
+    {
+      "file": "OnbWidgetHome.dc.html",
+      "title": "Onboarding · widget · Home Screen",
+      "page": "page-1",
+      "x": 0,
+      "y": 11690,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnbWidgetLock.dc.html",
+      "title": "Onboarding · widget · Lock Screen",
+      "page": "page-1",
+      "x": 470,
+      "y": 11690,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnbWidgetHomeDark.dc.html",
+      "title": "Onboarding · widget · Home Screen · dark",
+      "page": "page-1",
+      "x": 940,
+      "y": 11690,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnbWidgetLockDark.dc.html",
+      "title": "Onboarding · widget · Lock Screen · dark",
+      "page": "page-1",
+      "x": 1410,
+      "y": 11690,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -458,7 +494,7 @@
       "x": 0,
       "y": -300,
       "w": 880,
-      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
+      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\nRow 10: onboarding · the widget step — 10 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
     },
     {
       "id": "note-entry",
@@ -547,6 +583,14 @@
       "y": 10720,
       "w": 320,
       "text": "THE PAYWALL, THREE PAGES (15e) · settled 8 October\n\nReplaces Paywall and Paywall · dark in Row 5. Build-order 15e owns the rules.\n\nOne idea per page, and one number leads each: the calories on page 1, the billing date on page 2, the price on page 3. Same frame throughout: the plate mark, a large headline, the content, one button pinned to the bottom. ✕ on every page; Back on 2 and 3. Left-aligned, like the rest of Circa — a centred version was drawn and not chosen.\n\nORDER · 1 → 2 → 3 when the selected plan has a trial the person can take; 1 → 3 when it doesn't. Without a trial, page 3 drops \"Nothing due today\" and the trial wording, and the button says Subscribe (today: Continue). The plan rows say \"3-day free trial\", not \"… available\", so they stay on one line beside long prices.\n\nPAGE 1 is personal only straight after onboarding: calories, goal and date from the saved plan, the logging-problem line, and the meal they tried — never called saved. In-app gates get the generic page 1.\n\nRestore lives on page 3 only, two taps from page 1.\n\nThe plate mark, not the mascot: mascot rule 5 stands. SF Symbols in round wells, never emoji.\n\nNOT COPIED FROM AMY · \"we'll remind you\" (no reminder is sent) · side-by-side plan cards (they truncate long prices) · a monthly price for the yearly plan (rule 1) · \"Save 20%\" · green.\n\nThe six invariants are marked in the source of every page-3 artboard. Prices are placeholders in a long currency on purpose; the build reads localizedPriceString.\n\nDARK · the trial journey, pages 1–3. The button and Today's well invert (design rule 7). The plate mark has no dark twin, so it stays a light plate.\n\nCOPY · settled 9 October, and built. The plan line is the plan screen's own sentence (PlanCopy.headline): month and year only, never a day. The meal sentence has a second version for someone who didn't edit: \"It shows what it assumed, and every amount is yours to change.\" Build-order 15e has every line."
+    },
+    {
+      "id": "note-widget-step",
+      "page": "page-1",
+      "x": 1880,
+      "y": 11690,
+      "w": 320,
+      "text": "ONBOARDING · THE WIDGET STEP · drawn 10 October\n\nOne screen, after reminders and before the plan. Both are about remembering to write, and the plan and paywall stay one moment.\n\nThe preview is the real widget, not a picture of one. The build draws the widget's own views with TodaySnapshot.sample() — 1,020 left of 2,400 — the same made-up day iOS shows in the widget gallery, so the person recognises it when they search. Not their own number: the plan screen reveals that next, with its working.\n\nHome Screen and Lock Screen are one segmented control, the existing UnitToggle. It swaps the panel and the four steps; nothing else moves. Both panels are the same height.\n\nThe Home panel suggests a Home Screen: the widget, the name iOS prints under it, blank tiles. The Lock panel's clock and wallpaper are the system's, drawn for placement only. No phone frame and no status bar.\n\nOne line per step at standard text size. iOS 17 has no Edit button, so there step 2 reads \"Tap + in the top corner.\" Every other line is the same on every supported iOS.\n\nContinue only. Nothing is asked of iOS, so there is nothing to skip. The mono line is there because anyone who adds the widget now sees \"Your day shows here\" until the plan is saved.\n\nNo mascot above the content: the panel is the illustration, and the medium widget already carries the still mascot (mascot rule 8, the widget exception).\n\nNOT COPIED FROM AMY · \"people that add this are 75% more likely to build the habit\" (no invented numbers, Step 15) · the eyes emoji (rule 10) · a phone frame and wallpaper (no fake chrome) · purple · \"Tap + on the top left\" for everyone (iOS 18 changed it to Edit) · \"Bonus: tap any nutrition ring\" (no rings; a tap opens the app where it was left).\n\nNot drawn, offered separately: saying \"Added\" once WidgetCenter reports a Circa widget on the phone."
     }
   ],
   "launch": {

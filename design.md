@@ -441,6 +441,7 @@ Everything on the canvas, and what is not there yet.
 | Week | `Week · after a check-in` | **Out of date** — drawn for the dropped expenditure engine. The Week screen keeps the week's food and the weight card; see *Canvas drift* |
 | Week, early | `Week · day 2` | The state most trialists actually see |
 | Onboarding ×9 | `Onboarding · …` | Intro, name, formula, weight, movement, goal, how to write, reminders, your numbers. *Your numbers* becomes the plan screen (4f) |
+| Onboarding · widget (15f) | `Onboarding · widget · Home Screen`, `· Lock Screen`, and both `· dark` | **Drawn and built 10 October.** After reminders, before the plan. The real widget views on `TodaySnapshot.sample()` — the gallery's day, never the person's — in a 198 pt panel that `UnitToggle` swaps between Home Screen and Lock Screen, with four steps under it. iOS 17's step 2 says "+" instead of Edit. The Lock panel's clock and wallpaper are the system's, drawn for placement only. No mascot above it, no phone frame, Continue only |
 | Paywall | `Paywall` + `Paywall · dark` | Six invariants marked in source |
 | Settings ×3 | `Settings`, `· your targets`, `· delete account` | `· your targets` and `· delete account` carry check-in copy; see *Canvas drift* |
 | Constraint proofs | `Dark`, `Arabic RTL`, `Dynamic Type AX3` | **Day view only so far** |
