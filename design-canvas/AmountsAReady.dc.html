@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    .mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;}
+    .label{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;}
+    .card{background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px;}
+    .est{border-bottom:1.5px dotted #9A9488; padding-bottom:2px;}
+    .meta{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64; display:flex; align-items:center; flex-wrap:wrap; gap:4px;}
+    .note{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#8F6420; line-height:1.4;}
+    .hair{height:1px; background:#F0ECE0; flex-shrink:0;}
+    .field{display:inline-flex; align-items:center; height:36px; min-width:64px; padding:0 12px; box-sizing:border-box; border-radius:10px; background:#F1EDE2; border:1px solid #E9E5D9; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:17px; font-weight:600; color:#1A1917;}
+    .field.on{background:#FFFFFF; border:1.5px solid #1A1917; padding:0 11.5px;}
+    .caret{display:inline-block; width:2px; height:21px; background:#8F6420; margin-left:1px; border-radius:1px;}
+    .unit{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:13px; color:#6E6B64;}
+    .kcal{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:16px; font-weight:600; flex-shrink:0;}
+    .name{font-size:16px; color:#1A1917; line-height:1.3;}
+    .part{font-size:15px; color:#56534C; line-height:1.3;}
+    .btn{height:46px; border-radius:13px; background:#1A1917; color:#FBFAF6; font-size:16px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+    .hit{width:44px; height:44px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+    .pin{position:absolute; width:20px; height:20px; border-radius:50%; background:#1A1917; color:#FBFAF6; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 3px rgba(251,250,246,0.9);}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; position:relative; overflow:hidden;">
+
+  <!-- the entry behind, pushed back by the sheet -->
+  <div style="position:absolute; inset:0; background:#D9D5CB;"></div>
+  <div style="position:absolute; top:47px; left:10px; right:10px; height:20px; border-radius:12px 12px 0 0; background:#EDEAE1;"></div>
+
+  <div style="position:absolute; top:56px; left:0; right:0; bottom:0; border-radius:14px 14px 0 0; background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%); display:flex; flex-direction:column; overflow:hidden;">
+    <div style="height:5px; width:36px; border-radius:3px; background:#CFCABE; margin:6px auto 0 auto; flex-shrink:0;"></div>
+
+    <div style="height:44px; flex-shrink:0; padding:0 8px 0 20px; display:flex; align-items:center; justify-content:space-between;">
+      <span style="font-size:17px; font-weight:600;">Edit amounts</span>
+      <div style="height:44px; padding:0 12px; display:flex; align-items:center; font-size:16px; color:#56534C;">Cancel</div>
+    </div>
+    <div style="flex-grow:1; overflow:hidden; padding:0 20px; display:flex; flex-direction:column; gap:14px;">
+      <div style="font-size:14px; color:#56534C; line-height:1.45; text-wrap:pretty; padding:2px 0 0 0;">Change an amount and its calories scale to match. Nothing else is re-estimated.</div>
+      
+      <div class="card" style="padding:16px 18px; display:flex; flex-direction:column; gap:12px; flex-shrink:0;">
+        
+        <!-- priced by its parts (meal-contract §4): the bowl is shown, never edited -->
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div class="name">Chicken stew</div>
+            <div class="meta">1 bowl · the sum of its parts</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end;"><span class="kcal est">320</span></div>
+        </div>
+        
+        <div style="padding-left:11px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+            <div class="part">Chicken pieces</div><span class="kcal est">230</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;"><div class="field">150</div><span class="unit">g</span></div>
+        </div>
+        
+        <div style="padding-left:11px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+            <div class="part">Cooking oil</div><span class="kcal est">60</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;"><div class="field">0.5</div><span class="unit">tbsp</span></div><div style="display:flex; align-items:center; justify-content:space-between; gap:8px;"><span class="note">Estimated 1 tbsp · 120 kcal</span><div style="display:flex; align-items:center; gap:4px; height:28px; margin:-6px -4px -6px 0; padding:0 4px; color:#8F6420; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; font-weight:600;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Reset</div></div>
+        </div>
+        
+        <div style="padding-left:11px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+            <div class="part">Onion and tomato</div><span class="kcal est">30</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;"><div class="field">100</div><span class="unit">g</span></div>
+        </div>
+        
+        <div style="padding-left:11px; display:flex; align-items:baseline; justify-content:space-between; gap:12px; min-height:22px;">
+          <div class="part">Spices</div>
+          <span class="meta">no amount</span>
+        </div>
+        <div class="hair"></div>
+        
+        <div style=" display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+            <div class="name">White rice, boiled</div><span class="kcal est">308</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;"><div class="field">1.5</div><span class="unit">cup</span></div><div style="display:flex; align-items:center; justify-content:space-between; gap:8px;"><span class="note">Estimated 1 cup · 205 kcal</span><div style="display:flex; align-items:center; gap:4px; height:28px; margin:-6px -4px -6px 0; padding:0 4px; color:#8F6420; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; font-weight:600;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Reset</div></div>
+        </div>
+        <div class="hair"></div>
+        
+        <div style=" display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+            <div class="name">White bread</div><span class="kcal est">80</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;"><div class="field">1</div><span class="unit">slice</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- the total rides the keyboard: a bottom safe-area inset, never inside the scroll -->
+    <div style="flex-shrink:0; border-top:1px solid #E3DFD3; background:#F7F5EE; padding:10px 16px 34px 20px; display:flex; align-items:center; gap:6px;">
+      <div style="flex-grow:1; display:flex; flex-direction:column; gap:5px; min-width:0;">
+        <div class="mono" style="font-size:17px; font-weight:600; display:flex; align-items:baseline;"><span style="color:#6E6B64; font-weight:500;">665</span><span style="color:#6E6B64; font-weight:400; margin:0 5px;">→</span><span class="est">708</span><span style="font-size:12px; color:#6E6B64; font-weight:400; margin-left:5px;">kcal</span></div>
+        <div class="meta" style="gap:6px;"><span style="color:#1A1917; font-weight:600;">+43</span><span>· 2 amounts changed</span></div>
+      </div>
+      
+      <div class="btn" style="padding:0 24px;">Save</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

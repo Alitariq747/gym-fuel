@@ -485,6 +485,87 @@
       "y": 11690,
       "w": 390,
       "h": 844
+    },
+    {
+      "file": "AmountsAsBuilt.dc.html",
+      "title": "Amounts · as built",
+      "page": "page-1",
+      "x": 0,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsAEditing.dc.html",
+      "title": "Amounts · A · editing",
+      "page": "page-1",
+      "x": 470,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsAReady.dc.html",
+      "title": "Amounts · A · ready to save",
+      "page": "page-1",
+      "x": 940,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsBEditing.dc.html",
+      "title": "Amounts · B · editing",
+      "page": "page-1",
+      "x": 1410,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsBReady.dc.html",
+      "title": "Amounts · B · ready to save",
+      "page": "page-1",
+      "x": 1880,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsCOpened.dc.html",
+      "title": "Amounts · C · opened",
+      "page": "page-1",
+      "x": 2350,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsCStepped.dc.html",
+      "title": "Amounts · C · after a few taps",
+      "page": "page-1",
+      "x": 2820,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsDOpen.dc.html",
+      "title": "Amounts · D · a line open",
+      "page": "page-1",
+      "x": 3290,
+      "y": 12660,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "AmountsDTyping.dc.html",
+      "title": "Amounts · D · typing",
+      "page": "page-1",
+      "x": 3760,
+      "y": 12660,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -494,7 +575,7 @@
       "x": 0,
       "y": -300,
       "w": 880,
-      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\nRow 10: onboarding · the widget step — 10 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
+      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\nRow 10: onboarding · the widget step — 10 October.\nRow 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
     },
     {
       "id": "note-entry",
@@ -591,6 +672,14 @@
       "y": 11690,
       "w": 320,
       "text": "ONBOARDING · THE WIDGET STEP · drawn 10 October\n\nOne screen, after reminders and before the plan. Both are about remembering to write, and the plan and paywall stay one moment.\n\nThe preview is the real widget, not a picture of one. The build draws the widget's own views with TodaySnapshot.sample() — 1,020 left of 2,400 — the same made-up day iOS shows in the widget gallery, so the person recognises it when they search. Not their own number: the plan screen reveals that next, with its working.\n\nHome Screen and Lock Screen are one segmented control, the existing UnitToggle. It swaps the panel and the four steps; nothing else moves. Both panels are the same height.\n\nThe Home panel suggests a Home Screen: the widget, the name iOS prints under it, blank tiles. The Lock panel's clock and wallpaper are the system's, drawn for placement only. No phone frame and no status bar.\n\nOne line per step at standard text size. iOS 17 has no Edit button, so there step 2 reads \"Tap + in the top corner.\" Every other line is the same on every supported iOS.\n\nContinue only. Nothing is asked of iOS, so there is nothing to skip. The mono line is there because anyone who adds the widget now sees \"Your day shows here\" until the plan is saved.\n\nNo mascot above the content: the panel is the illustration, and the medium widget already carries the still mascot (mascot rule 8, the widget exception).\n\nNOT COPIED FROM AMY · \"people that add this are 75% more likely to build the habit\" (no invented numbers, Step 15) · the eyes emoji (rule 10) · a phone frame and wallpaper (no fake chrome) · purple · \"Tap + on the top left\" for everyone (iOS 18 changed it to Edit) · \"Bonus: tap any nutrition ring\" (no rings; a tap opens the app where it was left).\n\nNot drawn, offered separately: saying \"Added\" once WidgetCenter reports a Circa widget on the phone."
+    },
+    {
+      "id": "note-amounts",
+      "page": "page-1",
+      "x": 4230,
+      "y": 12660,
+      "w": 340,
+      "text": "THE AMOUNTS EDITOR · four versions · 10 October\n\nDECIDED, SAME DAY · A's bar is built. D was built and dropped.\n\nBuilt: the total and its change ride the keyboard with Save. Tapping outside a field, or the bar's keyboard button, puts the keyboard away. A compact title, with one line under it saying what an edit does. Every field stays in view, as before.\n\nNot built: A's per-line calories and its \"Estimated … · Reset\" notes. B and C were never built.\n\nDropped: D — lines that open one at a time, with ½× 1× 1½× 2× of the estimate. In use, fields that were all already there read better. design.md rule 2 holds the rule.\n\nThe rest of this note is the record of the four versions as drawn.\n\nThe pencil on Entry's breakdown opens this sheet. It is where an estimate becomes the person's own meal, so it should show what each change does while it is being made.\n\nAS BUILT · the pins\n1 · The estimate disappears. Once an amount is typed, nothing shows what Circa first assumed.\n2 · The total and Save sit under the keyboard.\n3 · No line shows its calories, so a change can't be traced to the number it moves.\n4 · Tapping outside a field leaves the keyboard up.\n\nIN EVERY VERSION\n· Tapping outside a field, or dragging the list, puts the keyboard away.\n· Every line shows its calories, live, with the dotted rule. An adjusted estimate keeps it (contract §5).\n· A changed line names its estimate — \"Estimated 1 tbsp · 120 kcal\". Reset writes the estimate back, which clears the adjustment (§6).\n· The total and its change stay on screen with the keyboard up, in the build's own format: 665 → 708 kcal · +43. Both ends are displayed totals, so the rows agree with it (§6).\n· Save is reachable without putting the keyboard away.\n· A dish priced by its parts shows its bowl and never edits it; its parts are the handles (§4). A descriptive part says \"no amount\".\n· One line under the title says what happens: the calories scale, nothing else is re-estimated.\n\nA · THE TOTAL RIDES THE KEYBOARD\nToday's layout. The delta line and Save move into a bar pinned to the bottom of the sheet, so it sits on the keyboard instead of under it. The keyboard icon puts it away. The smallest change.\n\nB · THE MEAL ON TOP\nThe Entry's nutrition card, small and live, pinned above the list: calories, protein, carbs and fat, each with its change. The estimate is struck through beside the field, with the line's change under its calories. Cancel and Save move to the top bar; the keyboard gets up, down and Done.\n\nC · STEPPERS FIRST\n− and + step by half a measure, or 10 g, so most corrections never open the keyboard. Tap the number to type an exact one. Total bar as A.\n\nD · ONE LINE AT A TIME\nThe list reads like Entry's breakdown: amount and macros on the meta line. Tap a line to open it — the field, quick multiples of the estimate (½× 1× 1½× 2×; 1× is the estimate) and \"120 → 60 kcal\". Total bar as A.\n\nDeltas are ink and provenance is ochre: no colour for up or down (rule 5). Light only for now; dark and AX3 follow the chosen version.\n\nThe same meal throughout: oil 1 → 0.5 tbsp (−60) and rice 1 → 1.5 cup (+103) make 665 → 708."
     }
   ],
   "launch": {

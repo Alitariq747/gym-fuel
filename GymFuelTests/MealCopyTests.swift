@@ -151,6 +151,19 @@ struct MealCopyTests {
         #expect(!MealCopy.delta(from: 607, to: 514).contains("-"))
     }
 
+    @Test("A change in calories carries its sign, and no change carries nothing")
+    func signedCalories() {
+        #expect(MealCopy.signedCalories(43) == "+43")
+        #expect(MealCopy.signedCalories(-93) == "−93")
+        #expect(MealCopy.signedCalories(0) == nil)
+    }
+
+    @Test("The editor counts changed amounts in words")
+    func amountsChanged() {
+        #expect(MealCopy.amountsChanged(1) == "1 amount changed")
+        #expect(MealCopy.amountsChanged(2) == "2 amounts changed")
+    }
+
     // MARK: - Numbers in and out of a field
 
     @Test("A field shows an amount without a grouping separator, so it parses back")

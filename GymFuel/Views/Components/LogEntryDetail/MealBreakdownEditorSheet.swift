@@ -20,7 +20,7 @@ struct MealBreakdownEditorSheet: View {
     let onSave: (MealBreakdown) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var typed: [String: String]
+    @State private var draft: MealAmountsDraft
     @FocusState private var focused: String?
     @ScaledMetric(relativeTo: .title3) private var fieldWidth: CGFloat = 92
 
@@ -29,101 +29,73 @@ struct MealBreakdownEditorSheet: View {
     init(breakdown: MealBreakdown, onSave: @escaping (MealBreakdown) -> Void) {
         self.breakdown = breakdown
         self.onSave = onSave
-        _typed = State(initialValue: Self.startingText(for: breakdown))
-    }
-
-    // MARK: - What Save will write
-
-    /// The corrected breakdown, or `nil` while any field is empty, not a number
-    /// or negative — which is what disables Save.
-    private var draft: MealBreakdown? {
-        var copy = breakdown
-
-        for item in copy.items.indices {
-            guard corrected(&copy.items[item].amount, id: copy.items[item].id) else { return nil }
-
-            for part in copy.items[item].components.indices {
-                let component = copy.items[item].components[part]
-                guard corrected(&copy.items[item].components[part].amount, id: component.id) else { return nil }
-            }
-        }
-
-        return copy
-    }
-
-    /// Typing the original number back clears the correction rather than storing
-    /// one that changes nothing.
-    private func corrected(_ amount: inout MealAmount?, id: String) -> Bool {
-        guard let text = typed[id] else { return true }
-        guard let value = MealCopy.quantity(from: text), value >= 0 else { return false }
-
-        // Read before writing: `amount` is `inout`, so comparing against it in
-        // the same expression that assigns to it is an overlapping access.
-        let estimated = amount?.quantity
-        amount?.adjustedQuantity = value == estimated ? nil : value
-        return true
-    }
-
-    private var canSave: Bool {
-        guard let draft else { return false }
-        return draft != breakdown
-    }
-
-    private var deltaLine: String? {
-        guard let draft else { return nil }
-
-        return MealCopy.delta(
-            from: Int(calculator.total(of: breakdown).calories.rounded()),
-            to: Int(calculator.total(of: draft).calories.rounded())
-        )
+        _draft = State(initialValue: MealAmountsDraft(breakdown))
     }
 
     // MARK: - Body
 
     var body: some View {
-        AdaptiveScrollContainer {
-            VStack(alignment: .leading, spacing: 14) {
-                header
+        VStack(spacing: 0) {
+            header
 
-                CircaCard {
-                    VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
-                        ForEach(Array(breakdown.items.enumerated()), id: \.element.id) { index, item in
-                            if index > 0 {
-                                CircaHairline(weight: .inCard)
+            AdaptiveScrollContainer {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(MealCopy.amountsPromise)
+                        .font(.circaBody)
+                        .foregroundStyle(Color.circaInk2)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    CircaCard {
+                        VStack(alignment: .leading, spacing: Circa.Space.rowGap) {
+                            ForEach(Array(breakdown.items.enumerated()), id: \.element.id) { index, item in
+                                if index > 0 {
+                                    CircaHairline(weight: .inCard)
+                                }
+                                rows(for: item)
                             }
-                            rows(for: item)
                         }
                     }
                 }
-
-                Text(deltaLine ?? "Enter an amount for every line.")
-                    .font(.circaMono)
-                    .foregroundStyle(deltaLine == nil ? Color.circaDanger : Color.circaInk2)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Spacer(minLength: 0)
-
-                Button(action: save) {
-                    Text("Save").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.circa(.primary, height: 52))
-                .disabled(!canSave)
+                .padding(.horizontal, Circa.Space.screenMargin)
+                .padding(.top, 4)
+                .padding(.bottom, 18)
             }
-            .padding(.horizontal, Circa.Space.screenMargin)
-            .padding(.vertical, 18)
+            .contentShape(Rectangle())
+            .onTapGesture { focused = nil }
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) { totalBar }
         .circaPaper()
     }
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
+        HStack {
             Text("Edit amounts")
-                .font(.circaTitle)
+                .font(.headline)
                 .foregroundStyle(Color.circaInk)
             Spacer(minLength: Circa.Space.rowGap)
             Button("Cancel") { dismiss() }
                 .buttonStyle(.circa(.quiet))
         }
+        .padding(.leading, Circa.Space.screenMargin)
+        .padding(.trailing, 10)
+        .padding(.top, 8)
+    }
+
+    private var totalBar: some View {
+        MealAmountsTotalBar(
+            before: displayedCalories(of: breakdown),
+            after: draft.corrected.map(displayedCalories),
+            certainty: calculator.provenance(of: draft.preview) == .estimated ? .estimated : .known,
+            changedCount: draft.changedCount,
+            canSave: draft.canSave,
+            isTyping: focused != nil,
+            onHideKeyboard: { focused = nil },
+            onSave: save
+        )
+    }
+
+    private func displayedCalories(of meal: MealBreakdown) -> Int {
+        Int(calculator.total(of: meal).calories.rounded())
     }
 
     @ViewBuilder
@@ -184,30 +156,13 @@ struct MealBreakdownEditorSheet: View {
     }
 
     private func binding(for id: String) -> Binding<String> {
-        Binding(get: { typed[id] ?? "" }, set: { typed[id] = $0 })
+        Binding(get: { draft.text[id] ?? "" }, set: { draft.setText($0, for: id) })
     }
 
     private func save() {
-        guard let draft else { return }
+        guard let corrected = draft.corrected else { return }
 
-        onSave(draft)
+        onSave(corrected)
         dismiss()
-    }
-
-    private static func startingText(for breakdown: MealBreakdown) -> [String: String] {
-        var text: [String: String] = [:]
-
-        for item in breakdown.items {
-            if item.isAmountEditable, let amount = item.amount {
-                text[item.id] = MealCopy.editableQuantity(amount.effectiveQuantity)
-            }
-            for component in item.components where component.isAmountEditable {
-                if let amount = component.amount {
-                    text[component.id] = MealCopy.editableQuantity(amount.effectiveQuantity)
-                }
-            }
-        }
-
-        return text
     }
 }

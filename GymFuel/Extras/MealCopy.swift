@@ -79,10 +79,25 @@ enum MealCopy {
     /// Both ends are the *displayed* totals, so the three numbers on the line
     /// always agree with each other and with the rows above. `meal-contract.md` §6.
     static func delta(from before: Int, to after: Int) -> String {
-        let change = after - before
-        guard change != 0 else { return "\(after) kcal · no change" }
+        guard let change = signedCalories(after - before) else { return "\(after) kcal · no change" }
 
-        return "\(before) → \(after) kcal · \(change > 0 ? "+" : "−")\(abs(change))"
+        return "\(before) → \(after) kcal · \(change)"
+    }
+
+    /// "+93" or "−93", with a real minus sign. `nil` when nothing moved.
+    static func signedCalories(_ change: Int) -> String? {
+        guard change != 0 else { return nil }
+        return "\(change > 0 ? "+" : "−")\(abs(change))"
+    }
+
+    // MARK: - The amounts editor
+
+    static let amountsPromise = "Change an amount and its calories scale to match. Nothing else is re-estimated."
+    static let nothingChanged = "Nothing changed yet"
+    static let amountMissing = "Enter an amount for every line."
+
+    static func amountsChanged(_ count: Int) -> String {
+        count == 1 ? "1 amount changed" : "\(count) amounts changed"
     }
 
     /// A node's assumption as it is shown, or `nil` when the node has nothing to

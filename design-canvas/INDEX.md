@@ -15,6 +15,15 @@ Re-export after any canvas edit; nothing syncs automatically.
 
 | File | Artboard |
 |---|---|
+| `AmountsAEditing.dc.html` | Amounts · A · editing |
+| `AmountsAReady.dc.html` | Amounts · A · ready to save |
+| `AmountsAsBuilt.dc.html` | Amounts · as built |
+| `AmountsBEditing.dc.html` | Amounts · B · editing |
+| `AmountsBReady.dc.html` | Amounts · B · ready to save |
+| `AmountsCOpened.dc.html` | Amounts · C · opened |
+| `AmountsCStepped.dc.html` | Amounts · C · after a few taps |
+| `AmountsDOpen.dc.html` | Amounts · D · a line open |
+| `AmountsDTyping.dc.html` | Amounts · D · typing |
 | `Composer.dc.html` | Composer |
 | `DayPicker.dc.html` | Day picker |
 | `DetailB.dc.html` | Entry |
@@ -95,6 +104,7 @@ Row 7: the constraints, proven.
 Row 8: widgets (Step 14).
 Row 9: the paywall, three pages (15e) — 8 October.
 Row 10: onboarding · the widget step — 10 October.
+Row 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
@@ -310,6 +320,53 @@ No mascot above the content: the panel is the illustration, and the medium widge
 NOT COPIED FROM AMY · "people that add this are 75% more likely to build the habit" (no invented numbers, Step 15) · the eyes emoji (rule 10) · a phone frame and wallpaper (no fake chrome) · purple · "Tap + on the top left" for everyone (iOS 18 changed it to Edit) · "Bonus: tap any nutrition ring" (no rings; a tap opens the app where it was left).
 
 Not drawn, offered separately: saying "Added" once WidgetCenter reports a Circa widget on the phone.
+
+### note-amounts (page-1)
+
+THE AMOUNTS EDITOR · four versions · 10 October
+
+DECIDED, SAME DAY · A's bar is built. D was built and dropped.
+
+Built: the total and its change ride the keyboard with Save. Tapping outside a field, or the bar's keyboard button, puts the keyboard away. A compact title, with one line under it saying what an edit does. Every field stays in view, as before.
+
+Not built: A's per-line calories and its "Estimated … · Reset" notes. B and C were never built.
+
+Dropped: D — lines that open one at a time, with ½× 1× 1½× 2× of the estimate. In use, fields that were all already there read better. design.md rule 2 holds the rule.
+
+The rest of this note is the record of the four versions as drawn.
+
+The pencil on Entry's breakdown opens this sheet. It is where an estimate becomes the person's own meal, so it should show what each change does while it is being made.
+
+AS BUILT · the pins
+1 · The estimate disappears. Once an amount is typed, nothing shows what Circa first assumed.
+2 · The total and Save sit under the keyboard.
+3 · No line shows its calories, so a change can't be traced to the number it moves.
+4 · Tapping outside a field leaves the keyboard up.
+
+IN EVERY VERSION
+· Tapping outside a field, or dragging the list, puts the keyboard away.
+· Every line shows its calories, live, with the dotted rule. An adjusted estimate keeps it (contract §5).
+· A changed line names its estimate — "Estimated 1 tbsp · 120 kcal". Reset writes the estimate back, which clears the adjustment (§6).
+· The total and its change stay on screen with the keyboard up, in the build's own format: 665 → 708 kcal · +43. Both ends are displayed totals, so the rows agree with it (§6).
+· Save is reachable without putting the keyboard away.
+· A dish priced by its parts shows its bowl and never edits it; its parts are the handles (§4). A descriptive part says "no amount".
+· One line under the title says what happens: the calories scale, nothing else is re-estimated.
+
+A · THE TOTAL RIDES THE KEYBOARD
+Today's layout. The delta line and Save move into a bar pinned to the bottom of the sheet, so it sits on the keyboard instead of under it. The keyboard icon puts it away. The smallest change.
+
+B · THE MEAL ON TOP
+The Entry's nutrition card, small and live, pinned above the list: calories, protein, carbs and fat, each with its change. The estimate is struck through beside the field, with the line's change under its calories. Cancel and Save move to the top bar; the keyboard gets up, down and Done.
+
+C · STEPPERS FIRST
+− and + step by half a measure, or 10 g, so most corrections never open the keyboard. Tap the number to type an exact one. Total bar as A.
+
+D · ONE LINE AT A TIME
+The list reads like Entry's breakdown: amount and macros on the meta line. Tap a line to open it — the field, quick multiples of the estimate (½× 1× 1½× 2×; 1× is the estimate) and "120 → 60 kcal". Total bar as A.
+
+Deltas are ink and provenance is ochre: no colour for up or down (rule 5). Light only for now; dark and AX3 follow the chosen version.
+
+The same meal throughout: oil 1 → 0.5 tbsp (−60) and rice 1 → 1.5 cup (+103) make 665 → 708.
 
 ## Not from the canvas — `app-icon/`
 

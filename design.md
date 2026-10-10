@@ -23,6 +23,10 @@ the same day.
 Revised 2 October: widgets (Step 14), the one place the mascot shares a screen with
 a leading number. See *The plate mascot* and the screen inventory.
 
+Revised 10 October: the amounts editor. Four versions were drawn (canvas Row 11);
+A's total bar is built, and D's lines that open one at a time were built and
+dropped the same day. See rule 2.
+
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
 > progress. Older product audits and artboards may describe superseded behavior.
@@ -212,6 +216,18 @@ breakdown opens the amounts editor; the sparkle beside the title rewords the
 sentence and re-estimates the meal. The ⋯ menu keeps only what has no place on the
 page: Save meal, Edit time, Edit totals, Delete entry. Share sits beside the ⋯
 as its own icon, and arrives with the share card (7k).
+
+**The amounts editor keeps every field in view, and the total on the keyboard.**
+Under a compact title, one line says what an edit does: the calories scale, and
+nothing else is re-estimated. Below it, every editable line shows its field at
+once. The meal's total and its change — *665 → 708 kcal*, *+43 · 2 amounts
+changed* — sit with Save in a bar pinned to the bottom of the sheet, so they ride
+on top of the keyboard instead of scrolling under it. Tapping outside a field, or
+the bar's keyboard button, puts the keyboard away. This is version A on the
+canvas (Row 11), without A's per-line calories or its *Estimated … · Reset*
+notes, which are not built. **Version D was built and dropped on 10 October:**
+lines that opened one at a time, with ½× 1× 1½× 2× of the estimate, read worse in
+use than fields that are all already there. Don't bring it back without asking.
 
 **Rewording asks first when an amount was changed.** It replaces every amount the
 person set (`meal-contract.md` §9), so if any item or component carries a changed
@@ -430,6 +446,7 @@ Everything on the canvas, and what is not there yet.
 |---|---|---|
 | Day | `Day` | Summary at top, `LogActionDock` keeps the bottom |
 | Entry detail | `Entry`, `Entry · menu`, `Entry · re-estimate warning` | **Redrawn 28 September.** One card for the meal's nutrition: calories loudest, then protein, carbs and fat in three equal columns, each with its glyph in a well. Every breakdown row with a number carries its macros on the mono meta line. Pencil on the breakdown, sparkle beside the title, the four-item ⋯ menu, and the warning from rule 2. No rating, no confidence ring. Its top half is what the 7k share card crops |
+| Amounts editor | `Amounts · as built`, `Amounts · A · …`, `· B · …`, `· C · …`, `· D · …` | **Built 10 October from A's bar** — rule 2. `Amounts · as built` is the sheet before it. A's per-line calories and *Estimated … · Reset* notes are drawn, not built. B and C were never built. D was built and dropped the same day; its artboards are the record, not a plan |
 | Share card (7k) | `Share card · text meal`, `Share card · photo meal`, `Share · preview` | **Drawn 28 September.** One meal as an image: 360 pt wide at 3×, height from its content, always light and at a fixed text size. The photo for photo meals as a centred 192 pt square, so the tallest card fits a 9:16 story, whole and never cropped — Entry's treatment, `MealFullPhoto` — then the label, the title, the Entry nutrition card, the provenance line when there is one, the breakdown (6 October, replacing the explanation and the key assumption), and a footer with the plate mark, the name and "AI estimate". **Never** a date, time, target, weight or another meal. A photo that cannot load is left out, and the preview says so. The share icon beside ⋯ opens the preview first; its Share button opens the system share sheet. It shows on any meal that finished estimating, older days included. **The breakdown** is items only, one line each — name (truncates), amount, calories — and never their components or macros. Up to four items are all listed in the meal's order; past four, the three largest stay in the meal's order and a "+ N more" row carries the rest's calories, so the rows add up to the total (`MealShareBreakdown`). Removed items are left out. A meal with no breakdown — a typed total, or an older entry — has no section, and no explanation |
 | Composer | `Composer` | Gym vocabulary removed from heading and examples |
 | Analysing | `Analysing · text + photo` | Sweep overlay + the existing 3-stage message rotation |
