@@ -130,27 +130,6 @@ struct MealCopyTests {
 
     // MARK: - The delta (§6)
 
-    @Test("The delta line is the difference of the two displayed totals")
-    func deltaReadsAsShown() {
-        #expect(MealCopy.delta(from: 607, to: 514) == "607 → 514 kcal · −93")
-    }
-
-    @Test("Adding calories signs the delta the other way")
-    func deltaCanBePositive() {
-        #expect(MealCopy.delta(from: 514, to: 607) == "514 → 607 kcal · +93")
-    }
-
-    @Test("An edit that changes nothing says so rather than showing a zero")
-    func zeroDeltaIsNamed() {
-        #expect(MealCopy.delta(from: 607, to: 607) == "607 kcal · no change")
-    }
-
-    @Test("The delta uses a real minus sign, not a hyphen")
-    func deltaUsesMinusSign() {
-        #expect(MealCopy.delta(from: 607, to: 514).contains("−"))
-        #expect(!MealCopy.delta(from: 607, to: 514).contains("-"))
-    }
-
     @Test("A change in calories carries its sign, and no change carries nothing")
     func signedCalories() {
         #expect(MealCopy.signedCalories(43) == "+43")
@@ -323,6 +302,35 @@ struct MealCopyTests {
         #expect(MealCopy.photoDescription(of: entry(.image, LogEntry.photoRawInputPlaceholder)) == nil)
         #expect(MealCopy.photoDescription(of: entry(.image, " \(LogEntry.photoRawInputPlaceholder) ")) == nil)
         #expect(MealCopy.photoDescription(of: entry(.image, "   ")) == nil)
+    }
+
+    @Test("The onboarding status moves on every three seconds")
+    func tryMealStatusSteps() {
+        #expect(MealCopy.tryMealStatus(elapsedSeconds: 0) == "reading your words")
+        #expect(MealCopy.tryMealStatus(elapsedSeconds: 2) == "reading your words")
+        #expect(MealCopy.tryMealStatus(elapsedSeconds: 3) == "estimating calories and macros")
+        #expect(MealCopy.tryMealStatus(elapsedSeconds: 6) == "preparing your breakdown")
+    }
+
+    @Test("The last status holds however long the wait, and a clock skew can't break it")
+    func tryMealStatusHolds() {
+        #expect(MealCopy.tryMealStatus(elapsedSeconds: 19) == "preparing your breakdown")
+        #expect(MealCopy.tryMealStatus(elapsedSeconds: -1) == "reading your words")
+    }
+
+    @Test("The correction line gives the difference, then what changed")
+    func correctionLineReadsDifferenceFirst() {
+        #expect(MealCopy.correctionLine(firstGuess: 705, total: 585, changed: ["Cooking oil"])
+            == "−120 kcal · You changed “Cooking oil”.")
+        #expect(MealCopy.correctionLine(firstGuess: 514, total: 607, changed: ["Oil"])
+            == "+93 kcal · You changed “Oil”.")
+    }
+
+    @Test("Edits that cancel out still name what changed")
+    func correctionLineWithNoNetChange() {
+        let line = MealCopy.correctionLine(firstGuess: 705, total: 705, changed: ["Cooking oil", "White rice, boiled"])
+
+        #expect(line.hasPrefix("No change in calories · You changed “Cooking oil”"))
     }
 }
 

@@ -82,30 +82,10 @@ struct EditSavedMealSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(Color.circaInk2)
-                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                            .background(Color.circaWell, in: Circle())
-                    }
-                    .buttonStyle(.plain)
+                    CircaCloseButton { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button { saveEditedMeal() } label: {
-                        if savedMealsViewModel.isLoading {
-                            ProgressView()
-                                .frame(width: 34, height: 34)
-                        } else {
-                            Image(systemName: "checkmark")
-                                .font(.subheadline.weight(.bold))
-                                .foregroundStyle(canSave ? Color.circaPaperTop : Color.circaInk3)
-                                .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                                .background(canSave ? Color.circaInk : Color.circaSunken, in: Circle())
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!canSave || savedMealsViewModel.isLoading)
+                    CircaConfirmButton(isEnabled: canSave, isWorking: savedMealsViewModel.isLoading) { saveEditedMeal() }
                 }
             }
         }

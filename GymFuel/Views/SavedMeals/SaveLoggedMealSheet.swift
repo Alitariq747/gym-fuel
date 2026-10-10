@@ -73,35 +73,13 @@ struct SaveLoggedMealSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(Color.circaInk2)
-                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                            .background(Color.circaWell, in: Circle())
-                    }
-                    .buttonStyle(.plain)
+                    CircaCloseButton { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button {
+                    CircaConfirmButton(isEnabled: canSave, isWorking: isSaving) {
                         let description = descriptionText.trimmingCharacters(in: .whitespacesAndNewlines)
                         onSave(nameText, description.isEmpty ? nil : description, editedMacros)
-                    } label: {
-                        Group {
-                            if isSaving {
-                                ProgressView()
-                                    .tint(Color.circaPaperTop)
-                            } else {
-                                Image(systemName: "checkmark")
-                                    .font(.subheadline.weight(.bold))
-                            }
-                        }
-                        .foregroundStyle(canSave ? Color.circaPaperTop : Color.circaInk3)
-                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                        .background(canSave ? Color.circaInk : Color.circaSunken, in: Circle())
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!canSave || isSaving)
                 }
             }
         }

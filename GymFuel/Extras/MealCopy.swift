@@ -74,21 +74,30 @@ enum MealCopy {
         return "You changed \(names.map { "“\($0)”" }.formatted(.list(type: .and)))."
     }
 
-    /// "607 → 514 kcal · −93" — what an edit will do, before it is committed.
-    ///
-    /// Both ends are the *displayed* totals, so the three numbers on the line
-    /// always agree with each other and with the rows above. `meal-contract.md` §6.
-    static func delta(from before: Int, to after: Int) -> String {
-        guard let change = signedCalories(after - before) else { return "\(after) kcal · no change" }
-
-        return "\(before) → \(after) kcal · \(change)"
-    }
-
     /// "+93" or "−93", with a real minus sign. `nil` when nothing moved.
     static func signedCalories(_ change: Int) -> String? {
         guard change != 0 else { return nil }
         return "\(change > 0 ? "+" : "−")\(abs(change))"
     }
+
+    // MARK: - The onboarding meal
+
+    /// A new line every three seconds, like the timeline's; the last one holds.
+    /// Never a percentage — nothing measures progress.
+    static func tryMealStatus(elapsedSeconds: Int) -> String {
+        let lines = ["reading your words", "estimating calories and macros", "preparing your breakdown"]
+        return lines[min(max(elapsedSeconds, 0) / 3, lines.count - 1)]
+    }
+
+    /// "−120 kcal · You changed “Cooking oil”." Edits can cancel out, and the
+    /// line still names what they changed.
+    static func correctionLine(firstGuess: Int, total: Int, changed names: [String]) -> String {
+        let change = signedCalories(total - firstGuess).map { "\($0) kcal" } ?? "No change in calories"
+        guard let changed = changed(names) else { return change }
+        return "\(change) · \(changed)"
+    }
+
+    static let correctionPromise = "Only the amounts you changed were scaled. Nothing else was re-estimated."
 
     // MARK: - The amounts editor
 

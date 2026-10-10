@@ -63,6 +63,13 @@ extension View {
     func circaPaper() -> some View {
         background(LinearGradient.circaPaper.ignoresSafeArea())
     }
+
+    /// The soft shadow under a surface meant to be touched — the dock, the
+    /// onboarding meal field.
+    func circaLift() -> some View {
+        shadow(color: Color.circaInk.opacity(0.05), radius: 3, y: 1)
+            .shadow(color: Color.circaInk.opacity(0.07), radius: 26, y: 10)
+    }
 }
 
 // MARK: - Hairline
@@ -1005,8 +1012,7 @@ struct CircaDock: View {
         .padding(.vertical, 9)
         .background(Color.circaCard, in: shape)
         .overlay { shape.strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline) }
-        .shadow(color: Color.circaInk.opacity(0.05), radius: 3, y: 1)
-        .shadow(color: Color.circaInk.opacity(0.07), radius: 26, y: 10)
+        .circaLift()
         .opacity(isDisabled ? 0.72 : 1)
         .disabled(isDisabled)
     }

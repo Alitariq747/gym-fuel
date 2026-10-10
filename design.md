@@ -27,6 +27,9 @@ Revised 10 October: the amounts editor. Four versions were drawn (canvas Row 11)
 A's total bar is built, and D's lines that open one at a time were built and
 dropped the same day. See rule 2.
 
+Revised 11 October: the onboarding meal (15b, 15c), redrawn as canvas Row 12 and
+built from version A. See the screen inventory.
+
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
 > progress. Older product audits and artboards may describe superseded behavior.
@@ -459,6 +462,7 @@ Everything on the canvas, and what is not there yet.
 | Week, early | `Week · day 2` | The state most trialists actually see |
 | Onboarding ×9 | `Onboarding · …` | Intro, name, formula, weight, movement, goal, how to write, reminders, your numbers. *Your numbers* becomes the plan screen (4f) |
 | Onboarding · widget (15f) | `Onboarding · widget · Home Screen`, `· Lock Screen`, and both `· dark` | **Drawn and built 10 October.** After reminders, before the plan. The real widget views on `TodaySnapshot.sample()` — the gallery's day, never the person's — in a 198 pt panel that `UnitToggle` swaps between Home Screen and Lock Screen, with four steps under it. iOS 17's step 2 says "+" instead of Edit. The Lock panel's clock and wallpaper are the system's, drawn for placement only. No mascot above it, no phone frame, Continue only |
+| Onboarding · try a meal (15b, 15c) | `Try a meal · …` (Row 12) | **Redrawn and built 11 October.** The field is the one raised surface: a white card with the dock's lift (`circaLift`), a placeholder and its 200-character count, an ink border while typing. The examples are lines on paper with an ochre ↖. **While it estimates there is no spinner** (rule 1): their words are the title, the Entry nutrition card shows its rules alone, and a Breakdown card holds a status line that changes every three seconds and `CircaProgressRail`. Waiting and answered are one view, so the numbers land on the rules already drawn. The first guess keeps their words as the title, verbatim (rule 3); the nutrition card leads, then the biggest assumption in a sunken card with Change an amount, then the breakdown. After an edit the card's calorie row becomes the change — the first guess struck through, their total in ochre, the difference, what changed, and "Nothing else was re-estimated" — and Continue becomes "Let's find your targets", because the body questions come next and the plan screen shows this meal against the calorie target. Version B, the sentence read under a sweeping rule, was drawn and not chosen. The example fallback is drawn but not built; it stays as it was |
 | Paywall | `Paywall` + `Paywall · dark` | Six invariants marked in source |
 | Settings ×3 | `Settings`, `· your targets`, `· delete account` | `· your targets` and `· delete account` carry check-in copy; see *Canvas drift* |
 | Constraint proofs | `Dark`, `Arabic RTL`, `Dynamic Type AX3` | **Day view only so far** |

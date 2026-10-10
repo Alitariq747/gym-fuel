@@ -55,6 +55,15 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `Paywall3Trial.dc.html` | Paywall · 2 · the trial |
 | `Paywall3TrialDark.dc.html` | Paywall · 2 · the trial · dark |
 | `PaywallDark.dc.html` | Paywall · dark |
+| `PhotoAReady.dc.html` | Photo · A · ready |
+| `PhotoATyping.dc.html` | Photo · A · typing |
+| `PhotoAsBuilt.dc.html` | Photo · as built |
+| `PhotoAsBuiltTyping.dc.html` | Photo · as built · typing |
+| `PhotoBReady.dc.html` | Photo · B · ready |
+| `PhotoBTyping.dc.html` | Photo · B · the text sheet, filled |
+| `PhotoCReady.dc.html` | Photo · C · ready |
+| `PhotoCTyping.dc.html` | Photo · C · typing |
+| `PhotoReading.dc.html` | Photo · reading |
 | `ProofArabic.dc.html` | Arabic RTL |
 | `ProofDark.dc.html` | Dark |
 | `ProofDynamicType.dc.html` | Dynamic Type AX3 |
@@ -114,7 +123,8 @@ Row 8: widgets (Step 14).
 Row 9: the paywall, three pages (15e) — 8 October.
 Row 10: onboarding · the widget step — 10 October.
 Row 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.
-Row 12: onboarding · try a meal, redrawn — 11 October.
+Row 12: onboarding · try a meal, redrawn — A built — 11 October.
+Row 13: photo · check the words, three directions — 11 October.
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
@@ -380,9 +390,11 @@ The same meal throughout: oil 1 → 0.5 tbsp (−60) and rice 1 → 1.5 cup (+10
 
 ### note-try-meal (page-1)
 
-ONBOARDING · TRY A MEAL · redrawn 11 October
+ONBOARDING · TRY A MEAL · redrawn and built 11 October
 
-The third screen, and Step 15's aha. As built it reads like a form and waits like a demo. This row redraws it in the app's own language. The flow, the limits and the fallback stay as 15b and 15c built them.
+DECIDED, SAME DAY · A is built. B was not chosen. The example fallback was drawn and left as built.
+
+The third screen, and Step 15's aha. As built it read like a form and waited like a demo. This row redraws it in the app's own language. The flow, the limits and the fallback stay as 15b and 15c built them.
 
 AS BUILT · the pins
 1 · The field doesn't look like one: no edge, and a grey "Your meal" that reads as a caption.
@@ -390,25 +402,25 @@ AS BUILT · the pins
 3 · The wait is a system spinner, the one thing rule 1 rules out.
 4 · The page is empty while it waits, so the answer arrives all at once.
 
-READY TO WRITE · The field is the one raised surface on the page: a white card with the dock's soft shadow, a placeholder that says what to do, and its real 200-character limit in mono. The examples become three lines on paper with an ochre ↖. Tapping one fills the card.
+READY TO WRITE · The field is the one raised surface on the page: a white card with the dock's soft shadow (circaLift), a placeholder that says what to do, and its real 200-character limit in mono. The examples become three lines on paper with an ochre ↖. Tapping one fills the card.
 
-WRITING · The card takes the ink border of the amounts editor's focused field, and the counter counts. Estimate this rides the keyboard; the examples and "Show me an example instead" wait under it.
+WRITING · The card takes an ink border, and the counter counts. Estimate this rides the keyboard; the examples and "Show me an example instead" wait under it.
 
-ESTIMATING · A (recommended) · The page takes the answer's shape at once: their words as the title, the Entry nutrition card with the dotted rule alone where each number will land (rule 1), and a Breakdown card holding the status line and the timeline's ochre sweep. When the answer lands, numbers appear on their rules and rows replace the status. Nothing above them moves. The status changes on a timer, as the timeline's does: reading your words → estimating calories and macros → preparing your breakdown. No spinner, no percentage.
+ESTIMATING · A (built) · The page takes the answer's shape at once: their words as the title, the Entry nutrition card with the dotted rule alone where each number will land (rule 1), and a Breakdown card holding the status line and the timeline's ochre sweep. Waiting and answered are one view, so when the answer lands the numbers appear on their rules and rows replace the status. Nothing above them moves. The status changes every three seconds, as the timeline's does: reading your words → estimating calories and macros → preparing your breakdown. No spinner, no percentage.
 
-ESTIMATING · B · Their sentence large, with an ochre dotted rule sweeping under the words while it's read. More of a moment, but when the answer lands the sentence has to move up into the title and the cards rise under it: one transition where A has none.
+ESTIMATING · B (not chosen) · Their sentence large, with an ochre dotted rule sweeping under the words while it's read. More of a moment, but when the answer lands the sentence has to move up into the title and the cards rise under it: one transition where A has none.
 
-FIRST GUESS · Their words stay the title, verbatim (rule 3), where the build shows Circa's tidied name. The nutrition card leads, calories loudest. The biggest assumption sits in the sunken card with the question and the one Change an amount button; the pencil on Breakdown opens the same sheet. Continue stays primary: the edit is invited, never required (15c).
+FIRST GUESS · Their words stay the title, verbatim (rule 3), where the old build showed Circa's tidied name. The nutrition card leads, calories loudest. The biggest assumption sits in the sunken card with the question and the one Change an amount button; the pencil on Breakdown opens the same sheet. With no assumption, the card keeps the question and the button. Continue stays primary: the edit is invited, never required (15c).
 
-AFTER AN EDIT · The nutrition card becomes the change: the first guess struck through, theirs large in ochre on the dotted rule, the difference and what they changed (the build's MealCopy lines), and the editor's own promise: only that amount was scaled, nothing else re-estimated. The changed row says "You set the amount".
+AFTER AN EDIT · The nutrition card's calorie row becomes the change: the first guess struck through, theirs large in ochre on the dotted rule, the difference and what they changed, and the editor's own promise: "Only the amounts you changed were scaled. Nothing else was re-estimated." The changed row says "You set the amount". The button becomes "Let's find your targets": the body questions come next, and the plan screen shows this meal against the calorie target. The first guess keeps Continue.
 
-EXAMPLE · The fallback in the same frame: the notice, the example as the title, one card.
+EXAMPLE · Drawn, not built: the fallback in the same frame — the notice, the example as the title, one card.
 
-NEW COPY · the placeholder, the three status lines, "This takes a few seconds.", the line under the assumption, and the line under a change. Everything else is the build's.
+NEW COPY · the placeholder, the three status lines, "This takes a few seconds.", the line under the assumption, the correction line and the promise. Everything else is the build's.
 
 UNCHANGED · the 20 s timeout and three tries, the example path, nothing saved, no mascot (mascot rule 5). Built from CircaCard, CircaEstimate's pending rule, CircaProgressRail, DetailMacroSummaryCard, MealBreakdownCard and the amounts editor.
 
-Light only for now; dark and AX3 follow the chosen version.
+Light only. The build takes dark from the kit's tokens, and the change stacks at AX sizes (rule 8).
 
 The same meal throughout: "rice with chicken stew", oil 2 → 1 tbsp makes 705 → 585 (−120).
 

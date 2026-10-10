@@ -7,6 +7,7 @@ struct OnboardingTryMealStepView: View {
 
     @StateObject private var model: OnboardingTryMealViewModel
     @State private var showEditor = false
+    @FocusState private var isWriting: Bool
 
     private let examples = ["2 eggs, toast and tea", "rice with chicken stew", "a bowl of noodles with vegetables"]
 
@@ -23,11 +24,11 @@ struct OnboardingTryMealStepView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     switch model.phase {
                     case .typing: typing
-                    case .working: working
-                    case .result(let meal): result(meal)
+                    case .working, .result: estimate
                     case .example(let afterFailure): example(afterFailure: afterFailure)
                     }
                 }
+                .animation(.easeInOut(duration: 0.25), value: model.phase)
                 .padding(.horizontal, Circa.Space.screenMargin)
                 .padding(.top, 18)
                 .padding(.bottom, 20)
@@ -60,14 +61,7 @@ struct OnboardingTryMealStepView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            TextField("Your meal", text: $model.text, prompt: Text("Your meal").foregroundStyle(Color.circaInk3), axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(.system(.title2).weight(.medium))
-                .foregroundStyle(Color.circaInk)
-                .tint(Color.circaAccent)
-                .lineLimit(2...)
-                .submitLabel(.done)
-                .accessibilityLabel("Describe a meal you often eat")
+            TryMealField(text: $model.text, isFocused: $isWriting)
 
             if model.foundNoMeal {
                 Text("Circa couldn't find a meal in that. Try naming what's on the plate.")
@@ -76,77 +70,53 @@ struct OnboardingTryMealStepView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                CircaSectionLabel("Or tap one")
-                ForEach(examples, id: \.self) { example in
-                    Button(example) { model.text = example }
-                        .buttonStyle(.circa(.secondary, height: Circa.minHitTarget))
-                }
-            }
+            TryMealExamples(examples: examples) { model.text = $0 }
         }
     }
 
-    private var working: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            ProgressView()
-                .tint(Color.circaAccent)
-            Text("Reading “\(model.text.trimmingCharacters(in: .whitespacesAndNewlines))”…")
-                .font(.circaTitle)
-                .foregroundStyle(Color.circaInk)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .accessibilityElement(children: .combine)
-    }
+    /// Waiting and answered are one view, so the title and the card keep their
+    /// place and the numbers land on the rules already drawn.
+    private var estimate: some View {
+        let meal = model.triedMeal
+        let total = meal?.feedback.breakdown.map { MealBreakdownCalculator().total(of: $0) }
 
-    private func result(_ meal: TriedMeal) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
+        return VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 10) {
-                CircaSectionLabel(meal.title)
-                Text(model.correction == nil ? "Circa's first guess. Anything different?" : "You changed it. The total followed.")
-                    .font(.circaTitle)
+                CircaSectionLabel("Your words")
+                Text(verbatim: meal?.words ?? model.text.trimmingCharacters(in: .whitespacesAndNewlines))
+                    .font(.title2.weight(.semibold))
                     .foregroundStyle(Color.circaInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             if let correction = model.correction {
-                correctionCard(correction)
-            } else if let assumption = MealBreakdownCalculator().assumptions(of: meal.feedback).first {
-                CircaCard(.sunken) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        CircaSectionLabel("Biggest assumption")
-                        Text(assumption)
-                            .font(.circaBody)
-                            .foregroundStyle(Color.circaAccent)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                DetailMacroSummaryCard(macros: total, certainty: .estimated) {
+                    TryMealChangeHeader(correction: correction)
+                }
+            } else {
+                DetailMacroSummaryCard(macros: total, certainty: .estimated)
+            }
+
+            if let meal {
+                result(meal)
+            } else {
+                TryMealPendingBreakdown()
+            }
+        }
+    }
+
+    private func result(_ meal: TriedMeal) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            if model.correction == nil {
+                TryMealAssumptionCard(assumption: MealBreakdownCalculator().assumptions(of: meal.feedback).first) {
+                    showEditor = true
                 }
             }
 
             if let breakdown = meal.feedback.breakdown {
                 MealBreakdownCard(breakdown: breakdown) { showEditor = true }
-                Button("Change an amount") { showEditor = true }
-                    .buttonStyle(.circa(.secondary, height: Circa.minHitTarget))
             }
         }
-    }
-
-    private func correctionCard(_ correction: OnboardingTryMealViewModel.Correction) -> some View {
-        CircaCard {
-            VStack(alignment: .leading, spacing: 6) {
-                CircaEstimate("\(correction.total) kcal", certainty: .estimated, font: .circaMonoLarge)
-                    .foregroundStyle(Color.circaAccentLarge)
-                Text(MealCopy.delta(from: correction.firstGuess, to: correction.total))
-                    .font(.circaMono)
-                    .foregroundStyle(Color.circaInk2)
-                if let changed = MealCopy.changed(correction.changed) {
-                    Text(changed)
-                        .font(.circaBody)
-                        .foregroundStyle(Color.circaInk2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
     }
 
     private func example(afterFailure: Bool) -> some View {
@@ -197,16 +167,26 @@ struct OnboardingTryMealStepView: View {
                 .disabled(!model.canSubmit)
                 .opacity(model.canSubmit ? 1 : 0.45)
 
-                Button("Show me an example instead") { model.showExample() }
-                    .buttonStyle(.circa(.quiet))
+                if !isWriting {
+                    Button("Show me an example instead") { model.showExample() }
+                        .buttonStyle(.circa(.quiet))
+                }
             }
         } else {
-            Button(action: onNext) {
-                Text("Continue").frame(maxWidth: .infinity)
+            VStack(spacing: 10) {
+                if model.phase == .working {
+                    Text("This takes a few seconds.")
+                        .font(.circaMono)
+                        .foregroundStyle(Color.circaInk3)
+                }
+
+                Button(action: onNext) {
+                    Text(model.correction == nil ? "Continue" : "Let's find your targets").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.circa(.primary, height: 52))
+                .disabled(!model.canContinue)
+                .opacity(model.canContinue ? 1 : 0.45)
             }
-            .buttonStyle(.circa(.primary, height: 52))
-            .disabled(!model.canContinue)
-            .opacity(model.canContinue ? 1 : 0.45)
         }
     }
 }

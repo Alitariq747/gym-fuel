@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    .mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;}
+    .label{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;}
+    .card{background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; box-sizing:border-box;}
+    .lift{box-shadow:0 1px 3px rgba(26,25,23,0.05), 0 10px 26px rgba(26,25,23,0.07);}
+    .btn{height:52px; border-radius:14px; background:#1A1917; color:#FBFAF6; font-size:17px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0; box-sizing:border-box;}
+    .btn2{height:52px; border-radius:14px; background:#FFFFFF; border:1px solid #E3DFD3; color:#1A1917; font-size:17px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0; box-sizing:border-box;}
+    .quiet{min-height:44px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:500; color:#6E6B64;}
+    .caret{display:inline-block; width:2px; height:23px; background:#8F6420; border-radius:1px; vertical-align:-5px; margin:0 1px;}
+    .guess{color:#8F6420; text-decoration:underline dotted #9A9488; text-decoration-thickness:1.5px; text-underline-offset:5px;}
+    .pending{height:0; border-bottom:1.5px dotted #9A9488;}
+    .pin{position:absolute; width:20px; height:20px; border-radius:50%; background:#1A1917; color:#FBFAF6; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 3px rgba(251,250,246,0.9); z-index:5;}
+    .float{position:absolute; left:12px; right:12px; top:68px; border-radius:44px; background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%); box-shadow:0 4px 18px rgba(0,0,0,0.12); overflow:hidden; box-sizing:border-box; padding:20px; display:flex; flex-direction:column;}
+    .docked{position:absolute; left:0; right:0; top:64px; bottom:302px; border-radius:34px 34px 0 0; background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%); box-shadow:0 -2px 22px rgba(26,25,23,0.10); overflow:hidden; box-sizing:border-box; padding:8px 20px 12px 20px; display:flex; flex-direction:column;}
+    .kbd{position:absolute; left:0; right:0; bottom:0; height:302px; border-top:1px solid #E3DFD3; background:#EFEBDF; display:flex; align-items:center; justify-content:center;}
+    .kbd span{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.2px; color:#A8A296; text-transform:uppercase;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; position:relative; overflow:hidden; background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%); color:#1A1917;">
+<!-- Photo · A · ready -->
+
+  <div class="float" style="bottom:12px;">
+    <div style="height:44px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;"><span class="label">Meal photo</span><div style="width:44px; height:44px; margin-right:-12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div style="height:12px;"></div>
+    <div style="position:relative; height:326px; border-radius:16px; overflow:hidden; flex-shrink:0; border:1px solid #E9E5D9; box-sizing:border-box;">
+      <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" style="display:block; width:100%; height:100%;">
+        <defs>
+          <radialGradient id="art" cx="48%" cy="46%" r="78%"><stop offset="0" stop-color="#7A6150"/><stop offset="1" stop-color="#3B2D24"/></radialGradient>
+          <radialGradient id="arp" cx="42%" cy="38%" r="64%"><stop offset="0" stop-color="#FCFAF4"/><stop offset="1" stop-color="#E2DACB"/></radialGradient>
+          <radialGradient id="ars" cx="44%" cy="40%" r="62%"><stop offset="0" stop-color="#B9672E"/><stop offset="1" stop-color="#76391A"/></radialGradient>
+          <radialGradient id="arv" cx="50%" cy="50%" r="72%"><stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>
+          <filter id="arb"><feGaussianBlur stdDeviation="9"/></filter>
+          <filter id="arf"><feGaussianBlur stdDeviation="0.7"/></filter>
+        </defs>
+        <rect width="400" height="400" fill="url(#art)"/>
+        <path d="M0 70 C 120 60 260 84 400 64 M0 150 C 140 140 250 162 400 146 M0 330 C 110 318 280 340 400 322" fill="none" stroke="#2E231C" stroke-width="2" opacity="0.35"/>
+        <ellipse cx="196" cy="222" rx="150" ry="150" fill="#000" opacity="0.38" filter="url(#arb)"/>
+        <g filter="url(#arf)">
+          <circle cx="188" cy="210" r="146" fill="url(#arp)"/>
+          <circle cx="188" cy="210" r="118" fill="none" stroke="#D9D1C1" stroke-width="2"/>
+          <path d="M70 236 C 64 196 92 178 124 182 C 150 172 178 196 176 228 C 182 262 160 300 120 296 C 88 300 72 270 70 236 Z" fill="#F6F1E4"/>
+          <ellipse cx="102" cy="214" rx="4.2" ry="1.9" transform="rotate(20 102 214)" fill="#E6DEC9"/><ellipse cx="118" cy="236" rx="4.2" ry="1.9" transform="rotate(70 118 236)" fill="#E6DEC9"/><ellipse cx="134" cy="204" rx="4.2" ry="1.9" transform="rotate(140 134 204)" fill="#E6DEC9"/><ellipse cx="96" cy="252" rx="4.2" ry="1.9" transform="rotate(100 96 252)" fill="#E6DEC9"/><ellipse cx="146" cy="248" rx="4.2" ry="1.9" transform="rotate(30 146 248)" fill="#E6DEC9"/><ellipse cx="122" cy="270" rx="4.2" ry="1.9" transform="rotate(160 122 270)" fill="#E6DEC9"/><ellipse cx="156" cy="222" rx="4.2" ry="1.9" transform="rotate(80 156 222)" fill="#E6DEC9"/><ellipse cx="88" cy="228" rx="4.2" ry="1.9" transform="rotate(10 88 228)" fill="#E6DEC9"/><ellipse cx="138" cy="282" rx="4.2" ry="1.9" transform="rotate(120 138 282)" fill="#E6DEC9"/><ellipse cx="110" cy="194" rx="4.2" ry="1.9" transform="rotate(50 110 194)" fill="#E6DEC9"/><ellipse cx="164" cy="262" rx="4.2" ry="1.9" transform="rotate(170 164 262)" fill="#E6DEC9"/><ellipse cx="104" cy="288" rx="4.2" ry="1.9" transform="rotate(60 104 288)" fill="#E6DEC9"/>
+          <circle cx="242" cy="176" r="70" fill="#000" opacity="0.18" filter="url(#arb)"/>
+          <circle cx="240" cy="172" r="68" fill="#EEE7D9"/>
+          <circle cx="240" cy="172" r="56" fill="url(#ars)"/>
+          <ellipse cx="232" cy="160" rx="11" ry="8" fill="#C9824A"/><ellipse cx="258" cy="186" rx="9" ry="7" fill="#D49158"/><ellipse cx="214" cy="192" rx="10" ry="7" fill="#8E4A20"/><ellipse cx="246" cy="208" rx="8" ry="6" fill="#C9824A"/><ellipse cx="268" cy="150" rx="7" ry="5" fill="#E0A15E"/><ellipse cx="222" cy="136" rx="8" ry="6" fill="#9C5525"/><circle cx="240" cy="176" r="2.1" fill="#5E7A3A"/><circle cx="226" cy="172" r="2.1" fill="#5E7A3A"/><circle cx="256" cy="166" r="2.1" fill="#5E7A3A"/><circle cx="236" cy="198" r="2.1" fill="#5E7A3A"/><circle cx="264" cy="200" r="2.1" fill="#5E7A3A"/>
+          <circle cx="196" cy="284" r="17" fill="#7E9F52"/><circle cx="196" cy="284" r="13.5" fill="#DCE7C0"/><circle cx="192" cy="282" r="1.4" fill="#B9CC90"/><circle cx="200" cy="286" r="1.4" fill="#B9CC90"/><circle cx="197" cy="279" r="1.4" fill="#B9CC90"/><circle cx="228" cy="296" r="17" fill="#7E9F52"/><circle cx="228" cy="296" r="13.5" fill="#DCE7C0"/><circle cx="224" cy="294" r="1.4" fill="#B9CC90"/><circle cx="232" cy="298" r="1.4" fill="#B9CC90"/><circle cx="229" cy="291" r="1.4" fill="#B9CC90"/><circle cx="176" cy="312" r="17" fill="#7E9F52"/><circle cx="176" cy="312" r="13.5" fill="#DCE7C0"/><circle cx="172" cy="310" r="1.4" fill="#B9CC90"/><circle cx="180" cy="314" r="1.4" fill="#B9CC90"/><circle cx="177" cy="307" r="1.4" fill="#B9CC90"/><path d="M240 266 q 22 -14 40 4 q -18 16 -40 -4 z" fill="#C8452F"/><path d="M248 266 q 12 -6 24 2" fill="none" stroke="#E7826B" stroke-width="2"/><path d="M252 292 q 22 -14 40 4 q -18 16 -40 -4 z" fill="#C8452F"/><path d="M260 292 q 12 -6 24 2" fill="none" stroke="#E7826B" stroke-width="2"/>
+          <circle cx="348" cy="62" r="44" fill="#000" opacity="0.3" filter="url(#arb)"/>
+          <circle cx="346" cy="58" r="40" fill="#EFE9DE"/>
+          <circle cx="346" cy="58" r="31" fill="#B98552"/>
+          <ellipse cx="338" cy="50" rx="10" ry="5" fill="#CFA171" opacity="0.7"/>
+        </g>
+        <rect width="400" height="400" fill="url(#arv)"/>
+      </svg>
+    </div>
+    <div style="height:16px;"></div>
+    <!-- Try a meal's field: the one raised surface, with Edit in its corner. The whole card takes the tap. -->
+    <div class="card lift" style="padding:14px 16px 18px 18px; display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; min-height:30px;">
+        <span class="label">From your photo</span>
+        <div style="height:30px; padding:0 12px 0 10px; border-radius:15px; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#8F6420;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 8.5l3 3"/></svg>Edit</div>
+      </div>
+      <div style="font-size:19px; font-weight:500; letter-spacing:-0.2px; line-height:1.37; color:#1A1917; text-wrap:pretty;">about a plate of white rice, about a bowl of chicken stew (could be beef), sliced cucumber and tomato, and a cup of milky tea</div>
+    </div>
+    <div style="font-size:14px; color:#56534C; line-height:1.45; padding:12px 2px 0 2px; text-wrap:pretty;">Circa estimates from these words. Change anything the photo got wrong.</div>
+    <div style="flex-grow:1;"></div>
+    <div style="display:flex; gap:12px;">
+      <div class="btn2" style="flex:1;">Retake</div>
+      <div class="btn" style="flex:1;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBFAF6" stroke-width="1.7" stroke-linejoin="round"><path d="M10 3.5C10.6 7.7 12.3 9.4 16.5 10C12.3 10.6 10.6 12.3 10 16.5C9.4 12.3 7.7 10.6 3.5 10C7.7 9.4 9.4 7.7 10 3.5Z"/><path d="M18 14.5C18.3 16.4 19.1 17.2 21 17.5C19.1 17.8 18.3 18.6 18 20.5C17.7 18.6 16.9 17.8 15 17.5C16.9 17.2 17.7 16.4 18 14.5Z"/></svg>Estimate this</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

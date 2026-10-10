@@ -52,15 +52,7 @@ struct MealSharePreviewSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(Color.circaInk2)
-                            .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                            .background(Color.circaWell, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Close")
+                    CircaCloseButton { dismiss() }
                 }
             }
         }

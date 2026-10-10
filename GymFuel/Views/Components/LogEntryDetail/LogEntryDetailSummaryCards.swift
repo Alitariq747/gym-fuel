@@ -1,23 +1,38 @@
 import SwiftUI
 
-struct DetailMacroSummaryCard: View {
-    let macros: Macros
+/// `nil` macros draw the pending rules alone (design.md rule 1).
+struct DetailMacroSummaryCard<Lead: View>: View {
+    let macros: Macros?
     let certainty: CircaCertainty
+    /// Takes the calorie row's place — onboarding's first guess → their total.
+    private let lead: Lead?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var calorieSize = Circa.Display.entryTotal
+
+    init(macros: Macros?, certainty: CircaCertainty) where Lead == EmptyView {
+        self.macros = macros
+        self.certainty = certainty
+        lead = nil
+    }
+
+    init(macros: Macros?, certainty: CircaCertainty, @ViewBuilder lead: () -> Lead) {
+        self.macros = macros
+        self.certainty = certainty
+        self.lead = lead()
+    }
 
     private struct Part: Identifiable {
         let glyph: CircaMacroGlyph.Macro
         let name: String
-        let grams: Double
+        let grams: Double?
         var id: String { name }
     }
 
     private var parts: [Part] {
         [
-            Part(glyph: .protein, name: "Protein", grams: macros.protein),
-            Part(glyph: .carbs, name: "Carbs", grams: macros.carbs),
-            Part(glyph: .fat, name: "Fat", grams: macros.fat)
+            Part(glyph: .protein, name: "Protein", grams: macros?.protein),
+            Part(glyph: .carbs, name: "Carbs", grams: macros?.carbs),
+            Part(glyph: .fat, name: "Fat", grams: macros?.fat)
         ]
     }
 
@@ -29,9 +44,13 @@ struct DetailMacroSummaryCard: View {
 
         CircaCard {
             VStack(alignment: .leading, spacing: 16) {
-                totalLayout {
-                    CircaMacroGlyph(.calories, size: .large)
-                    calorieTotal
+                if let lead {
+                    lead
+                } else {
+                    totalLayout {
+                        CircaMacroGlyph(.calories, size: .large)
+                        calorieTotal
+                    }
                 }
 
                 CircaHairline(weight: .inCard)
@@ -72,7 +91,7 @@ struct DetailMacroSummaryCard: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(MealCopy.calories(macros) ?? "") kilocalories\(certainty == .estimated ? ", estimated" : "")")
+        .accessibilityLabel(MealCopy.calories(macros).map { "\($0) kilocalories\(certainty == .estimated ? ", estimated" : "")" } ?? "Calories, still estimating")
     }
 
     private var calorieValue: some View {
@@ -81,7 +100,7 @@ struct DetailMacroSummaryCard: View {
     }
 
     private func partView(_ part: Part, stacked: Bool = false) -> some View {
-        let number = MealCopy.grams(part.grams)
+        let number = part.grams.map(MealCopy.grams)
         let layout = stacked
             ? AnyLayout(HStackLayout(spacing: 12))
             : AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
@@ -98,6 +117,6 @@ struct DetailMacroSummaryCard: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(part.name), \(number) grams\(certainty == .estimated ? ", estimated" : "")")
+        .accessibilityLabel(number.map { "\(part.name), \($0) grams\(certainty == .estimated ? ", estimated" : "")" } ?? "\(part.name), still estimating")
     }
 }

@@ -96,12 +96,7 @@ struct StatsView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark")
-                        .font(.footnote.weight(.bold))
-                        .foregroundStyle(Color.circaInk)
-                }
-                .accessibilityLabel("Close")
+                CircaCloseButton { dismiss() }
             }
         }
         .task(id: viewModel.selectedWeekStart) {

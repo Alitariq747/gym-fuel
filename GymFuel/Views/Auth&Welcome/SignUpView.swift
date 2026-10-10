@@ -88,16 +88,7 @@ struct SignUpView: View {
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(Color.circaInk)
-                        .frame(width: Circa.minHitTarget, height: Circa.minHitTarget)
-                        .background(Color.circaCard, in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Back")
+                CircaBackButton { dismiss() }
             }
         }
     }
