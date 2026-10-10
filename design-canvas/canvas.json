@@ -25,7 +25,52 @@
       "x": 470,
       "y": 940,
       "w": 390,
-      "h": 1400
+      "h": 1080
+    },
+    {
+      "file": "DetailMenu.dc.html",
+      "title": "Entry · menu",
+      "page": "page-1",
+      "x": 940,
+      "y": 940,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "DetailReword.dc.html",
+      "title": "Entry · re-estimate warning",
+      "page": "page-1",
+      "x": 1410,
+      "y": 940,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "ShareText.dc.html",
+      "title": "Share card · text meal",
+      "page": "page-1",
+      "x": 2350,
+      "y": 940,
+      "w": 360,
+      "h": 600
+    },
+    {
+      "file": "SharePhoto.dc.html",
+      "title": "Share card · photo meal",
+      "page": "page-1",
+      "x": 2790,
+      "y": 940,
+      "w": 360,
+      "h": 886
+    },
+    {
+      "file": "SharePreview.dc.html",
+      "title": "Share · preview",
+      "page": "page-1",
+      "x": 3230,
+      "y": 940,
+      "w": 390,
+      "h": 844
     },
     {
       "file": "Composer.dc.html",
@@ -332,6 +377,78 @@
       "y": 9418,
       "w": 390,
       "h": 640
+    },
+    {
+      "file": "Paywall3Plan.dc.html",
+      "title": "Paywall · 1 · your plan",
+      "page": "page-1",
+      "x": 0,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3Trial.dc.html",
+      "title": "Paywall · 2 · the trial",
+      "page": "page-1",
+      "x": 470,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3PlansTrial.dc.html",
+      "title": "Paywall · 3 · plans, with trial",
+      "page": "page-1",
+      "x": 940,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3InApp.dc.html",
+      "title": "Paywall · 1 · in-app",
+      "page": "page-1",
+      "x": 1410,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3PlansNoTrial.dc.html",
+      "title": "Paywall · 3 · plans, no trial",
+      "page": "page-1",
+      "x": 1880,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3PlanDark.dc.html",
+      "title": "Paywall · 1 · your plan · dark",
+      "page": "page-1",
+      "x": 2350,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3TrialDark.dc.html",
+      "title": "Paywall · 2 · the trial · dark",
+      "page": "page-1",
+      "x": 2820,
+      "y": 10720,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall3PlansTrialDark.dc.html",
+      "title": "Paywall · 3 · plans, with trial · dark",
+      "page": "page-1",
+      "x": 3290,
+      "y": 10720,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -341,15 +458,15 @@
       "x": 0,
       "y": -300,
       "w": 880,
-      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\n\nAll data is placeholder. Photos are drawn placeholders, not food."
+      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
     },
     {
       "id": "note-entry",
       "page": "page-1",
-      "x": 920,
+      "x": 1880,
       "y": 940,
-      "w": 300,
-      "text": "THE ENTRY SCREEN\n\nGoal fit is the one inverted block on the whole canvas — that is what makes it read first.\n\nConfidence uses a dotted arc for the unfilled part, so the ring belongs to the same certainty language as the dotted number rules.\n\nThe three assumptions are DISPLAY ONLY. The line under them points at the one edit path, which keeps the cost at one AI call per correction.\n\nItems carry per-item macros with calories dominant. NOTE: EstimatedItem in the current schema has name, quantity and estimatedComponents only — no macro fields. This needs the Step 6 schema and prompt change to be real."
+      "w": 320,
+      "text": "THE ENTRY SCREEN · redrawn 28 September\n\nOne card holds the meal's nutrition. Calories stay the loudest number. Protein, carbs and fat sit under it in three equal columns, each with its drawn glyph in a well. All four keep the dotted rule. One ink throughout: no colour per macro (rule 5) and no rings.\n\nEach breakdown row carries its macros on the mono meta line, after the amount, the way the Day row carries its own.\n\nEach action sits beside what it changes. The pencil on the Breakdown card opens the amounts editor. The sparkle beside the title turns the title into a field, to reword the meal and re-estimate it. Neither is in the ⋯ menu any more, and the \"Edit amounts\" link under the title is gone.\n\nThe ⋯ menu keeps what has no place on the page: Save meal, Edit time, Edit totals, Delete entry. Share sits beside it and arrives with 7k.\n\nRewording replaces every amount the person set (meal-contract §9). So when any amount was changed, Circa asks at the tick, before the scan. With no changed amounts, nothing asks.\n\nSaved-meal entries show no sparkle and no Save meal. A meal whose totals were typed has no breakdown, so no pencil.\n\nThe top half of this screen is what the 7k share card crops."
     },
     {
       "id": "note-logging",
@@ -408,12 +525,28 @@
       "text": "BATCH 5 — WHAT WAS LEFT\n\nAge and height are deliberately NOT drawn. They are the weight artboard with a different label and range, and five near-identical frames would be padding rather than design. Name, formula and daily movement are here because each is a pattern the canvas did not yet have: a text field, a compact choice, and a choice with consequences.\n\nFormula asks the question the BMR equation actually asks, and says so. That is the only reason the app needs the field, and the screen states it rather than implying something broader.\n\nDaily movement carries Step 2 renaming. The enum is called NonTrainingActivityLevel only because training was counted separately, which stops being true after Step 3. The screen also tells the truth about its own value: it is a seed the engine discards within two or three weeks.\n\nSettings absorbed the flame and the gear. Weight is NOT editable here, because it comes from weigh-ins; letting it be typed would let the trend the whole engine rests on be overwritten by hand.\n\nYour targets shows the number the check-in set and when it was set. Changing the goal starts a new phase, and the screen says so before the tap rather than after.\n\nDelete account counts what will actually go, names the re-authentication Apple requires, and states plainly that deleting does not cancel the subscription.\n\nStill undrawn, all variants of patterns already on the canvas: reminders, appearance, the saved-meal editor, nutrition sources, the score explainer, and the four auth screens.\n\nSF SYMBOLS — added 10 September. The mockups draw them as SVG; these are the real names to use in the build.\n\nFormula: figure.stand.dress / figure.stand / person.fill.questionmark\nDaily movement: figure.seated.side / figure.walk / shippingbox\n\nNOTE the third movement glyph. The obvious pick is figure.strengthtraining.traditional, and it is exactly the barbell Step 2 removes from GoalType.symbolName. A shipping box says physical work without saying gym.\n\nSettings: target, scalemass, bookmark, bell, circle.lefthalf.filled, sparkles, chart.bar.xaxis, books.vertical, hand.raised, doc.text, envelope, rectangle.portrait.and.arrow.right, trash\n\nGlyphs sit in 30pt wells, monochrome on paper, NOT iOS Settings' coloured squares — a row of tinted icons would break rule 5 and the palette in one go. Delete account is the single exception: its well and glyph carry danger."
     },
     {
+      "id": "note-share",
+      "page": "page-1",
+      "x": 3700,
+      "y": 940,
+      "w": 320,
+      "text": "THE SHARE CARD (7k) · drawn 28 September\n\nOne meal, rendered as an image 360 pt wide at 3× (1080 px). Always light and at a fixed text size, so every card looks the same whoever sends it. Its height follows the content.\n\nThe top half is the Entry screen's: the label, the raw sentence, the nutrition card. Then the one assumption that moves the calories most (the timeline's rule), the explanation cut at five lines, and the footer.\n\nNothing else leaves the phone: no date or time, no targets, no weight, no other meals.\n\nPhoto meals lead with the photo, cropped 4:3. If the photo cannot load, the card leaves it out and the preview says so.\n\nA meal whose totals were typed has no breakdown and no explanation. Its card is the title, the numbers and \"You set this total\".\n\nThe footer is the plate without its face (the app icon's mark, not the mascot) beside the name, with \"AI estimate\" opposite. The name lives in one place in the code, for Step 8.\n\nThe share icon beside ⋯ opens this preview first, so people see exactly what they send. Its Share button opens the system share sheet. It shows on any meal that finished estimating, older days included."
+    },
+    {
       "id": "note-widgets",
       "page": "page-1",
       "x": 2250,
       "y": 9418,
       "w": 320,
       "text": "WIDGETS (Step 14) · redrawn 2 October, round 2\n\nThe plate mascot sits in the corner; the number still leads. Round 1 copied the Day card onto the home screen and read as flat. This round takes what works in the category's widgets — a character, a big warm number, a compact macro panel, a gauge on the lock screen — and leaves out the flame (rule 10: a flame says burn) and a colour per macro (rule 5).\n\nTHE MASCOT NEVER REACTS TO THE NUMBERS. Its pose follows whether the day has anything in it, never how the day is going: writing in its notepad once anything is logged (normal, estimating and over alike), waving on a new day, holding the phone when there is nothing to show. No cheering under target, no sad face over it — that would be judging progress, and Circa judges nothing. Estimating keeps the writing pose: the mascot is never the analysing indicator (rule 8); the ochre line says it.\n\nThis amends mascot rule 8 for home-screen widgets only. The number is the largest thing on the widget and sits top-left; the mascot is cropped by the edge, decoration only, hidden from VoiceOver, and drawn at rest — widgets do not animate.\n\nThe number is accentLarge (#A8762A, dark #D9A94E): the palette's colour for large numerals, and the plate's own ochre. It carries the dotted rule whenever an estimate is in it (rule 1). On a new day it is the saved target, so it carries none. The Day card's headline does not carry the dotted rule yet.\n\nSmall: calories only, as decided. Medium: the mascot standing on the left, the number, and a card with protein, carbs and fat — grams eaten above a bar against the target, one ink.\n\nLock screen: no mascot. Accessory widgets render in one system tint, which would recolour the drawings (rule 7). The system gauge carries progress instead — one ring, calories eaten against the target, never a ring per macro. The rectangular puts the steaming bowl in its gauge; the circular puts the number in its own.\n\nUnchanged from round 1: one tap opens Today; free, not Pro; the lock screen shows the number whenever the screen is on; signing out clears the snapshot; no streak, no burn, no weight, no app name.\n\nTo check on a device: the iOS 18 tinted home screen (the mascot keeps its own colours or desaturates — it never takes the tint) and StandBy."
+    },
+    {
+      "id": "note-paywall-15e",
+      "page": "page-1",
+      "x": 3760,
+      "y": 10720,
+      "w": 320,
+      "text": "THE PAYWALL, THREE PAGES (15e) · settled 8 October\n\nReplaces Paywall and Paywall · dark in Row 5. Build-order 15e owns the rules.\n\nOne idea per page, and one number leads each: the calories on page 1, the billing date on page 2, the price on page 3. Same frame throughout: the plate mark, a large headline, the content, one button pinned to the bottom. ✕ on every page; Back on 2 and 3. Left-aligned, like the rest of Circa — a centred version was drawn and not chosen.\n\nORDER · 1 → 2 → 3 when the selected plan has a trial the person can take; 1 → 3 when it doesn't. Without a trial, page 3 drops \"Nothing due today\" and the trial wording, and the button says Subscribe (today: Continue). The plan rows say \"3-day free trial\", not \"… available\", so they stay on one line beside long prices.\n\nPAGE 1 is personal only straight after onboarding: calories, goal and date from the saved plan, the logging-problem line, and the meal they tried — never called saved. In-app gates get the generic page 1.\n\nRestore lives on page 3 only, two taps from page 1.\n\nThe plate mark, not the mascot: mascot rule 5 stands. SF Symbols in round wells, never emoji.\n\nNOT COPIED FROM AMY · \"we'll remind you\" (no reminder is sent) · side-by-side plan cards (they truncate long prices) · a monthly price for the yearly plan (rule 1) · \"Save 20%\" · green.\n\nThe six invariants are marked in the source of every page-3 artboard. Prices are placeholders in a long currency on purpose; the build reads localizedPriceString.\n\nDARK · the trial journey, pages 1–3. The button and Today's well invert (design rule 7). The plate mark has no dark twin, so it stays a light plate.\n\nCOPY · settled 9 October, and built. The plan line is the plan screen's own sentence (PlanCopy.headline): month and year only, never a day. The meal sentence has a second version for someone who didn't edit: \"It shows what it assumed, and every amount is yours to change.\" Build-order 15e has every line."
     }
   ],
   "launch": {

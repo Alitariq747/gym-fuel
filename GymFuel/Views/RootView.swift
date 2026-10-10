@@ -17,6 +17,8 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var didEnterBackground = false
     @State private var showPostOnboardingPaywall = false
+    @State private var paywallContext: PaywallContext?
+    @AppStorage(BodyWeightUnit.preferenceKey) private var unitRawValue = BodyWeightUnit.kilograms.rawValue
     @State private var isFinishingOnboarding = false
     @State private var pendingOnboarding: OnboardingAnswers?
     @State private var guestOnboardingActive = false
@@ -77,6 +79,7 @@ struct RootView: View {
             isFinishingOnboarding = false
 
             if profileViewModel.profile?.isOnboardingComplete == true {
+                capturePaywallContext(namedAnswers)
                 pendingOnboarding = nil
 
                 // The uid was already in hand, so `.task(id:)` will not re-fire
@@ -90,6 +93,14 @@ struct RootView: View {
                     showPostOnboardingPaywall = true
                 }
             }
+        }
+    }
+
+    /// Before the answers are cleared: the tried meal and the logging problem are
+    /// never saved, so the paywall can only read them from here.
+    private func capturePaywallContext(_ answers: OnboardingAnswers) {
+        paywallContext = profileViewModel.profile.flatMap {
+            PaywallContext(profile: $0, answers: answers, unit: BodyWeightUnit(rawValue: unitRawValue) ?? .kilograms)
         }
     }
 
@@ -153,6 +164,7 @@ struct RootView: View {
                     return
                 }
                 completedNewOnboarding = true
+                capturePaywallContext(namedAnswers)
             }
 
             await subscriptionViewModel.syncUser(userId: uid)
@@ -227,8 +239,8 @@ struct RootView: View {
                     AppLoadingView()
                 }
         }
-        .sheet(isPresented: $showPostOnboardingPaywall) {
-            SubscriptionPaywallSheet()
+        .sheet(isPresented: $showPostOnboardingPaywall, onDismiss: { paywallContext = nil }) {
+            SubscriptionPaywallSheet(context: paywallContext)
         }
         .task(id: authManager.user?.uid) {
             await restoreReminders(for: authManager.user?.uid)

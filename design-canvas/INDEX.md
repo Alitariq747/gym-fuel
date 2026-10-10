@@ -18,6 +18,8 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `Composer.dc.html` | Composer |
 | `DayPicker.dc.html` | Day picker |
 | `DetailB.dc.html` | Entry |
+| `DetailMenu.dc.html` | Entry · menu |
+| `DetailReword.dc.html` | Entry · re-estimate warning |
 | `Foundations.dc.html` | Foundations |
 | `Main.dc.html` | Day |
 | `Menu.dc.html` | Menu |
@@ -31,6 +33,14 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `OnbTips.dc.html` | Onboarding · how to write |
 | `OnbWeight.dc.html` | Onboarding · weight |
 | `Paywall.dc.html` | Paywall |
+| `Paywall3InApp.dc.html` | Paywall · 1 · in-app |
+| `Paywall3Plan.dc.html` | Paywall · 1 · your plan |
+| `Paywall3PlanDark.dc.html` | Paywall · 1 · your plan · dark |
+| `Paywall3PlansNoTrial.dc.html` | Paywall · 3 · plans, no trial |
+| `Paywall3PlansTrial.dc.html` | Paywall · 3 · plans, with trial |
+| `Paywall3PlansTrialDark.dc.html` | Paywall · 3 · plans, with trial · dark |
+| `Paywall3Trial.dc.html` | Paywall · 2 · the trial |
+| `Paywall3TrialDark.dc.html` | Paywall · 2 · the trial · dark |
 | `PaywallDark.dc.html` | Paywall · dark |
 | `ProofArabic.dc.html` | Arabic RTL |
 | `ProofDark.dc.html` | Dark |
@@ -39,6 +49,9 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `Settings.dc.html` | Settings |
 | `SettingsDelete.dc.html` | Settings · delete account |
 | `SettingsTargets.dc.html` | Settings · your targets |
+| `SharePhoto.dc.html` | Share card · photo meal |
+| `SharePreview.dc.html` | Share · preview |
+| `ShareText.dc.html` | Share card · text meal |
 | `StateAnalysing.dc.html` | Analysing · text + photo |
 | `StateEmpty.dc.html` | Empty day |
 | `StateFailed.dc.html` | Failed · retry |
@@ -76,20 +89,27 @@ Row 5: the summary-to-paywall seam.
 Row 6: the rest of onboarding, and settings.
 Row 7: the constraints, proven.
 Row 8: widgets (Step 14).
+Row 9: the paywall, three pages (15e) — 8 October.
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
 ### note-entry (page-1)
 
-THE ENTRY SCREEN
+THE ENTRY SCREEN · redrawn 28 September
 
-Goal fit is the one inverted block on the whole canvas — that is what makes it read first.
+One card holds the meal's nutrition. Calories stay the loudest number. Protein, carbs and fat sit under it in three equal columns, each with its drawn glyph in a well. All four keep the dotted rule. One ink throughout: no colour per macro (rule 5) and no rings.
 
-Confidence uses a dotted arc for the unfilled part, so the ring belongs to the same certainty language as the dotted number rules.
+Each breakdown row carries its macros on the mono meta line, after the amount, the way the Day row carries its own.
 
-The three assumptions are DISPLAY ONLY. The line under them points at the one edit path, which keeps the cost at one AI call per correction.
+Each action sits beside what it changes. The pencil on the Breakdown card opens the amounts editor. The sparkle beside the title turns the title into a field, to reword the meal and re-estimate it. Neither is in the ⋯ menu any more, and the "Edit amounts" link under the title is gone.
 
-Items carry per-item macros with calories dominant. NOTE: EstimatedItem in the current schema has name, quantity and estimatedComponents only — no macro fields. This needs the Step 6 schema and prompt change to be real.
+The ⋯ menu keeps what has no place on the page: Save meal, Edit time, Edit totals, Delete entry. Share sits beside it and arrives with 7k.
+
+Rewording replaces every amount the person set (meal-contract §9). So when any amount was changed, Circa asks at the tick, before the scan. With no changed amounts, nothing asks.
+
+Saved-meal entries show no sparkle and no Save meal. A meal whose totals were typed has no breakdown, so no pencil.
+
+The top half of this screen is what the 7k share card crops.
 
 ### note-logging (page-1)
 
@@ -202,6 +222,24 @@ Settings: target, scalemass, bookmark, bell, circle.lefthalf.filled, sparkles, c
 
 Glyphs sit in 30pt wells, monochrome on paper, NOT iOS Settings' coloured squares — a row of tinted icons would break rule 5 and the palette in one go. Delete account is the single exception: its well and glyph carry danger.
 
+### note-share (page-1)
+
+THE SHARE CARD (7k) · drawn 28 September
+
+One meal, rendered as an image 360 pt wide at 3× (1080 px). Always light and at a fixed text size, so every card looks the same whoever sends it. Its height follows the content.
+
+The top half is the Entry screen's: the label, the raw sentence, the nutrition card. Then the one assumption that moves the calories most (the timeline's rule), the explanation cut at five lines, and the footer.
+
+Nothing else leaves the phone: no date or time, no targets, no weight, no other meals.
+
+Photo meals lead with the photo, cropped 4:3. If the photo cannot load, the card leaves it out and the preview says so.
+
+A meal whose totals were typed has no breakdown and no explanation. Its card is the title, the numbers and "You set this total".
+
+The footer is the plate without its face (the app icon's mark, not the mascot) beside the name, with "AI estimate" opposite. The name lives in one place in the code, for Step 8.
+
+The share icon beside ⋯ opens this preview first, so people see exactly what they send. Its Share button opens the system share sheet. It shows on any meal that finished estimating, older days included.
+
 ### note-widgets (page-1)
 
 WIDGETS (Step 14) · redrawn 2 October, round 2
@@ -221,6 +259,30 @@ Lock screen: no mascot. Accessory widgets render in one system tint, which would
 Unchanged from round 1: one tap opens Today; free, not Pro; the lock screen shows the number whenever the screen is on; signing out clears the snapshot; no streak, no burn, no weight, no app name.
 
 To check on a device: the iOS 18 tinted home screen (the mascot keeps its own colours or desaturates — it never takes the tint) and StandBy.
+
+### note-paywall-15e (page-1)
+
+THE PAYWALL, THREE PAGES (15e) · settled 8 October
+
+Replaces Paywall and Paywall · dark in Row 5. Build-order 15e owns the rules.
+
+One idea per page, and one number leads each: the calories on page 1, the billing date on page 2, the price on page 3. Same frame throughout: the plate mark, a large headline, the content, one button pinned to the bottom. ✕ on every page; Back on 2 and 3. Left-aligned, like the rest of Circa — a centred version was drawn and not chosen.
+
+ORDER · 1 → 2 → 3 when the selected plan has a trial the person can take; 1 → 3 when it doesn't. Without a trial, page 3 drops "Nothing due today" and the trial wording, and the button says Subscribe (today: Continue). The plan rows say "3-day free trial", not "… available", so they stay on one line beside long prices.
+
+PAGE 1 is personal only straight after onboarding: calories, goal and date from the saved plan, the logging-problem line, and the meal they tried — never called saved. In-app gates get the generic page 1.
+
+Restore lives on page 3 only, two taps from page 1.
+
+The plate mark, not the mascot: mascot rule 5 stands. SF Symbols in round wells, never emoji.
+
+NOT COPIED FROM AMY · "we'll remind you" (no reminder is sent) · side-by-side plan cards (they truncate long prices) · a monthly price for the yearly plan (rule 1) · "Save 20%" · green.
+
+The six invariants are marked in the source of every page-3 artboard. Prices are placeholders in a long currency on purpose; the build reads localizedPriceString.
+
+DARK · the trial journey, pages 1–3. The button and Today's well invert (design rule 7). The plate mark has no dark twin, so it stays a light plate.
+
+COPY · settled 9 October, and built. The plan line is the plan screen's own sentence (PlanCopy.headline): month and year only, never a day. The meal sentence has a second version for someone who didn't edit: "It shows what it assumed, and every amount is yours to change." Build-order 15e has every line.
 
 ## Not from the canvas — `app-icon/`
 

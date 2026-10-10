@@ -31,7 +31,9 @@ RootView
 ```
 
 `RootView` also owns one sheet of its own: the post-onboarding paywall, fired from
-`saveOnboarding` when the profile write succeeds and `hasProAccess` is false.
+`saveOnboarding` when the profile write succeeds and `hasProAccess` is false. It
+passes a `PaywallContext`, built from the answers before they are cleared, because
+the tried meal and the logging-problem answer are never saved.
 
 ### Unauthenticated branch
 
@@ -213,7 +215,7 @@ row). `NutritionSourcesView` is reachable from two: the profile and the
 | `ProfileAppearanceSection` | Pick light / dark / system. |
 | `ProfileReminderSection` | Choose how aggressively to be nagged to log. |
 | `ProfileSubscriptionSection` | Show subscription state and route to buy or to Apple's manage sheet. |
-| `SubscriptionPaywallSheet` | Sell Pro, with the Apple-required disclosures. |
+| `SubscriptionPaywallSheet` | Sell Pro in three pages: what Pro does, how the free trial works (only when the selected plan has one the person can take), then the plans with the Apple-required disclosures pinned at the bottom. After onboarding, page 1 shows the person's calorie target, plan line, logging-problem line and tried meal; every in-app gate gets the generic page 1. |
 | `SavedMealsSheet` | Browse and manage the saved-meal library. |
 | `AddSavedMealSheet` | Create a saved meal by hand. |
 | `EditSavedMealSheet` | Edit or delete one saved meal. |

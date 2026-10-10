@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    a{color:#8F6420;} a:hover{color:#6F4D18;}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; display:flex; flex-direction:column;">
+  <div style="height:56px; flex-shrink:0;"></div>
+  
+  <!-- INVARIANT 6 · a visible dismiss control, on every page -->
+  <div style="padding:0 8px 0 8px; height:44px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between;">
+    <div style="width:44px; height:44px;"></div>
+    <div style="width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
+      <div style="width:34px; height:34px; border-radius:50%; background:#FFFFFF; border:1px solid #E9E5D9; box-sizing:border-box; display:flex; align-items:center; justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </div>
+    </div>
+  </div>
+  <div style="padding:6px 20px 0 20px; display:flex; flex-direction:column; gap:20px;">
+
+    <svg width="56" height="56" viewBox="0 0 24 24" style="display:block; flex-shrink:0;"><circle cx="12" cy="12" r="9.6" fill="#FFFDF7" stroke="#1A1917" stroke-width="1.2"/><path d="M 18.53 15.04 A 7.2 7.2 0 1 1 15.04 5.47" fill="none" stroke="#C9C4B8" stroke-width="1.2" stroke-linecap="round"/><circle cx="17.09" cy="6.91" r="1.35" fill="#A8762A"/><circle cx="18.77" cy="9.54" r="1.35" fill="#A8762A"/><circle cx="19.17" cy="12.63" r="1.35" fill="#A8762A"/></svg>
+    
+    <div style="display:flex; flex-direction:column; gap:7px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase; text-align:left;">Your plan is ready</div>
+      <div style="display:flex; align-items:baseline; gap:8px; justify-content:flex-start;">
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:46px; font-weight:600; letter-spacing:-1.6px; line-height:1;">1,950</span>
+        <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:14px; color:#6E6B64;">kcal a day</span>
+      </div>
+      <div style="font-size:17px; font-weight:500; text-align:left;">From 85 kg today to 75 kg, around March 2027.</div>
+    </div>
+    <div style="font-size:15.5px; color:#56534C; line-height:1.5; text-wrap:pretty; text-align:left;">Built for the food databases miss: home-cooked, local, your own recipes.</div>
+    
+    <div style="background:#EFEBDF; border-radius:16px; padding:14px 16px; display:flex; flex-direction:column; gap:7px;">
+      <div style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase; text-align:left;">The meal you tried</div>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+        <span style="font-size:16.5px; font-weight:600; letter-spacing:-0.2px;">Rice with chicken stew</span>
+        <span style="display:flex; align-items:baseline; gap:5px; flex-shrink:0;">
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:17px; font-weight:600; border-bottom:1.5px dotted #9A9488; padding-bottom:1px;">640</span>
+          <span style="font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:12px; color:#6E6B64;">kcal</span>
+        </span>
+      </div>
+      <div style="font-size:14px; color:#56534C; line-height:1.45; text-wrap:pretty;">You changed what it assumed, and the total followed. Every meal works like this.</div>
+    </div>
+    <div style="background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; padding:4px 16px;">
+      <div style="min-height:52px; display:flex; align-items:center; gap:13px; ">
+        <div style="width:38px; height:38px; border-radius:50%; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><path d="M4 8.5V5.5A1.5 1.5 0 0 1 5.5 4h3"/><path d="M15.5 4h3A1.5 1.5 0 0 1 20 5.5v3"/><path d="M20 15.5v3a1.5 1.5 0 0 1-1.5 1.5h-3"/><path d="M8.5 20h-3A1.5 1.5 0 0 1 4 18.5v-3"/><path d="M8 10h8"/><path d="M8 14h5"/></svg></div>
+        <span style="font-size:16px; color:#1A1917;">Describe or photograph a meal</span>
+      </div>
+      <div style="min-height:52px; display:flex; align-items:center; gap:13px; border-top:1px solid #F0ECE0;">
+        <div style="width:38px; height:38px; border-radius:50%; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M10.5 9.5h6"/><path d="M10.5 14.5h6"/><circle cx="7.5" cy="9.5" r="0.6"/><circle cx="7.5" cy="14.5" r="0.6"/></svg></div>
+        <span style="font-size:16px; color:#1A1917;">See what was assumed</span>
+      </div>
+      <div style="min-height:52px; display:flex; align-items:center; gap:13px; border-top:1px solid #F0ECE0;">
+        <div style="width:38px; height:38px; border-radius:50%; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/><circle cx="9" cy="7" r="2" fill="#F1EDE2"/><circle cx="15" cy="12" r="2" fill="#F1EDE2"/><circle cx="7.5" cy="17" r="2" fill="#F1EDE2"/></svg></div>
+        <span style="font-size:16px; color:#1A1917;">Correct your version</span>
+      </div>
+      <div style="min-height:52px; display:flex; align-items:center; gap:13px; border-top:1px solid #F0ECE0;">
+        <div style="width:38px; height:38px; border-radius:50%; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex-shrink:0;"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z"/></svg></div>
+        <span style="font-size:16px; color:#1A1917;">Save it for next time</span>
+      </div>
+    </div>
+  </div>
+  <div style="flex-grow:1;"></div>
+  <div style="padding:0 20px 12px 20px; display:flex; flex-direction:column; gap:12px;">
+    <div style="height:52px; border-radius:14px; background:#1A1917; color:#FBFAF6; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600;">Continue</div>
+  </div>
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -30,6 +30,11 @@ struct LoggingProblemTests {
         #expect(Set(all.map(\.planLine)).count == all.count)
     }
 
+    @Test("Each answer has its own paywall subtitle")
+    func paywallSubtitlesDiffer() {
+        #expect(Set(all.map(\.paywallSubtitle)).count == all.count)
+    }
+
     @Test("Raw values work as analytics names")
     func analyticsNames() {
         for problem in all {
@@ -40,7 +45,7 @@ struct LoggingProblemTests {
     /// Step 15's rules: no invented numbers, and nothing calls anything a burn.
     @Test("No line has a number or the word burn")
     func noNumbersOrBurn() {
-        let copy = all.flatMap { [$0.title, $0.tryMealDetail, $0.planLine] }.joined(separator: " ")
+        let copy = all.flatMap { [$0.title, $0.tryMealDetail, $0.planLine, $0.paywallSubtitle] }.joined(separator: " ")
         #expect(!copy.contains { $0.isNumber })
         #expect(!copy.lowercased().contains("burn"))
     }

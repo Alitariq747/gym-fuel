@@ -45,4 +45,14 @@ enum LoggingProblem: String, CaseIterable {
         case .neverTracked: "Each meal is one sentence: describe it, check what was assumed, fix what's different."
         }
     }
+
+    /// Under the plan on the paywall after onboarding (build-order 15e).
+    var paywallSubtitle: String {
+        switch self {
+        case .notInDatabase: "Built for the food databases miss: home-cooked, local, your own recipes."
+        case .unknownPortions: "Every estimate shows the portions it assumed, so the guessing is out in the open."
+        case .tooSlow: "One sentence a meal. No searching, no weighing."
+        case .neverTracked: "Start with one meal, in your own words. Nothing to look up."
+        }
+    }
 }

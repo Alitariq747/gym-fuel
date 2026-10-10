@@ -42,6 +42,7 @@ private enum Kit {
     static let settleBeat: Double = 0.12
     static let macroWell: CGFloat = 32
     static let macroWellLarge: CGFloat = 40
+    static let symbolWell: CGFloat = 40
     static let inlineGlyph: CGFloat = 12
 
     static let barHeight: CGFloat = 3
@@ -579,6 +580,26 @@ struct CircaMacroGlyph: View {
                     .padding(size * 0.2)
             }
             .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}
+
+/// An SF Symbol in a round well. Emphasised, the well fills with ink.
+struct CircaSymbolWell: View {
+    let symbol: String
+    var emphasised = false
+
+    @ScaledMetric(relativeTo: .callout) private var size = Kit.symbolWell
+
+    var body: some View {
+        Image(systemName: symbol)
+            .font(.circaRow)
+            .foregroundStyle(emphasised ? Color.circaPaperTop : Color.circaInk2)
+            .frame(width: size, height: size)
+            .background(emphasised ? Color.circaInk : Color.circaWell, in: Circle())
+            .overlay {
+                Circle().strokeBorder(emphasised ? Color.circaInk : Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+            }
             .accessibilityHidden(true)
     }
 }

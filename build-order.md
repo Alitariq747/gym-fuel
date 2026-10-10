@@ -86,7 +86,7 @@ fresh session reads this file, not the chat history.
 - [x] **15b** · Onboarding: the live meal screen
 - [x] **15c** · Onboarding: one edit, its result shown prominently · rating request after the first saved correction
 - [x] **15d** · Onboarding: the logging-problem question and the plan callback · no preselected goal
-- [ ] **15e** · Onboarding: a paywall that continues the story
+- [x] **15e** · Onboarding: a paywall that continues the story
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
 and nothing here commits on your behalf. Fresh session for the next step.
@@ -1136,7 +1136,8 @@ Debug and Release builds after the last part.
 ## Step 15 — Onboarding: their own meal, live · L
 
 Added 7 October 2026 from the onboarding research session. Five parts, 15a–15e,
-each under the ~200-line limit and each in its own session.
+each in its own session. 15a–15d were each under the ~200-line limit; 15e grew
+past it when the paywall became three pages (8 October) and is worked in parts.
 
 **The problem.** Onboarding *describes* Circa's difference twice and never lets
 anyone *have* it. Every AI route sits behind `requireActiveProSubscription`
@@ -1452,42 +1453,101 @@ the example sees no meal card. The goal step opens with nothing selected and
 Continue disabled until a goal is picked, and going back to it keeps the earlier
 choice.
 
-### 15e — A paywall that continues the story · ~130 lines
+### 15e — A paywall that continues the story · ~380 lines
 
-**What the user gets:** the paywall after onboarding talks about their plan and
-their meal, and shows exactly when billing starts.
+**Reworked 8 October** after studying Amy's paywall: three pages instead of one
+sheet, and **every paywall uses them** — the in-app gates too, not only the one
+after onboarding. This replaces "every in-app gate stays exactly as today".
 
-1. **Post-onboarding only.** `SubscriptionPaywallSheet` takes an optional context
-   (plan, tried meal, logging problem). `RootView`'s post-onboarding sheet passes it;
-   every in-app gate passes nil and stays exactly as today.
-2. **Headline from the saved plan:** "Your plan is ready: 1,950 kcal a day, toward
-   75 kg by 14 March." The date comes from `WeightPlan.goalDate`. Maintain, or no
-   date: "Your plan is ready: 2,100 kcal a day to stay at 60 kg."
-3. **Subtitle** from `LoggingProblem` (15d). 15d left the four subtitles out;
-   add them to `LoggingProblem.swift` (+ tests) in this part.
-4. **First feature row is their meal.** It must not say "saved": the tried meal is
-   not saved (15c, 7 October). Settle the wording in this part. The four existing
-   rows follow. No meal, no extra row.
-5. **Trial timeline** (Blinkist): *Today* — full access; *Day N* — billing starts
-   at `package.localizedPriceString`. N comes from the StoreKit intro offer. Move
-   the period maths out of the private `trialLengthText(for:)` into a pure
-   `TrialTimeline` type that the button title, the package subtitle and the
-   timeline all read, with tests. Not eligible for a trial: no timeline.
-6. **No reminder step in this part.** Optional later: a one-off local
-   notification the day before billing, shown on the timeline only when actually
-   scheduled. It would need its own identifier prefix, because Step 12's cleanup
-   removes everything under `lifteats.reminder.`, and notification permission.
+**Built 8–9 October** (~530 lines), in four parts: the trial maths (~69), the page
+flow and trial page (~202), the restyle (~110), and the personal first page (~150).
 
-**Re-check all six paywall rules** (CLAUDE.md) afterwards: prices only from
-`localizedPriceString`, Terms and Privacy present, Restore reachable, the
-renewal footer intact, no outside purchase path, the dismiss control visible.
+**Drawn** on the canvas, Row 9 (`design-canvas/Paywall3*.dc.html`), light and dark.
+Left-aligned like the rest of Circa; a centred version was drawn and not chosen.
+Design settled 8 October, copy 9 October.
 
-**Files** `SubscriptionPaywallSheet.swift` · new `TrialTimeline.swift` (+ tests) ·
-`RootView.swift`
+**What the user gets:** a paywall in three calm pages — what Pro does, how the
+trial works, then the plans — and, straight after onboarding, a first page about
+their own plan and meal.
 
-**Done when** a new *Lose fat* account's paywall shows its own calories, goal and
-date, its meal as the first row and a timeline whose day count matches the
-StoreKit offer, while an in-app gate shows today's paywall unchanged.
+1. **Three pages, one idea each:** *what you get* → *how your free trial works* →
+   *choose your plan*. Each has the illustration on top, a large headline, its
+   content, and one full-width button pinned to the bottom. ✕ on every page; Back
+   on pages 2 and 3. One number leads each page: the calories on page 1, the
+   billing date on page 2, the price on page 3. The four feature rows are titles
+   only, one line each, in round icon wells.
+2. **The trial page only when there is a trial.** A pure function returns the
+   pages — all three when the selected package has a trial the person is eligible
+   for, pages 1 and 3 when not. Tested. Without a trial, page 3 also drops
+   "Nothing due today" and the trial wording, and its button says **Subscribe**
+   (today: Continue).
+3. **Page 1 after onboarding is theirs.** `SubscriptionPaywallSheet` takes an
+   optional context (plan, tried meal, logging problem). `RootView`'s
+   post-onboarding sheet passes it; every in-app gate passes nil and gets today's
+   headline and four rows. **In-app page 1 stays generic** even though the plan is
+   saved (8 October). `RootView` clears `pendingOnboarding` just before the
+   paywall opens, on both the signed-in and guest paths, so it must keep the meal
+   and the answer until the sheet has them.
+   - **The plan, from the saved profile:** "Your plan is ready", the calorie
+     target large, then the plan screen's own line, `PlanCopy.headline`: "From
+     85 kg today to 75 kg, around March 2027." Maintain: "Staying around 60 kg."
+     Month and year only, PlanCopy's rule: a day would claim more than the pace
+     knows. This replaced "toward 75 kg by 14 March" (9 October).
+   - **Subtitle** from `LoggingProblem.paywallSubtitle` (+ tests), one per answer;
+     no answer, no subtitle.
+   - **Their meal comes first**, in its own panel above the four rows: its title
+     and edited total, with the dotted estimate rule. It must not say "saved":
+     the tried meal is not saved (15c, 7 October). Edited: "You changed what it
+     assumed, and the total followed. Every meal works like this." Not edited:
+     "It shows what it assumed, and every amount is yours to change." No meal,
+     no panel. `PaywallContext` builds all of this, tested.
+4. **Trial page** (Blinkist, Amy): *Today* — full access; *During your 3-day
+   trial* — "Cancel at least 24 hours before it ends and you won't be charged.";
+   *On 11 October* — billing starts at `package.localizedPriceString`.
+   The length and the date both come from the StoreKit intro offer: the date is
+   today plus the offer's period. Move the period maths out of the private
+   `trialLengthText(for:)` into a pure `TrialTimeline` type that the button title,
+   the package subtitle, the footer and the trial page all read, with tests.
+5. **Plans page:** the packages stay stacked rows, restyled. "Nothing due today"
+   in the accent when the selected package has a trial. The price stays the most
+   prominent pricing text (App Store 3.1.2). The package subtitle says "3-day
+   free trial", not "… available", so it stays on one line beside a long price.
+   "Nothing due today" sits just above the button; then the full renewal
+   footer, Restore, Terms and Privacy. Restore is on page 3 only (8 October).
+6. **Illustration: the plate mark** (`CircaMark`, the app icon's plate without a
+   face) on top of the pages. Mascot rule 5 is unchanged — the paywall shows no
+   mascot, and the mark is not the mascot (`design.md` → *The plate mascot*).
+   Decided 8 October.
+
+**Not copied from Amy**, with the reason:
+
+- **"We'll remind you before it ends."** No reminder is sent, and a billing
+  screen cannot promise one. Optional later: a one-off local notification the day
+  before billing, named on the trial page only when actually scheduled. It would
+  need its own identifier prefix, because Step 12's cleanup removes everything
+  under `lifteats.reminder.`, and notification permission.
+- **A plans page without Restore, and a one-line footer** — paywall rules 3 and 4.
+- **Side-by-side plan cards** — they truncate long localized prices; Amy's own
+  screen shows "Rs 24,9…".
+- **A monthly price for the yearly plan** ("Rs 2,075/mo") — it is not
+  `localizedPriceString` (rule 1).
+- **"Save 20%"** — left out for now; "Best value" stays (8 October).
+- **Emoji icons and a green "Nothing due today"** — `design.md` rules 10 and 5.
+  SF Symbols in `circaWell` circles, and the accent.
+
+**Re-check all six paywall rules** (CLAUDE.md) afterwards, on every page: prices
+only from `localizedPriceString`, Terms and Privacy present, Restore reachable,
+the renewal footer intact, no outside purchase path, the dismiss control visible.
+
+**Files** `SubscriptionPaywallSheet.swift`, split into its pages ·
+new `TrialTimeline.swift` (+ tests) · `SubscriptionViewModel.swift` ·
+`LoggingProblem.swift` (+ tests) · `RootView.swift`
+
+**Done when** a new *Lose fat* account sees three pages after onboarding — its own
+calories, goal and date and its meal on the first, a trial page whose length and
+date match the StoreKit offer, then the plans — an account with no trial goes from
+page 1 straight to the plans, and an in-app gate shows the same pages with today's
+copy on page 1.
 
 ### Measuring it
 

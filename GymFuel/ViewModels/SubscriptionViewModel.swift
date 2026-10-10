@@ -169,6 +169,24 @@ final class SubscriptionViewModel: ObservableObject {
         return introEligibilityByProductIdentifier[productIdentifier] == .eligible
     }
 
+    func trialTimeline(for package: Package) -> TrialTimeline? {
+        guard isEligibleForTrial(package),
+              let discount = package.storeProduct.introductoryDiscount,
+              discount.paymentMode == .freeTrial
+        else { return nil }
+
+        let period = discount.subscriptionPeriod
+        let unit: TrialTimeline.Unit
+        switch period.unit {
+        case .day: unit = .day
+        case .week: unit = .week
+        case .month: unit = .month
+        case .year: unit = .year
+        }
+
+        return TrialTimeline(periodValue: period.value, unit: unit, numberOfPeriods: discount.numberOfPeriods)
+    }
+
     func purchaseSelectedPackage() async -> Bool {
         guard let selectedPackage else {
             errorMessage = "Please choose a subscription option."
