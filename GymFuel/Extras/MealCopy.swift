@@ -92,7 +92,7 @@ enum MealCopy {
 
     // MARK: - The amounts editor
 
-    static let amountsPromise = "Change an amount and its calories scale to match. Nothing else is re-estimated."
+    static let amountsPromise = "Tap to change an amount and its calories scale to match. Nothing else is re-estimated."
     static let nothingChanged = "Nothing changed yet"
     static let amountMissing = "Enter an amount for every line."
 

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import LiftEats
+@testable import Circa
 
 struct MealPhotoPresentationTests {
     private let date = Date(timeIntervalSince1970: 1_700_000_000)

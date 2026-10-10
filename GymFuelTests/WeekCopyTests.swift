@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// Like `TargetsCopyTests`, these avoid whole formatted strings: the weekday and
 /// month names come from the device locale, so "Mon 1 – Sun 7 Sep" is only the

@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    .mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;}
+    .label{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;}
+    .card{background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; box-sizing:border-box;}
+    .est{border-bottom:1.5px dotted #9A9488; padding-bottom:2px;}
+    .meta{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64; display:flex; align-items:center; flex-wrap:wrap; gap:4px;}
+    .note{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#8F6420; line-height:1.4;}
+    .hair{height:1px; background:#F0ECE0; flex-shrink:0;}
+    .well{border-radius:50%; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+    .btn{height:52px; border-radius:14px; background:#1A1917; color:#FBFAF6; font-size:17px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0;}
+    .quiet{min-height:44px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:500; color:#6E6B64;}
+    .caret{display:inline-block; width:2px; height:25px; background:#8F6420; border-radius:1px; vertical-align:-5px; margin-left:2px;}
+    .pin{position:absolute; width:20px; height:20px; border-radius:50%; background:#1A1917; color:#FBFAF6; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 3px rgba(251,250,246,0.9);}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden; background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%); color:#1A1917;">
+<!-- Try a meal · A · estimating -->
+  <div style="height:56px; flex-shrink:0;"></div>
+  <div style="padding:8px 16px 0 16px; height:44px; flex-shrink:0; display:flex; align-items:center; gap:12px;">
+    <div style="width:44px; height:44px; border-radius:50%; background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <div style="flex-grow:1; height:4px; border-radius:2px; background:#E8E4D8; overflow:hidden;">
+      <div style="width:21.4%; height:4px; border-radius:2px; background:#8F6420;"></div>
+    </div>
+  </div>
+
+  <div style="padding:26px 20px 0 20px; display:flex; flex-direction:column; gap:18px; flex-grow:1;">
+    <div style="display:flex; flex-direction:column; gap:9px;">
+      <div class="label">Your words</div>
+      <div style="font-size:27px; font-weight:600; letter-spacing:-0.5px; line-height:1.22; text-wrap:pretty;">rice with chicken stew</div>
+    </div>
+    <!-- the answer's shape, already in place: the dotted rule alone where each number will land -->
+    <div class="card" style="padding:18px; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="well" style="width:40px; height:40px;"><svg width="24" height="24" viewBox="0 0 24 24" style="flex-shrink:0; display:block;"><path d="M3.8 12.6H20.2C20.2 17.1 16.6 20.6 12 20.6C7.4 20.6 3.8 17.1 3.8 12.6Z" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.3 9.8C7.5 8.9 9.1 7.9 8.3 6.8" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linecap="round"/><path d="M12 9.8C11 8.7 13 7.4 12 6.1C11.3 5.2 12.4 4.3 12 3.5" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linecap="round"/><path d="M15.7 9.8C14.9 8.9 16.5 7.9 15.7 6.8" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div style="display:flex; align-items:baseline; gap:8px;"><span class="mono" style="font-size:44px; font-weight:600; line-height:1; border-bottom:2px dotted #9A9488; padding-bottom:4px; color:transparent; display:inline-block; width:92px;">000</span><span class="mono" style="font-size:14px; color:#6E6B64;">kcal</span></div>
+      </div>
+      <div class="hair"></div>
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="well" style="width:32px; height:32px;"><svg width="19" height="19" viewBox="0 0 24 24" style="flex-shrink:0; display:block;"><path d="M12 3C8.4 3 5.6 8.7 5.6 13.3C5.6 17.8 8.5 21 12 21C15.5 21 18.4 17.8 18.4 13.3C18.4 8.7 15.6 3 12 3Z" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.9 13.6C8.9 11.6 9.6 9.7 10.7 8.4" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <div style="display:flex; align-items:baseline; gap:4px;"><span class="mono est" style="font-size:20px; font-weight:600; color:transparent; display:inline-block; width:30px;">00</span><span class="mono" style="font-size:12px; color:#6E6B64;">g</span></div>
+            <span style="font-size:13px; color:#56534C;">Protein</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="well" style="width:32px; height:32px;"><svg width="19" height="19" viewBox="0 0 24 24" style="flex-shrink:0; display:block;"><path d="M12 21.4V9.8" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linecap="round"/><path d="M12 9.8C10.8 8.6 10.8 5.6 12 3.4C13.2 5.6 13.2 8.6 12 9.8Z" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 12.6C9.6 12.6 7.4 11.3 6.8 9C9.4 9 11.4 10.4 12 12.6Z" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 12.6C14.4 12.6 16.6 11.3 17.2 9C14.6 9 12.6 10.4 12 12.6Z" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 17C9.6 17 7.4 15.7 6.8 13.4C9.4 13.4 11.4 14.8 12 17Z" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 17C14.4 17 16.6 15.7 17.2 13.4C14.6 13.4 12.6 14.8 12 17Z" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <div style="display:flex; align-items:baseline; gap:4px;"><span class="mono est" style="font-size:20px; font-weight:600; color:transparent; display:inline-block; width:30px;">00</span><span class="mono" style="font-size:12px; color:#6E6B64;">g</span></div>
+            <span style="font-size:13px; color:#56534C;">Carbs</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="well" style="width:32px; height:32px;"><svg width="19" height="19" viewBox="0 0 24 24" style="flex-shrink:0; display:block;"><path d="M12 3.2C10.1 6.1 5.9 10.6 5.9 14.6C5.9 18.1 8.6 20.8 12 20.8C15.4 20.8 18.1 18.1 18.1 14.6C18.1 10.6 13.9 6.1 12 3.2Z" fill="none" stroke="#56534C" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 14.9C9.1 16.6 10.2 17.8 11.7 18" fill="none" stroke="#56534C" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <div style="display:flex; align-items:baseline; gap:4px;"><span class="mono est" style="font-size:20px; font-weight:600; color:transparent; display:inline-block; width:30px;">00</span><span class="mono" style="font-size:12px; color:#6E6B64;">g</span></div>
+            <span style="font-size:13px; color:#56534C;">Fat</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:6px 18px 20px 18px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; min-height:44px;"><span class="label">Breakdown</span></div>
+      <div class="mono" style="font-size:11.5px; color:#8F6420;">reading your words</div>
+      <div style="height:3px; border-radius:2px; background:#E8E4D8; overflow:hidden;"><div style="width:34%; height:3px; border-radius:2px; background:#8F6420; margin-left:18%;"></div></div>
+    </div>
+    <div style="flex-grow:1;"></div>
+    <div class="mono" style="font-size:11px; color:#6E6B64; text-align:center;">This takes a few seconds.</div>
+  </div>
+  <div style="padding:12px 20px 12px 20px; display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
+    <div class="btn" style="opacity:0.45;">Continue</div>
+  </div>
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

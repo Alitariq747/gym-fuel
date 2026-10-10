@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// `meal-contract.md` §6: a typed total asserts a number the breakdown does not
 /// produce, so the two cannot both be current. These assert field by field,

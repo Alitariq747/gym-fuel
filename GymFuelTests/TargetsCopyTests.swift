@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// These assertions deliberately avoid whole formatted strings: both the number
 /// and the month come from the device locale, so "Set at 83 kg on 19 Sep" is only

@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// The averages are over the days that have food, not over seven. A week logged
 /// on four days out of seven used to report roughly four sevenths of what was

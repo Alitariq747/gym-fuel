@@ -1,8 +1,10 @@
-# LiftEats
+# Circa
 
 An iOS calorie tracker, mid-repositioning. Two things a fresh session gets wrong:
 
-- The repo is `GymFuel`, the app ships as `LiftEats`, and it is being renamed again.
+- The repo is `GymFuel` and the app is **Circa** — final, no more renames. The
+  Swift module is `Circa` too (`@testable import Circa`). The StoreKit product IDs
+  keep their old `lifteats_` prefix: App Store Connect IDs can't be renamed.
 - It looks like a lifting app. It is being repositioned **away** from lifting —
   toward home-cooked food that packaged-food databases don't cover. Gym vocabulary
   is being removed on purpose. Do not "restore" it.

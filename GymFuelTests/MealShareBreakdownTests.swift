@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// The share card lists a few lines of any meal, and those lines must still add
 /// up to the total printed above them.

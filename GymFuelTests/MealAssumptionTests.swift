@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// The timeline gets one line, so which assumption it names matters. Ordered by
 /// how much number the assumption moves — `build-order.md` Step 5, "surface the

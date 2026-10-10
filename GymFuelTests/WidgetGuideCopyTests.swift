@@ -5,7 +5,7 @@
 
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 @Suite("Widget guide copy")
 struct WidgetGuideCopyTests {

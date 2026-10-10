@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// The row that said "Connected" while iOS had refused the read. These guard the
 /// rule that replaced it: On means the last read found a weight, and nothing

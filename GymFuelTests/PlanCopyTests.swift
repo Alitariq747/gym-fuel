@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// Numbers and months come from the device locale, as in `TargetsCopyTests`, so
 /// these check the pieces that matter — the amounts, the direction, the unit, what

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 private let words = "rice with chicken stew"
 

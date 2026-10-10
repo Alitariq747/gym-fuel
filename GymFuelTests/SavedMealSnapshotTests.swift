@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// `meal-contract.md` §8: a saved meal is a snapshot of a corrected version, not
 /// a pointer to the entry it came from. Re-logging copies it; later edits to it

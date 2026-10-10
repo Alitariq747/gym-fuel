@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// The rules that decide whether an Apple Health reading becomes a weigh-in.
 ///

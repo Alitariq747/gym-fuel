@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 private let reading = "two eggs, a slice of bread"
 

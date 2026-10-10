@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// The Week screen's chart and its legend read these, and the point of putting
 /// them on the model was that the two cannot disagree: a day drawn ochre must be

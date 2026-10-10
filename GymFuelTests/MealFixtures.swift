@@ -9,7 +9,7 @@
 //
 
 import Foundation
-@testable import LiftEats
+@testable import Circa
 
 enum MealFixtures {
 

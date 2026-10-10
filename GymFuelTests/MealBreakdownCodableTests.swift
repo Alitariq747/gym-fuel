@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// `meal-contract.md` §2: a field the client cannot decode does not show an error,
 /// it removes the meal from the timeline. Everything here exists to prove that

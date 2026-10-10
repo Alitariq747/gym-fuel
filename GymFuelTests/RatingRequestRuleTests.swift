@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 @Suite("When a saved meal asks for a rating")
 struct RatingRequestRuleTests {

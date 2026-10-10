@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 /// Like `TargetsCopyTests`, these avoid asserting whole formatted strings where a
 /// number is involved: the decimal separator comes from the device locale, so

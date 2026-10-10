@@ -5,7 +5,7 @@
 
 import Testing
 
-@testable import LiftEats
+@testable import Circa
 
 @Suite("Onboarding illustration")
 struct OnboardingIllustrationTests {

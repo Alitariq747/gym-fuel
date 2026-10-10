@@ -2,7 +2,7 @@ import Foundation
 import Testing
 import UserNotifications
 
-@testable import LiftEats
+@testable import Circa
 
 @Suite("Fixed reminders")
 @MainActor
