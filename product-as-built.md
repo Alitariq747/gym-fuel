@@ -92,7 +92,7 @@ MainTabView  (NavigationStack; nav bar hidden)
 │
 └── LogActionDock  (hidden outside the today−7d…today window)
     ├── camera  → AVCapture permission → fullScreenCover: MealCameraCaptureView
-    ├── photo   → .photosPicker (system)
+    ├── photo   → .photosPicker (system) → review panel: MealGallerySheet
     ├── text    → sheet: TextEntrySheet
     └── saved   → sheet: SavedMealsPickerSheet
 ```

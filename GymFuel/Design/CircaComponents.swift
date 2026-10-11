@@ -174,6 +174,32 @@ struct CircaCard<Content: View>: View {
     }
 }
 
+// MARK: - Field card
+
+/// A card the person writes in: raised, lifted, ringed in ink while it has the
+/// keyboard. A tap anywhere on it focuses the field inside.
+struct CircaFieldCard<Content: View>: View {
+    let isFocused: FocusState<Bool>.Binding
+    @ViewBuilder var content: () -> Content
+
+    private var shape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous)
+    }
+
+    var body: some View {
+        CircaCard(content: content)
+            .overlay {
+                if isFocused.wrappedValue {
+                    shape.strokeBorder(Color.circaInk, lineWidth: 1.5)
+                }
+            }
+            .animation(.easeOut(duration: 0.15), value: isFocused.wrappedValue)
+            .circaLift()
+            .contentShape(shape)
+            .onTapGesture { isFocused.wrappedValue = true }
+    }
+}
+
 // MARK: - Section label
 
 /// Mono, uppercase, tracked. These replace bold sans headers everywhere —
@@ -446,6 +472,23 @@ extension ButtonStyle where Self == CircaButtonStyle {
     /// is 54. Text tiers ignore it and hold the 44pt floor.
     static func circa(_ tier: CircaButtonTier, height: CGFloat = 46) -> CircaButtonStyle {
         CircaButtonStyle(tier: tier, height: height)
+    }
+}
+
+/// Sits beside the action in a bar that rides the keyboard.
+struct CircaHideKeyboardButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "keyboard.chevron.compact.down")
+                .font(.body.weight(.medium))
+                .foregroundStyle(Color.circaInk)
+                .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Hide keyboard")
     }
 }
 

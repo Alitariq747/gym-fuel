@@ -15,7 +15,8 @@ struct MealCameraCaptureView: View {
 
     var body: some View {
         MealPhotoPanel(
-            isReviewing: review.isReviewing, isExpanded: review.hasUsedPhoto, isDismissing: isDismissing,
+            isReviewing: review.isReviewing, isExpanded: review.hasUsedPhoto,
+            isDocked: review.isEditingDescription, isDismissing: isDismissing,
             onClose: close, onDismissed: onDismissed
         ) {
             ZStack {

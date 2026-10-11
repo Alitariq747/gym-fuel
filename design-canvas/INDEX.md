@@ -124,7 +124,7 @@ Row 9: the paywall, three pages (15e) — 8 October.
 Row 10: onboarding · the widget step — 10 October.
 Row 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.
 Row 12: onboarding · try a meal, redrawn — A built — 11 October.
-Row 13: photo · check the words, three directions — 11 October.
+Row 13: photo · check the words, three directions — A built — 11 October.
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
@@ -423,6 +423,43 @@ UNCHANGED · the 20 s timeout and three tries, the example path, nothing saved, 
 Light only. The build takes dark from the kit's tokens, and the change stacks at AX sizes (rule 8).
 
 The same meal throughout: "rice with chicken stew", oil 2 → 1 tbsp makes 705 → 585 (−120).
+
+### note-photo (page-1)
+
+PHOTO · CHECK THE WORDS · three directions · 11 October
+
+DECIDED, SAME DAY · A is built. B and C were not chosen.
+
+The camera and gallery panels end on Circa's description of the photo. The estimate is made from those words alone; the photo is not read again. So this is the one moment to fix a wrong dish or a wrong amount, and as built almost nobody can tell the words are a field.
+
+AS BUILT · the pins
+1 · The words read as a caption: a mono label, small body text and a thin rule. No edge, no pencil, nothing that says they can change.
+2 · Nothing says why to check them. Circa's guesses ("about a plate", "could be beef") sit in plain prose.
+3 · "Log Meal" here, "Estimate this" in the text sheet, for the same step.
+4 · Typing squeezes the floating card above the keyboard. Its rounded corners hover over the keys, and the square photo, cut off at the top, still takes most of the room.
+5 · Log Meal scrolls under the card's edge, so the keyboard has to go before the meal can.
+6 · Only dragging puts the keyboard away. Return adds a new line, and tapping the photo or the paper does nothing.
+
+IN EVERY DIRECTION
+· Reading has a shape and words. The card where the words will land is in place at once, with the dotted rule alone on each line (rule 1) and the status in ochre mono: reading your photo → naming the food → writing it down. The sweep stays on the photo. No spinner. Drawn in A's frame; B and C put the lines where their own words land.
+· Log Meal becomes Estimate this, with the sparkle, as in the text sheet.
+· The label says whose words they are: "From your photo" until the person changes something, then "Your words" (rule 3).
+· Typing docks the panel. It goes full width with a flat bottom on the keyboard, the photo shrinks to a 120 pt band so the food stays in view, and Estimate this rides the keyboard beside a button that puts it away. Retake hides while typing.
+· Return, a tap on the photo, or a drag puts the keyboard away. ✕ still closes.
+· Unchanged: the camera, the gallery, the Retake / Use Photo step before reading, the one scan charged, the reviewed-photo rules the estimator applies, and the entry on the Day screen.
+
+A · A FIELD YOU CAN SEE · built
+The words sit in Try a meal's raised white field, with an Edit pill in its corner and one line under it saying why: Circa estimates from these words. The whole card takes the tap. The smallest build: the panel and one field.
+
+B · CIRCA ASKS · not chosen
+The words sit in Try a meal's first-guess card: the question, and one Change the words button. Change opens the text sheet, filled with Circa's words, with the photo beside them; Estimate this there logs the meal. The most explicit, one extra tap for anyone who edits, and its keyboard handling is the text sheet's, already finished.
+
+C · THE GUESSES ARE MARKED · not chosen
+Circa's guesses carry the dotted rule in ochre, the way an estimated number does: amounts it wrote with "about", "roughly" or "around", and alternatives in brackets. These are exactly what the estimator already treats as assumptions. Tap one to change it; a guess the person replaces loses its dots as they type, and the label counts what's left. The most Circa, and the most code: a pure parser with tests, and a UIKit text view, because SwiftUI's text field on iOS 17 can't draw the dots inside editable text. Its marks could later go inside A's card.
+
+Light only. The build takes dark from the kit's tokens, and its buttons stack at AX sizes.
+
+The same meal throughout: "about a plate of white rice, about a bowl of chicken stew (could be beef), sliced cucumber and tomato, and a cup of milky tea", edited to beef stew made with 2 tbsp oil.
 
 ## Not from the canvas — `app-icon/`
 

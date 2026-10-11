@@ -30,6 +30,9 @@ dropped the same day. See rule 2.
 Revised 11 October: the onboarding meal (15b, 15c), redrawn as canvas Row 12 and
 built from version A. See the screen inventory.
 
+Revised 11 October: checking a photo's words, three directions drawn as canvas
+Row 13 and built from A. See the screen inventory.
+
 > **This is a specification, not a completion record.** The component kit and
 > Steps 0–4 are complete; remaining screens are mid-revamp. `build-order.md` owns
 > progress. Older product audits and artboards may describe superseded behavior.
@@ -453,6 +456,7 @@ Everything on the canvas, and what is not there yet.
 | Share card (7k) | `Share card · text meal`, `Share card · photo meal`, `Share · preview` | **Drawn 28 September.** One meal as an image: 360 pt wide at 3×, height from its content, always light and at a fixed text size. The photo for photo meals as a centred 192 pt square, so the tallest card fits a 9:16 story, whole and never cropped — Entry's treatment, `MealFullPhoto` — then the label, the title, the Entry nutrition card, the provenance line when there is one, the breakdown (6 October, replacing the explanation and the key assumption), and a footer with the plate mark, the name and "AI estimate". **Never** a date, time, target, weight or another meal. A photo that cannot load is left out, and the preview says so. The share icon beside ⋯ opens the preview first; its Share button opens the system share sheet. It shows on any meal that finished estimating, older days included. **The breakdown** is items only, one line each — name (truncates), amount, calories — and never their components or macros. Up to four items are all listed in the meal's order; past four, the three largest stay in the meal's order and a "+ N more" row carries the rest's calories, so the rows add up to the total (`MealShareBreakdown`). Removed items are left out. A meal with no breakdown — a typed total, or an older entry — has no section, and no explanation |
 | Composer | `Composer` | Gym vocabulary removed from heading and examples |
 | Analysing | `Analysing · text + photo` | Sweep overlay + the existing 3-stage message rotation |
+| Photo · check the words | `Photo · …` (Row 13) | **Drawn and built 11 October, from A.** The camera and gallery panels end on Circa's description of the photo, and the estimate is made from those words alone, so they sit in the one raised field (`CircaFieldCard`, shared with Try a meal) with an ochre Edit pill and the line "Circa estimates from these words. Change anything the photo got wrong." **While the photo is read**, the card is already in place with the pending rule alone on three lines (rule 1) and a status line that changes every three seconds; no spinner. The label reads "From your photo" until the words differ from Circa's, then "Your words" (rule 3). **While typing**, the panel docks — full width, flat bottom on the keyboard — the photo becomes a 120 pt band, and Estimate this rides the keyboard beside the hide-keyboard button; Retake hides. Return, a tap on the photo, or a drag puts the keyboard away. B (the text sheet, filled) and C (Circa's guesses dotted in ochre) were drawn and not chosen; C's marks could later go inside A's card |
 | Failed | `Failed · retry` | Both failure shapes |
 | Empty day | `Empty day` | Full target still the headline |
 | Saved meals | `Saved meals` | Reuse a corrected version with its breakdown and provenance, without an AI call |

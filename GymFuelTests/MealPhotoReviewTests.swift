@@ -42,6 +42,7 @@ struct MealPhotoReviewTests {
         await unchanged.select(data: Data([1]))?.value
         await unchanged.describePhoto()?.value
         unchanged.mealDescription = "  \(reading)\n"
+        #expect(!unchanged.isDescriptionEdited)
         let kept = unchanged.confirm()
         #expect(kept?.description == reading)
         #expect(kept?.isDescriptionEdited == false)
@@ -50,6 +51,7 @@ struct MealPhotoReviewTests {
         await edited.select(data: Data([1]))?.value
         await edited.describePhoto()?.value
         edited.mealDescription = "two eggs, two slices of bread "
+        #expect(edited.isDescriptionEdited)
         let changed = edited.confirm()
         #expect(changed?.description == "two eggs, two slices of bread")
         #expect(changed?.isDescriptionEdited == true)

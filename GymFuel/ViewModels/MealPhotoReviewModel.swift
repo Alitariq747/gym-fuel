@@ -10,6 +10,8 @@ final class MealPhotoReviewModel: ObservableObject {
     @Published private(set) var draft = MealImageDraft()
     @Published private(set) var isConfirmed = false
     @Published var mealDescription = ""
+    /// The field's focus, mirrored so the panel around the review can dock to the keyboard.
+    @Published var isEditingDescription = false
 
     let source: MealImageSource
     private let prepare: Preparer
@@ -49,6 +51,7 @@ final class MealPhotoReviewModel: ObservableObject {
     }
     var canDescribe: Bool { draft.isReadyToSubmit && !isConfirmed }
     var canConfirm: Bool { isDescribed && !isConfirmed && !trimmedDescription.isEmpty }
+    var isDescriptionEdited: Bool { trimmedDescription != generatedDescription }
     private var trimmedDescription: String { mealDescription.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     @discardableResult
@@ -143,7 +146,7 @@ final class MealPhotoReviewModel: ObservableObject {
         return ConfirmedMealPhoto(
             image: PreparedMealImage(originalData: original, compressedJPEGData: jpeg),
             description: trimmedDescription,
-            isDescriptionEdited: trimmedDescription != generatedDescription
+            isDescriptionEdited: isDescriptionEdited
         )
     }
 

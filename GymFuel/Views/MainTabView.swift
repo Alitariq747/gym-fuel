@@ -6,6 +6,7 @@
 //
 
 import AVFoundation
+import PhotosUI
 import SwiftUI
 import UIKit
 
@@ -34,6 +35,9 @@ struct MainTabView: View {
     @State private var opensEditorForEntryID: String?
     @State var mealPhotoPresentation = MealPhotoPresentation()
     @State var isSubmittingMealPhoto = false
+    @State var showsMealLibrary = false
+    /// Stays set for the gallery panel's whole session; cleared when the picker next opens.
+    @State var mealLibraryPick: PhotosPickerItem?
     @State private var showCameraPermissionAlert = false
     @State private var dayNavigationDirection: DayNavigationDirection = .previous
     @Environment(\.layoutDirection) private var layoutDirection
@@ -222,6 +226,10 @@ struct MainTabView: View {
         .allowsHitTesting(!mealPhotoPresentation.isActive)
         .accessibilityHidden(mealPhotoPresentation.isActive)
         .overlay { mealPhotoOverlay.preferredColorScheme(preferredColorScheme) }
+        .photosPicker(isPresented: $showsMealLibrary, selection: $mealLibraryPick,
+                      matching: .images, preferredItemEncoding: .current)
+        .onChange(of: mealLibraryPick) { _, _ in openMealLibraryPick() }
+        .onChange(of: showsMealLibrary) { _, _ in openMealLibraryPick() }
         .sheet(isPresented: $showStats) {
             NavigationStack {
                 StatsView(
@@ -451,8 +459,7 @@ struct MainTabView: View {
                     handleCameraTap()
                 },
                 onPhotoTap: {
-                    guard canUseAIFeatures() else { return }
-                    presentMealPhotoSheet(source: .photoLibrary)
+                    presentMealLibrary()
                 },
                 onTextTap: {
                     guard canUseAIFeatures() else { return }

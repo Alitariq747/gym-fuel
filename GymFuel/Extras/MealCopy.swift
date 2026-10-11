@@ -80,13 +80,24 @@ enum MealCopy {
         return "\(change > 0 ? "+" : "−")\(abs(change))"
     }
 
-    // MARK: - The onboarding meal
-
     /// A new line every three seconds, like the timeline's; the last one holds.
     /// Never a percentage — nothing measures progress.
+    private static func status(_ lines: [String], elapsedSeconds: Int) -> String {
+        lines[min(max(elapsedSeconds, 0) / 3, lines.count - 1)]
+    }
+
+    // MARK: - A meal photo
+
+    static func photoReadingStatus(elapsedSeconds: Int) -> String {
+        status(["reading your photo", "naming the food", "writing it down"], elapsedSeconds: elapsedSeconds)
+    }
+
+    static let photoWordsPromise = "Circa estimates from these words. Change anything the photo got wrong."
+
+    // MARK: - The onboarding meal
+
     static func tryMealStatus(elapsedSeconds: Int) -> String {
-        let lines = ["reading your words", "estimating calories and macros", "preparing your breakdown"]
-        return lines[min(max(elapsedSeconds, 0) / 3, lines.count - 1)]
+        status(["reading your words", "estimating calories and macros", "preparing your breakdown"], elapsedSeconds: elapsedSeconds)
     }
 
     /// "−120 kcal · You changed “Cooking oil”." Edits can cancel out, and the

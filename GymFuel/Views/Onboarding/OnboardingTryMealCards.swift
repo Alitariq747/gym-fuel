@@ -5,14 +5,10 @@ struct TryMealField: View {
     @Binding var text: String
     let isFocused: FocusState<Bool>.Binding
 
-    private var shape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: Circa.Radius.card, style: .continuous)
-    }
-
     private var count: Int { text.utf16.count }
 
     var body: some View {
-        CircaCard {
+        CircaFieldCard(isFocused: isFocused) {
             VStack(alignment: .leading, spacing: 12) {
                 TextField("Your meal", text: $text, prompt: Text("Type your meal here").foregroundStyle(Color.circaInk3), axis: .vertical)
                     .textFieldStyle(.plain)
@@ -31,15 +27,6 @@ struct TryMealField: View {
                     .accessibilityLabel("\(count) of \(OnboardingTryMealViewModel.maxTextLength) characters")
             }
         }
-        .overlay {
-            if isFocused.wrappedValue {
-                shape.strokeBorder(Color.circaInk, lineWidth: 1.5)
-            }
-        }
-        .animation(.easeOut(duration: 0.15), value: isFocused.wrappedValue)
-        .circaLift()
-        .contentShape(shape)
-        .onTapGesture { isFocused.wrappedValue = true }
     }
 }
 

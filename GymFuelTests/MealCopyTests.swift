@@ -318,6 +318,15 @@ struct MealCopyTests {
         #expect(MealCopy.tryMealStatus(elapsedSeconds: -1) == "reading your words")
     }
 
+    @Test("Reading a photo moves on every three seconds, and its last line holds")
+    func photoReadingStatusSteps() {
+        #expect(MealCopy.photoReadingStatus(elapsedSeconds: 0) == "reading your photo")
+        #expect(MealCopy.photoReadingStatus(elapsedSeconds: 3) == "naming the food")
+        #expect(MealCopy.photoReadingStatus(elapsedSeconds: 6) == "writing it down")
+        #expect(MealCopy.photoReadingStatus(elapsedSeconds: 40) == "writing it down")
+        #expect(MealCopy.photoReadingStatus(elapsedSeconds: -1) == "reading your photo")
+    }
+
     @Test("The correction line gives the difference, then what changed")
     func correctionLineReadsDifferenceFirst() {
         #expect(MealCopy.correctionLine(firstGuess: 705, total: 585, changed: ["Cooking oil"])

@@ -1,4 +1,5 @@
 import Foundation
+import PhotosUI
 import SwiftUI
 
 extension MainTabView {
@@ -15,24 +16,43 @@ extension MainTabView {
                         onUsePhoto: confirmMealPhoto
                     )
                 case .photoLibrary:
-                    MealGallerySheet(
-                        isDismissing: mealPhotoPresentation.isDismissing,
-                        onClose: { mealPhotoPresentation.dismiss() },
-                        onDismissed: { submitConfirmedMealPhoto(sessionID: session.id) },
-                        onUsePhoto: confirmMealPhoto
-                    )
+                    if let item = mealLibraryPick {
+                        MealGallerySheet(
+                            item: item,
+                            isDismissing: mealPhotoPresentation.isDismissing,
+                            onClose: { mealPhotoPresentation.dismiss() },
+                            onDismissed: { submitConfirmedMealPhoto(sessionID: session.id) },
+                            onUsePhoto: confirmMealPhoto
+                        )
+                    }
                 }
             }
             .id(session.id)
         }
     }
 
+    private var canStartMealPhoto: Bool {
+        !mealPhotoPresentation.isActive && !composerViewModel.isSubmitting && !isSubmittingMealPhoto
+    }
+
     func presentMealPhotoSheet(source: MealImageSource) {
-        guard !mealPhotoPresentation.isActive, !composerViewModel.isSubmitting, !isSubmittingMealPhoto,
-              canUseAIFeatures() else { return }
+        guard canStartMealPhoto, canUseAIFeatures() else { return }
         dismissComposerKeyboard()
         composerViewModel.clearError()
         mealPhotoPresentation.present(source: source, loggedAt: loggedAtForSelectedDay())
+    }
+
+    func presentMealLibrary() {
+        guard canStartMealPhoto, canUseAIFeatures() else { return }
+        dismissComposerKeyboard()
+        mealLibraryPick = nil
+        showsMealLibrary = true
+    }
+
+    /// The panel opens once the system picker has closed with a photo.
+    func openMealLibraryPick() {
+        guard !showsMealLibrary, mealLibraryPick != nil else { return }
+        presentMealPhotoSheet(source: .photoLibrary)
     }
 
     func confirmMealPhoto(_ photo: ConfirmedMealPhoto, source: MealImageSource) {

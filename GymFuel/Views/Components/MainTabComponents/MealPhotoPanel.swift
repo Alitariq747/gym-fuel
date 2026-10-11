@@ -3,6 +3,8 @@ import SwiftUI
 struct MealPhotoPanel<Content: View>: View {
     let isReviewing: Bool
     var isExpanded = false
+    /// Full width with a flat bottom, so it sits on the keyboard rather than floating over it.
+    var isDocked = false
     let isDismissing: Bool
     let onClose: () -> Void
     let onDismissed: () -> Void
@@ -12,14 +14,21 @@ struct MealPhotoPanel<Content: View>: View {
     @State private var isVisible = false
     @State private var isMounted = false
 
-    private let margin: CGFloat = 12
+    private var margin: CGFloat { isDocked ? 0 : 12 }
     private var animation: Animation { .easeInOut(duration: reduceMotion ? 0.15 : 0.25) }
+
+    private var shape: UnevenRoundedRectangle {
+        let top: CGFloat = isDocked ? Circa.Radius.dock : 44
+        let bottom: CGFloat = isDocked ? 0 : 44
+        return UnevenRoundedRectangle(topLeadingRadius: top, bottomLeadingRadius: bottom,
+                                      bottomTrailingRadius: bottom, topTrailingRadius: top, style: .continuous)
+    }
 
     var body: some View {
         GeometryReader { geometry in
             let width = max(0, geometry.size.width - margin * 2)
             let availableHeight = max(0, geometry.size.height - margin * 2)
-            let height = isExpanded || isReviewing && typeSize.isAccessibilitySize
+            let height = isExpanded || isDocked || isReviewing && typeSize.isAccessibilitySize
                 ? availableHeight : min(width * 4 / 3, availableHeight)
             ZStack(alignment: .bottom) {
                 Color.clear
@@ -38,8 +47,8 @@ struct MealPhotoPanel<Content: View>: View {
                     if isReviewing { LinearGradient.circaPaper }
                     else { Color(white: 0.12) }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
-                .contentShape(RoundedRectangle(cornerRadius: 44, style: .continuous))
+                .clipShape(shape)
+                .contentShape(shape)
                 .shadow(color: .black.opacity(0.12), radius: 18, y: 4)
                 .scaleEffect(isVisible || reduceMotion ? 1 : 0.94, anchor: .bottom)
                 .opacity(isVisible ? 1 : 0)
@@ -48,6 +57,7 @@ struct MealPhotoPanel<Content: View>: View {
                 .padding(.bottom, margin)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .animation(animation, value: isDocked)
         }
         .ignoresSafeArea(.container, edges: .bottom)
         .accessibilityElement(children: .contain)
@@ -87,24 +97,19 @@ struct MealPhotoPanel<Content: View>: View {
 }
 
 struct MealPhotoControlLabel: View {
-    var symbol: String?
-    var title: String?
+    let symbol: String
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
-        HStack(spacing: 8) {
-            if let symbol { Image(systemName: symbol) }
-            if let title { Text(title) }
-        }
-        .font(.system(.body).weight(.semibold))
-        .foregroundStyle(.white)
-        .padding(.horizontal, title == nil ? 0 : 16)
-        .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
-        .background {
-            if reduceTransparency { Capsule().fill(Color(white: 0.16)) }
-            else { Capsule().fill(.ultraThinMaterial).environment(\.colorScheme, .dark) }
-        }
-        .overlay { Capsule().strokeBorder(.white.opacity(0.4), lineWidth: 0.5) }
-        .contentShape(Capsule())
+        Image(systemName: symbol)
+            .font(.system(.body).weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
+            .background {
+                if reduceTransparency { Capsule().fill(Color(white: 0.16)) }
+                else { Capsule().fill(.ultraThinMaterial).environment(\.colorScheme, .dark) }
+            }
+            .overlay { Capsule().strokeBorder(.white.opacity(0.4), lineWidth: 0.5) }
+            .contentShape(Capsule())
     }
 }

@@ -2,77 +2,37 @@ import PhotosUI
 import SwiftUI
 
 struct MealGallerySheet: View {
+    let item: PhotosPickerItem
     let isDismissing: Bool
     let onClose: () -> Void
     let onDismissed: () -> Void
     let onUsePhoto: (ConfirmedMealPhoto, MealImageSource) -> Void
     @StateObject private var review = MealPhotoReviewModel(source: .photoLibrary)
-    @State private var selection: [PhotosPickerItem] = []
-    @State private var allPhotosSelection: PhotosPickerItem?
-    @State private var showsAllPhotos = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var replacement: PhotosPickerItem?
+    @State private var showsPicker = false
 
     var body: some View {
+        // Always reviewing: the photo is picked before the panel opens.
         MealPhotoPanel(
-            isReviewing: review.isReviewing, isExpanded: review.hasUsedPhoto, isDismissing: isDismissing,
+            isReviewing: true, isExpanded: review.hasUsedPhoto,
+            isDocked: review.isEditingDescription, isDismissing: isDismissing,
             onClose: close, onDismissed: onDismissed
         ) {
-            ZStack {
-                if review.isReviewing {
-                    MealPhotoReviewView(model: review, onReplace: {
-                        selection = []
-                        review.clearSelection()
-                    }, onUsePhoto: { photo in
-                        onUsePhoto(photo, .photoLibrary)
-                    })
-                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97)))
-                } else {
-                    photoGrid.transition(.opacity)
-                }
-            }
-            .animation(.easeInOut(duration: reduceMotion ? 0.15 : 0.25), value: review.isReviewing)
+            MealPhotoReviewView(model: review, onReplace: {
+                showsPicker = true
+            }, onUsePhoto: { photo in
+                onUsePhoto(photo, .photoLibrary)
+            })
         }
-        .photosPicker(isPresented: $showsAllPhotos, selection: $allPhotosSelection,
+        .photosPicker(isPresented: $showsPicker, selection: $replacement,
                       matching: .images, preferredItemEncoding: .current)
-        .onChange(of: selection) { _, items in
-            guard let item = items.first else { return }
-            prepare(item)
-        }
-        .onChange(of: allPhotosSelection) { _, _ in consumeAllPhotosSelection() }
-        .onChange(of: showsAllPhotos) { _, _ in consumeAllPhotosSelection() }
+        .onAppear { prepare(item) }
+        .onChange(of: replacement) { _, _ in consumeReplacement() }
+        .onChange(of: showsPicker) { _, _ in consumeReplacement() }
         .onChange(of: isDismissing) { _, closing in
             if closing { review.cancelPendingWork() }
         }
         .onDisappear { review.clearSelection() }
-    }
-
-    private var photoGrid: some View {
-        PhotosPicker(
-            selection: $selection,
-            maxSelectionCount: 1,
-            selectionBehavior: .continuous,
-            matching: .images,
-            preferredItemEncoding: .current
-        ) { Text("Choose a photo") }
-        .photosPickerStyle(.inline)
-        .photosPickerDisabledCapabilities([.selectionActions, .search, .collectionNavigation])
-        .photosPickerAccessoryVisibility(.hidden)
-        .overlay(alignment: .bottom) {
-            ZStack(alignment: .bottom) {
-                LinearGradient(colors: [.clear, .black.opacity(0.25)], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 100)
-                    .allowsHitTesting(false)
-                HStack {
-                    Button(action: close) { MealPhotoControlLabel(symbol: "chevron.backward") }
-                        .accessibilityLabel("Back")
-                    Spacer(minLength: 12)
-                    Button { showsAllPhotos = true } label: { MealPhotoControlLabel(title: "All Photos") }
-                        .accessibilityHint("Browse your photos and albums.")
-                }
-                .buttonStyle(.plain)
-                .padding(24)
-            }
-        }
     }
 
     private func prepare(_ item: PhotosPickerItem) {
@@ -85,9 +45,10 @@ struct MealGallerySheet: View {
         }
     }
 
-    private func consumeAllPhotosSelection() {
-        guard !showsAllPhotos, let item = allPhotosSelection else { return }
-        allPhotosSelection = nil
+    /// Cancelling the picker keeps the current photo.
+    private func consumeReplacement() {
+        guard !showsPicker, let item = replacement else { return }
+        replacement = nil
         prepare(item)
     }
 

@@ -32,7 +32,7 @@ struct MealAmountsTotalBar: View {
             summary
             if !isStacked { Spacer(minLength: 8) }
             HStack(spacing: 6) {
-                if isTyping { hideKeyboard }
+                if isTyping { CircaHideKeyboardButton(action: onHideKeyboard) }
                 save
             }
         }
@@ -94,18 +94,6 @@ struct MealAmountsTotalBar: View {
         guard let after else { return "Meal total \(before) kcal. \(MealCopy.amountMissing)" }
         guard changedCount > 0 else { return "Meal total \(before) kcal. \(MealCopy.nothingChanged)" }
         return "Meal total \(after) kcal, was \(before). \(MealCopy.amountsChanged(changedCount))"
-    }
-
-    private var hideKeyboard: some View {
-        Button(action: onHideKeyboard) {
-            Image(systemName: "keyboard.chevron.compact.down")
-                .font(.body.weight(.medium))
-                .foregroundStyle(Color.circaInk)
-                .frame(minWidth: Circa.minHitTarget, minHeight: Circa.minHitTarget)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Hide keyboard")
     }
 
     private var save: some View {
