@@ -51,6 +51,14 @@ struct RootView: View {
     }
 
     @MainActor
+    private func loadAccount(for uid: String) async {
+        await subscriptionViewModel.syncUser(userId: uid)
+        await profileViewModel.loadProfile(for: uid)
+        await savedMealsViewModel.loadSavedMeals(userId: uid)
+        await importHealthWeight(for: uid)
+    }
+
+    @MainActor
     private func restoreReminders(for userId: String?) async {
         guard !Task.isCancelled, authManager.user?.uid == userId else { return }
         do {
@@ -233,8 +241,18 @@ struct RootView: View {
                             Text(profileViewModel.errorMessage ?? "Please try again.")
                         }
                     }
-                } else if profileViewModel.isLoading {
-                    AppLoadingView()
+                } else if profileViewModel.profileLoadFailed {
+                    ProfileLoadErrorView(
+                        message: profileViewModel.errorMessage ?? "",
+                        onRetry: {
+                            guard let uid = authManager.user?.uid else { return }
+                            // Back to the loading screen at once: the subscription
+                            // sync runs before the profile load clears the error.
+                            profileViewModel.errorMessage = nil
+                            Task { await loadAccount(for: uid) }
+                        },
+                        onSignOut: { try? authManager.signOut() }
+                    )
                 } else {
                     AppLoadingView()
                 }
@@ -248,10 +266,7 @@ struct RootView: View {
         .task(id: authManager.user?.uid) {
             if let user = authManager.user {
                 if guestOnboardingActive { return }
-                await subscriptionViewModel.syncUser(userId: user.uid)
-                await profileViewModel.loadProfile(for: user.uid)
-                await savedMealsViewModel.loadSavedMeals(userId: user.uid)
-                await importHealthWeight(for: user.uid)
+                await loadAccount(for: user.uid)
             } else {
                 await subscriptionViewModel.syncUser(userId: nil)
                 profileViewModel.clear()

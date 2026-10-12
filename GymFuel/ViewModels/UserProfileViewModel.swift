@@ -21,6 +21,10 @@ final class UserProfileViewModel: ObservableObject {
            profile?.savedTargets
        }
        
+       var profileLoadFailed: Bool {
+           profile == nil && !isLoading && errorMessage != nil
+       }
+
        private let service: FirebaseUserProfileService
        private let macroTargetCalculator: MacroTargetCalculator
        private let weighInService: WeighInService

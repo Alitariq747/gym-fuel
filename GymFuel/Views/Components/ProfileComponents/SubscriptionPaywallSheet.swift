@@ -126,6 +126,7 @@ struct SubscriptionPaywallSheet: View {
                 HStack(spacing: 8) {
                     if subscriptionViewModel.isRestoring {
                         ProgressView()
+                            .tint(Color.circaInk)
                     } else {
                         Image(systemName: "arrow.clockwise")
                         Text("Restore Subscription")
@@ -287,6 +288,7 @@ struct SubscriptionPaywallSheet: View {
             Group {
                 if subscriptionViewModel.isPurchasing {
                     ProgressView()
+                        .tint(Color.circaPaperTop)
                 } else {
                     Text(continueButtonTitle)
                 }

@@ -3,6 +3,16 @@
     {
       "filename" : "CircaMark.svg",
       "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "CircaMark-dark.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {

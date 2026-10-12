@@ -442,9 +442,13 @@ final class LogComposerViewModel: ObservableObject {
 
         Task.detached(priority: .utility) {
             guard let imageData = MealImageCacheService().imageData(for: entry.id) else { return }
-            var uploadingEntry = entry
-            uploadingEntry.imageUploadStatus = .uploading
-            try? await logEntryService.updateEntry(uploadingEntry)
+            let entryExists = (try? await logEntryService.recordImageUpload(
+                .uploading,
+                image: nil,
+                userId: entry.userId,
+                entryId: entry.id
+            )) ?? true
+            guard entryExists else { return }
             let trace = FirebaseTelemetryService.startPerformanceTrace("image_upload_time")
 
             do {
@@ -453,10 +457,15 @@ final class LogComposerViewModel: ObservableObject {
                     userId: entry.userId,
                     entryId: entry.id
                 )
-                var uploadedEntry = uploadingEntry
-                uploadedEntry.image = LogEntryImage(storagePath: storagePath)
-                uploadedEntry.imageUploadStatus = .uploaded
-                try await logEntryService.updateEntry(uploadedEntry)
+                let stillExists = try await logEntryService.recordImageUpload(
+                    .uploaded,
+                    image: LogEntryImage(storagePath: storagePath),
+                    userId: entry.userId,
+                    entryId: entry.id
+                )
+                if !stillExists {
+                    try? await mealImageUploadService.deleteMealImage(at: storagePath)
+                }
                 FirebaseTelemetryService.stopPerformanceTrace(
                     trace,
                     attributes: [
@@ -473,9 +482,12 @@ final class LogComposerViewModel: ObservableObject {
                         "source": "image_retry",
                     ]
                 )
-                var failedEntry = entry
-                failedEntry.imageUploadStatus = .failed
-                try? await logEntryService.updateEntry(failedEntry)
+                _ = try? await logEntryService.recordImageUpload(
+                    .failed,
+                    image: nil,
+                    userId: entry.userId,
+                    entryId: entry.id
+                )
                 FirebaseTelemetryService.stopPerformanceTrace(
                     trace,
                     attributes: [
@@ -500,10 +512,15 @@ final class LogComposerViewModel: ObservableObject {
                     entryId: entry.id
                 )
 
-                var updatedEntry = entry
-                updatedEntry.image = LogEntryImage(storagePath: storagePath)
-                updatedEntry.imageUploadStatus = .uploaded
-                try await logEntryService.updateEntry(updatedEntry)
+                let stillExists = try await logEntryService.recordImageUpload(
+                    .uploaded,
+                    image: LogEntryImage(storagePath: storagePath),
+                    userId: entry.userId,
+                    entryId: entry.id
+                )
+                if !stillExists {
+                    try? await mealImageUploadService.deleteMealImage(at: storagePath)
+                }
                 FirebaseTelemetryService.stopPerformanceTrace(
                     trace,
                     attributes: [
@@ -520,9 +537,12 @@ final class LogComposerViewModel: ObservableObject {
                         "source": "image_submit",
                     ]
                 )
-                var failedUploadEntry = entry
-                failedUploadEntry.imageUploadStatus = .failed
-                try? await logEntryService.updateEntry(failedUploadEntry)
+                _ = try? await logEntryService.recordImageUpload(
+                    .failed,
+                    image: nil,
+                    userId: entry.userId,
+                    entryId: entry.id
+                )
                 FirebaseTelemetryService.stopPerformanceTrace(
                     trace,
                     attributes: [

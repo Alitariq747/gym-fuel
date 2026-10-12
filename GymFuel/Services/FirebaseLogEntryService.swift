@@ -186,4 +186,36 @@ extension FirebaseLogEntryService: LogEntryService {
     func deleteEntryLocally(userId: String, entryId: String) {
         entriesCollection(for: userId).document(entryId).delete()
     }
+
+    /// Never `updateEntry`: the upload's copy of the meal is older than any edit
+    /// or delete made while the photo uploaded. `updateData` touches only these
+    /// fields and refuses a deleted document.
+    func recordImageUpload(
+        _ status: LogEntryImageUploadStatus,
+        image: LogEntryImage?,
+        userId: String,
+        entryId: String
+    ) async throws -> Bool {
+        var fields: [String: Any] = ["imageUploadStatus": status.rawValue]
+        if let image {
+            fields["image"] = try Firestore.Encoder().encode(image)
+        }
+        let docRef = entriesCollection(for: userId).document(entryId)
+
+        do {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                docRef.updateData(fields) { error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: ())
+                    }
+                }
+            }
+            return true
+        } catch let error as NSError
+            where error.domain == FirestoreErrorDomain && error.code == FirestoreErrorCode.notFound.rawValue {
+            return false
+        }
+    }
 }

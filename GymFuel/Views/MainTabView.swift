@@ -28,6 +28,9 @@ struct MainTabView: View {
     @State private var showDatePicker = false
     @State private var showTextLogSheet = false
     @State private var showSubscriptionPaywall = false
+    @State private var showAIConsent = false
+    @State private var afterAIConsent: (() -> Void)?
+    @AppStorage(AIConsent.preferenceKey) private var aiConsentVersion = 0
     @State private var showFutureLoggingToast = false
     @State private var selectedEntry: LogEntry?
     /// Set when the entry was opened from its assumption line, so detail knows to
@@ -192,18 +195,7 @@ struct MainTabView: View {
                     }
                 },
                 onUseAIAgain: { editedText in
-                    guard canUseAIFeatures() else { return }
-
-                    Task {
-                        let goalType = profile.goalType ?? GoalType.defaultValue
-                        if let updatedEntry = await logEntryDetailViewModel.reinterpretEntry(
-                            entry,
-                            newRawInput: editedText,
-                            goal: goalType
-                        ) {
-                            await handleUpdatedEntry(updatedEntry)
-                        }
-                    }
+                    reestimate(entry, as: editedText)
                 }
             )
         }
@@ -247,6 +239,10 @@ struct MainTabView: View {
             SubscriptionPaywallSheet()
                 .preferredColorScheme(preferredColorScheme)
         }
+        .sheet(isPresented: $showAIConsent, onDismiss: resumeAfterAIConsent) {
+            AIConsentSheet()
+                .preferredColorScheme(preferredColorScheme)
+        }
         .sheet(isPresented: $showTextLogSheet) {
             TextEntrySheet(
                 text: $composerViewModel.draft.text,
@@ -288,8 +284,9 @@ struct MainTabView: View {
                 userId: profile.id
             )
         }
-        .onChange(of: timelineViewModel.timeline.entries) { _, _ in
+        .onChange(of: timelineViewModel.timeline.entries) { _, entries in
             retryFailedMealImageUploadsIfNeeded()
+            refreshSelectedEntry(from: entries)
         }
         .onChange(of: timelineViewModel.todaySnapshot(target: targetMacros), initial: true) { _, snapshot in
             timelineViewModel.saveTodaySnapshot(snapshot)
@@ -313,6 +310,30 @@ struct MainTabView: View {
 
     private func handleUpdatedEntry(_ updatedEntry: LogEntry) async {
         selectedEntry = updatedEntry
+    }
+
+    /// Detail edits replace the whole entry, so they must start from the live copy:
+    /// one opened mid-upload would otherwise save over the photo's path.
+    private func refreshSelectedEntry(from entries: [LogEntry]) {
+        guard let id = selectedEntry?.id,
+              let live = entries.first(where: { $0.id == id }),
+              live != selectedEntry else { return }
+        selectedEntry = live
+    }
+
+    private func reestimate(_ entry: LogEntry, as editedText: String) {
+        guard canUseAIFeatures(resume: { reestimate(entry, as: editedText) }) else { return }
+
+        Task {
+            let goalType = profile.goalType ?? GoalType.defaultValue
+            if let updatedEntry = await logEntryDetailViewModel.reinterpretEntry(
+                entry,
+                newRawInput: editedText,
+                goal: goalType
+            ) {
+                await handleUpdatedEntry(updatedEntry)
+            }
+        }
     }
 
     private func navigateToPreviousDate() {
@@ -393,7 +414,7 @@ struct MainTabView: View {
     }
 
     private func handleCameraTap() {
-        guard canUseAIFeatures() else { return }
+        guard canUseAIFeatures(resume: { handleCameraTap() }) else { return }
 
         dismissComposerKeyboard()
 
@@ -432,13 +453,35 @@ struct MainTabView: View {
         showSubscriptionPaywall = true
     }
 
-    func canUseAIFeatures() -> Bool {
+    /// Consent comes before the subscription, so nobody pays before learning
+    /// where their meals go. `resume` runs once they agree.
+    func canUseAIFeatures(resume: (() -> Void)? = nil) -> Bool {
+        guard AIConsent.isGranted(storedVersion: aiConsentVersion) else {
+            dismissComposerKeyboard()
+            afterAIConsent = resume
+            showAIConsent = true
+            return false
+        }
+
         guard subscriptionViewModel.hasProAccess else {
             presentSubscriptionPaywall()
             return false
         }
 
         return true
+    }
+
+    private func resumeAfterAIConsent() {
+        let resume = afterAIConsent
+        afterAIConsent = nil
+        guard AIConsent.isGranted(storedVersion: aiConsentVersion) else { return }
+        resume?()
+    }
+
+    private func presentTextEntry() {
+        guard canUseAIFeatures(resume: { presentTextEntry() }) else { return }
+        composerViewModel.clearError()
+        showTextLogSheet = true
     }
 
     func dismissComposerKeyboard() {
@@ -462,9 +505,7 @@ struct MainTabView: View {
                     presentMealLibrary()
                 },
                 onTextTap: {
-                    guard canUseAIFeatures() else { return }
-                    composerViewModel.clearError()
-                    showTextLogSheet = true
+                    presentTextEntry()
                 },
                 onSavedMealsTap: {
                     composerViewModel.clearError()
@@ -498,7 +539,7 @@ struct MainTabView: View {
     }
 
     private func retryFailedEntry(_ entry: LogEntry) {
-        guard canUseAIFeatures() else { return }
+        guard canUseAIFeatures(resume: { retryFailedEntry(entry) }) else { return }
 
         Task {
             if entry.source == .image {

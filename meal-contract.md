@@ -372,6 +372,7 @@ superseded breakdown returns on the next snapshot.
 | `updateEntry` | `setData(data)` — **no merge** | the only path that clears |
 | `saveEntry`, `saveEntryLocally`, `updateEntryLocally` | `setData(data, merge: true)` | creates and offline writes; never clear |
 | `updateMeal` (saved meals) | `setData(data)` — **no merge** | same reason; also survives a missing doc, which `updateData` does not |
+| `recordImageUpload` | `updateData` — `image` and `imageUploadStatus` only | the background photo upload; its copy of the meal is older than any edit or delete made meanwhile, and `updateData` refuses a deleted entry |
 
 Not `FieldValue.delete()` sentinels: those are stringly-typed nested reach-ins
 that every future nullable field must remember to join. A full replace is correct

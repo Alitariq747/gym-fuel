@@ -5,9 +5,9 @@ struct AppLoadingView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Text("Circa")
-                .font(.title2.weight(.bold))
-                .foregroundStyle(Color.circaInk)
+            Image(decorative: "CircaMark")
+                .resizable()
+                .frame(width: 56, height: 56)
 
             ZStack(alignment: .leading) {
                 Capsule()

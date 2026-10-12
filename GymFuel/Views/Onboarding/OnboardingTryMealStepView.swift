@@ -7,6 +7,8 @@ struct OnboardingTryMealStepView: View {
 
     @StateObject private var model: OnboardingTryMealViewModel
     @State private var showEditor = false
+    @State private var showAIConsent = false
+    @AppStorage(AIConsent.preferenceKey) private var aiConsentVersion = 0
     @FocusState private var isWriting: Bool
 
     private let examples = ["2 eggs, toast and tea", "rice with chicken stew", "a bowl of noodles with vegetables"]
@@ -45,6 +47,20 @@ struct OnboardingTryMealStepView: View {
                 MealBreakdownEditorSheet(breakdown: breakdown) { model.correct(to: $0) }
             }
         }
+        .sheet(isPresented: $showAIConsent, onDismiss: {
+            // "Not now" leaves them typing, with the example one tap away.
+            if AIConsent.isGranted(storedVersion: aiConsentVersion) { model.submit() }
+        }) {
+            AIConsentSheet()
+        }
+    }
+
+    private func startEstimate() {
+        guard AIConsent.isGranted(storedVersion: aiConsentVersion) else {
+            showAIConsent = true
+            return
+        }
+        model.submit()
     }
 
     private var typing: some View {
@@ -160,7 +176,7 @@ struct OnboardingTryMealStepView: View {
     private var primaryButton: some View {
         if model.phase == .typing {
             VStack(spacing: 4) {
-                Button { model.submit() } label: {
+                Button { startEstimate() } label: {
                     Label("Estimate this", systemImage: "sparkles").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.circa(.primary, height: 52))

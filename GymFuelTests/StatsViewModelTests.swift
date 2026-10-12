@@ -66,6 +66,12 @@ private struct NoLogEntries: LogEntryService {
     func saveEntry(_ entry: LogEntry) async throws {}
     func updateEntry(_ entry: LogEntry) async throws {}
     func deleteEntryLocally(userId: String, entryId: String) {}
+    func recordImageUpload(
+        _ status: LogEntryImageUploadStatus,
+        image: LogEntryImage?,
+        userId: String,
+        entryId: String
+    ) async throws -> Bool { true }
 }
 
 private struct NoWeighIns: WeighInService {

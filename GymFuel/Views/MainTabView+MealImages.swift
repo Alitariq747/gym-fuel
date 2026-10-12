@@ -43,7 +43,7 @@ extension MainTabView {
     }
 
     func presentMealLibrary() {
-        guard canStartMealPhoto, canUseAIFeatures() else { return }
+        guard canStartMealPhoto, canUseAIFeatures(resume: { presentMealLibrary() }) else { return }
         dismissComposerKeyboard()
         mealLibraryPick = nil
         showsMealLibrary = true
