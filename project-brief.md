@@ -405,14 +405,13 @@ Do not treat it as new work or remove code without checking its current callers:
 
 1. ~~**The app name.**~~ **Closed 8 September — `Circa: Food & Calorie Journal`,
    subtitle `AI macro tracker, no weighing`.** Full reasoning and the competitive
-   check are in `store-copy.md`. Two follow-ups it created:
-   - **Trademark, unresolved.** Circa Lighting, Circa Resort & Casino and Circa
-     Sports are real companies. The App Store name is clear — a registered mark is
-     a separate question. **Run a USPTO search on classes 9 and 42 before
-     submitting.** Owner: Ahmad.
-   - **Keywords are stale.** The agnostic name means `desi` now appears nowhere in
-     the listing, and `macros` duplicates the subtitle's *macro*. Proposed fix is in
-     `store-copy.md` under Keywords, awaiting sign-off.
+   check are in `store-copy.md`. Two follow-ups it created, both closed:
+   - ~~**Trademark.**~~ **USPTO searched 12 October, risk accepted 14 October.**
+     The closest mark is NeuroBusiness Group's CIRCA for anxiety apps (class 9);
+     the name stays. Details in `store-copy.md`.
+   - ~~**Keywords are stale.**~~ **Closed 12 October** — English (U.S.) carries
+     broad terms and English (U.K.) the desi ones; both strings are in
+     `store-copy.md` under Keywords.
 2. **Cuisine scope is closed.** Broad brand, specific launch examples; see Step 0
    and Step 6 in `build-order.md`. No rename or single-cuisine restriction.
 3. ~~**Meal schema details.**~~ **Closed 21 September — `meal-contract.md`.** The

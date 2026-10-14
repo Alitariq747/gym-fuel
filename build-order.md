@@ -122,7 +122,7 @@ All three are made. Nothing downstream is waiting on you any more.
 
 | Decision | Note |
 |---|---|
-| ~~**App name**~~ | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. **Still owed: a USPTO search on classes 9 and 42**, and the handles. Neither blocks a build. |
+| ~~**App name**~~ | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. USPTO searched 12 October, risk accepted 14 October — see `store-copy.md`. **Still owed: the handles**, which do not block a build. |
 | ~~**Beachhead cuisine**~~ | **Decided 11 September: there is no single beachhead — the product is cuisine-agnostic.** Cuisines are *lanes*, not an identity: the default listing carries none in particular, and a cuisine reaches its audience through its own Custom Product Page in Step 11. The name and subtitle were already agnostic, so nothing about them changes. What does change is **Step 6's portion reference set**, which spreads across cuisines instead of being 200 desi dishes. |
 | ~~**Confirm pricing**~~ | **Decided 11 September: unchanged — $5.99/mo, $49.99/yr, 3-day trial.** The $7.99 / $54.99 / 14-day move in `project-brief.md` §6 is **deferred, not rejected**; revisit after approval. This is what closes Step 9's items 2 and 3 and takes the urgency out of Step 1. |
 
@@ -916,10 +916,12 @@ All of this ships with the version. Copy is written and paste-ready in
 4. **Age rating 13+ → 18+.** The live listing still says 13+, but Step 4b gates
    onboarding and Settings at 18 and the app says so on screen. Change it in the
    age rating questionnaire before submitting, or listing and app disagree in review.
-5. **Cross-localization** — two secondary locales, properly. Arabic first: it is
-   one of the nine US-indexed secondaries *and* the Gulf localisation we want.
-   +160 indexable chars each. **Do not paste the same text into nine slots** —
-   Apple rejects that now.
+5. **English (U.K.) localisation** — decided 12 October, replacing "Arabic first".
+   English (U.K.) is the default language in Pakistan, India, the UK, the UAE and
+   Saudi Arabia, so this one localisation carries the desi keywords to all of them
+   while English (U.S.) stays broad. Both keyword strings are in `store-copy.md`.
+   **Arabic moves to a later update**: its copy needs a native speaker, and the app
+   is English-only.
 
 ---
 
@@ -1637,7 +1639,8 @@ Reduce optional breadth first; do not reopen completed Steps 0–4.
 
 1. **Reference-set expansion** — keep the documented launch cases; defer growth
    toward 100–200 and additional cuisine coverage.
-2. **Step 9's cross-localization** — the primary locale alone is a valid listing.
+2. **Step 9's English (U.K.) localisation** — the primary locale alone is a valid
+   listing, but Pakistan, India and the UK then get no desi keywords.
 3. **Share-card variants and destination-specific integrations** — keep one
    readable card and the system share sheet.
 
@@ -1653,7 +1656,7 @@ contract (5–6), and the coherent visual sweep (7).
 
 | When | What |
 |---|---|
-| Now | ~~The name, and confirmation of the cuisine~~ — **all of Step 0 closed 11 September.** Only the USPTO search and the handles are still outstanding, and neither blocks a build. |
+| Now | ~~The name, and confirmation of the cuisine~~ — **all of Step 0 closed 11 September.** Only the handles are still outstanding, and they do not block a build; the USPTO search was done 12 October. |
 | Before Step 4 | Nothing — I can build and seed test data myself |
 | Before Step 9 | App Store Connect access, or you run the metadata changes |
 | Before Step 10 | A device to shoot on, and real-looking data to shoot |

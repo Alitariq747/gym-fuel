@@ -24,6 +24,16 @@ TestFlight users liked explicit assumptions. Claims about exclusive competitor
 capabilities and unverified search-result counts have been removed. This remains
 launch copy, conditional on the completion checks below.
 
+Revised 12 October: **the keywords pass is done, split by English locale.** English
+(U.S.) carries broad terms only; a new English (U.K.) localisation carries the desi
+terms, because it is the default language in Pakistan, India, the UK and the Gulf.
+Arabic moves to a later update.
+
+Revised 14 October: **the description is final** — staples-first examples, widgets
+added, and the Pro placeholder replaced with no price or trial length. A new
+promotional text with its first test, What's New for 2.0, and the App Review notes
+were added the same day.
+
 ---
 
 ## Sequence this correctly
@@ -63,10 +73,16 @@ subtitle picks up *tracker* separately.
 One shares the category, `Circa: Health Intelligence`, at 0 ratings with a
 different job. No meaningful clash.
 
-> **Still open: the trademark.** Circa Lighting, Circa Resort & Casino and Circa
-> Sports are real companies. A different class does not block an app, but the odds
-> of a registered mark are higher here than for an invented word. **Run a USPTO
-> search on classes 9 and 42 before submitting.**
+> **The trademark — searched 12 October, risk accepted 14 October.** Of 123 live
+> US marks containing "circa", none covers food, nutrition or calorie tracking.
+> The closest: NeuroBusiness Group, LLC holds two class 9 registrations for the
+> plain word CIRCA (Reg. 6947766 and 6950079, January 2023) for anxiety and stress
+> app software, in use as "⊛ CIRCA" in Health & Fitness. Circa Sports' owner has a
+> pending class 9 application for a hotel and casino app. Different jobs, and the
+> full store name sets Circa apart, so the name stays. Two consequences: a
+> complaint to Apple remains possible, and registering CIRCA ourselves for app
+> software would likely be refused. The UK and Pakistan registers were not
+> searched.
 
 ### Subtitle — 29 / 30
 
@@ -95,103 +111,219 @@ duplicates multiply nothing.
 > editable any time with no review, and promote it into the subtitle at a later
 > submission if it converts.
 
-### Keywords — 100 / 100 in the primary locale
+### Keywords — one field per English locale
+
+Decided 12 October. Metadata is chosen by language, not country, and Apple sets
+**English (U.K.)** as the default language for Pakistan, India, the UK, the UAE
+and Saudi Arabia. The US storefront reads English (U.S.) and its nine secondaries,
+never English (U.K.). So the two fields do different jobs: the US field stays broad,
+and the U.K. field carries the desi terms. See Cross-localization below.
+
+No spaces after commas — a space costs a character. Neither field repeats a word
+from the name or subtitle (*circa, food, calorie, journal, AI, macro, tracker,
+weighing*); Apple indexes them together.
+
+#### English (U.S.) — 99 / 100
 
 ```
-roti,kunna,biryani,karahi,daal,halal,pakistani,indian,curry,protein,macros,bulk,deficit,homemade,gym
+counter,diary,meal,photo,diet,log,nutrition,protein,carb,weight,loss,deficit,homemade,recipe,intake
 ```
 
-No spaces after commas — a space costs a character. Apple adds plurals and the
-category automatically.
+- `counter`, `diary`, `log` pair with *calorie* and *food* from the name: "calorie
+  counter", "food diary", "food log".
+- `meal`, `photo`, `nutrition`, `carb`, `intake`, `diet` build "meal tracker",
+  "carb tracker", "calorie intake".
+- `weight`, `loss` with *tracker*: "weight tracker", which the Weight screen backs,
+  and "weight loss tracker".
+- `homemade`, `recipe` are the positioning: "homemade food calories", "recipe
+  calories".
 
-> ### ⚠ This field is now stale — decide before submitting
->
-> The string above was written against the old name and subtitle. Two things broke
-> when those changed on 8 September, and **neither is fixed below — this needs your
-> call, not mine.**
->
-> **1. `macros` is now a duplicate.** The subtitle carries *macro*, and Apple stems
-> plurals automatically (as this section itself notes). Seven characters buying
-> nothing.
->
-> **2. `desi` is missing entirely.** It was never in this field because the old name
-> carried it. The new name is agnostic, so the highest-value cuisine term is now
-> nowhere in the listing. Calorify, Khana AI, MasalaFit and RotiCal all put *Desi*
-> in their **app names**, which outranks our keywords on those searches — being
-> absent from the field altogether concedes the term completely.
->
-> **3. `home` and `cooking` are now free**, since the old subtitle released them.
->
-> Proposed replacement — swaps `macros` for `desi`, 98/100 with 2 spare:
->
-> ```
-> roti,kunna,biryani,karahi,daal,halal,pakistani,indian,curry,protein,desi,bulk,deficit,homemade,gym
-> ```
-
-Keywords are invisible to users, which is why goal and gym terms stay here even
-though lifting is off the surface: ranking for them costs nothing and catches the
-users who pay most.
-
-**This is not our ceiling.** See Cross-localization below — the US storefront
-indexes ten locales, so the real budget is up to 1,440 characters, not 100. Fill
-this field first, then spill the overflow into secondary locales.
-
-### Promotional Text — 148 / 170
+#### English (U.K.) — 100 / 100
 
 ```
-Understand the food you actually eat. Describe your meal, see the portions and ingredients assumed, correct your version, and save it for next time.
+counter,diary,meal,photo,diet,desi,pakistani,indian,roti,biryani,daal,curry,homemade,protein,deficit
 ```
 
-Sits above the description on the product page. **Rotate weekly against creator
-posts** to find the hook that converts, then promote the winner into the subtitle
-at the next submission.
+These storefronts never read the US field, so this one carries the broad terms as
+well as the cuisine. Same name, subtitle and description as English (U.S.), in UK
+spelling. Keywords are invisible, so the listing still looks broad to every British
+user.
 
-**First thing to test here: `No weighing, no food database`** — the subtitle that
-lost on ranking grounds but wins on conversion. This field costs nothing to change
-and needs no review, so it is where that line earns its place before it takes a
-subtitle slot.
+#### Left out, and why
 
-### Description — 1,784 / 4,000 (with Pro placeholder)
+- **No cuisine terms in the US field.** US desis lose desi search terms; the desi
+  Custom Product Page reaches them through creator links instead. A US secondary
+  locale can carry them later.
+- `scan`, `scanner` — people searching them expect a barcode scanner.
+- `gym`, `bulk` — the listing no longer speaks to lifters, a lifter who lands on a
+  food journal leaves, and conversion feeds ranking.
+- `kunna` (almost no searches), `halal` (searchers want halal food, not calories),
+  `karahi` (space), `macros` (the subtitle has *macro*).
 
-Lead with the user's own food and the correction experience. Show the product's
+### Promotional Text — 161 / 170
+
+Launch line, decided 14 October:
+
+```
+Made for the meals food databases miss: your mom's stew, last night's curry, the stir-fry you make your way. Describe it, see what Circa assumed, fix what's off.
+```
+
+**English (U.K.):** "mom's" becomes "mum's" (still 161).
+
+Sits above the description on the product page and is not indexed for search. The
+previous line ("Understand the food you actually eat…") was dropped because the
+description directly below opens with the same idea.
+
+**First test, about two weeks after launch** (125 / 170):
+
+```
+No weighing, no food database. Describe a meal in your own words or snap a photo, see what Circa assumed, and fix what's off.
+```
+
+It is the subtitle that lost on ranking grounds but may win on conversion. It does
+not lead at launch because the subtitle above it already says "no weighing". This
+field costs nothing to change and needs no review. Give each line at least two
+weeks, compare product page conversion rate (installs ÷ product page views) in App
+Analytics, and promote the winner into the subtitle at the next submission.
+
+### Description — 2,771 / 4,000
+
+Final 14 October; every claim checked against the build and the backend. Lead
+with the user's own food and the correction experience. Show the product's
 behavior instead of asserting that other apps cannot do it.
 
 ```
 Understand the calories in the food you actually eat — including the way you make it.
 
-Tell Circa what you ate — "two roti, chicken karahi, half a katori rice" — or take a photo. See one meal with an estimated breakdown of its items, portions, calories and macros.
+Tell Circa what you ate — "two eggs, toast and a cup of tea" — or take a photo. You get one meal broken into its items, each with an estimated portion, calories, protein, carbs and fat.
 
-Circa shows the ingredients and quantities it assumed. Less mayonnaise in your wrap? A smaller portion of rice? Correct the amount, see the difference, and save your version for next time.
+Circa shows you what it assumed. Less oil in your noodles? A smaller bowl of rice? Change the amount, see the difference, and save your version for next time.
 
 WHAT IT'S GOOD AT
 
-• Home-cooked food. Karahi, daal, biryani, salan — describe the meal in familiar portions such as rotis, katoris and cups.
-• Restaurant and street food. Describe your order and review the estimate's assumptions.
-• Photos, when you'd rather not type. Point the camera at the plate.
-• Being corrected. Adjust item quantities, or describe a change in ingredients or preparation. See how the meal total changes.
-• Honest uncertainty. Review what was assumed. Saving an estimate does not make it an exact measurement.
+• Home cooking. The stew, the curry, the stir-fry — meals no packaged-food database knows. Describe them in the portions you use: a plate, a bowl, two rotis, a cup.
+• Restaurant and takeout meals. Describe your order and check what the estimate assumed.
+• Photos, when you'd rather not type. Take one or pick one from your library, then check the words Circa read from it before it estimates.
+• Being corrected. Change an amount, or say what was different — the ingredients or how it was cooked — and Circa estimates the meal again.
+• Honest uncertainty. Every number is an estimate and looks like one. Saving a meal doesn't turn it into a measurement.
 
 WHEN YOU'RE WORKING TOWARD SOMETHING
 
-• Lose fat, maintain or gain. Set a goal weight and see a steady path to it, with protein, carbs and fat worked out for you — not a generic diet template.
-• Targets that show their working. Every number comes with the reason behind it, and nothing changes unless you change it.
-• Your weigh-ins against your plan. Weigh in by hand or sync from Apple Health, and see how it's going.
+• Lose fat, maintain or gain. Set a goal weight and see a steady path to it, with daily calories, protein, carbs and fat worked out for you.
+• Targets that show their working. Each number comes with the reason behind it and its sources, and nothing changes unless you change it.
+• Weigh-ins, typed or from Apple Health. See your weight over time against your goal, and how far there is to go.
 
 SAVED MEALS
 
-Your breakfast, your usual order, your own recipe — save the corrected breakdown and its assumptions, then log that version again without starting over.
+Your usual breakfast, your regular order, your own recipe. Save the corrected version with its items and assumptions, then log it again without starting over.
 
-Circa PRO
+ALSO
 
-[Trial length, price and renewal terms — must match App Store Connect exactly.]
+• Home Screen and Lock Screen widgets with the calories left today.
+• Daily reminders at set times, or none at all.
+• Share any meal as an image.
 
-Nutrition figures are estimates for general guidance, not medical or dietary advice. Sources are listed in the app.
+CIRCA PRO
+
+Estimating meals from text and photos needs Circa Pro, a monthly or yearly auto-renewing subscription. New subscribers may be offered a free trial. Pro includes up to 500 meal estimates a month, or 50 during the trial. Prices for your country are shown in the app before you subscribe.
+
+Payment is charged to your Apple Account at confirmation of purchase. Your subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel it anytime in your Apple Account settings.
+
+Circa is for adults 18 and over. Nutrition figures are estimates for general guidance, not medical or dietary advice. Sources are listed in the app.
+
+Privacy Policy: https://ahmadtariq.co/apps/circa/privacy
+Terms of Service: https://ahmadtariq.co/apps/circa/terms
+Terms of Use (Apple standard EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 ```
 
-**Keep the Pro block in sync with the actual intro offer.** Step 1 is complete:
-the paywall reads the trial length from StoreKit. Launch pricing and the trial
-remain as decided in `build-order.md` Step 0. Replace the placeholder before
-submission and verify the listing against the configured offer.
+**English (U.K.):** the same text with "takeout" changed to "takeaway".
+
+**Rules this text keeps:**
+- **No price or trial length.** English (U.K.) is also the listing in Pakistan and
+  India, where a dollar price would be wrong; the store shows each country's price.
+- **The 500 and 50 match the backend's quota settings and the Terms.** Change all three
+  together. The paywall does not show the cap, and 3.1.2 does not require it there.
+- **The Apple Health mention stays** — 2.5.1 expects HealthKit apps to say so.
+- **The Apple standard EULA link stays** — a missing one is a common 3.1.2 rejection.
+- **Staples first, one desi touch** ("two rotis"), matching the default screenshots.
+
+### What's New in This Version — 763 / 4,000
+
+Decided 14 October, for version 2.0. The same text for both English locales.
+
+```
+LiftEats is now Circa: a new name, a new look and a new focus on the food you actually eat.
+
+• Every meal is broken into its items, with the portions and ingredients Circa assumed. Change an amount or say what was different, and the total follows.
+• Save the corrected version of a meal and log it again without starting over.
+• Set a goal weight and get a plan: daily calories, protein, carbs and fat, each with the reasoning and sources behind it.
+• Weigh in by hand, or bring your weight in from Apple Health.
+• Widgets for your Home Screen and Lock Screen.
+• Share any meal as an image.
+
+Workout logging, meal scores and streaks have been removed, so Circa can focus on food.
+
+Already subscribed? LiftEats Pro carries over as Circa Pro. There's nothing to do.
+```
+
+- **The rename leads**, because the Updates tab shows only the opening lines and an
+  existing user's icon and name change overnight.
+- **Only what is new since LiftEats 1.0.** Photo logging, saved meals and reminders
+  were already in 1.0.
+- **The removals are named**, so a 1.0 user is not left looking for them.
+- **The subscription line holds** because the `lifteats_` product IDs and the
+  `ai_scans` entitlement are unchanged.
+
+### App Review Information — notes
+
+Decided 14 October. Every path and button name was checked against the build.
+Fill in the two bracketed lines; the notes field allows 4,000 characters.
+
+```
+Circa (formerly LiftEats) is a food journal. Describe a meal in words or take a photo, and Circa estimates its calories and macros, shows the portions and ingredients it assumed, and lets you correct them. Workout logging from the previous version has been removed.
+
+DEMO ACCOUNT
+On the Welcome screen, tap "Already have an account? Sign in". Onboarding is complete, and the account has meals and weigh-ins but no subscription.
+Email: [demo email]
+Password: [demo password]
+To see onboarding instead, tap "Get Started". It lets you try one typed meal before creating an account, and ends with the paywall, which can be dismissed.
+
+SUBSCRIPTION
+Estimating a meal needs Circa Pro, an auto-renewable subscription (monthly or yearly, with an introductory free trial). Tapping the text or camera button asks for AI permission (below), then opens the paywall; a sandbox purchase unlocks estimates. "Restore Subscription" is on the paywall, which Settings > Subscription > Upgrade also opens.
+
+AI DISCLOSURE (5.1.2(i))
+Before the first estimate, Circa explains that the meal text or photo is sent to OpenAI through Circa's server, and asks permission. Nothing is sent if you decline.
+
+AGE
+Circa's plan is for adults. The age step in onboarding accepts 18 or older only.
+
+APPLE HEALTH
+Optional and read-only. Circa reads body mass to add weigh-ins, and writes nothing to Health. It is offered during onboarding and in Settings > Apple Health > Weight Sync. Weigh-ins appear on the Weight screen (Settings > Body Metrics > Weight).
+
+HEALTH INFORMATION (1.4.1)
+Calorie and macro targets come from published formulas, with safety limits: no calorie target below 1,200 kcal for women or 1,500 kcal otherwise, and no goal weight below a BMI of 18.5. Citations are under "Sources" on the plan screen and in Settings > Targets > Your targets. Meal figures are shown as estimates.
+
+ACCOUNT DELETION
+Settings > Account > Delete Account. It asks you to sign in again to confirm.
+
+Settings is the gear icon at the top right of the Day screen.
+```
+
+**Before submitting:**
+
+1. **Create the demo account** with email and password, not Sign in with Apple. Finish
+   onboarding and add a few meals and weigh-ins. Logging needs Pro: a sandbox purchase
+   on a TestFlight build works and lapses by itself within about an hour, leaving the
+   account unsubscribed, as the notes say.
+2. **Tick "Sign-in required"** and enter the same credentials in those fields too.
+3. **Check that a sandbox purchase on a TestFlight build unlocks estimates.** The
+   backend checks the subscription through RevenueCat; if a reviewer subscribes and
+   estimates still fail, that is a 2.1 rejection.
+4. **Fill in the contact name, phone and email.** An attachment is optional; a short
+   screen recording of the paywall and the AI permission sheet can save a round of
+   questions.
+
+If a path or label in the app changes before submission, update these notes with it.
 
 ---
 
@@ -289,22 +421,31 @@ before committing the main listing to it.
 Note what CPPs do *not* do: they assign keywords **from the existing field**, they
 do not add keyword space. That comes from cross-localization, below.
 
-### Cross-localization — up to 1,440 indexable characters
+### Cross-localization — English (U.K.) at launch, Arabic later
 
-The US storefront indexes **ten** locales: English (U.S.) as primary plus nine
-secondaries — Spanish (Mexico), Russian, Chinese (Simplified), Chinese
-(Traditional), Arabic, French, Portuguese (Brazil), Vietnamese and Korean.
+Decided 12 October. Apple's storefront table (App Store Connect Help, *App Store
+localizations*) sets each storefront's default language and the others it reads:
 
-Each contributes title 30 + subtitle 30 + keywords 100 = **160 indexable
-characters**. Filling them all takes the US footprint from 160 to ~1,440.
+| Storefront | Default | Also reads |
+|---|---|---|
+| United States | English (U.S.) | Arabic, Chinese (Simplified), Chinese (Traditional), French, Korean, Portuguese (Brazil), Russian, Spanish (Mexico), Vietnamese |
+| United Kingdom | English (U.K.) | — |
+| Pakistan | English (U.K.) | Urdu |
+| India | English (U.K.) | Hindi, Urdu and nine other Indian languages |
+| UAE, Saudi Arabia | English (U.K.) | Arabic |
 
-Two things follow:
-
-- **Arabic pays twice.** It is one of the nine US-indexed secondaries *and* the
-  Gulf storefront localisation we already wanted. One piece of work, two returns.
-- **Do two locales properly, not nine lazily.** Apple has begun rejecting listings
-  that paste identical or machine-dumped metadata across languages. Treat each as
-  real copy.
+- **English (U.K.) ships with this version.** One English localisation reaches
+  Pakistan, India, British desis and Gulf expats, and needs no translator. Its
+  keywords are above.
+- **Arabic follows in a later update.** It still pays twice — read by the US and
+  Gulf storefronts — but its copy needs a native speaker (`design.md`, Open 1),
+  and the app is English-only, so an Arabic listing must say so.
+- **The US ceiling is unchanged.** Each of its ten locales adds title 30 +
+  subtitle 30 + keywords 100 = 160 indexable characters, up to ~1,440 in all.
+  Fill them one at a time and properly: Apple has begun rejecting listings that
+  paste identical or machine-dumped metadata across languages.
+- **Urdu and Hindi** metadata became available in March 2026 and are read in
+  Pakistan and India. They stay outside this launch (`project-brief.md`).
 
 **Timing:** keyword rankings take roughly four weeks to settle after a change.
 Ship the new listing and you will not know whether it worked for a month — plan
@@ -316,8 +457,8 @@ the creator push around that, not against it.
 
 The name and subtitle are deliberately cuisine-agnostic — `Circa: Food & Calorie
 Journal` covers kunna, jollof, adobo and tagine equally, because it names no
-cuisine at all. Only the keywords and screenshots are desi-specific, and both are
-cheap to change. **As of 8 September this is finally true**; the deck previously
+cuisine at all. Only the English (U.K.) keywords and the screenshots are
+desi-specific, and both are cheap to change. **As of 8 September this is finally true**; the deck previously
 claimed agnosticism while proposing `Desi Food Tracker` in the name.
 
 **What that costs, stated plainly.** Calorify, Khana AI, MasalaFit and RotiCal all
