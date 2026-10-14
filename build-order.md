@@ -76,7 +76,7 @@ fresh session reads this file, not the chat history.
 - [x] **6** · Meal backend, references and saved-meal round trip
 - [x] **7** · Visual sweep and final share card
 - [x] **8** · Rename
-- [ ] **9** · App Store Connect metadata
+- [x] **9** · App Store Connect metadata · *version 1.1; done 14 October*
 - [ ] **10** · Screenshots and submit
 - [ ] **11** · After approval — CPPs, creator outreach
 - [x] **12** · Fixed daily reminders · *simplified, 2 October; device checks pending*

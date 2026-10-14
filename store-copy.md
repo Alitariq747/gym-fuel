@@ -31,7 +31,7 @@ Arabic moves to a later update.
 
 Revised 14 October: **the description is final** — staples-first examples, widgets
 added, and the Pro placeholder replaced with no price or trial length. A new
-promotional text with its first test, What's New for 2.0, and the App Review notes
+promotional text with its first test, What's New for 1.1, and the App Review notes
 were added the same day.
 
 ---
@@ -249,7 +249,7 @@ Terms of Use (Apple standard EULA): https://www.apple.com/legal/internet-service
 
 ### What's New in This Version — 763 / 4,000
 
-Decided 14 October, for version 2.0. The same text for both English locales.
+Decided 14 October, for version 1.1. The same text for both English locales.
 
 ```
 LiftEats is now Circa: a new name, a new look and a new focus on the food you actually eat.
@@ -324,6 +324,44 @@ Settings is the gear icon at the top right of the Day screen.
    questions.
 
 If a path or label in the app changes before submission, update these notes with it.
+
+### Subscriptions — review notes and screenshots
+
+Decided 14 October. One note per subscription, under Review Information → Review
+Notes. No price or trial length: reviewers see both in StoreKit, so the notes stay
+true if the trial changes.
+
+**Circa Pro Monthly** (`lifteats_pro_monthly`)
+
+```
+Circa Pro Monthly (formerly LiftEats Pro Monthly) is an auto-renewable subscription, billed monthly. It unlocks AI meal estimates: describe a meal in words or take a photo, and Circa returns an estimated breakdown of its items, portions, calories and macros. Re-estimating a meal after a correction is included. It includes up to 500 estimates per month, or 50 during the introductory free trial.
+
+Where to find it: the paywall appears at the end of onboarding, when you tap the text or camera button on the Day screen without a subscription (after the AI permission sheet), and from Settings > Subscription > Upgrade. Prices and trial terms come from StoreKit. "Restore Subscription" is on the paywall.
+
+The product ID keeps its original "lifteats_" prefix because the app was renamed from LiftEats to Circa, and product IDs can't be changed.
+
+A demo account is in the App Review Information for version 1.1.
+```
+
+**Circa Pro Yearly** (`lifteats_pro_yearly`)
+
+```
+Circa Pro Yearly (formerly LiftEats Pro Yearly) is an auto-renewable subscription, billed yearly. It unlocks AI meal estimates: describe a meal in words or take a photo, and Circa returns an estimated breakdown of its items, portions, calories and macros. Re-estimating a meal after a correction is included. It includes up to 500 estimates per monthly usage cycle, or 50 during the introductory free trial.
+
+Where to find it: the paywall appears at the end of onboarding, when you tap the text or camera button on the Day screen without a subscription (after the AI permission sheet), and from Settings > Subscription > Upgrade. Prices and trial terms come from StoreKit. "Restore Subscription" is on the paywall.
+
+The product ID keeps its original "lifteats_" prefix because the app was renamed from LiftEats to Circa, and product IDs can't be changed.
+
+A demo account is in the App Review Information for version 1.1.
+```
+
+- **"Per monthly usage cycle"** is how the backend resets the yearly plan's allowance,
+  and the Terms' wording. Change the 500 and 50 here with the backend and the Terms.
+- **Review screenshots** are in `app-store/iap-review/`: `paywall-640x920.jpg`
+  (Monthly selected) and `paywall-yearly-640x920.jpg` (Yearly selected). ASC rejected a
+  full-size device screenshot ("The dimensions of one or more screenshots are
+  wrong"), so these are scaled to 640 × 920 and letterboxed in the paper colour
+  `#F4F1E8`. Replace both if the paywall changes.
 
 ---
 
