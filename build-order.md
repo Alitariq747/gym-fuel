@@ -124,7 +124,7 @@ All three are made. Nothing downstream is waiting on you any more.
 |---|---|
 | ~~**App name**~~ | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. USPTO searched 12 October, risk accepted 14 October — see `store-copy.md`. **Still owed: the handles**, which do not block a build. |
 | ~~**Beachhead cuisine**~~ | **Decided 11 September: there is no single beachhead — the product is cuisine-agnostic.** Cuisines are *lanes*, not an identity: the default listing carries none in particular, and a cuisine reaches its audience through its own Custom Product Page in Step 11. The name and subtitle were already agnostic, so nothing about them changes. What does change is **Step 6's portion reference set**, which spreads across cuisines instead of being 200 desi dishes. |
-| ~~**Confirm pricing**~~ | **Decided 11 September: unchanged — $5.99/mo, $49.99/yr, 3-day trial.** The $7.99 / $54.99 / 14-day move in `project-brief.md` §6 is **deferred, not rejected**; revisit after approval. This is what closes Step 9's items 2 and 3 and takes the urgency out of Step 1. |
+| ~~**Confirm pricing**~~ | **Decided 11 September: unchanged — $5.99/mo, $49.99/yr, 3-day trial.** The $7.99 / $54.99 / 14-day move in `project-brief.md` §6 is **deferred, not rejected**; revisit after approval. This is what closes Step 9's items 2 and 3 and takes the urgency out of Step 1. **14 October: Pakistan and India get their own prices — Rs 499/mo and Rs 3,900/yr in each local rupee** (PKR ≈ $1.80 / $14; INR ≈ $5.70 / $44), set per country in App Store Connect; the trial and the 500 allowance are unchanged. See `project-brief.md` §6. |
 
 ---
 

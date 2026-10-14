@@ -229,8 +229,8 @@
 				30BA6F932EE44A5100DD124D /* Sources */,
 				30BA6F942EE44A5100DD124D /* Frameworks */,
 				30BA6F952EE44A5100DD124D /* Resources */,
-				30C8A7042FE440F500F491EF /* ShellScript */,
 				305F6FCF3070BA1C009C0559 /* Embed Foundation Extensions */,
+				30C8A7042FE440F500F491EF /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -631,8 +631,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Circa uses the camera so you can capture meal photos for logging.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Your body weight is read from Apple Health so your weigh-ins stay up to date without you entering them twice. Nothing is written back to Health.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Circa never writes to Apple Health. It only reads your body weight so your weigh-ins stay up to date without you entering them twice.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Circa may save meal photos when needed to support your meal logging flow.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We use your photo library to let you select meal photos for macro estimation.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -672,8 +672,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Circa uses the camera so you can capture meal photos for logging.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Your body weight is read from Apple Health so your weigh-ins stay up to date without you entering them twice. Nothing is written back to Health.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Circa never writes to Apple Health. It only reads your body weight so your weigh-ins stay up to date without you entering them twice.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Circa may save meal photos when needed to support your meal logging flow.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We use your photo library to let you select meal photos for macro estimation.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

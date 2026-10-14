@@ -241,6 +241,18 @@ do not serve a clear decision in this launch experience.
 > still stands, the timing does not. Revisit after approval, when there are
 > conversion numbers to argue with instead of benchmarks. `build-order.md` Step 0
 > is where this is locked; Step 9's items 2 and 3 are struck through accordingly.
+>
+> **Decided 14 October: Pakistan and India get their own prices** — Rs 499/month
+> and Rs 3,900/year in each country's rupee. In Pakistan that is about $1.80 and
+> $14 against Apple's automatic Rs 1,700 and Rs 12,900, and against Calorify's
+> PKR 249 with free logging; in India, about $5.70 and $44, close to the US price.
+> The trial and the 500-a-month allowance are unchanged. Why it holds up on
+> cost: on GPT-5.6 Luna a text estimate costs about $0.0011 and a photo
+> estimate roughly $0.002, so a typical user (about 90 estimates a month) costs
+> $0.10–0.20, and even someone using all 500 on photos costs about $1. Pakistan's
+> yearly plan nets roughly $1 a month after Apple's 15%, so only that extreme
+> user would cost more than they pay. Measure revenue and AI cost per country
+> after launch, as `repositioning-strategy.md` asks.
 
 The original case for 14 days was that the weekly page needed two weeks of
 weigh-ins before it could show anything. That case is gone (17 September): the plan
