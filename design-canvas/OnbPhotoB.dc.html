@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+      color:#1A1917;
+      background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%);
+      -webkit-font-smoothing:antialiased;}
+    .mono{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;}
+    .label{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:10.5px; letter-spacing:1.4px; color:#6E6B64; text-transform:uppercase;}
+    .card{background:#FFFFFF; border:1px solid #E9E5D9; border-radius:20px; box-sizing:border-box;}
+    .est{border-bottom:1.5px dotted #9A9488; padding-bottom:2px;}
+    .meta{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#6E6B64; display:flex; align-items:center; flex-wrap:wrap; gap:4px;}
+    .note{font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; color:#8F6420; line-height:1.4;}
+    .hair{height:1px; background:#F0ECE0; flex-shrink:0;}
+    .well{border-radius:50%; background:#F1EDE2; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+    .btn{height:52px; border-radius:14px; background:#1A1917; color:#FBFAF6; font-size:17px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0;}
+    .quiet{min-height:44px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:500; color:#6E6B64;}
+    .caret{display:inline-block; width:2px; height:25px; background:#8F6420; border-radius:1px; vertical-align:-5px; margin-left:2px;}
+    .pin{position:absolute; width:20px; height:20px; border-radius:50%; background:#1A1917; color:#FBFAF6; font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 3px rgba(251,250,246,0.9);}
+    .photo{position:relative; border-radius:16px; overflow:hidden; border:1px solid #E9E5D9; box-sizing:border-box; flex-shrink:0;}
+    .photo svg{display:block; width:100%; height:100%;}
+    .add{color:#8F6420; font-weight:600;}
+    .lift{box-shadow:0 1px 3px rgba(26,25,23,0.05), 0 10px 26px rgba(26,25,23,0.07);}
+  </style>
+</helmet>
+
+<div style="width:390px; height:844px; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden; background:linear-gradient(180deg,#FBFAF6 0%,#F4F1E8 100%); color:#1A1917;">
+<!-- Onboarding · photos work too · B · four plates · 22 October -->
+  <div style="height:56px; flex-shrink:0;"></div>
+  <div style="padding:8px 16px 0 16px; height:44px; flex-shrink:0; display:flex; align-items:center; gap:12px;">
+    <div style="width:44px; height:44px; border-radius:50%; background:#FFFFFF; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1A1917" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <div style="flex-grow:1; height:4px; border-radius:2px; background:#E8E4D8; overflow:hidden;">
+      <div style="width:26.7%; height:4px; border-radius:2px; background:#8F6420;"></div>
+    </div>
+  </div>
+
+  <div style="padding:22px 20px 0 20px; display:flex; flex-direction:column; gap:16px; flex-grow:1;">
+    <div style="display:flex; flex-direction:column; gap:9px;">
+      <div class="label">Photos work too</div>
+      <div style="font-size:28px; font-weight:600; letter-spacing:-0.5px; line-height:1.2; text-wrap:balance;">Snap any plate.</div>
+      <div style="font-size:15.5px; color:#56534C; line-height:1.5; text-wrap:pretty;">Circa turns the photo into words, then estimates from them.</div>
+    </div>
+    <!-- four kitchens, one desi: the cuisine rule in CLAUDE.md -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 12px;">
+      <div style="display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <div class="photo" style="height:118px;"><svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="et" cx="48%" cy="46%" r="78%"><stop offset="0" stop-color="#7A6150"/><stop offset="1" stop-color="#3B2D24"/></radialGradient>
+          <radialGradient id="ep" cx="42%" cy="38%" r="64%"><stop offset="0" stop-color="#FCFAF4"/><stop offset="1" stop-color="#E2DACB"/></radialGradient>
+          <radialGradient id="ev" cx="50%" cy="50%" r="72%"><stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>
+          <filter id="eb"><feGaussianBlur stdDeviation="9"/></filter>
+        </defs>
+        <rect width="400" height="400" fill="url(#et)"/>
+        <ellipse cx="196" cy="214" rx="150" ry="150" fill="#000" opacity="0.38" filter="url(#eb)"/>
+        <circle cx="190" cy="206" r="146" fill="url(#ep)"/>
+        <g transform="rotate(-12 150 170)"><rect x="88" y="112" width="124" height="114" rx="20" fill="#B9772F"/><rect x="98" y="122" width="104" height="94" rx="14" fill="#E4B26C"/></g>
+        <g transform="rotate(9 150 262)"><rect x="96" y="208" width="120" height="110" rx="20" fill="#B9772F"/><rect x="106" y="218" width="100" height="90" rx="14" fill="#E9BC7B"/></g>
+        <path d="M212 150 C 214 112 262 104 288 124 C 316 140 312 186 284 200 C 258 214 214 198 212 150 Z" fill="#FFFDF7"/>
+        <circle cx="258" cy="156" r="20" fill="#EFA92A"/><circle cx="252" cy="150" r="6" fill="#F8D27A"/>
+        <path d="M214 258 C 210 222 252 210 280 226 C 310 242 306 290 276 300 C 246 312 218 292 214 258 Z" fill="#FFFDF7"/>
+        <circle cx="260" cy="260" r="20" fill="#EFA92A"/><circle cx="254" cy="254" r="6" fill="#F8D27A"/>
+        <circle cx="348" cy="66" r="44" fill="#000" opacity="0.3" filter="url(#eb)"/>
+        <circle cx="346" cy="62" r="40" fill="#EFE9DE"/><circle cx="346" cy="62" r="31" fill="#B98552"/>
+        <ellipse cx="338" cy="54" rx="10" ry="5" fill="#CFA171" opacity="0.7"/>
+        <rect width="400" height="400" fill="url(#ev)"/>
+      </svg></div>
+        <div style="font-size:13px; color:#56534C; line-height:1.35; padding:0 2px;">2 fried eggs, toast and tea</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <div class="photo" style="height:118px;"><svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" style="display:block; width:100%; height:100%;">
+        <defs>
+          <radialGradient id="sart" cx="48%" cy="46%" r="78%"><stop offset="0" stop-color="#7A6150"/><stop offset="1" stop-color="#3B2D24"/></radialGradient>
+          <radialGradient id="sarp" cx="42%" cy="38%" r="64%"><stop offset="0" stop-color="#FCFAF4"/><stop offset="1" stop-color="#E2DACB"/></radialGradient>
+          <radialGradient id="sars" cx="44%" cy="40%" r="62%"><stop offset="0" stop-color="#B9672E"/><stop offset="1" stop-color="#76391A"/></radialGradient>
+          <radialGradient id="sarv" cx="50%" cy="50%" r="72%"><stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>
+          <filter id="sarb"><feGaussianBlur stdDeviation="9"/></filter>
+          <filter id="sarf"><feGaussianBlur stdDeviation="0.7"/></filter>
+        </defs>
+        <rect width="400" height="400" fill="url(#sart)"/>
+        <path d="M0 70 C 120 60 260 84 400 64 M0 150 C 140 140 250 162 400 146 M0 330 C 110 318 280 340 400 322" fill="none" stroke="#2E231C" stroke-width="2" opacity="0.35"/>
+        <ellipse cx="196" cy="222" rx="150" ry="150" fill="#000" opacity="0.38" filter="url(#sarb)"/>
+        <g filter="url(#sarf)">
+          <circle cx="188" cy="210" r="146" fill="url(#sarp)"/>
+          <circle cx="188" cy="210" r="118" fill="none" stroke="#D9D1C1" stroke-width="2"/>
+          <path d="M70 236 C 64 196 92 178 124 182 C 150 172 178 196 176 228 C 182 262 160 300 120 296 C 88 300 72 270 70 236 Z" fill="#F6F1E4"/>
+          <ellipse cx="102" cy="214" rx="4.2" ry="1.9" transform="rotate(20 102 214)" fill="#E6DEC9"/><ellipse cx="118" cy="236" rx="4.2" ry="1.9" transform="rotate(70 118 236)" fill="#E6DEC9"/><ellipse cx="134" cy="204" rx="4.2" ry="1.9" transform="rotate(140 134 204)" fill="#E6DEC9"/><ellipse cx="96" cy="252" rx="4.2" ry="1.9" transform="rotate(100 96 252)" fill="#E6DEC9"/><ellipse cx="146" cy="248" rx="4.2" ry="1.9" transform="rotate(30 146 248)" fill="#E6DEC9"/><ellipse cx="122" cy="270" rx="4.2" ry="1.9" transform="rotate(160 122 270)" fill="#E6DEC9"/><ellipse cx="156" cy="222" rx="4.2" ry="1.9" transform="rotate(80 156 222)" fill="#E6DEC9"/><ellipse cx="88" cy="228" rx="4.2" ry="1.9" transform="rotate(10 88 228)" fill="#E6DEC9"/><ellipse cx="138" cy="282" rx="4.2" ry="1.9" transform="rotate(120 138 282)" fill="#E6DEC9"/><ellipse cx="110" cy="194" rx="4.2" ry="1.9" transform="rotate(50 110 194)" fill="#E6DEC9"/><ellipse cx="164" cy="262" rx="4.2" ry="1.9" transform="rotate(170 164 262)" fill="#E6DEC9"/><ellipse cx="104" cy="288" rx="4.2" ry="1.9" transform="rotate(60 104 288)" fill="#E6DEC9"/>
+          <circle cx="242" cy="176" r="70" fill="#000" opacity="0.18" filter="url(#sarb)"/>
+          <circle cx="240" cy="172" r="68" fill="#EEE7D9"/>
+          <circle cx="240" cy="172" r="56" fill="url(#sars)"/>
+          <ellipse cx="232" cy="160" rx="11" ry="8" fill="#C9824A"/><ellipse cx="258" cy="186" rx="9" ry="7" fill="#D49158"/><ellipse cx="214" cy="192" rx="10" ry="7" fill="#8E4A20"/><ellipse cx="246" cy="208" rx="8" ry="6" fill="#C9824A"/><ellipse cx="268" cy="150" rx="7" ry="5" fill="#E0A15E"/><ellipse cx="222" cy="136" rx="8" ry="6" fill="#9C5525"/><circle cx="240" cy="176" r="2.1" fill="#5E7A3A"/><circle cx="226" cy="172" r="2.1" fill="#5E7A3A"/><circle cx="256" cy="166" r="2.1" fill="#5E7A3A"/><circle cx="236" cy="198" r="2.1" fill="#5E7A3A"/><circle cx="264" cy="200" r="2.1" fill="#5E7A3A"/>
+          <circle cx="196" cy="284" r="17" fill="#7E9F52"/><circle cx="196" cy="284" r="13.5" fill="#DCE7C0"/><circle cx="192" cy="282" r="1.4" fill="#B9CC90"/><circle cx="200" cy="286" r="1.4" fill="#B9CC90"/><circle cx="197" cy="279" r="1.4" fill="#B9CC90"/><circle cx="228" cy="296" r="17" fill="#7E9F52"/><circle cx="228" cy="296" r="13.5" fill="#DCE7C0"/><circle cx="224" cy="294" r="1.4" fill="#B9CC90"/><circle cx="232" cy="298" r="1.4" fill="#B9CC90"/><circle cx="229" cy="291" r="1.4" fill="#B9CC90"/><circle cx="176" cy="312" r="17" fill="#7E9F52"/><circle cx="176" cy="312" r="13.5" fill="#DCE7C0"/><circle cx="172" cy="310" r="1.4" fill="#B9CC90"/><circle cx="180" cy="314" r="1.4" fill="#B9CC90"/><circle cx="177" cy="307" r="1.4" fill="#B9CC90"/><path d="M240 266 q 22 -14 40 4 q -18 16 -40 -4 z" fill="#C8452F"/><path d="M248 266 q 12 -6 24 2" fill="none" stroke="#E7826B" stroke-width="2"/><path d="M252 292 q 22 -14 40 4 q -18 16 -40 -4 z" fill="#C8452F"/><path d="M260 292 q 12 -6 24 2" fill="none" stroke="#E7826B" stroke-width="2"/>
+          <circle cx="348" cy="62" r="44" fill="#000" opacity="0.3" filter="url(#sarb)"/>
+          <circle cx="346" cy="58" r="40" fill="#EFE9DE"/>
+          <circle cx="346" cy="58" r="31" fill="#B98552"/>
+          <ellipse cx="338" cy="50" rx="10" ry="5" fill="#CFA171" opacity="0.7"/>
+        </g>
+        <rect width="400" height="400" fill="url(#sarv)"/>
+      </svg></div>
+        <div style="font-size:13px; color:#56534C; line-height:1.35; padding:0 2px;">rice with chicken stew</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <div class="photo" style="height:118px;"><svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="nt" cx="48%" cy="46%" r="78%"><stop offset="0" stop-color="#7A6150"/><stop offset="1" stop-color="#3B2D24"/></radialGradient>
+          <radialGradient id="np" cx="42%" cy="38%" r="64%"><stop offset="0" stop-color="#FCFAF4"/><stop offset="1" stop-color="#E2DACB"/></radialGradient>
+          <radialGradient id="nv" cx="50%" cy="50%" r="72%"><stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>
+          <filter id="nb"><feGaussianBlur stdDeviation="9"/></filter>
+        </defs>
+        <rect width="400" height="400" fill="url(#nt)"/>
+        <ellipse cx="204" cy="214" rx="152" ry="152" fill="#000" opacity="0.38" filter="url(#nb)"/>
+        <circle cx="200" cy="206" r="148" fill="#F3EEE4"/><circle cx="200" cy="206" r="126" fill="#C98F4A"/>
+        <path d="M110 150 C 150 110, 230 280, 290 230" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M124 168 C 159 140, 225 255, 284 260" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M138 186 C 168 170, 220 230, 278 230" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M152 150 C 177 200, 215 280, 272 260" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M166 168 C 186 110, 210 255, 266 230" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M180 186 C 195 140, 205 230, 260 260" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M194 150 C 204 170, 200 280, 254 230" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M208 168 C 213 200, 195 255, 248 260" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M222 186 C 222 110, 190 230, 242 230" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M236 150 C 231 140, 185 280, 236 260" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/><path d="M250 168 C 240 170, 180 255, 230 230" fill="none" stroke="#F3D88E" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="150" cy="170" rx="26" ry="12" transform="rotate(-30 150 170)" fill="#5E8A3A"/><ellipse cx="248" cy="250" rx="24" ry="11" transform="rotate(20 248 250)" fill="#6E9A45"/>
+        <rect x="160" y="246" width="34" height="8" rx="4" transform="rotate(-25 177 250)" fill="#E07B39"/><rect x="232" y="150" width="32" height="8" rx="4" transform="rotate(35 248 154)" fill="#E07B39"/>
+        <path d="M262 196 q 18 -10 32 4 q -14 12 -32 -4 z" fill="#C8452F"/><path d="M130 226 q 18 -10 32 4 q -14 12 -32 -4 z" fill="#C8452F"/>
+        <ellipse cx="206" cy="182" rx="22" ry="13" fill="#EED3AE"/><ellipse cx="190" cy="214" rx="20" ry="12" transform="rotate(25 190 214)" fill="#E6C397"/>
+        <rect x="250" y="20" width="12" height="230" rx="6" transform="rotate(38 256 135)" fill="#8B5A2B"/><rect x="272" y="26" width="12" height="230" rx="6" transform="rotate(42 278 141)" fill="#7A4D24"/>
+        <rect width="400" height="400" fill="url(#nv)"/>
+      </svg></div>
+        <div style="font-size:13px; color:#56534C; line-height:1.35; padding:0 2px;">noodles with vegetables</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <div class="photo" style="height:118px;"><svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="kt" cx="48%" cy="46%" r="78%"><stop offset="0" stop-color="#7A6150"/><stop offset="1" stop-color="#3B2D24"/></radialGradient>
+          <radialGradient id="kp" cx="42%" cy="38%" r="64%"><stop offset="0" stop-color="#FCFAF4"/><stop offset="1" stop-color="#E2DACB"/></radialGradient>
+          <radialGradient id="kv" cx="50%" cy="50%" r="72%"><stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>
+          <filter id="kb"><feGaussianBlur stdDeviation="9"/></filter>
+        </defs>
+        <rect width="400" height="400" fill="url(#kt)"/>
+        <ellipse cx="176" cy="216" rx="130" ry="130" fill="#000" opacity="0.4" filter="url(#kb)"/>
+        <rect x="28" y="196" width="40" height="22" rx="11" fill="#2A2725"/><rect x="276" y="196" width="40" height="22" rx="11" fill="#2A2725"/>
+        <circle cx="172" cy="208" r="122" fill="#2E2B29"/><circle cx="172" cy="208" r="104" fill="#A9461F"/>
+        <circle cx="160" cy="194" r="70" fill="#B9562A" opacity="0.7"/>
+        <ellipse cx="140" cy="176" rx="22" ry="17" fill="#C9773F"/><ellipse cx="196" cy="160" rx="20" ry="15" fill="#9C4A22"/><ellipse cx="206" cy="232" rx="23" ry="17" fill="#C27036"/><ellipse cx="136" cy="240" rx="19" ry="14" fill="#9C4A22"/><ellipse cx="172" cy="206" rx="17" ry="13" fill="#D18447"/>
+        <path d="M118 208 l 30 -6" stroke="#4E7A2E" stroke-width="5" stroke-linecap="round"/><path d="M214 192 l 26 10" stroke="#4E7A2E" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="158" cy="150" r="3" fill="#6E9A45"/><circle cx="226" cy="214" r="3" fill="#6E9A45"/><circle cx="182" cy="258" r="3" fill="#6E9A45"/><circle cx="120" cy="220" r="3" fill="#6E9A45"/>
+        <path d="M188 182 l 14 -4 M150 222 l 12 5" stroke="#EBC57D" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="336" cy="328" r="70" fill="#000" opacity="0.3" filter="url(#kb)"/>
+        <circle cx="330" cy="318" r="64" fill="#D9B176"/><circle cx="320" cy="334" r="62" fill="#E7C78F"/>
+        <ellipse cx="300" cy="320" rx="7" ry="4" fill="#B7864B"/><ellipse cx="336" cy="350" rx="8" ry="4" fill="#B7864B"/><ellipse cx="344" cy="312" rx="6" ry="3" fill="#C49456"/><ellipse cx="312" cy="364" rx="6" ry="3" fill="#C49456"/>
+        <rect width="400" height="400" fill="url(#kv)"/>
+      </svg></div>
+        <div style="font-size:13px; color:#56534C; line-height:1.35; padding:0 2px;">chicken karahi and 2 rotis</div>
+      </div>
+    </div>
+    <div style="background:#EFEBDF; border-radius:16px; padding:14px 16px; display:flex; gap:10px; align-items:flex-start;">
+      <div style="padding-top:2px; flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8F6420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M13.5 8.5l3 3"/></svg></div>
+      <div style="font-size:15px; line-height:1.45; color:#1A1917; text-wrap:pretty;">Then add what a photo can't see: <span class="add">made with 1 tbsp oil</span>, <span class="add">half a plate</span>, <span class="add">no sugar</span>.</div>
+    </div>
+  </div>
+  <div style="padding:12px 20px 12px 20px; display:flex; flex-direction:column; gap:12px; flex-shrink:0;">
+    <div style="font-size:15px; color:#56534C; line-height:1.45; text-align:center; text-wrap:pretty;">Photos are quick. <span style="color:#1A1917; font-weight:600;">Typing tells Circa the most.</span></div>
+    <div class="btn">Continue</div>
+  </div>
+  <div style="height:34px; flex-shrink:0;"></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -728,6 +728,33 @@
       "y": 13630,
       "w": 390,
       "h": 844
+    },
+    {
+      "file": "OnbPhotoA.dc.html",
+      "title": "Onboarding · photos work too · A · one plate",
+      "page": "page-1",
+      "x": 0,
+      "y": 15870,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnbPhotoB.dc.html",
+      "title": "Onboarding · photos work too · B · four plates",
+      "page": "page-1",
+      "x": 470,
+      "y": 15870,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnbPhotoC.dc.html",
+      "title": "Onboarding · photos work too · C · three plates",
+      "page": "page-1",
+      "x": 940,
+      "y": 15870,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -737,7 +764,7 @@
       "x": 0,
       "y": -300,
       "w": 880,
-      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\nRow 10: onboarding · the widget step — 10 October.\nRow 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.\nRow 12: onboarding · try a meal, redrawn — A built — 11 October.\nRow 13: photo · check the words, three directions — A built — 11 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
+      "text": "Circa — the design, growing one batch at a time.\n\nRow 1: the two screens the whole app hangs off.\nRow 2: the logging loop — everything the dock leads to, plus the states the day view spends its time in.\nRow 3: moving around, and looking back.\nRow 4: onboarding.\nRow 5: the summary-to-paywall seam.\nRow 6: the rest of onboarding, and settings.\nRow 7: the constraints, proven.\nRow 8: widgets (Step 14).\nRow 9: the paywall, three pages (15e) — 8 October.\nRow 10: onboarding · the widget step — 10 October.\nRow 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.\nRow 12: onboarding · try a meal, redrawn — A built — 11 October.\nRow 13: photo · check the words, three directions — A built — 11 October.\nRow 14: onboarding · photos work too, three directions (15g) — C chosen — 22 October.\n\nAll data is placeholder. Photos are drawn placeholders, not food."
     },
     {
       "id": "note-entry",
@@ -858,6 +885,14 @@
       "y": 13630,
       "w": 340,
       "text": "ONBOARDING · TRY A MEAL · redrawn and built 11 October\n\nDECIDED, SAME DAY · A is built. B was not chosen. The example fallback was drawn and left as built.\n\nThe third screen, and Step 15's aha. As built it read like a form and waited like a demo. This row redraws it in the app's own language. The flow, the limits and the fallback stay as 15b and 15c built them.\n\nAS BUILT · the pins\n1 · The field doesn't look like one: no edge, and a grey \"Your meal\" that reads as a caption.\n2 · The examples are bordered buttons, so they outweigh the field they fill.\n3 · The wait is a system spinner, the one thing rule 1 rules out.\n4 · The page is empty while it waits, so the answer arrives all at once.\n\nREADY TO WRITE · The field is the one raised surface on the page: a white card with the dock's soft shadow (circaLift), a placeholder that says what to do, and its real 200-character limit in mono. The examples become three lines on paper with an ochre ↖. Tapping one fills the card.\n\nWRITING · The card takes an ink border, and the counter counts. Estimate this rides the keyboard; the examples and \"Show me an example instead\" wait under it.\n\nESTIMATING · A (built) · The page takes the answer's shape at once: their words as the title, the Entry nutrition card with the dotted rule alone where each number will land (rule 1), and a Breakdown card holding the status line and the timeline's ochre sweep. Waiting and answered are one view, so when the answer lands the numbers appear on their rules and rows replace the status. Nothing above them moves. The status changes every three seconds, as the timeline's does: reading your words → estimating calories and macros → preparing your breakdown. No spinner, no percentage.\n\nESTIMATING · B (not chosen) · Their sentence large, with an ochre dotted rule sweeping under the words while it's read. More of a moment, but when the answer lands the sentence has to move up into the title and the cards rise under it: one transition where A has none.\n\nFIRST GUESS · Their words stay the title, verbatim (rule 3), where the old build showed Circa's tidied name. The nutrition card leads, calories loudest. The biggest assumption sits in the sunken card with the question and the one Change an amount button; the pencil on Breakdown opens the same sheet. With no assumption, the card keeps the question and the button. Continue stays primary: the edit is invited, never required (15c).\n\nAFTER AN EDIT · The nutrition card's calorie row becomes the change: the first guess struck through, theirs large in ochre on the dotted rule, the difference and what they changed, and the editor's own promise: \"Only the amounts you changed were scaled. Nothing else was re-estimated.\" The changed row says \"You set the amount\". The button becomes \"Let's find your targets\": the body questions come next, and the plan screen shows this meal against the calorie target. The first guess keeps Continue.\n\nEXAMPLE · Drawn, not built: the fallback in the same frame — the notice, the example as the title, one card.\n\nNEW COPY · the placeholder, the three status lines, \"This takes a few seconds.\", the line under the assumption, the correction line and the promise. Everything else is the build's.\n\nUNCHANGED · the 20 s timeout and three tries, the example path, nothing saved, no mascot (mascot rule 5). Built from CircaCard, CircaEstimate's pending rule, CircaProgressRail, DetailMacroSummaryCard, MealBreakdownCard and the amounts editor.\n\nLight only. The build takes dark from the kit's tokens, and the change stacks at AX sizes (rule 8).\n\nThe same meal throughout: \"rice with chicken stew\", oil 2 → 1 tbsp makes 705 → 585 (−120)."
+    },
+    {
+      "id": "note-photo-onboarding",
+      "page": "page-1",
+      "x": 1410,
+      "y": 15870,
+      "w": 340,
+      "text": "ONBOARDING · PHOTOS WORK TOO · three directions · 22 October (15g)\n\nDECIDED, SAME DAY · C, with the founder's own photos. A and B were not chosen.\n\nA reviewer said Circa feels like a text app: onboarding only ever shows typing. One screen straight after try-a-meal shows that a photo is enough, and that a few words say what a photo can't. Information only: Continue and Back. The live meal stays text-only (15a).\n\nIN EVERY DIRECTION\n· \"Photos work too\" over a short headline, real food in the middle, and one line above Continue: \"Photos are quick. Typing tells Circa the most.\"\n· It shows what the app does. A photo becomes Circa's words (\"From your photo\") and the estimate is made from those words (Row 13). The person's additions are ochre; Circa's guesses carry the dotted rule (rule 1).\n· \"Less for Circa to guess\", never \"more accurate\".\n· No mascot: the food is the picture. The progress bar counts 4 of 15.\n\nA · ONE PLATE, TWO READINGS · One large photo, then Circa's reading of it with its three guesses dotted, then the same card in the person's words. The most explicit; one plate.\n\nB · FOUR PLATES · Four kitchens, each with what Circa reads from it, then a sunken tip: add what a photo can't see. The most food on screen; the before and after is told, not shown.\n\nC · THREE PLATES, ONE READ TWO WAYS · chosen · A's two readings under a strip of three plates, the one being read ringed in ochre. Food first and the explicit comparison, with smaller photos.\n\nC carries the founder's own photos, cropped around the food: a takeaway seafood pizza, home-cooked rice with chicken and green-pepper curry and a boiled egg (the one read), and a restaurant kung pao chicken (cropped to the bowl, lightened half a stop and cooled out of the candlelight). The first real food on the paper (design.md Open 2). The 660 × 828 sources, sRGB with no metadata, are in design-canvas/onboarding-photos/. A and B keep drawn placeholders.\n\nLight only. The build takes dark from the kit's tokens."
     }
   ],
   "launch": {

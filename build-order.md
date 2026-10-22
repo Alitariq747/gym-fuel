@@ -88,6 +88,7 @@ fresh session reads this file, not the chat history.
 - [x] **15d** · Onboarding: the logging-problem question and the plan callback · no preselected goal
 - [x] **15e** · Onboarding: a paywall that continues the story
 - [x] **15f** · Onboarding: the widget step
+- [x] **15g** · Onboarding: photos work too, and words say more · *built 22 October; ships in 1.1.1 or 1.1.2*
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
 and nothing here commits on your behalf. Fresh session for the next step.
@@ -124,7 +125,7 @@ All three are made. Nothing downstream is waiting on you any more.
 |---|---|
 | ~~**App name**~~ | **Done 8 September: `Circa: Food & Calorie Journal`** (29/30), subtitle `AI macro tracker, no weighing` (29/30). App Store name verified clear. USPTO searched 12 October, risk accepted 14 October — see `store-copy.md`. **Still owed: the handles**, which do not block a build. |
 | ~~**Beachhead cuisine**~~ | **Decided 11 September: there is no single beachhead — the product is cuisine-agnostic.** Cuisines are *lanes*, not an identity: the default listing carries none in particular, and a cuisine reaches its audience through its own Custom Product Page in Step 11. The name and subtitle were already agnostic, so nothing about them changes. What does change is **Step 6's portion reference set**, which spreads across cuisines instead of being 200 desi dishes. |
-| ~~**Confirm pricing**~~ | **Decided 11 September: unchanged — $5.99/mo, $49.99/yr, 3-day trial.** The $7.99 / $54.99 / 14-day move in `project-brief.md` §6 is **deferred, not rejected**; revisit after approval. This is what closes Step 9's items 2 and 3 and takes the urgency out of Step 1. **14 October: Pakistan and India get their own prices — Rs 499/mo and Rs 3,900/yr in each local rupee** (PKR ≈ $1.80 / $14; INR ≈ $5.70 / $44), set per country in App Store Connect; the trial and the 500 allowance are unchanged. See `project-brief.md` §6. |
+| ~~**Confirm pricing**~~ | **Decided 11 September: unchanged — $5.99/mo, $49.99/yr, 3-day trial.** The $7.99 / $54.99 / 14-day move in `project-brief.md` §6 is **deferred, not rejected**; revisit after approval. This is what closes Step 9's items 2 and 3 and takes the urgency out of Step 1. **Set 17 October: Pakistan gets its own prices — Rs 600/mo and Rs 4,900/yr** (≈ $2.14 / $17.50), set in App Store Connect; India keeps Apple's automatic prices. The trial and the 500 allowance are unchanged. See `project-brief.md` §6. |
 
 ---
 
@@ -1590,6 +1591,43 @@ tracking which tab is opened.
 + tests) · `OnboardingFlowView.swift` · `TodaySnapshot.swift` (`sample()` moved in)
 · `TodayMediumView.swift`, `TodayWidgetParts.swift`, `TodayLockViews.swift` moved
 into the app folder · `project.pbxproj` · `OnboardingIllustrationTests`
+
+### 15g — Photos work too, and words say more · ~110–140 lines
+
+**Added and built 22 October** (~170 lines), from a reviewer the night before: onboarding only ever shows
+typing, so Circa reads as a text app rather than a food app. Drawn on the canvas,
+Row 14, in three directions; **C chosen the same day** (`design-canvas/OnbPhotoC.dc.html`):
+a strip of three photos, one of them read two ways.
+
+**What the user gets:** one screen straight after try-a-meal. Real food photos show
+that a photo is enough to log a meal; one example shows what a few words add that
+a photo can't see (the oil, the cut, how much); one line at the bottom says
+typing gives Circa more to go on.
+
+- **One screen, information only.** Continue and Back; nothing to try. The live
+  meal stays text-only (15a: photos cost more and take longer). The flow goes from
+  14 steps to 15. Step 15 removed `loggingTips` for being a slide that told rather
+  than showed, so this one has to earn its place by showing food.
+- **It matches what the app does.** A photo becomes Circa's words ("From your
+  photo"), and the estimate is made from those words (canvas Row 13). The example
+  is that card plus the person's additions.
+- **No accuracy claim.** "Less to guess", never "more accurate".
+- **Real photos, the founder's own,** in `design-canvas/onboarding-photos/`: a
+  takeaway pizza, home-cooked rice with chicken curry (the plate that is read), and
+  a restaurant kung pao chicken (replacing a thali, so the strip isn't two-thirds
+  South Asian). 660 × 828, sRGB, no metadata, 160–180 KB each. The first real food
+  photography in the app; `design.md` Open 2.
+- **No mascot.** The photos are the picture.
+- **Ships in 1.1.1** if built by 26 October; otherwise 1.1.2, so the English (U.K.)
+  listing isn't held for it.
+
+**Files** new `OnboardingPhotoStepView.swift` · `OnboardingFlowView.swift` (case,
+analytics name, illustration, order) · the photo image sets ·
+`OnboardingIllustrationTests`
+
+**Done when** a fresh install sees the screen after try-a-meal, Back returns to their
+meal as they left it, Continue goes to the formula step, and the progress bar counts
+the extra step.
 
 ### Measuring it
 

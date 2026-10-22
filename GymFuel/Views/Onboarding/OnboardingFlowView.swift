@@ -11,6 +11,7 @@ enum OnboardingStep: Hashable, CaseIterable {
     case liftEatsIntro
     case loggingProblem
     case tryMeal
+    case photos
     case gender
     case age
     case height
@@ -31,6 +32,8 @@ enum OnboardingStep: Hashable, CaseIterable {
             return "logging_problem"
         case .tryMeal:
             return "try_meal"
+        case .photos:
+            return "photos"
         case .gender:
             return "gender"
         case .age:
@@ -58,10 +61,10 @@ enum OnboardingStep: Hashable, CaseIterable {
 
     /// The intro, the live meal and the plan give their whole height to
     /// content. design.md, "The plate mascot", rule 5. The widget step's
-    /// preview is its picture.
+    /// preview and the photo step's photos are their pictures.
     var illustration: OnboardingIllustration {
         switch self {
-        case .liftEatsIntro, .tryMeal, .widget, .summary: .hidden
+        case .liftEatsIntro, .tryMeal, .photos, .widget, .summary: .hidden
         case .gender, .loggingProblem: .plate(.wonder)
         case .age: .plate(.write)
         case .height: .plate(.stretch)
@@ -100,7 +103,7 @@ struct OnboardingFlowView: View {
     private var healthStepAvailable: Bool { healthWeightSync.isAvailable }
 
     private var orderedSteps: [OnboardingStep] {
-        var steps: [OnboardingStep] = [.liftEatsIntro, .loggingProblem, .tryMeal]
+        var steps: [OnboardingStep] = [.liftEatsIntro, .loggingProblem, .tryMeal, .photos]
         steps += [.gender, .age, .height, .weight, .activityLevel, .goal]
         // Maintain has no goal weight, so it skips that step.
         if data.goalType != .maintain { steps.append(.goalWeight) }
@@ -203,8 +206,11 @@ struct OnboardingFlowView: View {
             OnboardingTryMealStepView(
                 triedMeal: $data.triedMeal,
                 problem: data.loggingProblem,
-                onNext: { go(to: .gender) }
+                onNext: { go(to: .photos) }
             )
+
+        case .photos:
+            OnboardingPhotoStepView(onNext: { go(to: .gender) })
 
         case .gender:
             OnboardingGenderStepView(

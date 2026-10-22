@@ -38,6 +38,9 @@ Re-export after any canvas edit; nothing syncs automatically.
 | `OnbIntro.dc.html` | Onboarding · the problem |
 | `OnbName.dc.html` | Onboarding · name |
 | `OnbNotifications.dc.html` | Onboarding · reminders (3a) |
+| `OnbPhotoA.dc.html` | Onboarding · photos work too · A · one plate |
+| `OnbPhotoB.dc.html` | Onboarding · photos work too · B · four plates |
+| `OnbPhotoC.dc.html` | Onboarding · photos work too · C · three plates |
 | `OnbSummary.dc.html` | Onboarding · your numbers |
 | `OnbTips.dc.html` | Onboarding · how to write |
 | `OnbWeight.dc.html` | Onboarding · weight |
@@ -125,6 +128,7 @@ Row 10: onboarding · the widget step — 10 October.
 Row 11: the amounts editor, four versions — A's bar built, D dropped — 10 October.
 Row 12: onboarding · try a meal, redrawn — A built — 11 October.
 Row 13: photo · check the words, three directions — A built — 11 October.
+Row 14: onboarding · photos work too, three directions (15g) — C chosen — 22 October.
 
 All data is placeholder. Photos are drawn placeholders, not food.
 
@@ -461,6 +465,30 @@ Light only. The build takes dark from the kit's tokens, and its buttons stack at
 
 The same meal throughout: "about a plate of white rice, about a bowl of chicken stew (could be beef), sliced cucumber and tomato, and a cup of milky tea", edited to beef stew made with 2 tbsp oil.
 
+### note-photo-onboarding (page-1)
+
+ONBOARDING · PHOTOS WORK TOO · three directions · 22 October (15g)
+
+DECIDED, SAME DAY · C, with the founder's own photos. A and B were not chosen.
+
+A reviewer said Circa feels like a text app: onboarding only ever shows typing. One screen straight after try-a-meal shows that a photo is enough, and that a few words say what a photo can't. Information only: Continue and Back. The live meal stays text-only (15a).
+
+IN EVERY DIRECTION
+· "Photos work too" over a short headline, real food in the middle, and one line above Continue: "Photos are quick. Typing tells Circa the most."
+· It shows what the app does. A photo becomes Circa's words ("From your photo") and the estimate is made from those words (Row 13). The person's additions are ochre; Circa's guesses carry the dotted rule (rule 1).
+· "Less for Circa to guess", never "more accurate".
+· No mascot: the food is the picture. The progress bar counts 4 of 15.
+
+A · ONE PLATE, TWO READINGS · One large photo, then Circa's reading of it with its three guesses dotted, then the same card in the person's words. The most explicit; one plate.
+
+B · FOUR PLATES · Four kitchens, each with what Circa reads from it, then a sunken tip: add what a photo can't see. The most food on screen; the before and after is told, not shown.
+
+C · THREE PLATES, ONE READ TWO WAYS · chosen · A's two readings under a strip of three plates, the one being read ringed in ochre. Food first and the explicit comparison, with smaller photos.
+
+C carries the founder's own photos, cropped around the food: a takeaway seafood pizza, home-cooked rice with chicken and green-pepper curry and a boiled egg (the one read), and a restaurant kung pao chicken (cropped to the bowl, lightened half a stop and cooled out of the candlelight). The first real food on the paper (design.md Open 2). The 660 × 828 sources, sRGB with no metadata, are in design-canvas/onboarding-photos/. A and B keep drawn placeholders.
+
+Light only. The build takes dark from the kit's tokens.
+
 ## Not from the canvas — `app-icon/`
 
 The plate app icon's sources, added 26 September 2026. They are not artboards and
@@ -477,3 +505,15 @@ channel** (App Store Connect rejects one) — sRGB for default and dark, Gray Ga
 2.2 for tinted. Keep the plate centred and the corners square; iOS masks them. The
 dark plate is dimmed on purpose: Apple asks dark icons to avoid excessively
 bright images.
+
+## Not from the canvas — `onboarding-photos/`
+
+The founder's own food photos for 15g's screen (`OnbPhotoC.dc.html`), added
+22 October 2026. Cropped around the food to the strip's 110 × 138 pt shape, at
+660 × 828, sRGB JPEG with no metadata. The canvas embeds 330 × 414 copies.
+
+| File | Shows |
+|---|---|
+| `pizza.jpg` | A takeaway seafood pizza in its box |
+| `rice-curry.jpg` | Home-cooked rice, chicken and green-pepper curry, a boiled egg — the plate the screen reads |
+| `kung-pao.jpg` | A restaurant kung pao chicken, lightened half a stop and cooled out of the candlelight |
