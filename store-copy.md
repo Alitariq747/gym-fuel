@@ -34,6 +34,11 @@ added, and the Pro placeholder replaced with no price or trial length. A new
 promotional text with its first test, What's New for 1.1, and the App Review notes
 were added the same day.
 
+Revised 23 October, for 1.1.1: **the keyword lists are rebuilt from AppTweak data.**
+Desi food words have no measurable search volume, so English (U.K.) now carries
+generic terms, and English (Australia) and English (Canada) are added. What's New
+for 1.1.1 added.
+
 ---
 
 ## Sequence this correctly
@@ -113,15 +118,22 @@ duplicates multiply nothing.
 
 ### Keywords — one field per English locale
 
-Decided 12 October. Metadata is chosen by language, not country, and Apple sets
-**English (U.K.)** as the default language for Pakistan, India, the UK, the UAE
-and Saudi Arabia. The US storefront reads English (U.S.) and its nine secondaries,
-never English (U.K.). So the two fields do different jobs: the US field stays broad,
-and the U.K. field carries the desi terms. See Cross-localization below.
+Decided 12 October; the U.K. list rebuilt and the Australia and Canada lists added
+23 October, from AppTweak numbers (Volume / Difficulty / Chance / KEI) measured
+22–23 October. Metadata is chosen by language, not country (Apple's storefront
+table, Cross-localization below):
 
-No spaces after commas — a space costs a character. Neither field repeats a word
-from the name or subtitle (*circa, food, calorie, journal, AI, macro, tracker,
-weighing*); Apple indexes them together.
+- **English (U.S.)** — the United States.
+- **English (U.K.)** — the UK, Pakistan, India, the UAE, Saudi Arabia, Ireland and
+  Singapore; Australia and New Zealand read it as well as their own.
+- **English (Australia)** — Australia and New Zealand. Its field must not repeat a
+  U.K. word.
+- **English (Canada)** — Canada, which reads no other English field.
+
+Words are picked by KEI, with volume above 5 and relevance first. No spaces after
+commas — a space costs a character. No field repeats a word from the name or
+subtitle (*circa, food, calorie, journal, AI, macro, tracker, weighing*); Apple
+indexes them together.
 
 #### English (U.S.) — 99 / 100
 
@@ -138,27 +150,63 @@ counter,diary,meal,photo,diet,log,nutrition,protein,carb,weight,loss,deficit,hom
 - `homemade`, `recipe` are the positioning: "homemade food calories", "recipe
   calories".
 
-#### English (U.K.) — 100 / 100
+#### English (U.K.) — 99 / 100
 
 ```
-counter,diary,meal,photo,diet,desi,pakistani,indian,roti,biryani,daal,curry,homemade,protein,deficit
+weight,loss,protein,macros,snap,log,meal,calories,counter,diary,scanner,calculator,deficit,fat,lose
 ```
 
-These storefronts never read the US field, so this one carries the broad terms as
-well as the cuisine. Same name, subtitle and description as English (U.S.), in UK
-spelling. Keywords are invisible, so the listing still looks broad to every British
-user.
+The terms behind it, by UK KEI: weight tracker 52, protein tracker 43, weight loss
+41, calorie counter 40, macros 39, calorie deficit 37, fat loss 35, food scanner 33,
+calorie calculator 33, food log 31, snap calorie 31, macro calculator 30, meal
+tracker 29, calories 27, lose weight 14. Food diary is above volume 5; its numbers
+were not taken. `diet` (KEI 8), `nutrition` (6) and `healthy,eating` (7) made way.
+
+- `macros` stays despite *macro* in the subtitle: it scores KEI 39 on its own.
+- `scanner` reverses the 12 October call: "food scanner" is a top term for Cal AI
+  and scores KEI 33, and the screenshots show it reads a photo, not a barcode.
+
+Same name, subtitle and description as English (U.S.), in UK spelling.
+
+#### English (Australia) — 100 / 100
+
+```
+diet,nutrition,counting,homemade,recipe,cooking,portion,estimate,carbs,kcal,healthy,intake,gain,home
+```
+
+Every Australian term found above volume 5 — food scanner (KEI 34), fat loss (31),
+calorie calculator (28), calorie deficit (23), macro calculator (21), lose weight
+(13) — is covered by the U.K. field, which Australia also reads. So this field holds
+what the U.K. one dropped or had no room for: `counting` (calorie counting, KEI 26
+in the UK; volume 5 in Australia), `diet`, `nutrition`, and the home-cooking words.
+Most sit at volume 5 or were not measured; an empty character earns nothing.
+
+#### English (Canada) — 100 / 100
+
+```
+weight,loss,protein,log,counter,diary,scanner,calculator,nutrition,diet,meal,lose,macros,snap,recipe
+```
+
+By Canadian KEI: food diary 44, weight tracker 43, weight loss 43, protein tracker
+35, food log 34, calorie calculator 34, food scanner 31, calorie counter 28, macro
+calculator 28, nutrition 22, diet tracker 18, meal tracker 16, lose weight 12,
+macros 11, snap calorie 10. Against the U.K. list it drops `calories` (KEI 5),
+`deficit` (7) and `fat` (fat loss at volume 5), and adds `nutrition`, `diet` and
+`recipe` (unmeasured; the home-cooking word).
 
 #### Left out, and why
 
-- **No cuisine terms in the US field.** US desis lose desi search terms; the desi
-  Custom Product Page reaches them through creator links instead. A US secondary
-  locale can carry them later.
-- `scan`, `scanner` — people searching them expect a barcode scanner.
+- **Desi food words.** On 22 October every one checked — roti, biryani, karahi,
+  curry, daal, desi, pakistani and more — sat at volume 5, Apple's floor, in the
+  UK. The desi Custom Product Page reaches people through creator links instead.
+- `free` — high volume ("calorie counter free uk" 56), but logging needs Pro after
+  the trial, so searchers would hit the paywall and leave.
+- Other apps' names (MyFitnessPal, Cal AI, Lose It!, Cronometer) — Apple rejects
+  them.
+- `kilojoule`, `kJ` — Australians use them, but Circa shows kcal only.
 - `gym`, `bulk` — the listing no longer speaks to lifters, a lifter who lands on a
   food journal leaves, and conversion feeds ranking.
-- `kunna` (almost no searches), `halal` (searchers want halal food, not calories),
-  `karahi` (space), `macros` (the subtitle has *macro*).
+- `photo` (UK difficulty 97), `count` (count calories, UK KEI 8).
 
 ### Promotional Text — 161 / 170
 
@@ -168,7 +216,8 @@ Launch line, decided 14 October:
 Made for the meals food databases miss: your mom's stew, last night's curry, the stir-fry you make your way. Describe it, see what Circa assumed, fix what's off.
 ```
 
-**English (U.K.):** "mom's" becomes "mum's" (still 161).
+**English (U.K.) and English (Australia):** "mom's" becomes "mum's" (still 161).
+**English (Canada):** unchanged.
 
 Sits above the description on the product page and is not indexed for search. The
 previous line ("Understand the food you actually eat…") was dropped because the
@@ -236,7 +285,9 @@ Terms of Service: https://ahmadtariq.co/apps/circa/terms
 Terms of Use (Apple standard EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 ```
 
-**English (U.K.):** the same text with "takeout" changed to "takeaway".
+**English (U.K.) and English (Australia):** the same text with "takeout" changed to
+"takeaway" (2,772). **English (Canada):** the U.S. text unchanged — Canadian English
+says "takeout", and "cancelled" is already there.
 
 **Rules this text keeps:**
 - **No price or trial length.** English (U.K.) is also the listing in Pakistan and
@@ -247,7 +298,18 @@ Terms of Use (Apple standard EULA): https://www.apple.com/legal/internet-service
 - **The Apple standard EULA link stays** — a missing one is a common 3.1.2 rejection.
 - **Staples first, one desi touch** ("two rotis"), matching the default screenshots.
 
-### What's New in This Version — 763 / 4,000
+### What's New in This Version — 159 / 4,000
+
+Decided 23 October, for version 1.1.1. The same text for all four English locales.
+
+```
+A new screen in setup shows that you can log a meal from a photo as well as by typing, and how a few words, like the oil or how much, make the estimate closer.
+```
+
+Only what 1.1.1 adds: the setup screen from Step 15g. People already using Circa
+don't see setup again.
+
+#### Version 1.1 — 763 / 4,000
 
 Decided 14 October, for version 1.1. The same text for both English locales.
 
@@ -448,7 +510,7 @@ storefront. We cannot show a desi listing only to desi Brits — but we can run:
 | Page | Screenshots | Given to |
 |---|---|---|
 | Default | Generic home cooking | Organic search, broad terms |
-| Desi | Biryani, roti, karahi | Desi creators, desi keywords |
+| Desi | Biryani, roti, karahi | Desi creators (links; desi searches barely exist) |
 | *(later)* West African | Jollof, egusi | That creator set |
 | *(later)* Arab / Gulf | Machboos, kabsa | Gulf creators |
 
@@ -471,10 +533,13 @@ localizations*) sets each storefront's default language and the others it reads:
 | Pakistan | English (U.K.) | Urdu |
 | India | English (U.K.) | Hindi, Urdu and nine other Indian languages |
 | UAE, Saudi Arabia | English (U.K.) | Arabic |
+| Australia, New Zealand | English (Australia) | English (U.K.) |
+| Canada | English (Canada) | French (Canada) |
 
-- **English (U.K.) ships with this version.** One English localisation reaches
-  Pakistan, India, British desis and Gulf expats, and needs no translator. Its
-  keywords are above.
+- **English (U.K.), (Australia) and (Canada) ship with 1.1.1.** One English
+  localisation reaches Pakistan, India, the UK and Gulf expats, and needs no
+  translator. Australia and New Zealand read English (U.K.) as well as their own,
+  which gives them a second 100 keyword characters. Keywords are above.
 - **Arabic follows in a later update.** It still pays twice — read by the US and
   Gulf storefronts — but its copy needs a native speaker (`design.md`, Open 1),
   and the app is English-only, so an Arabic listing must say so.
@@ -495,14 +560,15 @@ the creator push around that, not against it.
 
 The name and subtitle are deliberately cuisine-agnostic — `Circa: Food & Calorie
 Journal` covers kunna, jollof, adobo and tagine equally, because it names no
-cuisine at all. Only the English (U.K.) keywords and the screenshots are
-desi-specific, and both are cheap to change. **As of 8 September this is finally true**; the deck previously
+cuisine at all. Since 23 October no keyword field carries a cuisine either, so only
+screenshots and Custom Product Pages can be cuisine-specific, and both are cheap to
+change. **As of 8 September this is finally true**; the deck previously
 claimed agnosticism while proposing `Desi Food Tracker` in the name.
 
 **What that costs, stated plainly.** Calorify, Khana AI, MasalaFit and RotiCal all
-put *Desi* in their **app names** — the highest-weight field. Carrying it in
-keywords instead means ranking below them on desi searches. The trade is reach:
-Arabic, West African or any other cuisine can be added later with no rename.
+put *Desi* in their **app names** — the highest-weight field — so they outrank us
+on desi searches, which by AppTweak's 22 October numbers barely exist. The trade is
+reach: Arabic, West African or any other cuisine can be added later with no rename.
 
 This matters because App Store metadata is served by **device language, not
 storefront**, and the only English variants App Store Connect offers are U.S.,

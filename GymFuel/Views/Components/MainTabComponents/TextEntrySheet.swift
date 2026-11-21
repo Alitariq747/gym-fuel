@@ -7,6 +7,8 @@ struct TextEntrySheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTextFocused: Bool
+    @State private var showPortionGuide = false
+    @AppStorage("appColorSchemePreference") private var colorSchemePreference = AppColorSchemePreference.system.rawValue
 
     private var canAnalyze: Bool {
         !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -55,6 +57,10 @@ struct TextEntrySheet: View {
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(Circa.Radius.dock)
         .onAppear { isTextFocused = true }
+        .sheet(isPresented: $showPortionGuide) {
+            PortionGuideView()
+                .preferredColorScheme(AppColorSchemePreference(rawValue: colorSchemePreference)?.colorScheme)
+        }
     }
 
     private var header: some View {
@@ -85,6 +91,21 @@ struct TextEntrySheet: View {
             CircaSectionLabel("Say it how you'd say it to a person")
             Text("Quantities in whatever measure you actually use — two slices, a plate, half a bowl, a cup. How it was cooked helps most: butter or oil, fried or dry.")
             Text("The more you say, the fewer assumptions Circa has to make.")
+            Button {
+                isTextFocused = false
+                showPortionGuide = true
+            } label: {
+                HStack(spacing: 4) {
+                    Text("See the portion guide")
+                    Image(systemName: "chevron.forward")
+                        .font(.circaCaption.weight(.semibold))
+                }
+                .font(.circaBody.weight(.medium))
+                .foregroundStyle(Color.circaAccent)
+                .frame(minHeight: Circa.minHitTarget)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
         .font(.circaBody)
         .foregroundStyle(Color.circaInk2)

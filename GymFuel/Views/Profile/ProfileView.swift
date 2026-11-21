@@ -29,6 +29,7 @@ struct ProfileView: View {
     @State private var showAppleReauthSheet: Bool = false
     @State private var showSavedMealsSheet: Bool = false
     @State private var showNutritionSourcesSheet: Bool = false
+    @State private var showPortionGuideSheet: Bool = false
     @State private var showTargetsSheet: Bool = false
     @State private var showWeightScreen: Bool = false
     @State private var showSubscriptionPaywall: Bool = false
@@ -180,6 +181,7 @@ struct ProfileView: View {
                                     savedMealCount: savedMealsViewModel.savedMeals.count,
                                     onOpen: { showSavedMealsSheet = true }
                                 )
+                                ProfilePortionGuideSection(onOpen: { showPortionGuideSheet = true })
                                 ProfileLiftEatsSection(reviewURL: appStoreReviewURL)
                                 ProfileLegalSection(
                                     privacyURL: AppConfig.privacyPolicyURL,
@@ -305,6 +307,10 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showNutritionSourcesSheet) {
             NutritionSourcesView(primaryButtonTitle: "Done")
+                .preferredColorScheme(preferredColorScheme)
+        }
+        .sheet(isPresented: $showPortionGuideSheet) {
+            PortionGuideView()
                 .preferredColorScheme(preferredColorScheme)
         }
     }

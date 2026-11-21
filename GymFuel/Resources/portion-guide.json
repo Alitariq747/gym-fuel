@@ -1,0 +1,1076 @@
+{
+  "version": 1,
+  "source": "USDA FoodData Central",
+  "mlPerCup": 236.6,
+  "categories": [
+    {
+      "id": "grains",
+      "name": "Rice, pasta and bread"
+    },
+    {
+      "id": "meat",
+      "name": "Meat, fish and eggs"
+    },
+    {
+      "id": "pulses",
+      "name": "Pulses and vegetables"
+    },
+    {
+      "id": "dairy",
+      "name": "Dairy"
+    },
+    {
+      "id": "fats",
+      "name": "Fats and spreads"
+    },
+    {
+      "id": "fruit",
+      "name": "Fruit"
+    }
+  ],
+  "containers": [
+    {
+      "id": "small_plate",
+      "name": "Small plate",
+      "kind": "plate",
+      "cups": 1.5,
+      "ml": 355,
+      "inches": 8
+    },
+    {
+      "id": "plate",
+      "name": "Plate",
+      "kind": "plate",
+      "cups": 2,
+      "ml": 473,
+      "inches": 10
+    },
+    {
+      "id": "large_plate",
+      "name": "Large plate",
+      "kind": "plate",
+      "cups": 3,
+      "ml": 710,
+      "inches": 12
+    },
+    {
+      "id": "heaped_plate",
+      "name": "Heaped plate",
+      "kind": "plate",
+      "cups": 2.5,
+      "ml": 592,
+      "inches": 10
+    },
+    {
+      "id": "small_bowl",
+      "name": "Small bowl",
+      "kind": "bowl",
+      "cups": 0.88,
+      "ml": 207,
+      "inches": null
+    },
+    {
+      "id": "bowl",
+      "name": "Bowl",
+      "kind": "bowl",
+      "cups": 1.31,
+      "ml": 311,
+      "inches": null
+    },
+    {
+      "id": "large_bowl",
+      "name": "Large bowl",
+      "kind": "bowl",
+      "cups": 1.81,
+      "ml": 429,
+      "inches": null
+    },
+    {
+      "id": "heaped_bowl",
+      "name": "Heaped bowl",
+      "kind": "bowl",
+      "cups": 1.64,
+      "ml": 388,
+      "inches": null
+    },
+    {
+      "id": "extra_large_bowl",
+      "name": "Extra large bowl",
+      "kind": "bowl",
+      "cups": 3.31,
+      "ml": 784,
+      "inches": null
+    },
+    {
+      "id": "dip_bowl",
+      "name": "Dip bowl",
+      "kind": "bowl",
+      "cups": 0.25,
+      "ml": 59,
+      "inches": null
+    },
+    {
+      "id": "small_mug",
+      "name": "Small mug",
+      "kind": "mug",
+      "cups": 0.81,
+      "ml": 192,
+      "inches": null
+    },
+    {
+      "id": "mug",
+      "name": "Mug",
+      "kind": "mug",
+      "cups": 1.06,
+      "ml": 251,
+      "inches": null
+    },
+    {
+      "id": "large_mug",
+      "name": "Large mug",
+      "kind": "mug",
+      "cups": 1.5,
+      "ml": 355,
+      "inches": null
+    },
+    {
+      "id": "small_glass",
+      "name": "Small glass",
+      "kind": "glass",
+      "cups": 0.81,
+      "ml": 192,
+      "inches": null
+    },
+    {
+      "id": "glass",
+      "name": "Glass",
+      "kind": "glass",
+      "cups": 1.31,
+      "ml": 311,
+      "inches": null
+    },
+    {
+      "id": "large_glass",
+      "name": "Large glass",
+      "kind": "glass",
+      "cups": 1.81,
+      "ml": 429,
+      "inches": null
+    }
+  ],
+  "spoons": [
+    {
+      "id": "tbsp",
+      "name": "Tablespoon",
+      "ml": 14.8
+    },
+    {
+      "id": "tsp",
+      "name": "Teaspoon",
+      "ml": 4.9
+    }
+  ],
+  "fatLevels": [
+    {
+      "id": "none",
+      "name": "None",
+      "tbspPerPlate": 0,
+      "looks": "No oil or fat used."
+    },
+    {
+      "id": "little",
+      "name": "Little",
+      "tbspPerPlate": 0.33,
+      "looks": "Light on oil. Dry to the touch."
+    },
+    {
+      "id": "normal",
+      "name": "Normal",
+      "tbspPerPlate": 1,
+      "looks": "A quick fry, or a little fat. A light gloss."
+    },
+    {
+      "id": "rich",
+      "name": "Rich",
+      "tbspPerPlate": 2,
+      "looks": "Cooked in plenty of oil or ghee. Glossy, with oil at the edges."
+    },
+    {
+      "id": "extra",
+      "name": "Extra",
+      "tbspPerPlate": 3,
+      "looks": "Visibly oily. Oil pools on the plate."
+    }
+  ],
+  "foods": [
+    {
+      "id": "rice_cooked",
+      "name": "White rice",
+      "category": "grains",
+      "thumbnail": "rice_cooked-191g",
+      "pieceName": null,
+      "note": "Cooked weight.",
+      "photos": [
+        {
+          "image": "rice_cooked-54g",
+          "grams": 54
+        },
+        {
+          "image": "rice_cooked-101g",
+          "grams": 101
+        },
+        {
+          "image": "rice_cooked-191g",
+          "grams": 191
+        },
+        {
+          "image": "rice_cooked-359g",
+          "grams": 359
+        }
+      ],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 158
+        },
+        {
+          "label": "A plate",
+          "grams": 316
+        }
+      ]
+    },
+    {
+      "id": "brown_rice_cooked",
+      "name": "Brown rice",
+      "category": "grains",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": "Cooked weight.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 202
+        },
+        {
+          "label": "A plate",
+          "grams": 404
+        }
+      ]
+    },
+    {
+      "id": "pasta_cooked",
+      "name": "Pasta",
+      "category": "grains",
+      "thumbnail": "pasta_cooked-188g",
+      "pieceName": null,
+      "note": "Cooked weight.",
+      "photos": [
+        {
+          "image": "pasta_cooked-54g",
+          "grams": 54
+        },
+        {
+          "image": "pasta_cooked-101g",
+          "grams": 101
+        },
+        {
+          "image": "pasta_cooked-188g",
+          "grams": 188
+        },
+        {
+          "image": "pasta_cooked-350g",
+          "grams": 350
+        }
+      ],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 124
+        },
+        {
+          "label": "A plate",
+          "grams": 248
+        }
+      ]
+    },
+    {
+      "id": "egg_noodles_cooked",
+      "name": "Noodles",
+      "category": "grains",
+      "thumbnail": "egg_noodles_cooked-246g",
+      "pieceName": null,
+      "note": "Cooked weight.",
+      "photos": [
+        {
+          "image": "egg_noodles_cooked-92g",
+          "grams": 92
+        },
+        {
+          "image": "egg_noodles_cooked-148g",
+          "grams": 148
+        },
+        {
+          "image": "egg_noodles_cooked-246g",
+          "grams": 246
+        },
+        {
+          "image": "egg_noodles_cooked-387g",
+          "grams": 387
+        }
+      ],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 160
+        },
+        {
+          "label": "A plate",
+          "grams": 320
+        }
+      ]
+    },
+    {
+      "id": "roti",
+      "name": "Roti",
+      "category": "grains",
+      "thumbnail": "roti",
+      "pieceName": "roti",
+      "note": "The bread itself. Ghee, butter or oil on it is counted separately.",
+      "photos": [
+        {
+          "image": "roti",
+          "grams": null
+        }
+      ],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 46
+        },
+        {
+          "label": "Medium",
+          "grams": 68
+        },
+        {
+          "label": "Large",
+          "grams": 88
+        }
+      ]
+    },
+    {
+      "id": "naan",
+      "name": "Naan",
+      "category": "grains",
+      "thumbnail": null,
+      "pieceName": "naan",
+      "note": "The bread itself. Ghee, butter or oil on it is counted separately.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 61
+        },
+        {
+          "label": "Medium",
+          "grams": 90
+        },
+        {
+          "label": "Large",
+          "grams": 177
+        }
+      ]
+    },
+    {
+      "id": "paratha",
+      "name": "Paratha",
+      "category": "grains",
+      "thumbnail": null,
+      "pieceName": "paratha",
+      "note": "The bread itself. Ghee, butter or oil on it is counted separately.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 46
+        },
+        {
+          "label": "Medium",
+          "grams": 69
+        },
+        {
+          "label": "Large",
+          "grams": 89
+        },
+        {
+          "label": "Extra large",
+          "grams": 140
+        }
+      ]
+    },
+    {
+      "id": "bread_white",
+      "name": "White bread",
+      "category": "grains",
+      "thumbnail": null,
+      "pieceName": "slice",
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 24
+        },
+        {
+          "label": "Medium",
+          "grams": 28
+        },
+        {
+          "label": "Large",
+          "grams": 43
+        }
+      ]
+    },
+    {
+      "id": "pita",
+      "name": "Pita",
+      "category": "grains",
+      "thumbnail": null,
+      "pieceName": "pita",
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 28
+        },
+        {
+          "label": "Medium",
+          "grams": 57
+        },
+        {
+          "label": "Large",
+          "grams": 85
+        },
+        {
+          "label": "Extra large",
+          "grams": 114
+        }
+      ]
+    },
+    {
+      "id": "flour_tortilla",
+      "name": "Flour tortilla",
+      "category": "grains",
+      "thumbnail": null,
+      "pieceName": "tortilla",
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 33
+        },
+        {
+          "label": "Medium",
+          "grams": 45
+        },
+        {
+          "label": "Large",
+          "grams": 71
+        },
+        {
+          "label": "Extra large",
+          "grams": 104
+        }
+      ]
+    },
+    {
+      "id": "fries",
+      "name": "Fries",
+      "category": "grains",
+      "thumbnail": "fries-198g",
+      "pieceName": null,
+      "note": "Deep-fried, as eaten, oil included.",
+      "photos": [
+        {
+          "image": "fries-70g",
+          "grams": 70
+        },
+        {
+          "image": "fries-118g",
+          "grams": 118
+        },
+        {
+          "image": "fries-198g",
+          "grams": 198
+        },
+        {
+          "image": "fries-334g",
+          "grams": 334
+        }
+      ],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 125
+        },
+        {
+          "label": "A plate",
+          "grams": 250
+        }
+      ]
+    },
+    {
+      "id": "chicken_breast_roasted",
+      "name": "Chicken breast",
+      "category": "meat",
+      "thumbnail": "chicken_breast_roasted-101g",
+      "pieceName": null,
+      "note": "Cooked meat, no skin.",
+      "photos": [
+        {
+          "image": "chicken_breast_roasted-25g",
+          "grams": 25
+        },
+        {
+          "image": "chicken_breast_roasted-50g",
+          "grams": 50
+        },
+        {
+          "image": "chicken_breast_roasted-101g",
+          "grams": 101
+        },
+        {
+          "image": "chicken_breast_roasted-204g",
+          "grams": 204
+        }
+      ],
+      "amounts": []
+    },
+    {
+      "id": "chicken_thigh_roasted",
+      "name": "Chicken thigh",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "thigh",
+      "note": "The meat only: off the bone, skin not eaten.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 65
+        },
+        {
+          "label": "Medium",
+          "grams": 70
+        },
+        {
+          "label": "Large",
+          "grams": 90
+        }
+      ]
+    },
+    {
+      "id": "chicken_drumstick_roasted",
+      "name": "Chicken drumstick",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "drumstick",
+      "note": "The meat only: off the bone, skin not eaten.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 40
+        },
+        {
+          "label": "Medium",
+          "grams": 50
+        },
+        {
+          "label": "Large",
+          "grams": 65
+        }
+      ]
+    },
+    {
+      "id": "chicken_wing_roasted",
+      "name": "Chicken wing",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "wing",
+      "note": "Meat and skin, off the bone.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "One wing",
+          "grams": 35
+        }
+      ]
+    },
+    {
+      "id": "lamb_chop",
+      "name": "Lamb chop",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "chop",
+      "note": "Cooked meat, off the bone.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Medium",
+          "grams": 90
+        },
+        {
+          "label": "Large",
+          "grams": 135
+        }
+      ]
+    },
+    {
+      "id": "beef_mince_cooked",
+      "name": "Beef mince",
+      "category": "meat",
+      "thumbnail": "beef_mince_cooked-191g",
+      "pieceName": null,
+      "note": "Cooked weight.",
+      "photos": [
+        {
+          "image": "beef_mince_cooked-70g",
+          "grams": 70
+        },
+        {
+          "image": "beef_mince_cooked-116g",
+          "grams": 116
+        },
+        {
+          "image": "beef_mince_cooked-191g",
+          "grams": 191
+        },
+        {
+          "image": "beef_mince_cooked-314g",
+          "grams": 314
+        }
+      ],
+      "amounts": []
+    },
+    {
+      "id": "beef_steak",
+      "name": "Beef steak",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "steak",
+      "note": "Cooked weight.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 120
+        },
+        {
+          "label": "Medium",
+          "grams": 160
+        },
+        {
+          "label": "Large",
+          "grams": 240
+        },
+        {
+          "label": "Extra large",
+          "grams": 320
+        }
+      ]
+    },
+    {
+      "id": "white_fish_cooked",
+      "name": "White fish",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "fillet",
+      "note": "Cooked weight.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Medium",
+          "grams": 140
+        },
+        {
+          "label": "Large",
+          "grams": 210
+        }
+      ]
+    },
+    {
+      "id": "salmon_cooked",
+      "name": "Salmon",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "fillet",
+      "note": "Cooked weight.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Medium",
+          "grams": 140
+        },
+        {
+          "label": "Large",
+          "grams": 210
+        }
+      ]
+    },
+    {
+      "id": "egg_boiled",
+      "name": "Egg",
+      "category": "meat",
+      "thumbnail": null,
+      "pieceName": "egg",
+      "note": "A whole egg, before any cooking fat.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 44
+        },
+        {
+          "label": "Medium",
+          "grams": 50
+        },
+        {
+          "label": "Large",
+          "grams": 56
+        }
+      ]
+    },
+    {
+      "id": "lentils_cooked",
+      "name": "Daal or lentils",
+      "category": "pulses",
+      "thumbnail": "lentils_cooked-233g",
+      "pieceName": null,
+      "note": "Cooked weight, as served.",
+      "photos": [
+        {
+          "image": "lentils_cooked-48g",
+          "grams": 48
+        },
+        {
+          "image": "lentils_cooked-105g",
+          "grams": 105
+        },
+        {
+          "image": "lentils_cooked-233g",
+          "grams": 233
+        },
+        {
+          "image": "lentils_cooked-346g",
+          "grams": 346
+        }
+      ],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 198
+        },
+        {
+          "label": "A bowl",
+          "grams": 259.9
+        }
+      ]
+    },
+    {
+      "id": "chickpeas_cooked",
+      "name": "Chickpeas",
+      "category": "pulses",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": "Boiled.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 164
+        },
+        {
+          "label": "A bowl",
+          "grams": 215.3
+        }
+      ]
+    },
+    {
+      "id": "kidney_beans_cooked",
+      "name": "Kidney beans",
+      "category": "pulses",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": "Boiled.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 177
+        },
+        {
+          "label": "A bowl",
+          "grams": 232.3
+        }
+      ]
+    },
+    {
+      "id": "potato_boiled",
+      "name": "Potato",
+      "category": "pulses",
+      "thumbnail": "potato_boiled-160g",
+      "pieceName": "whole",
+      "note": "Boiled, without skin.",
+      "photos": [
+        {
+          "image": "potato_boiled-45g",
+          "grams": 45
+        },
+        {
+          "image": "potato_boiled-85g",
+          "grams": 85
+        },
+        {
+          "image": "potato_boiled-160g",
+          "grams": 160
+        },
+        {
+          "image": "potato_boiled-300g",
+          "grams": 300
+        }
+      ],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 125
+        },
+        {
+          "label": "Medium",
+          "grams": 167
+        },
+        {
+          "label": "Large",
+          "grams": 300
+        }
+      ]
+    },
+    {
+      "id": "mixed_vegetables_cooked",
+      "name": "Mixed vegetables",
+      "category": "pulses",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": "Boiled, before any oil.",
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 182
+        },
+        {
+          "label": "A bowl",
+          "grams": 238.9
+        }
+      ]
+    },
+    {
+      "id": "milk_whole",
+      "name": "Whole milk",
+      "category": "dairy",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 244
+        },
+        {
+          "label": "A glass",
+          "grams": 320.3
+        }
+      ]
+    },
+    {
+      "id": "yogurt",
+      "name": "Plain yogurt",
+      "category": "dairy",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 cup",
+          "grams": 245
+        },
+        {
+          "label": "A bowl",
+          "grams": 321.6
+        }
+      ]
+    },
+    {
+      "id": "cheddar",
+      "name": "Cheddar",
+      "category": "dairy",
+      "thumbnail": null,
+      "pieceName": "slice",
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "One slice",
+          "grams": 28
+        }
+      ]
+    },
+    {
+      "id": "cooking_oil",
+      "name": "Cooking oil",
+      "category": "fats",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 tsp",
+          "grams": 4.5
+        },
+        {
+          "label": "1 tbsp",
+          "grams": 13.6
+        }
+      ]
+    },
+    {
+      "id": "ghee",
+      "name": "Ghee",
+      "category": "fats",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 tsp",
+          "grams": 4.3
+        },
+        {
+          "label": "1 tbsp",
+          "grams": 12.8
+        }
+      ]
+    },
+    {
+      "id": "butter",
+      "name": "Butter",
+      "category": "fats",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 tsp",
+          "grams": 4.7
+        },
+        {
+          "label": "1 tbsp",
+          "grams": 14.2
+        }
+      ]
+    },
+    {
+      "id": "mayonnaise",
+      "name": "Mayonnaise",
+      "category": "fats",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 tsp",
+          "grams": 4.6
+        },
+        {
+          "label": "1 tbsp",
+          "grams": 13.8
+        }
+      ]
+    },
+    {
+      "id": "peanut_butter",
+      "name": "Peanut butter",
+      "category": "fats",
+      "thumbnail": null,
+      "pieceName": null,
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "1 tsp",
+          "grams": 5.3
+        },
+        {
+          "label": "1 tbsp",
+          "grams": 16
+        }
+      ]
+    },
+    {
+      "id": "banana",
+      "name": "Banana",
+      "category": "fruit",
+      "thumbnail": null,
+      "pieceName": "whole",
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 101
+        },
+        {
+          "label": "Medium",
+          "grams": 118
+        },
+        {
+          "label": "Large",
+          "grams": 136
+        }
+      ]
+    },
+    {
+      "id": "dates",
+      "name": "Dates",
+      "category": "fruit",
+      "thumbnail": null,
+      "pieceName": "date",
+      "note": null,
+      "photos": [],
+      "amounts": [
+        {
+          "label": "Small",
+          "grams": 7
+        },
+        {
+          "label": "Medium",
+          "grams": 8
+        },
+        {
+          "label": "Large",
+          "grams": 24
+        }
+      ]
+    }
+  ],
+  "credit": "Photos: Intake24 (intake24.org). Contains public sector information licensed under the Open Government Licence v3.0.",
+  "revision": "bea61b3ef2d3"
+}

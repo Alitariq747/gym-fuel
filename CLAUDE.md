@@ -15,7 +15,7 @@ An iOS calorie tracker, mid-repositioning. Two things a fresh session gets wrong
 |---|---|
 | `build-order.md` | What we're building now, in order, with progress checkboxes. **Start here.** |
 | `project-brief.md` | Scope — especially what is explicitly *out* |
-| `meal-contract.md` | The meal payload, persistence and editing rules Steps 5 and 6 share. **Both repos.** Change it in neither step alone |
+| `meal-contract.md` | What the live app reads for a meal, and how it saves and edits it. **Both repos** — phones can't be redeployed. How the server estimates is *not* in it: see *Grams* below |
 | `store-copy.md` | Exact App Store strings, with character counts |
 | `design.md` | The visual system and its rules. A **spec** — the build does not look like this yet, and where an artboard's copy disagrees with its *Canvas drift* table, the table wins |
 | `design.md` → *The plate mascot* | The mascot and app icon: rules, files, and how to change them. **Read it before any "Mascot change"** — those are asked for directly, not as `build-order.md` steps |
@@ -73,6 +73,28 @@ Node service on Cloud Run for OpenAI calls.
 Entitlement `ai_scans` · offering `default` · packages `pro_yearly`,
 `pro_monthly` · products `lifteats_pro_yearly`, `lifteats_pro_monthly`.
 
+## Grams
+
+Every calorie is grams × the food's USDA values per 100 g. Grams are not the
+problem; *guessed* grams are.
+
+- The person's own grams, spoons or cups always win.
+- The AI does not guess grams when the amount can be said as a count and size, a
+  container and how full, a share of a dish, or a serving. The server turns those
+  into grams from USDA's weighed portions. The AI's own gram guesses drift between
+  identical runs and run high: two drumsticks "about 180 g" against USDA's 100 g,
+  and asking the photo describer for grams doubled its error (27 October 2026).
+- Where the food table has no match, the AI's own numbers and words stand.
+- People may see grams. They are never asked to weigh — "no weighing" is the App
+  Store subtitle.
+
+The server works out a dish's cooking fat from its size. The parts of a dish are the
+one place the AI still gives grams, which the table then prices: weighing them from
+their shares on the server came out 17% light (5 November 2026), so the shares are
+only logged for now. How the server estimates can change freely, as long as
+`meal-contract.md` holds. (The old "no gram equivalents" rule meant "no food database"; the USDA
+table made it obsolete.)
+
 ## Never do these
 
 Each one is a real failure mode, not a style preference.
@@ -80,8 +102,13 @@ Each one is a real failure mode, not a style preference.
 - **Don't rename the `ai_scans` entitlement** — it is what
   `customerInfo.entitlements[...]` looks up, and renaming it breaks entitlement
   checks for every user still on an older build.
-- **Don't build a `foods` collection, barcode scanner, or nutrition database** —
-  its absence is the product.
+- **Don't build a `foods` collection, barcode scanner, or a food database people
+  search or pick from** — its absence is the product. The backend's ingredient
+  table (`gymfuel-ai-service/src/reference/`) is allowed: the AI still decides what
+  was eaten and how much — for a piece or a container, how many and what size. The
+  table only supplies values per gram and the weight of a piece or container the AI
+  named, and people never search it or log from it. The portion guide (Step 17)
+  shows a chosen set of its foods and sizes, read-only.
 - **Don't re-add exercise or workout logging** — removed deliberately in Step 3.
   If an exercise burn figure reappears anywhere, it corrupts the targets and what
   the Weight screen shows. **This includes importing one.** HealthKit active energy,
@@ -105,8 +132,8 @@ Each one is a real failure mode, not a style preference.
   everything — Step 6 shipped a prompt that answered "chicken chowmein" in
   *katori*. Units come from the person's own words, and otherwise from the shape of
   the food: plate, bowl or cup for loose food, the item itself when countable,
-  tbsp for fats, grams for what a recipe would weigh. Keep worked examples spread
-  across cuisines.
+  tbsp for fats, and a share of the dish for a dish's parts (see *Grams*). Keep
+  worked examples spread across cuisines.
 - **Don't show a measured burn number.** The formula's maintenance estimate may be
   shown — "about 2,420 kcal a day to stay at your weight", rounded, dotted as an
   estimate, never called "burn", never updated from food logs or weigh-ins. A

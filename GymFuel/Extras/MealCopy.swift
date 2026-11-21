@@ -80,10 +80,21 @@ enum MealCopy {
         return "\(change > 0 ? "+" : "−")\(abs(change))"
     }
 
-    /// A new line every three seconds, like the timeline's; the last one holds.
-    /// Never a percentage — nothing measures progress.
+    static let statusStepSeconds = 3
+
+    /// A new line every three seconds; the last one holds. Timed, not
+    /// measured — never a percentage, because nothing measures progress.
     private static func status(_ lines: [String], elapsedSeconds: Int) -> String {
-        lines[min(max(elapsedSeconds, 0) / 3, lines.count - 1)]
+        lines[min(max(elapsedSeconds, 0) / statusStepSeconds, lines.count - 1)]
+    }
+
+    // MARK: - A meal being estimated
+
+    static func estimatingStatus(elapsedSeconds: Int) -> String {
+        status(
+            ["reading your words", "finding each food", "checking each portion", "adding it up", "taking a little longer"],
+            elapsedSeconds: elapsedSeconds
+        )
     }
 
     // MARK: - A meal photo

@@ -5,30 +5,37 @@ struct TimelineEntryRow: View {
     var localPreviewData: Data? = nil
     var onRetry: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
-    @State private var imageAnalysisMessage = Self.firstImageAnalysisMessage
-    @State private var imageAnalysisMessageTask: Task<Void, Never>?
+    @State private var statusElapsed = 0
+    @State private var statusTask: Task<Void, Never>?
     @Environment(\.dynamicTypeSize) private var typeSize
     private let settleAnimationDuration = 0.3
-    private static let firstImageAnalysisMessage = "estimating calories and macros"
 
     private var rowState: TimelineEntryRowState {
         TimelineEntryRowState(entry: entry, localPreviewData: localPreviewData)
     }
 
-    private func syncImageAnalysisMessageState() {
-        guard rowState.isAnalyzingImageEntry else {
-            imageAnalysisMessageTask?.cancel()
-            imageAnalysisMessageTask = nil
-            imageAnalysisMessage = Self.firstImageAnalysisMessage
+    /// nil once the meal has landed or failed.
+    private var estimatingStatus: String? {
+        entry.status == .analyzing ? MealCopy.estimatingStatus(elapsedSeconds: statusElapsed) : nil
+    }
+
+    /// Counts the estimate's seconds a status step at a time. Paused while the
+    /// row is off screen, so coming back doesn't restart the lines.
+    private func syncStatusClock() {
+        guard entry.status == .analyzing else {
+            statusTask?.cancel()
+            statusTask = nil
+            statusElapsed = 0
             return
         }
 
-        guard imageAnalysisMessageTask == nil else { return }
-        imageAnalysisMessage = Self.firstImageAnalysisMessage
-        imageAnalysisMessageTask = Task {
-            try? await Task.sleep(for: .seconds(3))
-            guard !Task.isCancelled else { return }
-            await MainActor.run { imageAnalysisMessage = "preparing your summary" }
+        guard statusTask == nil else { return }
+        statusTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(MealCopy.statusStepSeconds))
+                guard !Task.isCancelled else { return }
+                statusElapsed += MealCopy.statusStepSeconds
+            }
         }
     }
 
@@ -41,18 +48,20 @@ struct TimelineEntryRow: View {
             }
         }
         .animation(.easeInOut(duration: settleAnimationDuration), value: entry.status)
-        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.5), trigger: entry.status) { (old: LogEntryStatus, new: LogEntryStatus) in
-            old == .analyzing && new == .succeeded
+        // A faint tick as each line changes. The landing's tap is the
+        // timeline's success pattern (TimelineViewModel), so the finish differs.
+        .sensoryFeedback(.selection, trigger: estimatingStatus) { old, new in
+            old != nil && new != nil
         }
         .onAppear {
-            syncImageAnalysisMessageState()
+            syncStatusClock()
         }
         .onDisappear {
-            imageAnalysisMessageTask?.cancel()
-            imageAnalysisMessageTask = nil
+            statusTask?.cancel()
+            statusTask = nil
         }
         .onChange(of: entry.status) { _, _ in
-            syncImageAnalysisMessageState()
+            syncStatusClock()
         }
     }
 
@@ -106,6 +115,7 @@ struct TimelineEntryRow: View {
 
     private var leading: CircaEntryLeading {
         guard rowState.isMealImageEntry else {
+            if entry.status == .analyzing { return .mark }
             return .glyph(entry.source == .savedMeal ? "bookmark" : "square.and.pencil")
         }
 
@@ -159,7 +169,7 @@ struct TimelineEntryRow: View {
             title: rowState.isAnalyzingImageEntry ? "Working out your meal" : entry.rawInput,
             calories: nil,
             certainty: .pending,
-            meta: rowState.isAnalyzingImageEntry ? imageAnalysisMessage : "estimating",
+            meta: MealCopy.estimatingStatus(elapsedSeconds: statusElapsed),
             leading: leading,
             isAnalysing: true
         )

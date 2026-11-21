@@ -39,6 +39,7 @@ private enum Kit {
     static let pendingRuleWidth: CGFloat = 38
 
     static let entryRowGap: CGFloat = 13
+    static let entryMark: CGFloat = 34
     static let settleBeat: Double = 0.12
     static let macroWell: CGFloat = 32
     static let macroWellLarge: CGFloat = 40
@@ -282,7 +283,31 @@ enum CircaCertainty {
 
 /// The dotted rule itself. 1.5pt round dots, `circaDotted`.
 private struct CertaintyRule: View {
+    /// The dots drift while a meal is being estimated. Still under Reduce Motion.
+    var drifts = false
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    // A near-zero dash with a round cap renders a dot, not a dash — this is
+    // what matches CSS `dotted` on the canvas.
+    private static let dash: [CGFloat] = [0.01, 3]
+    private static let driftPerSecond = 6.0
+
     var body: some View {
+        Group {
+            if drifts && !reduceMotion {
+                TimelineView(.animation(minimumInterval: 1.0 / 30)) { context in
+                    rule(phase: Self.phase(at: context.date))
+                }
+            } else {
+                rule(phase: 0)
+            }
+        }
+        .frame(height: Circa.Rule.certaintyWidth)
+        .accessibilityHidden(true)
+    }
+
+    private func rule(phase: CGFloat) -> some View {
         GeometryReader { geo in
             Path { path in
                 let y = Circa.Rule.certaintyWidth / 2
@@ -294,14 +319,16 @@ private struct CertaintyRule: View {
                 style: StrokeStyle(
                     lineWidth: Circa.Rule.certaintyWidth,
                     lineCap: .round,
-                    // A near-zero dash with a round cap renders a dot, not a
-                    // dash — this is what matches CSS `dotted` on the canvas.
-                    dash: [0.01, 3]
+                    dash: Self.dash,
+                    dashPhase: phase
                 )
             )
         }
-        .frame(height: Circa.Rule.certaintyWidth)
-        .accessibilityHidden(true)
+    }
+
+    private static func phase(at date: Date) -> CGFloat {
+        let period = Double(dash.reduce(0, +))
+        return CGFloat((date.timeIntervalSinceReferenceDate * driftPerSecond).truncatingRemainder(dividingBy: period))
     }
 }
 
@@ -315,11 +342,11 @@ extension View {
     /// For a number that may not exist yet, use `CircaEstimate` instead: this
     /// modifier cannot render the pending state, because there is nothing to
     /// modify.
-    func certaintyRule(_ certainty: CircaCertainty) -> some View {
+    func certaintyRule(_ certainty: CircaCertainty, drifts: Bool = false) -> some View {
         padding(.bottom, Kit.certaintyGap)
             .overlay(alignment: .bottom) {
                 if certainty != .known {
-                    CertaintyRule()
+                    CertaintyRule(drifts: drifts)
                 }
             }
     }
@@ -335,16 +362,19 @@ struct CircaEstimate: View {
     let value: String?
     let certainty: CircaCertainty
     var font: Font = .circaMonoValue
+    /// The pending rule's dots drift — the timeline row while it estimates.
+    var drifts = false
 
     @ScaledMetric(relativeTo: .callout) private var pendingWidth = Kit.pendingRuleWidth
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(_ value: String?, certainty: CircaCertainty, font: Font = .circaMonoValue) {
+    init(_ value: String?, certainty: CircaCertainty, font: Font = .circaMonoValue, drifts: Bool = false) {
         self.value = value
         // A missing number is pending whatever the caller said, and a present
         // number is never pending. Keeps the two arguments from disagreeing.
         self.certainty = value == nil ? .pending : (certainty == .pending ? .estimated : certainty)
         self.font = font
+        self.drifts = drifts
     }
 
     var body: some View {
@@ -361,7 +391,7 @@ struct CircaEstimate: View {
         }
         .font(font)
         .monospacedDigit()
-        .certaintyRule(certainty)
+        .certaintyRule(certainty, drifts: drifts && certainty == .pending)
         .accessibilityLabel(accessibilityLabel)
     }
 
@@ -797,12 +827,61 @@ struct ImageAnalysisScannerOverlay: View {
     }
 }
 
+/// Circa's mark at work: the app icon's plate, its three dots swelling in turn.
+/// The mark is not the mascot, so it may be an analysing indicator (design.md,
+/// *The plate mascot*). The plate keeps its own colours (mascot rule 7): only
+/// the dots are drawn here, over its own and in the same ochre, so at rest and
+/// under Reduce Motion it is exactly the icon.
+struct CircaEstimatingMark: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// `CircaMark.svg`'s dots, on its 24-point canvas.
+    private static let dots = [CGPoint(x: 17.09, y: 6.91), CGPoint(x: 18.77, y: 9.54), CGPoint(x: 19.17, y: 12.63)]
+    private static let dotRadius: CGFloat = 1.35
+    private static let cycle = 1.4
+    // With these three, two neighbours never swell into each other.
+    private static let stagger = 0.3
+    private static let swellLength = 0.4
+    private static let swellPeak = 0.3
+
+    var body: some View {
+        ZStack {
+            Image(decorative: "CircaMark")
+                .resizable()
+
+            if !reduceMotion {
+                TimelineView(.animation) { context in
+                    Canvas { canvas, size in
+                        let scale = size.width / 24
+                        let time = context.date.timeIntervalSinceReferenceDate
+                        for (index, dot) in Self.dots.enumerated() {
+                            let radius = Self.dotRadius * scale * Self.swell(at: time - Double(index) * Self.stagger)
+                            let circle = CGRect(x: dot.x * scale - radius, y: dot.y * scale - radius, width: radius * 2, height: radius * 2)
+                            canvas.fill(Path(ellipseIn: circle), with: .color(.circaAccentLarge))
+                        }
+                    }
+                }
+            }
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .accessibilityHidden(true)
+    }
+
+    private static func swell(at time: Double) -> CGFloat {
+        let t = time.truncatingRemainder(dividingBy: cycle)
+        guard t >= 0, t < swellLength else { return 1 }
+        return 1 + swellPeak * sin(.pi * t / swellLength)
+    }
+}
+
 // MARK: - Entry row
 
 /// What sits at the head of a journal entry.
 enum CircaEntryLeading {
     /// An SF Symbol in a bordered well — a text entry.
     case glyph(String)
+    /// Circa's mark at work in the same well — a typed meal being estimated.
+    case mark
     /// A photo, or its placeholder well when the image has not loaded.
     case photo(Image?)
     /// A photo whose loading the caller owns — the timeline fetches from cache,
@@ -833,7 +912,7 @@ struct CircaEntryRow: View {
     var assumption: String? = nil
     var leading: CircaEntryLeading = .none
     /// The pending state — design.md rule 1's third row. The number has not
-    /// arrived, so `meta` carries the status in ochre, the rail sweeps under it,
+    /// arrived, so `meta` carries the status in ochre, the rule's dots drift,
     /// and the assumption line waits. It is a mode of this row rather than a row
     /// of its own, because two components cannot promise the number lands in the
     /// place the rule is already holding.
@@ -869,16 +948,13 @@ struct CircaEntryRow: View {
 
                     Spacer(minLength: 8)
 
-                    CircaEstimate(calories, certainty: certainty)
+                    CircaEstimate(calories, certainty: certainty, drifts: isAnalysing)
                         .layoutPriority(1)
                 }
 
                 Group {
                     if isAnalysing {
-                        VStack(alignment: .leading, spacing: 5) {
-                            metaLine
-                            CircaProgressRail()
-                        }
+                        metaLine
                     } else {
                         VStack(alignment: .leading, spacing: 3) {
                             metaLine
@@ -909,7 +985,7 @@ struct CircaEntryRow: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                CircaEstimate(calories, certainty: certainty)
+                CircaEstimate(calories, certainty: certainty, drifts: isAnalysing)
                 // Nothing to label while the rule stands alone.
                 if calories != nil {
                     Text("kcal")
@@ -919,10 +995,6 @@ struct CircaEntryRow: View {
             }
 
             metaLine
-
-            if isAnalysing {
-                CircaProgressRail()
-            }
 
             if let assumption, !isAnalysing {
                 HStack(spacing: 6) {
@@ -961,17 +1033,17 @@ struct CircaEntryRow: View {
 
         switch leading {
         case .glyph(let systemName):
-            shape
-                .fill(Color.circaWell)
-                .frame(width: Circa.entryWell, height: Circa.entryWell)
-                .overlay {
-                    Image(systemName: systemName)
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(Color.circaInk3.opacity(0.7))
-                }
-                .overlay {
-                    shape.strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
-                }
+            borderedWell(shape) {
+                Image(systemName: systemName)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Color.circaInk3.opacity(0.7))
+            }
+
+        case .mark:
+            borderedWell(shape) {
+                CircaEstimatingMark()
+                    .frame(width: Kit.entryMark, height: Kit.entryMark)
+            }
 
         case .photo(let image):
             shape
@@ -995,6 +1067,18 @@ struct CircaEntryRow: View {
         case .none:
             EmptyView()
         }
+    }
+
+    private func borderedWell(_ shape: RoundedRectangle, @ViewBuilder content: () -> some View) -> some View {
+        let inner = content()
+
+        return shape
+            .fill(Color.circaWell)
+            .frame(width: Circa.entryWell, height: Circa.entryWell)
+            .overlay { inner }
+            .overlay {
+                shape.strokeBorder(Color.circaCardBorder, lineWidth: Circa.Rule.hairline)
+            }
     }
 }
 

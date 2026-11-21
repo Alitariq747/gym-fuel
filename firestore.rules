@@ -152,6 +152,22 @@ service cloud.firestore {
 
         allow delete: if false;
       }
+
+      // Step 17: a food someone asked the portion guide to add. Written once.
+      // The app caps `food` at 80 characters; 500 here leaves room for
+      // characters Firestore counts as several, so this is never the stricter.
+      match /guideRequests/{requestId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && onlyAllowedKeys(["food", "createdAt"])
+          && request.resource.data.food is string
+          && request.resource.data.food.size() > 0
+          && request.resource.data.food.size() <= 500
+          && request.resource.data.createdAt == request.time;
+
+        allow update, delete: if false;
+      }
     }
 
     match /usageQuotas/{uid} {

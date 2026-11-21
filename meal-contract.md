@@ -1,12 +1,14 @@
 # Meal Contract
 
-The shared payload and persistence shape for one meal with editable items.
+What the live app reads for one meal with editable items, and how it saves and
+edits that meal. **A change here is a change to both repos.** The server can be
+redeployed in minutes; the app on people's phones can't, so the backend must keep
+sending exactly this shape.
 
-**Step 5 builds the client against this. Step 6 makes the server produce it.**
-Neither step may change it alone — a change here is a change to both repos, and
-`build-order.md` Steps 5 and 6 are verified together.
+How the server works out the numbers — portions, grams, the food table, the
+prompt — is **not** part of this contract. See `CLAUDE.md` → *Grams*.
 
-Settled 21 September 2026. Closes `project-brief.md` open question 3.
+Settled 21 September 2026. Estimation rules taken out 5 November 2026.
 
 ---
 
@@ -16,20 +18,14 @@ One submission is **one meal**: one timeline entry, several editable items, one
 meal total. "Two roti, chicken karahi, half a katori
 rice" is three items in one entry, not three entries.
 
-Today the model already returns per-item `calories/protein/carbs/fat`
-(`gymfuel-ai-service/src/ai/logEntrySchema.js`), and `normalizeEstimatedItems`
-throws all four away. What reaches the client is a name, a prose quantity
-(`"half a katori"`) and prose components — none of it arithmetic. So an amount
-cannot be corrected without re-running the whole meal through the model.
-
-This contract makes amounts numeric and nutrition per-node, so that **changing
-an amount is local arithmetic and costs nothing**.
+Amounts are numbers and nutrition is per line, so **changing an amount is local
+arithmetic and costs nothing** — no second AI call.
 
 ### Decisions this contract closes
 
 | | |
 |---|---|
-| **Amounts** | `quantity: Double` + free-text `unit: String`. Scaling is a pure ratio. **No unit conversion, no gram equivalents** — that is a food database, and its absence is the product. |
+| **Amounts** | `quantity: Double` + free-text `unit: String`. Scaling is a pure ratio. Amounts stay in the person's units, so "2 roti → 3" is arithmetic and the app never converts units. How the server turns an amount into grams is its own business (`CLAUDE.md` → *Grams*). Where the server chose the weight of a piece or a container, it says so in that node's `assumption`, for one unit, so the sentence stays true when the quantity is edited. |
 | **Depth** | Exactly two levels: items, and components within an item. Not recursive. |
 | **Reinterpretation** | Defined in §9, **not built in Step 5**. Step 5 ships quantity edits only. |
 
@@ -172,28 +168,10 @@ the client is what makes the server able to send it.
 `explanation` and `assumptions` remain non-optional on the response path. Step 6
 must keep sending both.
 
-### Older entries are never migrated
+### A meal with no breakdown
 
-An entry written before this contract has `estimatedItems` and no `breakdown`.
-It is **left exactly as it is**. Synthesising a breakdown from it would mean
-inventing nutrition for `estimatedAmount: "120g"`, and `build-order.md` Step 5 is
-explicit that older totals-only meals "never gain invented component detail".
-
-One branch, one place:
-
-| State | Renders |
-|---|---|
-| `breakdown != nil` | the breakdown card, editable |
-| `breakdown == nil`, `estimatedItems != nil` | the existing `EstimatedItemsCard`, read-only, untouched |
-| neither | nothing |
-
-`LogEntryEstimatedItemsCard.swift` is not edited in Step 5.
-
-**That branch is temporary, not part of the contract.** It exists only for the gap
-between Step 5 and Step 6, when the backend still sends `estimatedItems` and no
-`breakdown`. Step 6 deletes the card, the field and its types outright — see
-`build-order.md` Step 6. What survives permanently is the *totals-only* state
-below it, which a hand-typed saved meal and a superseded total both produce.
+A typed total, a superseded total and a hand-typed saved meal have no
+`breakdown`. They show their totals only and never gain invented items.
 
 ---
 
@@ -340,7 +318,6 @@ cannot both be shown as current.
 | `macros` | the typed total | — |
 | `macrosProvenance` | `.userTotal` | user-supplied, not verified |
 | `breakdown` | **nil** | it described a different meal |
-| `estimatedItems` | **nil** | same, for the legacy branch |
 | `explanation` | `""` | the model's words describe superseded numbers |
 | `assumptions` | `[]` | they belong to the discarded breakdown |
 | `confidence` | **nil** | confidence in a number no longer shown |
@@ -450,5 +427,44 @@ Validate, do not trust a fluent explanation.
 7. A `version` is sent on every breakdown. Bump it only when an existing field
    changes meaning — a client that meets a version it does not know keeps the
    totals and does not render the breakdown.
-8. Household measures carry their assumptions: serving size, cooked or raw
-   basis, and oil allocated to the eaten portion rather than the whole pot.
+
+How the server works out each line's numbers is not part of this contract — see
+`CLAUDE.md` → *Grams*. Whatever it does, 1–7 hold.
+
+---
+
+## 11. The portion guide payload
+
+Added 16 November 2026 (`build-order.md` Step 17), revised 18 November before it
+was deployed. Not part of a meal: it is the reference the app shows so people can
+see what an amount weighs. **Weights only:** it carries no calories or macros, which
+come only from Circa's estimate of a meal, because the same weight of a food differs
+with how it was cooked. The server builds it from the food table
+(`src/reference/portionGuide.js`), so a food is added by a backend deploy and never
+by an app release.
+
+`GET /portionGuide`, App Check only: no sign-in, no Pro, no quota.
+
+| Field | Meaning |
+|---|---|
+| `version` | `1`. Bumped only when an existing field changes meaning; the app keeps its last readable copy when it meets a higher one |
+| `revision` | A hash of the content. The app saves a new copy when it differs |
+| `mlPerCup` | The cup the server measures by |
+| `categories[]` | `id`, `name`, in display order |
+| `containers[]` | `id`, `name`, `kind` (`plate`, `bowl`, `mug`, `glass`), `cups`, `ml`, `inches` (plates only, else `null`) |
+| `spoons[]` | `id`, `name`, `ml` |
+| `fatLevels[]` | `id`, `name`, `tbspPerPlate`, `looks` |
+| `foods[]` | `id`, `name`, `category`, `thumbnail` (one of its photos) or `null`, `pieceName` or `null`, `note` or `null`, `photos[]`, `amounts[]`. A food with neither photos nor amounts is not sent |
+| `foods[].photos[]` | `image`, and `grams`: the weight shown, or `null` for one photo of several sizes with the weights printed on it. Lightest first |
+| `foods[].amounts[]` | `label`, `grams`: what Circa means by its own words for an amount (1 cup, a plate, a bowl, a piece size, a spoon) |
+| `credit` | The photo credit, shown wherever the photos are |
+
+A photo or thumbnail is served at `/guide-images/<image>.jpg`, with no auth. The
+photos are Intake24's weighed photos (UK sets, Open Government Licence v3.0), so
+`credit` must stay with them.
+
+**The rule from §2 holds here too.** Fields may be added; none is renamed, removed
+or given a new meaning without a `version` bump. The app skips a food it cannot
+read and lists a category it does not know, so new foods and categories need no
+release. Every weight is the server's own, and the app shows it as sent: no
+portion maths, no calories.

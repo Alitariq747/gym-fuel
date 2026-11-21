@@ -89,6 +89,14 @@ fresh session reads this file, not the chat history.
 - [x] **15e** · Onboarding: a paywall that continues the story
 - [x] **15f** · Onboarding: the widget step
 - [x] **15g** · Onboarding: photos work too, and words say more · *built 22 October; ships in 1.1.1 or 1.1.2*
+- [x] **16a** · Meal estimates: measure where the numbers come from · *30 October; deploy pending*
+- [x] **16b** · Meal estimates: the portion table — pieces, containers, default fat · *30 October, meal-v22; deploy pending*
+- [x] **16c** · Meal estimates: exact name lookup, standalone · *31 October; not wired in*
+- [x] **16e** · Meal estimates: dishes broken into ingredients, the table grown · *31 October, meal-v23; deploy pending*
+- [x] **16d** · Meal estimates: the lookup wired in, the list out of the prompt · *31 October, meal-v24; deploy pending*
+- [x] **16f** · Meal estimates: portions from photos · *31 October, photo-v8; deploy pending*
+- [x] **17** · Portion guide and a livelier estimating row · *planned 16 November in seven parts, all built by 21 November; the backend and the Firestore rule deploy together, still pending. Part 1 (the guide from the server); Part 2 (guide data in the app); Part 3 (Intake24's weighed photos in the guide, weights only, no macros); Part 4a (the guide screen and its Settings entry); Part 4b (sizes, spoons and oil page; photo thumbnails); Part 5 (food pages, composer link); Part 6 (the private request box, `users/{uid}/guideRequests`); Part 7 (the estimating row: the app's mark at work, a drifting rule, status lines every three seconds, a tick on each and the success tap on landing). Payload in `meal-contract.md` §11*
+- [ ] **18** · Oil levels in plain words (backend) · *noted 18 November, after Step 17. The guide's oil page shows the server's `tbspPerPlate` as a number, so "Little" reads "0.33 tbsp a plate"; "About ⅓ tbsp" reads better. The server sends the words as a new field on each oil level (`meal-contract.md` §11 allows only additions once live), and the app shows them in place of the number when present: about one line in the oil page. Builds that already show the guide keep showing the number*
 
 Work on `main`. **You commit each step yourself, in Xcode** — no step branches,
 and nothing here commits on your behalf. Fresh session for the next step.
@@ -1668,6 +1676,148 @@ wheel on dismiss.
   the task succeeds — hence a quantity edit that cannot fail. Endowed progress
   (Nunes & Drèze 2006): 34% against 19% — the reason for the saved meal waiting at
   first open, dropped 7 October (15c).
+
+---
+
+## Step 16 — Meal estimates: sourced portions, exact matching · L
+
+Added 30 October 2026. Backend only: the app, the meal payload (`meal-contract.md`
+§3) and the paywall do not change, so no part needs an App Store release. Each
+part is its own backend deploy, with its own prompt version so the logs stay
+apart. `meal-v21` is taken by the reverted sizes trial; the next is `meal-v22`.
+
+**The problem.** The founder's own logging: the breakdown into parts is generally
+right; the **portions** and the **numbers for each part** are off. Since meal-v20
+the server prices a part from the USDA table when it names a listed food in
+grams or spoons. In the 30 October same-words test (25 phrases × 10 runs) that
+covered about 70% of calories, yet the median phrase still spread 23%: where the
+person gave amounts the spread was 0–6%, where they gave none it reached 68%
+(chai), 55% (fries with mayo), 50% (pizza), 48% (drumsticks), 47% (toast). Most
+lines still priced by the AI are pieces and containers — roti, eggs, toast,
+rice by the plate — whose food is already on the table but whose amount has no
+grams.
+
+**The idea.** The AI breaks the meal into ingredients and says how much: grams
+for what a recipe would weigh, and **how many and what size** for a piece or a
+container — never its own grams for those (2 roti came out at 70–120 g). The
+server matches each ingredient to the table **exactly**, turns a piece or
+container into grams from a small portion table, and prices it. What matches
+nothing keeps the AI's number, as today. Every number then fits the portion the
+app shows, and the portion is a stated assumption the person can edit.
+
+**Dropped 30 October: dish recipes.** A server-side recipe per dish would fix the
+split inside a dish, but dishes never stop multiplying — Pakistani food alone
+needs hundreds — and it is the food database this product avoids. Ingredients
+are bounded; dishes are not. The split inside a dish stays the AI's judgement,
+shown and editable.
+
+### Parts
+
+- **16a · Measure.** One `meal_pricing` log line per analysis, no uid: each line's
+  name, amount, calories, and whether the table or the AI priced it, and why not.
+  A harness score splitting a meal's calories three ways — the AI's own numbers;
+  table × grams the AI chose; table × sourced grams. A meal-v20 baseline. ~45 lines.
+- **16b · Portion table.** Re-base the Step 6 sizes patch
+  (`evaluation/photos/step6-meal-v21.patch`): a `size` from a fixed list, piece
+  weights per countable food from USDA, container cups from the NHANES measuring
+  guides, and a default fat when the person said none. ~130 lines.
+  *Built as meal-v22, +145 −28.* Two departures from the patch: atta and white
+  flour stay on the table (removing them made the aloo paratha +56% against
+  +18%), and only a counted drumstick, thigh, breast or wing keeps its count —
+  other counted meat ("15 pieces of chicken") is weighed, since it has no piece
+  weight. Result: calories priced by the AI 31% → about 16%; USDA test 22%,
+  15%, 15%; median time 9.1 → 8.7 s; spread flat (below). Roti is now 171 kcal
+  each from USDA's 68 g chapati, against the AI's 100–120.
+- **16c · Name lookup, standalone.** `food` + `cooking` → a table key by exact
+  match, or none. Alternative names in their own data file; each food lists the
+  cooking it accepts. The prompt's rules for choosing an entry become tested code.
+  Not wired in. ~80 lines plus names data.
+  *Built 31 October: `foodLookup.js` (36 lines) and `foodNames.js` (114 lines of
+  data).* Cooking is one of `none`, `dry`, `boiled`, `stewed`, `roasted`, `baked`,
+  `fried`. The founder's calls: a name with no kind — milk, yogurt, bread, toast,
+  cream, fish, noodles, mince — matches nothing until the AI says which; stir-fried
+  meat matches nothing; `dry` means only an amount the person said was dry, and
+  reaches only rice, pasta and lentils. Flour matches by name whatever the cooking.
+  The guard that goes with it — a dry food is priced only from a weight, cup or
+  spoon, never a plate, bowl or piece — landed in 16e, which needed it for oats.
+- **16d · Lookup wired in.** `food` and `cooking` replace `ref`; the list leaves
+  the prompt, so the table can grow without the request growing. **Moved after
+  16e on 31 October, at the founder's call:** 16e adds about 30 foods, far below
+  the ~490-food ceiling of an in-prompt list, and is where the estimates move.
+  16d lands before the table grows regularly.
+  *Built 31 October as meal-v24, about 45 lines. The model writes `food` and
+  `cooking`; the server matches them exactly (16c) and logs the food and cooking
+  of every line that matches nothing, which is how names get added. The first
+  draft gave 17% of calories back to the AI — "dry" read as plain roti, "a sauce
+  or base" nulling BBQ sauce and biryani rice, skin guessed on drumsticks — and
+  two prompt rounds fixed it. Result against meal-v23: calories priced by the AI
+  9.9% (8.3%; the gap is gravies once near-matched to tomato or onion, and baked
+  beans the model sometimes splits); USDA test 19%, 16%, 13% (18%, 12%, 19%);
+  spread, middle half, 3.1% (5.7%); median time 8.7 s (8.8 s); about 1,000 fewer
+  input tokens a request.*
+  ~70 lines.
+- **16e · Ingredient-level breakdown.** A gravy, base or batter is split into the
+  table ingredients that carry calories — yogurt, onion, tomato, cream, nuts —
+  with the fat its own part, as now. Spices and masala stay out (prompt rule 3).
+  About 30 common cooking ingredients added to the table. ~30 lines plus data.
+  *Built 31 October as meal-v23, without two parts the founder dropped: doughs
+  and batters stay one base priced by the AI, and no rule splits a gravy into
+  ingredients, since that has the AI invent recipes (gravies were about 1% of
+  calories). Built: 25 foods (81 in all), chosen from the lines the AI still
+  priced — pita and flour tortilla with FNDDS piece weights, bacon, parmesan,
+  peanuts, tahini, oats, baked beans, shrimp, salmon, nuts, chocolate, three
+  flours, a few vegetables — and a guard: a dry food is never priced by the plate
+  or bowl. Result: calories priced by the AI 16% → 8%, though 5 of those points
+  are the "15 pieces" karahi, weighed this run as 16b's rule already asks — likely
+  chance; USDA test 18%, 12%, 19% (16b: 22%, 15%, 15%); spread, middle half,
+  5.7% (5.5%); median time 7.9 → 8.1 s.*
+- **16f · Portions from photos.** The recogniser reports count, container and
+  how full — never grams (forcing grams doubled the error on 27 October); the
+  server sizes them from the same table. Re-run `photo-check.js`. ~20 lines.
+  *Built 31 October as image prompt photo-v8, +16 −5; text prompt stays meal-v24.
+  Amounts are a count, or a plate, bowl, mug or glass (small or large) and how
+  much of it the food fills — a quarter, a third, half, two-thirds, full or
+  heaped; never grams, cups or ml. "Cup" left the container list (the
+  server prices it as an 8 fl oz measure), and "Do not mention plates" was
+  reworded. `/describeMealImage` and `/interpretMealImage` log
+  `recognitionPromptVersion`. **No serving dish:** offered one, the model put
+  fries in it 3 runs in 3 (1,200–1,400 kcal against 535) and a bowl of stew once.
+  Measured with `run-photos.js`, not `photo-check.js`, which re-reads frozen v7
+  descriptions. Targets re-priced under meal-v24 (`founder-words-v19.json` keeps
+  the old ones); three checks that rewarded cups now look for the container.
+  Result, photo-v7 → photo-v8 (two runs): cups, grams or ml 6/48 → 0/48; checks
+  24 → 26, 30 of 63; holdout counts 28 → 25, 31 of 33 clear (the same v7 prompt
+  gives 28–30), 14 → 16 of 18 folded; kcal against your words, median, 37% → 39%,
+  34%, and on the 9 counted photos 18% → 21%, 27%; same-photo spread 29% → 35%,
+  39% (v7 alone ranges 29–35%); image step 3.1 → 2.8 s. Calories priced by the
+  AI stay at 38% → 38%, 34%: what is left is food the table lacks — croissant,
+  pizza crust, fries, ribbon pasta, paratha dough — which no wording moves.
+  The fill scale was added after these runs, at the founder's call, from 27
+  October's closest-scoring wording (rice 878 against 870); the founder tests it.*
+
+**The 16a baseline** (meal-v20, 30 October): 31% of calories priced by the AI —
+18% a listed food whose amount has no grams, 13% a food not on the table; 61%
+table × an amount the AI chose; 8% table × the person's own amount. Same-words
+spread, median across phrases: 7.3% for the middle half of the runs (earlier
+meal-v20 runs: 5.8–10.5%), 23% for the full range. USDA test 18%, 20%, 21%
+(earlier meal-v20 runs: 13–19%; noise is about ±3 points). Score: `node
+evaluation/photos/harness/analysis/sources-score.js <same-words run>`.
+
+**Spread is not this step's target** (reworded 30 October, after 16b). Sizes
+price what the AI chose correctly, but the spread now comes from the choice
+itself — 120 or 250 g of chicken in a karahi, "2 potatoes" or "a bowl", 1 tsp or
+1 tbsp of oil on an omelette — which this step deliberately leaves to the AI,
+shown and editable. 16b left it flat (middle half 7.3% → 7.8%; full range 23% →
+24%). The full range is set by one odd run in ten, so spread is read from the
+middle half: `same-words-report.js` prints it.
+
+**Done when**, against the 16a baseline: calories priced from the AI's own
+numbers fall from about 30% to under 10%; the same-words spread, middle half,
+stays within meal-v20's run-to-run range (5.8–10.5%); the USDA test (3 runs) is
+no worse than meal-v20; and analysis is no slower (`timing-ab.js`).
+
+**Each part also updates** `meal-contract.md` §10.9, which describes how the
+server prices a meal.
 
 ---
 

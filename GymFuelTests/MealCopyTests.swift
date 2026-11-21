@@ -327,6 +327,18 @@ struct MealCopyTests {
         #expect(MealCopy.photoReadingStatus(elapsedSeconds: -1) == "reading your photo")
     }
 
+    @Test("An estimating meal's status moves on every three seconds, then says it is taking longer")
+    func estimatingStatusSteps() {
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 0) == "reading your words")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 2) == "reading your words")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 3) == "finding each food")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 6) == "checking each portion")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 9) == "adding it up")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 12) == "taking a little longer")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: 60) == "taking a little longer")
+        #expect(MealCopy.estimatingStatus(elapsedSeconds: -1) == "reading your words")
+    }
+
     @Test("The correction line gives the difference, then what changed")
     func correctionLineReadsDifferenceFirst() {
         #expect(MealCopy.correctionLine(firstGuess: 705, total: 585, changed: ["Cooking oil"])

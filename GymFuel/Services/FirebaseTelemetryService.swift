@@ -64,6 +64,13 @@ enum FirebaseTelemetryService {
         ])
     }
 
+    /// Never the food someone typed.
+    static func logPortionGuideEvent(_ action: String) {
+        logEvent("portion_guide_event", parameters: [
+            "action": action,
+        ])
+    }
+
     static func logOnboardingEvent(_ action: String, step: String? = nil) {
         var parameters: [String: Any] = [
             "action": action,
