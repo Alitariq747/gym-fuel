@@ -8,6 +8,8 @@ struct LogEntryDetailSheet: View {
     var opensEditor: Bool = false
     @EnvironmentObject private var savedMealsViewModel: SavedMealsViewModel
     var isPerformingAction: Bool = false
+    /// When this meal's reworded words went out; nil when nothing is re-estimating.
+    var reestimateStart: Date? = nil
     var aiErrorMessage: String? = nil
     var actionErrorMessage: String? = nil
     var onClearAIError: (() -> Void)? = nil
@@ -33,7 +35,29 @@ struct LogEntryDetailSheet: View {
     @State private var editedRawInput = ""
     @State private var editedLoggedAt = Date()
     @FocusState private var isRawInputFocused: Bool
-    
+    @State private var statusElapsed = 0
+    @State private var caloriesBeforeReword: Double?
+    @State private var rewordChange: RewordChange?
+
+    /// What the last reword did to the total, shown only while the total is
+    /// still the one it produced, so any later edit retires it.
+    private struct RewordChange {
+        let line: String
+        let calories: Double
+    }
+
+    private var isReestimating: Bool {
+        reestimateStart != nil
+    }
+    private var reestimateStatus: String? {
+        isReestimating ? MealCopy.estimatingStatus(elapsedSeconds: statusElapsed) : nil
+    }
+    private var rewordChangeLine: String? {
+        guard !isReestimating, let rewordChange,
+              entry.feedback?.macros?.calories == rewordChange.calories else { return nil }
+        return rewordChange.line
+    }
+
     private var canEditManually: Bool {
         entry.feedback?.macros != nil
     }
@@ -155,32 +179,48 @@ struct LogEntryDetailSheet: View {
 
                 VStack(alignment: .leading, spacing: 18) {
                     if let macros = entry.feedback?.macros {
-                        DetailMacroSummaryCard(macros: macros, certainty: macrosCertainty)
+                        DetailMacroSummaryCard(
+                            macros: macros,
+                            certainty: macrosCertainty,
+                            estimateStart: reestimateStart,
+                            estimateFailed: aiErrorMessage != nil,
+                            isLive: true
+                        )
+                        // A re-estimate's wait is drawn on the card, so it stays sharp.
+                        .opacity(isPerformingAction && !isReestimating ? 0.5 : 1)
 
-                        if let macrosProvenanceLine {
+                        if let rewordChangeLine {
+                            Text(rewordChangeLine)
+                                .font(.circaMono)
+                                .foregroundStyle(Color.circaAccent)
+                        }
+                    }
+
+                    Group {
+                        if entry.feedback?.macros != nil, let macrosProvenanceLine {
                             Text(macrosProvenanceLine)
                                 .font(.circaMono)
                                 .foregroundStyle(Color.circaAccent)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-                    }
 
-                    // `meal-contract.md` §3: a meal with no breakdown shows its
-                    // totals and never gains invented component detail.
-                    if let breakdown = entry.feedback?.breakdown, breakdown.isSupported {
-                        MealBreakdownCard(breakdown: breakdown, onEditAmounts: canModify ? {
-                            onClearActionError?()
-                            showBreakdownEditor = true
-                        } : nil)
-                    }
+                        // `meal-contract.md` §3: a meal with no breakdown shows its
+                        // totals and never gains invented component detail.
+                        if let breakdown = entry.feedback?.breakdown, breakdown.isSupported {
+                            MealBreakdownCard(breakdown: breakdown, onEditAmounts: canModify ? {
+                                onClearActionError?()
+                                showBreakdownEditor = true
+                            } : nil)
+                        }
 
-                    if !analysisExplanation.isEmpty {
-                        MealAnalysisCard(explanation: analysisExplanation)
-                    }
+                        if !analysisExplanation.isEmpty {
+                            MealAnalysisCard(explanation: analysisExplanation)
+                        }
 
-                    MealSourcesRow()
+                        MealSourcesRow()
+                    }
+                    .opacity(isPerformingAction ? 0.5 : 1)
                 }
-                .opacity(isPerformingAction ? 0.5 : 1)
                 .allowsHitTesting(!isPerformingAction)
             }
             .padding(.horizontal, Circa.Space.screenMargin)
@@ -361,6 +401,13 @@ struct LogEntryDetailSheet: View {
         .onChange(of: isEditingRawInput) { _, isEditing in
             isRawInputFocused = isEditing
         }
+        .task(id: reestimateStart) { await runStatusClock() }
+        .sensoryFeedback(.selection, trigger: reestimateStatus) { old, new in
+            old != nil && new != nil
+        }
+        .onChange(of: reestimateStart) { old, new in
+            if old != nil, new == nil { landReword() }
+        }
     }
 
     private var headerSection: some View {
@@ -368,7 +415,7 @@ struct LogEntryDetailSheet: View {
             CircaSectionLabel("\(sourceLabel) · \(entry.loggedAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute()))")
                 .fixedSize(horizontal: false, vertical: true)
 
-            if isEditingRawInput {
+            if isEditingRawInput && !isReestimating {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .top, spacing: 10) {
                         TextField("", text: $editedRawInput, axis: .vertical)
@@ -445,9 +492,9 @@ struct LogEntryDetailSheet: View {
                 }
             } else {
                 HStack(alignment: .top, spacing: 6) {
-                    Text(verbatim: displayTitle)
+                    Text(verbatim: isReestimating ? editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines) : displayTitle)
                         .font(.title2.weight(.semibold))
-                        .foregroundStyle(Color.circaInk)
+                        .foregroundStyle(isReestimating ? Color.circaInk2 : Color.circaInk)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityAddTraits(.isHeader)
@@ -468,10 +515,13 @@ struct LogEntryDetailSheet: View {
                         .padding(.trailing, -12)
                         .accessibilityLabel("Reword and re-estimate")
                         .disabled(isPerformingAction)
+                        .opacity(isReestimating ? 0 : 1)
                     }
                 }
 
-                if let description = MealCopy.photoDescription(of: entry) {
+                if let reestimateStatus {
+                    CircaStatusLine(text: reestimateStatus)
+                } else if let description = MealCopy.photoDescription(of: entry) {
                     Text(verbatim: description)
                         .font(.circaBody)
                         .foregroundStyle(Color.circaInk2)
@@ -488,7 +538,34 @@ struct LogEntryDetailSheet: View {
     private func submitReword() {
         let trimmedText = editedRawInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else { return }
+        isRawInputFocused = false
+        caloriesBeforeReword = entry.feedback?.macros?.calories
         onUseAIAgain?(trimmedText)
+    }
+
+    /// Counts from when the words went out, so a meal reopened mid-wait picks
+    /// up the same status line as its ring.
+    private func runStatusClock() async {
+        guard let start = reestimateStart else {
+            statusElapsed = 0
+            return
+        }
+        while !Task.isCancelled {
+            statusElapsed = Int(Date.now.timeIntervalSince(start))
+            try? await Task.sleep(for: .seconds(1))
+        }
+    }
+
+    /// The new entry arrives in the same update that ends the wait
+    /// (`MainTabView.reestimate`), so `entry` already holds the new total.
+    private func landReword() {
+        defer { caloriesBeforeReword = nil }
+        guard aiErrorMessage == nil,
+              let before = caloriesBeforeReword,
+              let after = entry.feedback?.macros?.calories else { return }
+        withAnimation(.smooth(duration: 0.4)) {
+            rewordChange = RewordChange(line: MealCopy.rewordChange(from: before, to: after), calories: after)
+        }
     }
 
     private func errorRow(_ message: String) -> some View {

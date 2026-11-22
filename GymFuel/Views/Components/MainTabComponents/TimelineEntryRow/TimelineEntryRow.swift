@@ -7,6 +7,8 @@ struct TimelineEntryRow: View {
     var onDelete: (() -> Void)? = nil
     @State private var statusElapsed = 0
     @State private var statusTask: Task<Void, Never>?
+    /// When this row started estimating; the well's ring fills from it.
+    @State private var estimateStart: Date?
     @Environment(\.dynamicTypeSize) private var typeSize
     private let settleAnimationDuration = 0.3
 
@@ -26,9 +28,11 @@ struct TimelineEntryRow: View {
             statusTask?.cancel()
             statusTask = nil
             statusElapsed = 0
+            estimateStart = nil
             return
         }
 
+        if estimateStart == nil { estimateStart = .now }
         guard statusTask == nil else { return }
         statusTask = Task {
             while !Task.isCancelled {
@@ -115,15 +119,14 @@ struct TimelineEntryRow: View {
 
     private var leading: CircaEntryLeading {
         guard rowState.isMealImageEntry else {
-            if entry.status == .analyzing { return .mark }
             return .glyph(entry.source == .savedMeal ? "bookmark" : "square.and.pencil")
         }
 
         return .photoContent(AnyView(photoContent))
     }
 
-    /// The photo, and the sweep across it while it is being read. The kit owns
-    /// the well, its radius and the AX3 drop; only the sweep is this screen's.
+    /// The photo. The kit owns the well, its radius, the AX3 drop and the ring
+    /// drawn over the photo while it is read.
     private var photoContent: some View {
         Group {
             if let localPreviewData = rowState.localPreviewData,
@@ -141,11 +144,6 @@ struct TimelineEntryRow: View {
         }
         .frame(width: Circa.entryWell, height: Circa.entryWell)
         .clipped()
-        .overlay {
-            if rowState.isAnalyzingImageEntry {
-                ImageAnalysisScannerOverlay()
-            }
-        }
         .clipShape(RoundedRectangle(cornerRadius: Circa.Radius.thumb, style: .continuous))
     }
 
@@ -171,7 +169,8 @@ struct TimelineEntryRow: View {
             certainty: .pending,
             meta: MealCopy.estimatingStatus(elapsedSeconds: statusElapsed),
             leading: leading,
-            isAnalysing: true
+            isAnalysing: true,
+            estimateStart: estimateStart
         )
     }
 

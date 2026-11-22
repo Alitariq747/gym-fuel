@@ -137,6 +137,14 @@ struct MealCopyTests {
         #expect(MealCopy.signedCalories(0) == nil)
     }
 
+    @Test("Rewording names the change in the totals as shown")
+    func rewordChange() {
+        #expect(MealCopy.rewordChange(from: 223.4, to: 442.2) == "+219 kcal from your new words")
+        #expect(MealCopy.rewordChange(from: 442, to: 357) == "−85 kcal from your new words")
+        // 300.4 and 299.6 both show as 300.
+        #expect(MealCopy.rewordChange(from: 300.4, to: 299.6) == "No change in calories")
+    }
+
     @Test("The editor counts changed amounts in words")
     func amountsChanged() {
         #expect(MealCopy.amountsChanged(1) == "1 amount changed")

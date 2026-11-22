@@ -83,7 +83,7 @@ enum MealCopy {
     static let statusStepSeconds = 3
 
     /// A new line every three seconds; the last one holds. Timed, not
-    /// measured — never a percentage, because nothing measures progress.
+    /// measured, like the well's ring (`EstimatingProgress`).
     private static func status(_ lines: [String], elapsedSeconds: Int) -> String {
         lines[min(max(elapsedSeconds, 0) / statusStepSeconds, lines.count - 1)]
     }
@@ -95,6 +95,13 @@ enum MealCopy {
             ["reading your words", "finding each food", "checking each portion", "adding it up", "taking a little longer"],
             elapsedSeconds: elapsedSeconds
         )
+    }
+
+    /// "+219 kcal from your new words". Compares the totals as shown, so the
+    /// line agrees with the numbers above it.
+    static func rewordChange(from old: Double, to new: Double) -> String {
+        signedCalories(Int(new.rounded()) - Int(old.rounded())).map { "\($0) kcal from your new words" }
+            ?? "No change in calories"
     }
 
     // MARK: - A meal photo

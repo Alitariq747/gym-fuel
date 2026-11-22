@@ -6,13 +6,32 @@ struct DetailMacroSummaryCard<Lead: View>: View {
     let certainty: CircaCertainty
     /// Takes the calorie row's place — onboarding's first guess → their total.
     private let lead: Lead?
+    /// A re-estimate under way: the calorie well holds the ring, and the numbers
+    /// it will replace fade.
+    private var estimateStart: Date? = nil
+    private var estimateFailed = false
+    /// Changed numbers roll from old to new.
+    private var isLive = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .largeTitle) private var calorieSize = Circa.Display.entryTotal
 
-    init(macros: Macros?, certainty: CircaCertainty) where Lead == EmptyView {
+    init(
+        macros: Macros?,
+        certainty: CircaCertainty,
+        estimateStart: Date? = nil,
+        estimateFailed: Bool = false,
+        isLive: Bool = false
+    ) where Lead == EmptyView {
         self.macros = macros
         self.certainty = certainty
         lead = nil
+        self.estimateStart = estimateStart
+        self.estimateFailed = estimateFailed
+        self.isLive = isLive
+    }
+
+    private var numberInk: Color {
+        estimateStart == nil ? .circaInk : .circaInk3
     }
 
     init(macros: Macros?, certainty: CircaCertainty, @ViewBuilder lead: () -> Lead) {
@@ -49,6 +68,7 @@ struct DetailMacroSummaryCard<Lead: View>: View {
                 } else {
                     totalLayout {
                         CircaMacroGlyph(.calories, size: .large)
+                            .circaEstimateRing(since: estimateStart, failed: estimateFailed)
                         calorieTotal
                     }
                 }
@@ -96,7 +116,9 @@ struct DetailMacroSummaryCard<Lead: View>: View {
 
     private var calorieValue: some View {
         CircaEstimate(MealCopy.calories(macros), certainty: certainty,
-                      font: .system(size: calorieSize, weight: .semibold, design: .monospaced))
+                      font: .system(size: calorieSize, weight: .semibold, design: .monospaced),
+                      isLive: isLive)
+            .foregroundStyle(numberInk)
     }
 
     private func partView(_ part: Part, stacked: Bool = false) -> some View {
@@ -108,7 +130,8 @@ struct DetailMacroSummaryCard<Lead: View>: View {
             CircaMacroGlyph(part.glyph)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    CircaEstimate(number, certainty: certainty, font: .circaMonoLarge)
+                    CircaEstimate(number, certainty: certainty, font: .circaMonoLarge, isLive: isLive)
+                        .foregroundStyle(numberInk)
                     Text("g").font(.circaMono).foregroundStyle(Color.circaInk3)
                 }
                 Text(part.name)

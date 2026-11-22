@@ -157,6 +157,7 @@ struct MainTabView: View {
                 canModify: loggingWindow.canLog(on: entry.loggedAt),
                 opensEditor: opensEditorForEntryID == entry.id,
                 isPerformingAction: logEntryDetailViewModel.isSaving,
+                reestimateStart: logEntryDetailViewModel.reestimateStart(for: entry.id),
                 aiErrorMessage: logEntryDetailViewModel.aiErrorMessage,
                 actionErrorMessage: logEntryDetailViewModel.actionErrorMessage,
                 onClearAIError: {

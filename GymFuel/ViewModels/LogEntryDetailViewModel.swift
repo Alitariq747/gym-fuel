@@ -9,7 +9,13 @@ import Foundation
 
 @MainActor
 final class LogEntryDetailViewModel: ObservableObject {
+    struct Reestimate: Equatable {
+        let entryID: String
+        let startedAt: Date
+    }
+
     @Published private(set) var isSaving: Bool = false
+    @Published private(set) var reestimate: Reestimate?
     @Published private(set) var errorMessage: String?
     @Published private(set) var aiErrorMessage: String?
     @Published private(set) var actionErrorMessage: String?
@@ -19,17 +25,26 @@ final class LogEntryDetailViewModel: ObservableObject {
     private let interpretationService: LogInterpretationService
     private let mealImageUploadService: MealImageUploadService
     private let networkMonitor: NetworkMonitoring
+    private let hapticFeedbackService: HapticFeedbackProviding
 
     init(
         service: LogEntryService = FirebaseLogEntryService(),
         interpretationService: LogInterpretationService = BackendLogInterpretationService(),
         mealImageUploadService: MealImageUploadService = FirebaseMealImageUploadService(),
-        networkMonitor: NetworkMonitoring = NetworkMonitor.shared
+        networkMonitor: NetworkMonitoring = NetworkMonitor.shared,
+        hapticFeedbackService: HapticFeedbackProviding = HapticFeedbackService()
     ) {
         self.service = service
         self.interpretationService = interpretationService
         self.mealImageUploadService = mealImageUploadService
         self.networkMonitor = networkMonitor
+        self.hapticFeedbackService = hapticFeedbackService
+    }
+
+    /// Scoped to its meal: the request outlives the screen, so another meal
+    /// opened meanwhile must not show this one's wait.
+    func reestimateStart(for entryID: String) -> Date? {
+        reestimate?.entryID == entryID ? reestimate?.startedAt : nil
     }
 
     func clearError() {
@@ -61,6 +76,7 @@ final class LogEntryDetailViewModel: ObservableObject {
         goal: GoalType
     ) async -> LogEntry? {
         isSaving = true
+        reestimate = Reestimate(entryID: entry.id, startedAt: .now)
         clearAIError()
 
         do {
@@ -90,6 +106,8 @@ final class LogEntryDetailViewModel: ObservableObject {
             // awaiting the server's confirmation would add a round trip to the wait.
             try service.replaceEntryLocally(updatedEntry)
             isSaving = false
+            reestimate = nil
+            hapticFeedbackService.notifySuccess()
             return updatedEntry
         } catch {
             if isSubscriptionInactive(error) {
@@ -100,6 +118,7 @@ final class LogEntryDetailViewModel: ObservableObject {
                 fallback: "We couldn't reinterpret this entry. Please try again."
             ))
             isSaving = false
+            reestimate = nil
             return nil
         }
     }
